@@ -1316,6 +1316,16 @@ void update_particles_i(pixel *vid, int start, int inc)
 			else
 				wireless[q][1] = 0;
 	}
+	if (1)
+	{
+		for ( q = 0; q<(int)(MAX_TEMP-73.15f)/100+2; q++) {
+			if (hprt[q][2]>0.5)
+				hprt[q][0] = hprt[q][1]/hprt[q][2];
+			else
+				hprt[q][0] = -2;
+			hprt[q][1] = hprt[q][2] = 0;
+		}
+	}
 	for (i=start; i<(NPART-starti); i+=inc)
 		if (parts[i].type)
 		{

@@ -191,7 +191,8 @@
 #define PT_REPL 139
 #define PT_MYST 140
 #define PT_BOYL 141
-#define PT_NUM  142
+#define PT_HPRT 142
+#define PT_NUM  143
 
 #define R_TEMP 22
 #define MAX_TEMP 9999
@@ -249,6 +250,7 @@ int update_FIRW(UPDATE_FUNC_ARGS);
 int update_FWRK(UPDATE_FUNC_ARGS);
 int update_GLOW(UPDATE_FUNC_ARGS);
 int update_GOO(UPDATE_FUNC_ARGS);
+int update_HPRT(UPDATE_FUNC_ARGS);
 int update_HSWC(UPDATE_FUNC_ARGS);
 int update_IRON(UPDATE_FUNC_ARGS);
 int update_ICEI(UPDATE_FUNC_ARGS);
@@ -512,6 +514,7 @@ static const part_type ptypes[PT_NUM] =
 	{"REPL",	PIXPACK(0x259588),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	0,	1,	100,	SC_LIFE,		9000.0f,				40,		"B1357/S1357", TYPE_SOLID|PROP_LIFE, NULL},
 	{"MYST",	PIXPACK(0x0C3C00),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	0,	1,	100,	SC_LIFE,		9000.0f,				40,		"B3458/S05678", TYPE_SOLID|PROP_LIFE, NULL},
 	{"BOYL",	PIXPACK(0x0A3200),	1.0f,	0.01f * CFDS,	0.99f,	0.30f,	-0.1f,	0.0f,	0.18f,	0.000f	* CFDS,	0,	0,	0,	0,	1,	1,	1,		SC_GAS,			R_TEMP+2.0f	+273.15f,	42,		"Boyle, variable pressure gas. Expands when heated.", TYPE_GAS, &update_BOYL},
+	{"HPRT",	PIXPACK(0xFF0066),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	1,	2,	1,	100,	SC_NUCLEAR,		R_TEMP+2.0f	+273.15f,	0,		"Heat portal. Remote diffusion of heat between particles touching it. With channels (same as WIFI)", TYPE_GAS, &update_HPRT},
 	//Name		Colour				Advec	Airdrag			Airloss	Loss	Collid	Grav	Diffus	Hotair			Fal	Burn	Exp	Mel	Hrd	M	Weights	Section			H						Ins		Description
 };
 
@@ -660,6 +663,7 @@ static part_state pstates[PT_NUM] =
 	/* GOL  */ {ST_NONE,	PT_NONE, 0.0f,		PT_NONE, 0.0f,		PT_NONE, 0.0f,		PT_NONE, 0.0f},
 	/* GOL  */ {ST_NONE,	PT_NONE, 0.0f,		PT_NONE, 0.0f,		PT_NONE, 0.0f,		PT_NONE, 0.0f},
 	/* BOYL */ {ST_GAS,		PT_NONE, 0.0f,		PT_NONE, 0.0f,  	PT_NONE, 50.0f,		PT_NONE, 0.0f},
+	/* HPRT */ {ST_SOLID,	PT_NONE, 0.0f,		PT_NONE, 0.0f,  	PT_NONE, 50.0f,		PT_NONE, 0.0f},
 };
 
 // temporarily define abbreviations for impossible p/t values
@@ -817,6 +821,7 @@ static part_transition ptransitions[PT_NUM] =
 	/* GOL  */ {IPL,	NT,			IPH,	NT,			ITL,	NT,			ITH,	NT},
 	/* GOL  */ {IPL,	NT,			IPH,	NT,			ITL,	NT,			ITH,	NT},
 	/* BOYL */ {IPL,	NT,			IPH,	NT,			ITL,	NT,			ITH,	NT},
+	/* HPRT */ {IPL,	NT,			IPH,	NT,			ITL,	NT,			ITH,	NT},
 };
 #undef IPL
 #undef IPH
@@ -900,6 +905,7 @@ int portal[(int)(MAX_TEMP-73.15f)/100+2][8][80];
 float portaltemp[(int)(MAX_TEMP-73.15f)/100+2][8][80];
 int portalctype[(int)(MAX_TEMP-73.15f)/100+2][8][80];
 int wireless[(int)(MAX_TEMP-73.15f)/100+2][2];
+float hprt[(int)(MAX_TEMP-73.15f)/100+2][3];
 
 extern int isplayer;
 extern float player[27];

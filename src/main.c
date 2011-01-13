@@ -487,6 +487,7 @@ int parse_save(void *save, int size, int replace, int x0, int y0)
 		memset(vx, 0, sizeof(vx));
 		memset(vy, 0, sizeof(vy));
 		memset(pv, 0, sizeof(pv));
+		memset(hprt, 0, sizeof(hprt));
 	}
 
 	// make a catalog of free parts
@@ -2017,6 +2018,7 @@ int main(int argc, char *argv[])
 						memset(bmap, 0, sizeof(bmap));
 						memset(emap, 0, sizeof(emap));
 						memset(parts, 0, sizeof(particle)*NPART);
+						memset(hprt, 0, sizeof(hprt));
 						for (i=0; i<NPART-1; i++)
 							parts[i].life = i+1;
 						parts[NPART-1].life = -1;
