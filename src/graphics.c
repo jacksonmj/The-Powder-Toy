@@ -768,11 +768,7 @@ void draw_menu(pixel *vid_buf, int i, int hover)
 }
 
 //draws a pixel, identical to blendpixel(), except blendpixel has OpenGL support
-#if defined(WIN32) && !defined(__GNUC__)
-_inline void drawpixel(pixel *vid, int x, int y, int r, int g, int b, int a)
-#else
-inline void drawpixel(pixel *vid, int x, int y, int r, int g, int b, int a)
-#endif
+void drawpixel(pixel *vid, int x, int y, int r, int g, int b, int a)
 {
 	pixel t;
 	if (x<0 || y<0 || x>=XRES+BARSIZE || y>=YRES+MENUSIZE)
@@ -787,11 +783,7 @@ inline void drawpixel(pixel *vid, int x, int y, int r, int g, int b, int a)
 	vid[y*(XRES+BARSIZE)+x] = PIXRGB(r,g,b);
 }
 
-#if defined(WIN32) && !defined(__GNUC__)
-_inline int drawchar(pixel *vid, int x, int y, int c, int r, int g, int b, int a)
-#else
-inline int drawchar(pixel *vid, int x, int y, int c, int r, int g, int b, int a)
-#endif
+int drawchar(pixel *vid, int x, int y, int c, int r, int g, int b, int a)
 {
 	int i, j, w, bn = 0, ba = 0;
 	char *rp = font_data + font_ptrs[c];
@@ -1145,11 +1137,7 @@ int textwrapheight(char *s, int width)
 }
 
 //the most used function for drawing a pixel, because it has OpenGL support, which is not fully implemented.
-#if defined(WIN32) && !defined(__GNUC__)
-_inline void blendpixel(pixel *vid, int x, int y, int r, int g, int b, int a)
-#else
-inline void blendpixel(pixel *vid, int x, int y, int r, int g, int b, int a)
-#endif
+void blendpixel(pixel *vid, int x, int y, int r, int g, int b, int a)
 {
 #ifdef OpenGL
 	if (x<0 || y<0 || x>=XRES || r>=YRES)

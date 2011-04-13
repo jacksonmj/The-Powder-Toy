@@ -474,11 +474,7 @@ void kill_part(int i)//kills particle number i
 	pfree = i;
 }
 
-#if defined(WIN32) && !defined(__GNUC__)
-_inline void part_change_type(int i, int x, int y, int t)
-#else
-inline void part_change_type(int i, int x, int y, int t)//changes the type of particle number i, to t.  This also changes pmap at the same time.
-#endif
+void part_change_type(int i, int x, int y, int t)//changes the type of particle number i, to t.  This also changes pmap at the same time.
 {
 	if (x<0 || y<0 || x>=XRES || y>=YRES || i>=NPART || t<0 || t>=PT_NUM)
 		return;
@@ -497,11 +493,7 @@ inline void part_change_type(int i, int x, int y, int t)//changes the type of pa
 	}
 }
 
-#if defined(WIN32) && !defined(__GNUC__)
-_inline int create_n_parts(int n, int x, int y, float vx, float vy, int t)
-#else
-inline int create_n_parts(int n, int x, int y, float vx, float vy, int t)//testing a new deut create part
-#endif
+int create_n_parts(int n, int x, int y, float vx, float vy, int t)//testing a new deut create part
 {
 	int i, c;
 	n = (n/10);
@@ -541,11 +533,7 @@ inline int create_n_parts(int n, int x, int y, float vx, float vy, int t)//testi
 	return 0;
 }
 
-#if defined(WIN32) && !defined(__GNUC__)
-_inline int create_part(int p, int x, int y, int t)
-#else
-inline int create_part(int p, int x, int y, int t)//the function for creating a particle, use p=-1 for creating a new particle, -2 is from a brush, or a particle number to replace a particle.
-#endif
+int create_part(int p, int x, int y, int t)//the function for creating a particle, use p=-1 for creating a new particle, -2 is from a brush, or a particle number to replace a particle.
 {
 	int i;
 
@@ -947,11 +935,7 @@ static void create_cherenkov_photon(int pp)//photons from NEUT going through GLA
 	parts[i].vy *= r;
 }
 
-#if defined(WIN32) && !defined(__GNUC__)
-_inline void delete_part(int x, int y)
-#else
-inline void delete_part(int x, int y)//calls kill_part with the particle located at x,y
-#endif
+void delete_part(int x, int y)//calls kill_part with the particle located at x,y
 {
 	unsigned i;
 
@@ -977,20 +961,12 @@ inline void delete_part(int x, int y)//calls kill_part with the particle located
 		return;
 }
 
-#if defined(WIN32) && !defined(__GNUC__)
-_inline int is_wire(int x, int y)
-#else
-inline int is_wire(int x, int y)
-#endif
+int is_wire(int x, int y)
 {
 	return bmap[y][x]==WL_DETECT || bmap[y][x]==WL_EWALL || bmap[y][x]==WL_ALLOWLIQUID || bmap[y][x]==WL_WALLELEC || bmap[y][x]==WL_ALLOWALLELEC || bmap[y][x]==WL_EHOLE;
 }
 
-#if defined(WIN32) && !defined(__GNUC__)
-_inline int is_wire_off(int x, int y)
-#else
-inline int is_wire_off(int x, int y)
-#endif
+int is_wire_off(int x, int y)
 {
 	return (bmap[y][x]==WL_DETECT || bmap[y][x]==WL_EWALL || bmap[y][x]==WL_ALLOWLIQUID || bmap[y][x]==WL_WALLELEC || bmap[y][x]==WL_ALLOWALLELEC || bmap[y][x]==WL_EHOLE) && emap[y][x]<8;
 }
@@ -1077,11 +1053,7 @@ void set_emap(int x, int y)
 			}
 }
 
-#if defined(WIN32) && !defined(__GNUC__)
-_inline int parts_avg(int ci, int ni,int t)//t is the particle you are looking for, returns the particle between two particles
-#else
-inline int parts_avg(int ci, int ni,int t)
-#endif
+int parts_avg(int ci, int ni,int t)//t is the particle you are looking for, returns the particle between two particles
 {
 	if (t==PT_INSL)//to keep electronics working
 	{
@@ -3097,11 +3069,7 @@ void *transform_save(void *odata, int *size, matrix2d transform, vector2d transl
 	return ndata;
 }
 
-#if defined(WIN32) && !defined(__GNUC__)
-_inline void orbitalparts_get(int block1, int block2, int resblock1[], int resblock2[])
-#else
-inline void orbitalparts_get(int block1, int block2, int resblock1[], int resblock2[])
-#endif
+void orbitalparts_get(int block1, int block2, int resblock1[], int resblock2[])
 {
 	resblock1[0] = (block1&0x000000FF);
 	resblock1[1] = (block1&0x0000FF00)>>8;
@@ -3114,11 +3082,7 @@ inline void orbitalparts_get(int block1, int block2, int resblock1[], int resblo
 	resblock2[3] = (block2&0xFF000000)>>24;
 }
 
-#if defined(WIN32) && !defined(__GNUC__)
-_inline void orbitalparts_set(int *block1, int *block2, int resblock1[], int resblock2[])
-#else
-inline void orbitalparts_set(int *block1, int *block2, int resblock1[], int resblock2[])
-#endif
+void orbitalparts_set(int *block1, int *block2, int resblock1[], int resblock2[])
 {
 	int block1tmp = 0;
 	int block2tmp = 0;

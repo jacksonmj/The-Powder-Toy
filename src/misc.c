@@ -19,11 +19,7 @@
 #endif
 
 //Signum function
-#if defined(WIN32) && !defined(__GNUC__)
-_inline int isign(float i)
-#else
-inline int isign(float i)
-#endif
+int isign(float i)
 {
 	if (i<0)
 		return -1;
@@ -32,11 +28,7 @@ inline int isign(float i)
 	return 0;
 }
 
-#if defined(WIN32) && !defined(__GNUC__)
-_inline unsigned clamp_flt(float f, float min, float max)
-#else
-inline unsigned clamp_flt(float f, float min, float max)
-#endif
+unsigned clamp_flt(float f, float min, float max)
 {
 	if (f<min)
 		return 0;
@@ -45,11 +37,7 @@ inline unsigned clamp_flt(float f, float min, float max)
 	return (int)(255.0f*(f-min)/(max-min));
 }
 
-#if defined(WIN32) && !defined(__GNUC__)
-_inline float restrict_flt(float f, float min, float max)
-#else
-inline float restrict_flt(float f, float min, float max)
-#endif
+float restrict_flt(float f, float min, float max)
 {
 	if (f<min)
 		return min;
