@@ -988,7 +988,7 @@ void drawdots(pixel *vid, int x, int y, int h, int r, int g, int b, int a)
 #endif //OpenGL
 }
 
-int textwidth(char *s)
+int textwidth(const char *s)
 {
 	int x = 0;
 	for (; *s; s++)
@@ -996,7 +996,7 @@ int textwidth(char *s)
 	return x-1;
 }
 
-int drawtextmax(pixel *vid, int x, int y, int w, char *s, int r, int g, int b, int a)
+int drawtextmax(pixel *vid, int x, int y, int w, const char *s, int r, int g, int b, int a)
 {
 	int i;
 	w += x-5;
@@ -1012,7 +1012,7 @@ int drawtextmax(pixel *vid, int x, int y, int w, char *s, int r, int g, int b, i
 	return x;
 }
 
-int textnwidth(char *s, int n)
+int textnwidth(const char *s, int n)
 {
 	int x = 0;
 	for (; *s; s++)
@@ -1024,7 +1024,7 @@ int textnwidth(char *s, int n)
 	}
 	return x-1;
 }
-void textnpos(char *s, int n, int w, int *cx, int *cy)
+void textnpos(const char *s, int n, int w, int *cx, int *cy)
 {
 	int x = 0;
 	int y = 0;
@@ -1056,7 +1056,7 @@ void textnpos(char *s, int n, int w, int *cx, int *cy)
 	*cy = y;
 }
 
-int textwidthx(char *s, int w)
+int textwidthx(const char *s, int w)
 {
 	int x=0,n=0,cw;
 	for (; *s; s++)
@@ -1069,7 +1069,7 @@ int textwidthx(char *s, int w)
 	}
 	return n;
 }
-int textposxy(char *s, int width, int w, int h)
+int textposxy(const char *s, int width, int w, int h)
 {
 	int x=0,y=0,n=0,cw, wordlen, charspace;
 	while (*s)
@@ -1096,7 +1096,7 @@ int textposxy(char *s, int width, int w, int h)
 	}
 	return n;
 }
-int textwrapheight(char *s, int width)
+int textwrapheight(const char *s, int width)
 {
 	int x=0, height=FONT_H+2, cw;
 	int wordlen;

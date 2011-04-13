@@ -80,19 +80,19 @@ void clearrect(pixel *vid, int x, int y, int w, int h);
 
 void drawdots(pixel *vid, int x, int y, int h, int r, int g, int b, int a);
 
-int textwidth(char *s);
+int textwidth(const char *s);
 
-int drawtextmax(pixel *vid, int x, int y, int w, char *s, int r, int g, int b, int a);
+int drawtextmax(pixel *vid, int x, int y, int w, const char *s, int r, int g, int b, int a);
 
-int textnwidth(char *s, int n);
+int textnwidth(const char *s, int n);
 
-void textnpos(char *s, int n, int w, int *cx, int *cy);
+void textnpos(const char *s, int n, int w, int *cx, int *cy);
 
-int textwidthx(char *s, int w);
+int textwidthx(const char *s, int w);
 
-int textposxy(char *s, int width, int w, int h);
+int textposxy(const char *s, int width, int w, int h);
 
-int textwrapheight(char *s, int width);
+int textwrapheight(const char *s, int width);
 
 void blendpixel(pixel *vid, int x, int y, int r, int g, int b, int a);
 
