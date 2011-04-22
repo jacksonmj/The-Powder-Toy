@@ -9,7 +9,7 @@ PYCOMMAND := $(PY_BIN) getheader.py
 
 CFLAGS := -std=c99 -D_POSIX_C_SOURCE=200112L -Iincludes/ 
 OFLAGS := -O3 -ffast-math -ftree-vectorize -funsafe-math-optimizations
-LFLAGS := -lSDL -lm -lbz2 -lutil -lpython$(PY_VERSION) -L$(PY_LIBPATH) -I$(PY_INCPATH) $(PY_LDFLAGS)
+LFLAGS := -lSDL -lm -lbz2 -lX11 -lutil -lpython$(PY_VERSION) -L$(PY_LIBPATH) -I$(PY_INCPATH) $(PY_LDFLAGS)
 LFLAGS_X := -lm -lbz2 -lSDLmain -I/Library/Frameworks/Python.framework/Versions/$(PY_VERSION)/include/python$(PY_VERSION)
 MFLAGS_SSE3 := -march=native -DX86 -DX86_SSE3 -msse3
 MFLAGS_SSE2 := -march=native -DX86 -DX86_SSE2 -msse2

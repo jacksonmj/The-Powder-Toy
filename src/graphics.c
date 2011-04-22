@@ -3666,6 +3666,15 @@ void sdl_open(void)
 	sdl_seticon();
 	SDL_EnableUNICODE(1);
 	//SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+#if (defined(LIN32) || defined(LIN64)) && defined(SDL_VIDEO_DRIVER_X11)
+	SDL_EventState(SDL_SYSWMEVENT, SDL_ENABLE);
+	SDL_VERSION(&sdl_wminfo.version);
+	SDL_GetWMInfo(&sdl_wminfo);
+	sdl_wminfo.info.x11.lock_func();
+	XA_CLIPBOARD = XInternAtom(sdl_wminfo.info.x11.display, "CLIPBOARD", 1);
+	XA_TARGETS = XInternAtom(sdl_wminfo.info.x11.display, "TARGETS", 1);
+	sdl_wminfo.info.x11.unlock_func();
+#endif
 }
 
 #ifdef OpenGL
