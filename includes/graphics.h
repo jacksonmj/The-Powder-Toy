@@ -100,6 +100,8 @@ void draw_icon(pixel *vid_buf, int x, int y, char ch, int flag);
 
 void draw_air(pixel *vid);
 
+void draw_grav(pixel *vid);
+
 void draw_line(pixel *vid, int x1, int y1, int x2, int y2, int r, int g, int b, int a);
 
 void addpixel(pixel *vid, int x, int y, int r, int g, int b, int a);
@@ -111,6 +113,8 @@ void xor_line(int x1, int y1, int x2, int y2, pixel *vid);
 void xor_rect(pixel *vid, int x, int y, int w, int h);
 
 void draw_parts(pixel *vid);
+
+void draw_decorations(pixel *vid_buf,pixel *decorations);
 
 void draw_wavelengths(pixel *vid, int x, int y, int h, int wl);
 

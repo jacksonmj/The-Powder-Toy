@@ -8,7 +8,7 @@
 #endif
 
 #define SAVE_VERSION 47
-#define MINOR_VERSION 3
+#define MINOR_VERSION 4
 #define IDENT_VERSION "G" //Change this if you're not Simon! It should be a single letter.
 //#define BETA
 
@@ -18,6 +18,9 @@
 
 #ifndef M_PI
 #define M_PI 3.14159265f
+#endif
+#ifndef M_GRAV
+#define M_GRAV 6.67300e-1
 #endif
 
 #define IMGCONNS 3

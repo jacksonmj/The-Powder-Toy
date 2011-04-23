@@ -1292,7 +1292,7 @@ int main(int argc, char *argv[])
 #endif
 	int wavelength_gfx = 0;
 	int x, y, b = 0, sl=1, sr=0, su=0, c, lb = 0, lx = 0, ly = 0, lm = 0;//, tx, ty;
-	int da = 0, db = 0, it = 2047, mx, my, bsx = 2, bsy = 2;
+	int da = 0, dae = 0, db = 0, it = 2047, mx, my, bsx = 2, bsy = 2;
 	float nfvx, nfvy;
 	int load_mode=0, load_w=0, load_h=0, load_x=0, load_y=0, load_size=0;
 	void *load_data=NULL;
@@ -1304,6 +1304,7 @@ int main(int argc, char *argv[])
 	PyObject *pname,*pmodule,*pfunc,*pvalue,*pargs,*pstep,*pkey;
 	PyObject *tpt_console_obj;
 #endif
+	pixel *decorations = calloc((XRES+BARSIZE)*YRES, PIXELSIZE);
 	vid_buf = calloc((XRES+BARSIZE)*(YRES+MENUSIZE), PIXELSIZE);
 	pers_bg = calloc((XRES+BARSIZE)*YRES, PIXELSIZE);
 	GSPEED = 1;
@@ -1515,8 +1516,9 @@ int main(int argc, char *argv[])
 			memset(vid_buf, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
 		}
 #endif
+		draw_grav(vid_buf);
 
-		//Can't be too sure...
+		//Can't be too sure (Limit the cursor size)
 		if (bsx>1180)
 			bsx = 1180;
 		if (bsx<0)
@@ -1527,6 +1529,7 @@ int main(int argc, char *argv[])
 			bsy = 0;
 		
 		update_particles(vid_buf); //update everything
+		update_grav();
 		draw_parts(vid_buf); //draw particles
 
 		if (cmode==CM_PERS)
@@ -1887,12 +1890,24 @@ int main(int argc, char *argv[])
 				console_mode = !console_mode;
 				//hud_enable = !console_mode;
 			}
+			if (sdl_key=='b')
+				decorations_ui(vid_buf,decorations,&bsx,&bsy);//decoration_mode = !decoration_mode;
 			if (sdl_key=='g')
 			{
 				if (sdl_mod & (KMOD_SHIFT))
 					GRID_MODE = (GRID_MODE+9)%10;
 				else
 					GRID_MODE = (GRID_MODE+1)%10;
+			}
+			if (sdl_key=='m')
+			{
+				if(sl!=sr)
+				{
+					sl ^= sr;
+					sr ^= sl;
+					sl ^= sr;
+				}
+				dae = 51;
 			}
 			if (sdl_key=='=')
 			{
@@ -2168,8 +2183,8 @@ int main(int argc, char *argv[])
 				active_menu = i;
 			}
 		}
-		menu_ui_v3(vid_buf, active_menu, &sl, &sr, b, bq, x, y); //draw the elements in the current menu
-
+		menu_ui_v3(vid_buf, active_menu, &sl, &sr, &dae, b, bq, x, y); //draw the elements in the current menu
+		draw_decorations(vid_buf,decorations);
 		if (zoom_en && x>=sdl_scale*zoom_wx && y>=sdl_scale*zoom_wy //change mouse position while it is in a zoom window
 		        && x<sdl_scale*(zoom_wx+ZFACTOR*ZSIZE)
 		        && y<sdl_scale*(zoom_wy+ZFACTOR*ZSIZE))
@@ -2213,7 +2228,7 @@ int main(int argc, char *argv[])
 				sprintf(heattext, "Empty, Pressure: %3.2f", pv[(y/sdl_scale)/CELL][(x/sdl_scale)/CELL]);
 				if (DEBUG_MODE)
 				{
-					sprintf(coordtext, "X:%d Y:%d", x/sdl_scale, y/sdl_scale);
+					sprintf(coordtext, "X:%d Y:%d. GX: %.2f GY: %.2f", x/sdl_scale, y/sdl_scale, gravx[(y/sdl_scale)/CELL][(x/sdl_scale)/CELL], gravy[(y/sdl_scale)/CELL][(x/sdl_scale)/CELL]);
 				}
 			}
 		}
@@ -2364,6 +2379,9 @@ int main(int argc, char *argv[])
 		else if (da > 0)//fade away mouseover text
 			da --;
 
+		if (dae > 0) //Fade away selected elements
+			dae --;
+		
 		if (!sdl_zoom_trig && zoom_en==1)
 			zoom_en = 0;
 
