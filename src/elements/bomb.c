@@ -15,6 +15,11 @@ int update_BOMB(UPDATE_FUNC_ARGS) {
 						return 1;
 					}
 				}
+		if (!parts[i].life)
+		{
+			kill_part(i);
+			return 1;
+		}
 	} else if (parts[i].tmp==0) {
 		for (rx=-2; rx<3; rx++)
 			for (ry=-2; ry<3; ry++)
@@ -59,6 +64,11 @@ int update_BOMB(UPDATE_FUNC_ARGS) {
 						return 1;
 					}
 				}
+	}
+	else if (!parts[i].life || parts[i].tmp!=2)
+	{
+		kill_part(i);
+		return 1;
 	}
 	return 0;
 }

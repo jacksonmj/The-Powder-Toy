@@ -22,6 +22,11 @@ int update_PYRO(UPDATE_FUNC_ARGS) {
 			parts[i].life = rand()%20+250;
 		}
 	}
+	if (!parts[i].life && (t==PT_FIRE || t==PT_PLSM))
+	{
+		kill_part(i);
+		return 1;
+	}
 	for (rx=-2; rx<3; rx++)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
