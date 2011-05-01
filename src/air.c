@@ -4,10 +4,14 @@
 #include <defines.h>
 float kernel[9];
 
-float ogravmap[YRES/CELL][XRES/CELL];
-float gravmap[YRES/CELL][XRES/CELL];
+float gravmap[YRES/CELL][XRES/CELL];  //Maps to be used by the main thread
 float gravx[YRES/CELL][XRES/CELL];
 float gravy[YRES/CELL][XRES/CELL];
+
+float th_ogravmap[YRES/CELL][XRES/CELL]; // Maps to be processed by the gravity thread
+float th_gravmap[YRES/CELL][XRES/CELL];
+float th_gravx[YRES/CELL][XRES/CELL];
+float th_gravy[YRES/CELL][XRES/CELL];
 
 float vx[YRES/CELL][XRES/CELL], ovx[YRES/CELL][XRES/CELL];
 float vy[YRES/CELL][XRES/CELL], ovy[YRES/CELL][XRES/CELL];
@@ -37,6 +41,8 @@ void make_kernel(void) //used for velocity
 void update_grav(void)
 {
 	int x, y, i, j, changed = 0;
+	float val, distance;
+#ifndef GRAV_DIFF
 	//Find any changed cells
 	for (i=0; i<YRES/CELL; i++)
 	{
@@ -44,37 +50,46 @@ void update_grav(void)
 			break;
 		for (j=0; j<XRES/CELL; j++)
 		{
-			if(ogravmap[i][j]!=gravmap[i][j]){
+			if(th_ogravmap[i][j]!=th_gravmap[i][j]){
 				changed = 1;
 				break;
 			}
 		}
 	}
-	if(changed)
-	{
-		memset(gravy, 0, sizeof(gravy));
-		memset(gravx, 0, sizeof(gravx));
-		for (i=0; i<YRES/CELL; i++)
-		{
-			for (j=0; j<XRES/CELL; j++)
+	if(!changed)
+		goto fin;
+	memset(th_gravy, 0, sizeof(th_gravy));
+	memset(th_gravx, 0, sizeof(th_gravx));
+#endif
+	for (i = 0; i < YRES / CELL; i++) {
+		for (j = 0; j < XRES / CELL; j++) {
+#ifdef GRAV_DIFF
+			if (th_ogravmap[i][j] != th_gravmap[i][j])
 			{
-				if(gravmap[i][j]>0.0f) //Only calculate with populated or changed cells.
-					for (y=0; y<YRES/CELL; y++)
-					{
-						for (x=0; x<XRES/CELL; x++)
-						{
-							if(x == j && y == i)//Ensure it doesn't calculate with itself
-								continue;
-							float distance = sqrt(pow(j - x, 2) + pow(i - y, 2));
-							gravx[y][x] += M_GRAV*gravmap[i][j]*(j - x)/pow(distance, 3);
-							gravy[y][x] += M_GRAV*gravmap[i][j]*(i - y)/pow(distance, 3);
-						}
+#else
+			if (th_gravmap[i][j] > 0.0001f || th_gravmap[i][j]<-0.0001f) //Only calculate with populated or changed cells.
+			{
+#endif
+				for (y = 0; y < YRES / CELL; y++) {
+					for (x = 0; x < XRES / CELL; x++) {
+						if (x == j && y == i)//Ensure it doesn't calculate with itself
+							continue;
+						distance = sqrt(pow(j - x, 2) + pow(i - y, 2));
+#ifdef GRAV_DIFF
+						val = th_gravmap[i][j] - th_ogravmap[i][j];
+#else
+						val = th_gravmap[i][j];
+#endif
+						th_gravx[y][x] += M_GRAV * val * (j - x) / pow(distance, 3);
+						th_gravy[y][x] += M_GRAV * val * (i - y) / pow(distance, 3);
 					}
+				}
 			}
 		}
 	}
-	memcpy(ogravmap, gravmap, sizeof(gravmap));
-	memset(gravmap, 0, sizeof(gravmap));
+fin:
+	memcpy(th_ogravmap, th_gravmap, sizeof(th_gravmap));
+	memset(th_gravmap, 0, sizeof(th_gravmap));
 }
 void update_air(void)
 {

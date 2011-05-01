@@ -43,6 +43,8 @@
 
 #define MAX_DISTANCE sqrt(pow(XRES, 2)+pow(YRES, 2))
 
+#define GRAV_DIFF
+
 #define MAXSIGNS 16
 #define TAG_MAX 256
 
@@ -103,6 +105,8 @@ typedef unsigned int pixel;
 #define strcasecmp stricmp
 #endif
 
+#define SDEUT
+
 typedef unsigned char uint8;
 
 extern int amd;
@@ -119,6 +123,7 @@ int GRAV_G2;
 int GRAV_B2;
 
 extern int legacy_enable;
+extern int ngrav_enable; //Newtonian gravity
 extern int sound_enable;
 extern int kiosk_enable;
 

@@ -34,6 +34,7 @@
 #include <SDL/SDL_audio.h>
 #include <bzlib.h>
 #include <time.h>
+#include <pthread.h>
 
 #ifdef WIN32
 #include <direct.h>
@@ -169,7 +170,8 @@ float mheat = 0.0f;
 int do_open = 0;
 int sys_pause = 0;
 int sys_shortcuts = 1;
-int legacy_enable = 0; //Used to disable new features such as heat, will be set by commandline or save.
+int legacy_enable = 0; //Used to disable new features such as heat, will be set by save.
+int ngrav_enable = 1; //Newtonian gravity, will be set by save TODO: Make this actually do something
 int death = 0, framerender = 0;
 int amd = 1;
 int FPSB = 0;
@@ -183,6 +185,10 @@ int sound_enable = 0;
 sign signs[MAXSIGNS];
 
 int numCores = 4;
+
+pthread_t gravthread;
+pthread_mutex_t gravmutex;
+int grav_ready = 0;
 
 int core_count()
 {
@@ -926,7 +932,7 @@ void clear_sim(void)
 	memset(photons, 0, sizeof(photons));
 	memset(wireless, 0, sizeof(wireless));
 	memset(gol2, 0, sizeof(gol2));
-	memset(portal, 0, sizeof(portal));
+	memset(portalp, 0, sizeof(portalp));
 	death = death2 = ISSPAWN1 = ISSPAWN2 = 0;
 	memset(pers_bg, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
 	memset(fire_bg, 0, XRES*YRES*PIXELSIZE);
@@ -1205,6 +1211,24 @@ char my_uri[] = "http://" SERVER "/Update.api?Action=Download&Architecture="
 #endif
                 ;
 
+void update_grav_async()
+{
+	int done = 0;
+	while(1){
+		if(!done){
+			update_grav();
+			done = 1;
+			pthread_mutex_lock(&gravmutex);
+			grav_ready = done;
+			pthread_mutex_unlock(&gravmutex);
+		} else {
+			pthread_mutex_lock(&gravmutex);
+		    done = grav_ready;
+			pthread_mutex_unlock(&gravmutex);
+		}
+	}
+}
+
 #ifdef RENDERER
 int main(int argc, char *argv[])
 {
@@ -1278,15 +1302,11 @@ int main(int argc, char *argv[])
 	char heattext[256] = "";
 	char coordtext[128] = "";
 	int currentTime = 0;
-	int FPS = 0;
-	int pastFPS = 0;
-	int elapsedTime = 0;
-	int limitFPS = 60;
-	void *http_ver_check;
-	void *http_session_check = NULL;
+	int FPS = 0, pastFPS = 0, elapsedTime = 0, limitFPS = 60;
+	void *http_ver_check, *http_session_check = NULL;
 	char *ver_data=NULL, *check_data=NULL, *tmp;
 	//char console_error[255] = "";
-	int i, j, bq, fire_fc=0, do_check=0, do_s_check=0, old_version=0, http_ret=0,http_s_ret=0, major, minor, old_ver_len;
+	int result, i, j, bq, fire_fc=0, do_check=0, do_s_check=0, old_version=0, http_ret=0,http_s_ret=0, major, minor, old_ver_len;
 #ifdef INTERNAL
 	int vs = 0;
 #endif
@@ -1490,7 +1510,11 @@ int main(int argc, char *argv[])
 		http_session_check = http_async_req_start(NULL, "http://" SERVER "/Login.api?Action=CheckSession", NULL, 0, 0);
 		http_auth_headers(http_session_check, svf_user_id, NULL, svf_session_id);
 	}
+	pthread_mutexattr_t gma;
 
+	pthread_mutexattr_init(&gma);
+	pthread_mutex_init (&gravmutex, NULL);
+	pthread_create(&gravthread, NULL, update_grav_async, NULL); //Asynchronous gravity simulation //(void *) &thread_args[i]);
 	while (!sdl_poll()) //the main loop
 	{
 		frameidx++;
@@ -1516,7 +1540,6 @@ int main(int argc, char *argv[])
 			memset(vid_buf, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
 		}
 #endif
-		draw_grav(vid_buf);
 
 		//Can't be too sure (Limit the cursor size)
 		if (bsx>1180)
@@ -1527,9 +1550,24 @@ int main(int argc, char *argv[])
 			bsy = 1180;
 		if (bsy<0)
 			bsy = 0;
-		
+
+		pthread_mutex_lock(&gravmutex);
+		result = grav_ready;
+		if(result) //Did the gravity thread finish?
+		{
+			memcpy(th_gravmap, gravmap, sizeof(gravmap)); //Move our current gravmap to be processed other thread
+			memcpy(gravy, th_gravy, sizeof(gravy));	//Hmm, Gravy
+			memcpy(gravx, th_gravx, sizeof(gravx)); //Move the processed velocity maps to be used
+			if (!sys_pause||framerender) //Only update if not paused
+				grav_ready = 0; //Tell the other thread that we're ready for it to continue
+		}
+		pthread_mutex_unlock(&gravmutex);
+
+		if (!sys_pause||framerender) //Only update if not paused
+			memset(gravmap, 0, sizeof(gravmap)); //Clear the old gravmap
+
+		draw_grav(vid_buf);
 		update_particles(vid_buf); //update everything
-		update_grav();
 		draw_parts(vid_buf); //draw particles
 
 		if (cmode==CM_PERS)
@@ -1891,7 +1929,10 @@ int main(int argc, char *argv[])
 				//hud_enable = !console_mode;
 			}
 			if (sdl_key=='b')
+			{
 				decorations_ui(vid_buf,decorations,&bsx,&bsy);//decoration_mode = !decoration_mode;
+				sys_pause=1;
+			}
 			if (sdl_key=='g')
 			{
 				if (sdl_mod & (KMOD_SHIFT))
@@ -2506,7 +2547,8 @@ int main(int argc, char *argv[])
 						tag_list_ui(vid_buf);
 					if (x>=(XRES+BARSIZE-(510-351)) && x<(XRES+BARSIZE-(510-366)) && !bq)
 					{
-						legacy_enable = !legacy_enable;
+						//legacy_enable = !legacy_enable;
+						simulation_ui(vid_buf);
 					}
 					if (x>=(XRES+BARSIZE-(510-367)) && x<=(XRES+BARSIZE-(510-383)) && !bq)
 					{
@@ -2534,11 +2576,7 @@ int main(int argc, char *argv[])
 						ISSPAWN1 = 0;
 						ISSPAWN2 = 0;
 
-						memset(fire_bg, 0, XRES*YRES*PIXELSIZE);
-						memset(pers_bg, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
-						memset(fire_r, 0, sizeof(fire_r));
-						memset(fire_g, 0, sizeof(fire_g));
-						memset(fire_b, 0, sizeof(fire_b));
+						memset(decorations, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
 					}
 					if (x>=(XRES+BARSIZE-(510-385)) && x<=(XRES+BARSIZE-(510-476)))
 					{

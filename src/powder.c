@@ -493,46 +493,6 @@ void part_change_type(int i, int x, int y, int t)//changes the type of particle 
 	}
 }
 
-int create_n_parts(int n, int x, int y, float vx, float vy, int t)//testing a new deut create part
-{
-	int i, c;
-	n = (n/10);
-	if (n<1) {
-		n = 1;
-	}
-	if (n>680) {
-		n = 680;
-	}
-	if (x<0 || y<0 || x>=XRES || y>=YRES || t<0 || t>=PT_NUM)
-		return -1;
-
-	for (c=0; c<n; c++) {
-		float r = (rand()%128+128)/127.0f;
-		float a = (rand()%360)*3.14159f/180.0f;
-		if (pfree == -1)
-			return -1;
-		i = pfree;
-		pfree = parts[i].life;
-
-		parts[i].x = (float)x;
-		parts[i].y = (float)y;
-		parts[i].type = t;
-		parts[i].life = rand()%480+480;
-		parts[i].vx = r*cosf(a);
-		parts[i].vy = r*sinf(a);
-		parts[i].ctype = 0;
-		parts[i].temp += (n*17);
-		parts[i].tmp = 0;
-		if (t!=PT_STKM&&t!=PT_STKM2 && t!=PT_PHOT && t!=PT_NEUT && !pmap[y][x])
-			pmap[y][x] = t|(i<<8);
-		else if ((t==PT_PHOT||t==PT_NEUT) && !photons[y][x])
-			photons[y][x] = t|(i<<8);
-
-		pv[y/CELL][x/CELL] += 6.0f * CFDS;
-	}
-	return 0;
-}
-
 int create_part(int p, int x, int y, int t)//the function for creating a particle, use p=-1 for creating a new particle, -2 is from a brush, or a particle number to replace a particle.
 {
 	int i;
@@ -1105,7 +1065,7 @@ int nearest_part(int ci, int t)
 void update_particles_i(pixel *vid, int start, int inc)
 {
 	int i, j, x, y, t, nx, ny, r, surround_space, s, lt, rt, nt, nnx, nny, q, golnum, goldelete, z, neighbors, createdsomething;
-	float mv, dx, dy, ix, iy, lx, ly, nrx, nry, dp, ctemph, ctempl;
+	float mv, dx, dy, ix, iy, lx, ly, nrx, nry, dp, ctemph, ctempl, gravtot;
 	int fin_x, fin_y, clear_x, clear_y;
 	float fin_xf, fin_yf, clear_xf, clear_yf;
 	float nn, ct1, ct2, swappage;
@@ -1664,6 +1624,7 @@ void update_particles_i(pixel *vid, int start, int inc)
 
 
 			s = 1;
+			gravtot = fabsf(gravy[y/CELL][x/CELL])+fabsf(gravx[y/CELL][x/CELL]);
 			if (pv[y/CELL][x/CELL]>ptransitions[t].phv&&ptransitions[t].pht>-1) {
 				// particle type change due to high pressure
 				if (ptransitions[t].pht!=PT_NUM)
@@ -1681,8 +1642,19 @@ void update_particles_i(pixel *vid, int start, int inc)
 				if (ptransitions[t].plt!=PT_NUM)
 					t = ptransitions[t].plt;
 				else s = 0;
-			}
-			else s = 0;
+			} else if (gravtot>(ptransitions[t].phv/4.0f)&&ptransitions[t].pht>-1) {
+				// particle type change due to high gravity
+				if (ptransitions[t].pht!=PT_NUM)
+					t = ptransitions[t].pht;
+				else if (t==PT_BMTL) {
+					if (gravtot>0.625f)
+						t = PT_BRMT;
+					else if (gravtot>0.25f && parts[i].tmp==1)
+						t = PT_BRMT;
+					else s = 0;
+				}
+				else s = 0;
+			} else s = 0;
 			if (s) { // particle type change occurred
 				parts[i].life = 0;
 				part_change_type(i,x,y,t);
