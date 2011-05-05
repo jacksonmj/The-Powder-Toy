@@ -188,6 +188,7 @@ int numCores = 4;
 
 pthread_t gravthread;
 pthread_mutex_t gravmutex;
+pthread_cond_t gravcv;
 int grav_ready = 0;
 
 int core_count()
@@ -1223,6 +1224,7 @@ void update_grav_async()
 			pthread_mutex_unlock(&gravmutex);
 		} else {
 			pthread_mutex_lock(&gravmutex);
+			pthread_cond_wait(&gravcv, &gravmutex);
 		    done = grav_ready;
 			pthread_mutex_unlock(&gravmutex);
 		}
@@ -1320,6 +1322,7 @@ int main(int argc, char *argv[])
 	int save_mode=0, save_x=0, save_y=0, save_w=0, save_h=0, copy_mode=0;
 	SDL_AudioSpec fmt;
 	int username_flash = 0, username_flash_t = 1;
+	pthread_mutexattr_t gma;
 #ifdef PYCONSOLE
 	PyObject *pname,*pmodule,*pfunc,*pvalue,*pargs,*pstep,*pkey;
 	PyObject *tpt_console_obj;
@@ -1510,10 +1513,10 @@ int main(int argc, char *argv[])
 		http_session_check = http_async_req_start(NULL, "http://" SERVER "/Login.api?Action=CheckSession", NULL, 0, 0);
 		http_auth_headers(http_session_check, svf_user_id, NULL, svf_session_id);
 	}
-	pthread_mutexattr_t gma;
 
 	pthread_mutexattr_init(&gma);
 	pthread_mutex_init (&gravmutex, NULL);
+	pthread_cond_init(&gravcv, NULL);
 	pthread_create(&gravthread, NULL, update_grav_async, NULL); //Asynchronous gravity simulation //(void *) &thread_args[i]);
 	while (!sdl_poll()) //the main loop
 	{
@@ -1559,7 +1562,10 @@ int main(int argc, char *argv[])
 			memcpy(gravy, th_gravy, sizeof(gravy));	//Hmm, Gravy
 			memcpy(gravx, th_gravx, sizeof(gravx)); //Move the processed velocity maps to be used
 			if (!sys_pause||framerender) //Only update if not paused
+			{
 				grav_ready = 0; //Tell the other thread that we're ready for it to continue
+				pthread_cond_signal(&gravcv);
+			}
 		}
 		pthread_mutex_unlock(&gravmutex);
 
