@@ -79,6 +79,9 @@ int eval_move(int pt, int nx, int ny, unsigned *rr)
 	if ((r&0xFF)==PT_VOID || (r&0xFF)==PT_BHOL)
 		return 1;
 
+	if ((r&0xFF)==PT_WHOL && pt==PT_ANAR)
+		return 1;
+
 	if (pt==PT_SPRK)//spark shouldn't move
 		return 0;
 
@@ -241,8 +244,17 @@ int try_move(int i, int x, int y, int nx, int ny)
 
 		return 0;
 	}
+	if ((r&0xFF)==PT_WHOL && parts[i].type==PT_ANAR) //whitehole eats anar
+	{
+		parts[i].type=PT_NONE;
+		if (!legacy_enable)
+		{
+			parts[r>>8].temp = restrict_flt(parts[r>>8].temp- (MAX_TEMP-parts[i].temp)/2, MIN_TEMP, MAX_TEMP);
+		}
 
-	if ((pmap[ny][nx]&0xFF)==PT_CNCT)//stops CNCT being displaced by other particles
+		return 0;
+	}
+	if ((r&0xFF)==PT_CNCT)//stops CNCT being displaced by other particles
 		return 0;
 	if (parts[i].type==PT_CNCT && y<ny && (pmap[y+1][x]&0xFF)==PT_CNCT)//check below CNCT for another CNCT
 		return 0;
@@ -496,6 +508,14 @@ void kill_part(int i)//kills particle number i
 	{
 		ISSPAWN2 = 0;
 	}
+	if (parts[i].type == PT_SOAP)
+	{
+		if ((parts[i].ctype&2) == 2)
+			parts[parts[i].tmp].ctype ^= 4;
+
+		if ((parts[i].ctype&4) == 4)
+			parts[parts[i].tmp2].ctype ^= 2;
+	}
 	if (x>=0 && y>=0 && x<XRES && y<YRES) {
 		if ((pmap[y][x]>>8)==i)
 			pmap[y][x] = 0;
@@ -664,6 +684,12 @@ int create_part(int p, int x, int y, int t)//the function for creating a particl
 		parts[i].ctype = 0;
 		parts[i].temp = ptypes[t].heat;
 		parts[i].tmp = 0;
+		parts[i].tmp2 = 0;
+	}
+	if (t==PT_SOAP)
+	{
+		parts[i].tmp = -1;
+		parts[i].tmp2 = -1;
 	}
 	//now set various properties that we want at spawn.
 	if (t==PT_ACID)
