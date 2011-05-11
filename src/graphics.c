@@ -2681,7 +2681,7 @@ void draw_parts(pixel *vid)
 						cb = 0;
 					blendpixel(vid, nx, ny, cr, cg, cb, 255);
 				}
-				else if (t==PT_FIRE)
+				else if (t==PT_FIRE && parts[i].life)
 				{
 					float ttemp = (float)((int)(parts[i].life/2));
 					int caddress = restrict_flt(restrict_flt(ttemp, 0.0f, 200.0f)*3, 0.0f, (200.0f*3)-3);

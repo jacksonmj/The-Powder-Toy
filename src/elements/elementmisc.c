@@ -8,10 +8,5 @@ int update_MISC(UPDATE_FUNC_ARGS) {
 		ISLOLZ=1;
 	else if (t==PT_GRAV)
 		ISGRAV=1;
-	else if (t==PT_WIND)
-	{
-		kill_part(i);
-		return 1;
-	}
 	return 0;
 }
