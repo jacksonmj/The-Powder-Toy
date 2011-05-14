@@ -171,7 +171,7 @@ int do_open = 0;
 int sys_pause = 0;
 int sys_shortcuts = 1;
 int legacy_enable = 0; //Used to disable new features such as heat, will be set by save.
-int ngrav_enable = 1; //Newtonian gravity, will be set by save TODO: Make this actually do something
+int ngrav_enable = 0; //Newtonian gravity, will be set by save
 int death = 0, framerender = 0;
 int amd = 1;
 int FPSB = 0;
@@ -190,6 +190,7 @@ pthread_t gravthread;
 pthread_mutex_t gravmutex;
 pthread_cond_t gravcv;
 int grav_ready = 0;
+int gravthread_done = 0;
 
 int core_count()
 {
@@ -1229,22 +1230,67 @@ char my_uri[] = "http://" SERVER "/Update.api?Action=Download&Architecture="
 #endif
                 ;
 
+void set_scale(int scale){
+	sdl_scale = scale;
+	sdl_open();
+	return;
+}
+				
 void update_grav_async()
 {
 	int done = 0;
-	while(1){
+	int thread_done = 0;
+	memset(th_ogravmap, 0, sizeof(th_ogravmap));
+	memset(th_gravmap, 0, sizeof(th_gravmap));
+	memset(th_gravy, 0, sizeof(th_gravy));
+	memset(th_gravx, 0, sizeof(th_gravx));
+	while(!thread_done){
 		if(!done){
 			update_grav();
 			done = 1;
 			pthread_mutex_lock(&gravmutex);
+			
 			grav_ready = done;
+			thread_done = gravthread_done;
+			
 			pthread_mutex_unlock(&gravmutex);
 		} else {
 			pthread_mutex_lock(&gravmutex);
 			pthread_cond_wait(&gravcv, &gravmutex);
-		    done = grav_ready;
+		    
+			done = grav_ready;
+			thread_done = gravthread_done;
+			
 			pthread_mutex_unlock(&gravmutex);
 		}
+	}
+	pthread_exit(NULL);
+}
+
+void start_grav_async()
+{
+	if(!ngrav_enable){
+		/*pthread_mutexattr_t gma; //I do not know why this is here
+		pthread_mutexattr_init(&gma);*/
+		gravthread_done = 0;
+		pthread_mutex_init (&gravmutex, NULL);
+		pthread_cond_init(&gravcv, NULL);
+		pthread_create(&gravthread, NULL, update_grav_async, NULL); //Start asynchronous gravity simulation
+		ngrav_enable = 1;
+	}
+}
+
+void stop_grav_async()
+{
+	if(ngrav_enable){
+		pthread_mutex_lock(&gravmutex);
+		gravthread_done = 1;
+		pthread_mutex_unlock(&gravmutex);
+		pthread_join(gravthread, NULL);
+		pthread_mutex_destroy(&gravmutex); //Destroy the mutex
+		memset(gravy, 0, sizeof(gravy)); //Clear the grav velocities
+		memset(gravx, 0, sizeof(gravx)); //Clear the grav velocities
+		ngrav_enable = 0;
 	}
 }
 
@@ -1339,7 +1385,6 @@ int main(int argc, char *argv[])
 	int save_mode=0, save_x=0, save_y=0, save_w=0, save_h=0, copy_mode=0;
 	SDL_AudioSpec fmt;
 	int username_flash = 0, username_flash_t = 1;
-	pthread_mutexattr_t gma;
 #ifdef PYCONSOLE
 	PyObject *pname,*pmodule,*pfunc,*pvalue,*pargs,*pstep,*pkey;
 	PyObject *tpt_console_obj;
@@ -1530,11 +1575,6 @@ int main(int argc, char *argv[])
 		http_session_check = http_async_req_start(NULL, "http://" SERVER "/Login.api?Action=CheckSession", NULL, 0, 0);
 		http_auth_headers(http_session_check, svf_user_id, NULL, svf_session_id);
 	}
-
-	pthread_mutexattr_init(&gma);
-	pthread_mutex_init (&gravmutex, NULL);
-	pthread_cond_init(&gravcv, NULL);
-	pthread_create(&gravthread, NULL, update_grav_async, NULL); //Asynchronous gravity simulation //(void *) &thread_args[i]);
 	while (!sdl_poll()) //the main loop
 	{
 		frameidx++;
@@ -1571,25 +1611,27 @@ int main(int argc, char *argv[])
 		if (bsy<0)
 			bsy = 0;
 
-		pthread_mutex_lock(&gravmutex);
-		result = grav_ready;
-		if(result) //Did the gravity thread finish?
-		{
-			memcpy(th_gravmap, gravmap, sizeof(gravmap)); //Move our current gravmap to be processed other thread
-			memcpy(gravy, th_gravy, sizeof(gravy));	//Hmm, Gravy
-			memcpy(gravx, th_gravx, sizeof(gravx)); //Move the processed velocity maps to be used
-			if (!sys_pause||framerender) //Only update if not paused
+		if(ngrav_enable){
+			pthread_mutex_lock(&gravmutex);
+			result = grav_ready;
+			if(result) //Did the gravity thread finish?
 			{
-				grav_ready = 0; //Tell the other thread that we're ready for it to continue
-				pthread_cond_signal(&gravcv);
+				memcpy(th_gravmap, gravmap, sizeof(gravmap)); //Move our current gravmap to be processed other thread
+				memcpy(gravy, th_gravy, sizeof(gravy));	//Hmm, Gravy
+				memcpy(gravx, th_gravx, sizeof(gravx)); //Move the processed velocity maps to be used
+				if (!sys_pause||framerender){ //Only update if not paused
+					grav_ready = 0; //Tell the other thread that we're ready for it to continue
+					pthread_cond_signal(&gravcv);
+				}
 			}
+			pthread_mutex_unlock(&gravmutex);
 		}
-		pthread_mutex_unlock(&gravmutex);
 
 		if (!sys_pause||framerender) //Only update if not paused
 			memset(gravmap, 0, sizeof(gravmap)); //Clear the old gravmap
-
-		draw_grav(vid_buf);
+		
+		if(ngrav_enable)
+			draw_grav(vid_buf);
 		draw_walls(vid_buf);
 		update_particles(vid_buf); //update everything
 		draw_parts(vid_buf); //draw particles

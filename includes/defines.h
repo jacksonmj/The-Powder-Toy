@@ -159,8 +159,8 @@ int ISWIRE;
 int GSPEED;
 int love[XRES/9][YRES/9];
 int lolz[XRES/9][YRES/9];
-int gol[XRES][YRES];
-int gol2[XRES][YRES][NGOL+1];
+unsigned char gol[XRES][YRES];
+unsigned char gol2[XRES][YRES][NGOL+1];
 int SEC;
 int SEC2;
 int console_mode;
@@ -204,4 +204,6 @@ void clear_sim(void);
 void del_stamp(int d);
 void sdl_seticon(void);
 void play_sound(char *file);
+void start_grav_async(void);
+void stop_grav_async(void);
 #endif
