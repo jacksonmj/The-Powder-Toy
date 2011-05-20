@@ -7,10 +7,10 @@
 #define PATH_SEP "/"
 #endif
 
-#define SAVE_VERSION 47
-#define MINOR_VERSION 4
+#define SAVE_VERSION 48
+#define MINOR_VERSION 2
 #define IDENT_VERSION "G" //Change this if you're not Simon! It should be a single letter.
-//#define BETA
+#define BETA
 
 #define SERVER "powdertoy.co.uk"
 
@@ -206,4 +206,5 @@ void sdl_seticon(void);
 void play_sound(char *file);
 void start_grav_async(void);
 void stop_grav_async(void);
+void set_scale(int scale, int kiosk);
 #endif

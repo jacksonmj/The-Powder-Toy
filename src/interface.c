@@ -26,6 +26,7 @@ Atom XA_CLIPBOARD, XA_TARGETS;
 char *shift_0="`1234567890-=[]\\;',./";
 char *shift_1="~!@#$%^&*()_+{}|:\"<>?";
 
+int svf_messages = 0;
 int svf_login = 0;
 int svf_admin = 0;
 int svf_mod = 0;
@@ -1009,26 +1010,33 @@ void login_ui(pixel *vid_buf)
 	}
 	if (res && !strncmp(res, "OK ", 3))
 	{
-		char *s_id,*u_e,*nres;
-		printf("{%s}\n", res);
+		char *s_id,*u_e,*nres,*u_m,*mres;
 		s_id = strchr(res+3, ' ');
 		if (!s_id)
 			goto fail;
 		*(s_id++) = 0;
 
 		u_e = strchr(s_id, ' ');
-		if (!u_e) {
-			u_e = malloc(1);
-			memset(u_e, 0, 1);
+		if (!u_e)
+			goto fail;
+		*(u_e++) = 0;
+			
+		u_m = strchr(u_e, ' ');
+		if (!u_m) {
+			u_m = malloc(1);
+			memset(u_m, 0, 1);
 		}
 		else
-			*(u_e++) = 0;
+			*(u_m++) = 0;
 
 		strcpy(svf_user_id, res+3);
 		strcpy(svf_session_id, s_id);
-		nres = mystrdup(u_e);
+		mres = mystrdup(u_e);
+		nres = mystrdup(u_m);
 
-		printf("{%s} {%s} {%s}\n", svf_user_id, svf_session_id, nres);
+		#ifdef DEBUG
+		printf("{%s} {%s} {%s} {%s}\n", svf_user_id, svf_session_id, nres, mres);
+		#endif
 
 		if (!strncmp(nres, "ADMIN", 5))
 		{
@@ -1045,6 +1053,7 @@ void login_ui(pixel *vid_buf)
 			svf_admin = 0;
 			svf_mod = 0;
 		}
+		svf_messages = atoi(mres);
 		free(res);
 		svf_login = 1;
 		return;
@@ -1063,6 +1072,7 @@ fail:
 	svf_own = 0;
 	svf_admin = 0;
 	svf_mod = 0;
+	svf_messages = 0;
 }
 
 int stamp_ui(pixel *vid_buf)
@@ -4607,12 +4617,13 @@ void decorations_ui(pixel *vid_buf,pixel *decorations,int *bsx,int *bsy)
 void simulation_ui(pixel * vid_buf)
 {
 	int xsize = 300;
-	int ysize = 114;
+	int ysize = 140;
 	int x0=(XRES-xsize)/2,y0=(YRES-MENUSIZE-ysize)/2,b=1,bq,mx,my;
-	int new_scale;
+	int new_scale, new_kiosk;
 	ui_checkbox cb;
 	ui_checkbox cb2;
 	ui_checkbox cb3;
+	ui_checkbox cb4;
 
 	cb.x = x0+xsize-16;
 	cb.y = y0+23;
@@ -4628,6 +4639,11 @@ void simulation_ui(pixel * vid_buf)
 	cb3.y = y0+77;
 	cb3.focus = 0;
 	cb3.checked = (sdl_scale==2)?1:0;
+	
+	cb4.x = x0+xsize-16;
+	cb4.y = y0+103;
+	cb4.focus = 0;
+	cb4.checked = (kiosk_enable==1)?1:0;
 
 	while (!sdl_poll())
 	{
@@ -4658,6 +4674,9 @@ void simulation_ui(pixel * vid_buf)
 		drawtext(vid_buf, x0+8, y0+80, "Large window", 255, 255, 255, 255);
 		drawtext(vid_buf, x0+12+textwidth("Large window"), y0+80, "Double window size for small screens", 255, 255, 255, 180);
 		//drawtext(vid_buf, x0+12, y0+68, "May also cause slow performance on older computers", 255, 255, 255, 180);
+		
+		drawtext(vid_buf, x0+8, y0+106, "Fullscreen", 255, 255, 255, 255);
+		drawtext(vid_buf, x0+12+textwidth("Fullscreen"), y0+106, "Fill the entire screen", 255, 255, 255, 180);
 
 		//TODO: Options for Air and Normal gravity
 		//Maybe save/load defaults too.
@@ -4668,10 +4687,12 @@ void simulation_ui(pixel * vid_buf)
 		ui_checkbox_draw(vid_buf, &cb);
 		ui_checkbox_draw(vid_buf, &cb2);
 		ui_checkbox_draw(vid_buf, &cb3);
+		ui_checkbox_draw(vid_buf, &cb4);
 		sdl_blit(0, 0, (XRES+BARSIZE), YRES+MENUSIZE, vid_buf, (XRES+BARSIZE));
 		ui_checkbox_process(mx, my, b, bq, &cb);
 		ui_checkbox_process(mx, my, b, bq, &cb2);
 		ui_checkbox_process(mx, my, b, bq, &cb3);
+		ui_checkbox_process(mx, my, b, bq, &cb4);
 
 		if (b && !bq && mx>=x0 && mx<x0+xsize && my>=y0+ysize-16 && my<=y0+ysize)
 			break;
@@ -4684,8 +4705,9 @@ void simulation_ui(pixel * vid_buf)
 
 	legacy_enable = !cb.checked;
 	new_scale = (cb3.checked)?2:1;
-	if(new_scale!=sdl_scale)
-		set_scale(new_scale);	
+	new_kiosk = (cb4.checked)?1:0;
+	if(new_scale!=sdl_scale || new_kiosk!=kiosk_enable)
+		set_scale(new_scale, new_kiosk);	
 	if(ngrav_enable != cb2.checked)
 	{
 		if(cb2.checked)

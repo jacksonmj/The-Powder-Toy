@@ -165,6 +165,7 @@ typedef struct
 static const char *old_ver_msg_beta = "A new beta is available - click here!";
 #endif
 static const char *old_ver_msg = "A new version is available - click here!";
+char new_message_msg[255];
 float mheat = 0.0f;
 
 int do_open = 0;
@@ -1230,8 +1231,9 @@ char my_uri[] = "http://" SERVER "/Update.api?Action=Download&Architecture="
 #endif
                 ;
 
-void set_scale(int scale){
+void set_scale(int scale, int kiosk){
 	sdl_scale = scale;
+	kiosk_enable = kiosk;
 	sdl_open();
 	return;
 }
@@ -1285,6 +1287,7 @@ void stop_grav_async()
 	if(ngrav_enable){
 		pthread_mutex_lock(&gravmutex);
 		gravthread_done = 1;
+		pthread_cond_signal(&gravcv);
 		pthread_mutex_unlock(&gravmutex);
 		pthread_join(gravthread, NULL);
 		pthread_mutex_destroy(&gravmutex); //Destroy the mutex
@@ -1371,7 +1374,7 @@ int main(int argc, char *argv[])
 	void *http_ver_check, *http_session_check = NULL;
 	char *ver_data=NULL, *check_data=NULL, *tmp;
 	//char console_error[255] = "";
-	int result, i, j, bq, fire_fc=0, do_check=0, do_s_check=0, old_version=0, http_ret=0,http_s_ret=0, major, minor, old_ver_len;
+	int result, i, j, bq, fire_fc=0, do_check=0, do_s_check=0, old_version=0, http_ret=0,http_s_ret=0, major, minor, old_ver_len, new_message_len;
 #ifdef INTERNAL
 	int vs = 0;
 #endif
@@ -1388,6 +1391,10 @@ int main(int argc, char *argv[])
 #ifdef PYCONSOLE
 	PyObject *pname,*pmodule,*pfunc,*pvalue,*pargs,*pstep,*pkey;
 	PyObject *tpt_console_obj;
+#endif
+#ifdef PTW32_STATIC_LIB
+    pthread_win32_process_attach_np();
+    pthread_win32_thread_attach_np();
 #endif
 	decorations = calloc((XRES+BARSIZE)*YRES, PIXELSIZE);
 	vid_buf = calloc((XRES+BARSIZE)*(YRES+MENUSIZE), PIXELSIZE);
@@ -1698,6 +1705,7 @@ int main(int argc, char *argv[])
 						svf_own = 0;
 						svf_admin = 0;
 						svf_mod = 0;
+						svf_messages = 0;
 					}
 					else if (!strncmp(check_data, "BANNED", 6))
 					{
@@ -1710,6 +1718,7 @@ int main(int argc, char *argv[])
 						svf_own = 0;
 						svf_admin = 0;
 						svf_mod = 0;
+						svf_messages = 0;
 						error_ui(vid_buf, 0, "Unable to log in\nYour account has been suspended, consider reading the rules.");
 					}
 					else if (!strncmp(check_data, "OK", 2))
@@ -1719,13 +1728,20 @@ int main(int argc, char *argv[])
 							//User is elevated
 							if (!strncmp(check_data+3, "ADMIN", 5))
 							{
+								//Check for messages
+								svf_messages = atoi(check_data+9);
 								svf_admin = 1;
 								svf_mod = 0;
 							}
 							else if (!strncmp(check_data+3, "MOD", 3))
 							{
+								//Check for messages
+								svf_messages = atoi(check_data+7);
 								svf_admin = 0;
 								svf_mod = 1;
+							} else {
+								//Check for messages
+								svf_messages = atoi(check_data+3);
 							}
 						}
 					}
@@ -1740,6 +1756,7 @@ int main(int argc, char *argv[])
 						svf_own = 0;
 						svf_admin = 0;
 						svf_mod = 0;
+						svf_messages = 0;
 					}
 					save_presets(0);
 					free(check_data);
@@ -1753,6 +1770,7 @@ int main(int argc, char *argv[])
 					svf_own = 0;
 					svf_admin = 0;
 					svf_mod = 0;
+					svf_messages = 0;
 				}
 				http_session_check = NULL;
 			} else {
@@ -2342,6 +2360,11 @@ int main(int argc, char *argv[])
 
 		mx = x;
 		my = y;
+		if (b && !bq && x>=(XRES-19-new_message_len)*sdl_scale &&
+		        x<=(XRES-14)*sdl_scale && y>=(YRES-37)*sdl_scale && y<=(YRES-24)*sdl_scale && svf_messages)
+		{
+			open_link("http://" SERVER "/Conversations.html");
+		}
 		if (update_flag)
 		{
 			info_box(vid_buf, "Finalizing update...");
@@ -3018,6 +3041,16 @@ int main(int argc, char *argv[])
 #endif
 			drawrect(vid_buf, XRES-19-old_ver_len, YRES-22, old_ver_len+5, 13, 255, 216, 32, 255);
 		}
+		
+		if (svf_messages)
+		{
+			sprintf(new_message_msg, "You have %d new message%s, Click to view", svf_messages, (svf_messages>1)?"s":"");
+			new_message_len = textwidth(new_message_msg);
+			
+			clearrect(vid_buf, XRES-21-new_message_len, YRES-39, new_message_len+9, 17);
+			drawtext(vid_buf, XRES-16-new_message_len, YRES-34, new_message_msg, 255, 186, 32, 255);
+			drawrect(vid_buf, XRES-19-new_message_len, YRES-37, new_message_len+5, 13, 255, 186, 32, 255);
+		}
 
 		FPS++;
 		currentTime = SDL_GetTicks();
@@ -3193,7 +3226,6 @@ int main(int argc, char *argv[])
 	}
 	SDL_CloseAudio();
 	http_done();
-
 #ifdef PYCONSOLE
 
 	PyRun_SimpleString("import os,tempfile,os.path\ntry:\n    os.remove(os.path.join(tempfile.gettempdir(),'tpt_console.py'))\nexcept:\n    pass");
@@ -3201,6 +3233,10 @@ int main(int argc, char *argv[])
 	PyRun_SimpleString("import os,tempfile,os.path\ntry:\n    os.remove(os.path.join(tempfile.gettempdir(),'tpt_console.pyc'))\nexcept:\n    pass");
 
 	Py_Finalize();//cleanup any python stuff.
+#endif
+#ifdef PTW32_STATIC_LIB
+    pthread_win32_thread_detach_np();
+    pthread_win32_process_detach_np();
 #endif
 	return 0;
 }
