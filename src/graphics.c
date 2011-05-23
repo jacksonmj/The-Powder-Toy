@@ -3812,12 +3812,12 @@ void render_cursor(pixel *vid, int x, int y, int t, int rx, int ry)
 	}
 }
 
-void sdl_open(void)
+int sdl_open(void)
 {
 	if (SDL_Init(SDL_INIT_VIDEO)<0)
 	{
 		fprintf(stderr, "Initializing SDL: %s\n", SDL_GetError());
-		exit(1);
+		return 0;
 	}
 	atexit(SDL_Quit);
 #ifdef OpenGL
@@ -3849,7 +3849,7 @@ void sdl_open(void)
 	if (!sdl_scrn)
 	{
 		fprintf(stderr, "Creating window: %s\n", SDL_GetError());
-		exit(1);
+		return 0;
 	}
 	SDL_WM_SetCaption("The Powder Toy", "Powder Toy");
 	sdl_seticon();
@@ -3864,6 +3864,7 @@ void sdl_open(void)
 	XA_TARGETS = XInternAtom(sdl_wminfo.info.x11.display, "TARGETS", 1);
 	sdl_wminfo.info.x11.unlock_func();
 #endif
+	return 1;
 }
 
 #ifdef OpenGL
