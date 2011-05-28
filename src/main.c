@@ -321,7 +321,7 @@ void *build_thumb(int *size, int bzip2)
 //the saving function
 void *build_save(int *size, int x0, int y0, int w, int h, unsigned char bmap[YRES/CELL][XRES/CELL], float fvx[YRES/CELL][XRES/CELL], float fvy[YRES/CELL][XRES/CELL], sign signs[MAXSIGNS], void* partsptr, pixel *decorations)
 {
-	unsigned char *d=calloc(1,3*(XRES/CELL)*(YRES/CELL)+(XRES*YRES)*11+MAXSIGNS*262), *c;
+	unsigned char *d=calloc(1,3*(XRES/CELL)*(YRES/CELL)+(XRES*YRES)*15+MAXSIGNS*262), *c;
 	int i,j,x,y,p=0,*m=calloc(XRES*YRES, sizeof(int));
 	int bx0=x0/CELL, by0=y0/CELL, bw=(w+CELL-1)/CELL, bh=(h+CELL-1)/CELL;
 	particle *parts = partsptr;
@@ -419,6 +419,38 @@ void *build_save(int *size, int x0, int y0, int w, int h, unsigned char bmap[YRE
 	for (j=0; j<w*h; j++)
 	{
 		i = m[j];
+		if (i) {
+			//Save colour (ALPHA)
+			d[p++] = (parts[i-1].dcolour&0xFF000000)>>24;
+		}
+	}
+	for (j=0; j<w*h; j++)
+	{
+		i = m[j];
+		if (i) {
+			//Save colour (RED)
+			d[p++] = (parts[i-1].dcolour&0x00FF0000)>>16;
+		}
+	}
+	for (j=0; j<w*h; j++)
+	{
+		i = m[j];
+		if (i) {
+			//Save colour (GREEN)
+			d[p++] = (parts[i-1].dcolour&0x0000FF00)>>8;
+		}
+	}
+	for (j=0; j<w*h; j++)
+	{
+		i = m[j];
+		if (i) {
+			//Save colour (BLUE)
+			d[p++] = (parts[i-1].dcolour&0x000000FF);
+		}
+	}
+	for (j=0; j<w*h; j++)
+	{
+		i = m[j];
 		if (i)
 		{
 			//New Temperature saving uses a 16bit unsigned int for temperatures, giving a precision of 1 degree versus 36 for the old format
@@ -466,7 +498,7 @@ void *build_save(int *size, int x0, int y0, int w, int h, unsigned char bmap[YRE
 	c[0] = 0x50;	//0x66;
 	c[1] = 0x53;	//0x75;
 	c[2] = 0x76;	//0x43;
-	c[3] = legacy_enable|((sys_pause<<1)&0x02)|((gravityMode<<2)&0x0C)|((airMode<<4)&0x70);
+	c[3] = legacy_enable|((sys_pause<<1)&0x02)|((gravityMode<<2)&0x0C)|((airMode<<4)&0x70)|((ngrav_enable<<7)&0x80);
 	c[4] = SAVE_VERSION;
 	c[5] = CELL;
 	c[6] = bw;
@@ -495,7 +527,7 @@ void *build_save(int *size, int x0, int y0, int w, int h, unsigned char bmap[YRE
 int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char bmap[YRES/CELL][XRES/CELL], float fvx[YRES/CELL][XRES/CELL], float fvy[YRES/CELL][XRES/CELL], sign signs[MAXSIGNS], void* partsptr, unsigned pmap[YRES][XRES], pixel *decorations)
 {
 	unsigned char *d=NULL,*c=save;
-	int q,i,j,k,x,y,p=0,*m=NULL, ver, pty, ty, legacy_beta=0;
+	int q,i,j,k,x,y,p=0,*m=NULL, ver, pty, ty, legacy_beta=0, tempGrav = 0;
 	int bx0=x0/CELL, by0=y0/CELL, bw, bh, w, h;
 	int fp[NPART], nf=0, new_format = 0, ttv = 0;
 	particle *parts = partsptr;
@@ -528,6 +560,9 @@ int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char 
 			if (ver>=46 && replace) {
 				gravityMode = ((c[3]>>2)&0x03);// | ((c[3]>>2)&0x01);
 				airMode = ((c[3]>>4)&0x07);// | ((c[3]>>4)&0x02) | ((c[3]>>4)&0x01);
+			}
+			if (ver>=49 && replace) {
+				tempGrav = ((c[3]>>7)&0x01);			
 			}
 		} else {
 			if (c[3]==1||c[3]==0) {
@@ -818,6 +853,78 @@ int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char 
 			}
 		}
 	}
+	//Read ALPHA component
+	for (j=0; j<w*h; j++)
+	{
+		i = m[j];
+		if (i)
+		{
+			if (ver>=49) {
+				if (p >= size) {
+					goto corrupt;
+				}
+				if (i <= NPART) {
+					parts[i-1].dcolour = d[p++]<<24;
+				} else {
+					p++;
+				}
+			}
+		}
+	}
+	//Read RED component
+	for (j=0; j<w*h; j++)
+	{
+		i = m[j];
+		if (i)
+		{
+			if (ver>=49) {
+				if (p >= size) {
+					goto corrupt;
+				}
+				if (i <= NPART) {
+					parts[i-1].dcolour |= d[p++]<<16;
+				} else {
+					p++;
+				}
+			}
+		}
+	}
+	//Read GREEN component
+	for (j=0; j<w*h; j++)
+	{
+		i = m[j];
+		if (i)
+		{
+			if (ver>=49) {
+				if (p >= size) {
+					goto corrupt;
+				}
+				if (i <= NPART) {
+					parts[i-1].dcolour |= d[p++]<<8;
+				} else {
+					p++;
+				}
+			}
+		}
+	}
+	//Read BLUE component
+	for (j=0; j<w*h; j++)
+	{
+		i = m[j];
+		if (i)
+		{
+			if (ver>=49) {
+				if (p >= size) {
+					goto corrupt;
+				}
+				if (i <= NPART) {
+					parts[i-1].dcolour |= d[p++];
+				} else {
+					p++;
+				}
+			}
+		}
+	}
 	for (j=0; j<w*h; j++)
 	{
 		i = m[j];
@@ -861,7 +968,7 @@ int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char 
 				parts[i-1].temp = ptypes[parts[i-1].type].heat;
 			}
 		}
-	}
+	} 
 	for (j=0; j<w*h; j++)
 	{
 		i = m[j];
@@ -883,10 +990,19 @@ int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char 
 				// Replace invisible particles with something sensible and add decoration to hide it
 				x = (int)(parts[i-1].x+0.5f);
 				y = (int)(parts[i-1].y+0.5f);
-				decorations[y*(XRES+BARSIZE)+x] = PIXPACK(0x010101);
+				parts[i-1].dcolour = 0x010101;
 				parts[i-1].type = PT_DMND;
 			}
 		}
+	}
+
+	//Change the gravity state
+	if(ngrav_enable != tempGrav && replace)
+	{
+		if(tempGrav)
+			start_grav_async();
+		else
+			stop_grav_async();
 	}
 
 	if (p >= size)
@@ -1312,6 +1428,7 @@ int main(int argc, char *argv[])
 	int load_size, i=0, j=0;
 	void *load_data = file_load(argv[1], &load_size);
 	unsigned char c[3];
+	char ppmfilename[256], ptifilename[256], ptismallfilename[256];
 	FILE *f;
 	
 	cmode = CM_FIRE;
@@ -1322,10 +1439,15 @@ int main(int argc, char *argv[])
 	parts[NPART-1].life = -1;
 	pfree = 0;
 	
+	decorations = calloc((XRES+BARSIZE)*YRES, PIXELSIZE);
 	pers_bg = calloc((XRES+BARSIZE)*YRES, PIXELSIZE);
 	fire_bg = calloc(XRES*YRES, PIXELSIZE);
 	
 	prepare_alpha();
+
+	sprintf(ppmfilename, "%s.ppm", argv[2]);
+	sprintf(ptifilename, "%s.pti", argv[2]);
+	sprintf(ptismallfilename, "%s-small.pti", argv[2]);
 	
 	if(load_data && load_size){
 		int parsestate = 0;
@@ -1345,8 +1467,30 @@ int main(int argc, char *argv[])
 			//return 0;
 			info_box(vid_buf, "Save file invalid or from newer version");
 		}
-		
-		f=fopen(argv[2],"wb");
+
+		//Save PTi images
+		char * datares = NULL, *scaled_buf;
+		int res = 0, sw, sh;
+		datares = ptif_pack(vid_buf, XRES, YRES, &res);
+		if(datares!=NULL){
+			f=fopen(ptifilename, "wb");
+			fwrite(datares, res, 1, f);
+			fclose(f);
+			free(datares);
+			datares = NULL;
+		}
+		scaled_buf = resample_img(vid_buf, XRES, YRES, XRES/4, YRES/4);
+		datares = ptif_pack(scaled_buf, XRES/4, YRES/4, &res);
+		if(datares!=NULL){
+			f=fopen(ptismallfilename, "wb");
+			fwrite(datares, res, 1, f);
+			fclose(f);
+			free(datares);
+			datares = NULL;
+		}
+		free(scaled_buf);
+		//Save PPM image
+		f=fopen(ppmfilename, "wb");
 		fprintf(f,"P6\n%d %d\n255\n",XRES,YRES);
 		for (j=0; j<YRES; j++)
 		{
@@ -1394,6 +1538,7 @@ int main(int argc, char *argv[])
 	void *load_data=NULL;
 	pixel *load_img=NULL;//, *fbi_img=NULL;
 	int save_mode=0, save_x=0, save_y=0, save_w=0, save_h=0, copy_mode=0;
+	unsigned int hsvSave = PIXRGB(0,255,127);//this is hsv format
 	SDL_AudioSpec fmt;
 	int username_flash = 0, username_flash_t = 1;
 #ifdef PYCONSOLE
@@ -1480,7 +1625,7 @@ int main(int argc, char *argv[])
 		pygood = 0;
 	}
 #else
-	printf("python console disabled at compile time.");
+	printf("python console disabled at compile time.\n");
 #endif
 
 #ifdef MT
@@ -2011,7 +2156,7 @@ int main(int argc, char *argv[])
 						vy[ny][nx] = -vy[ny][nx];
 					}
 			}
-			if (sdl_key==SDLK_INSERT)// || sdl_key==SDLK_BACKQUOTE)
+			if (sdl_key==SDLK_INSERT || sdl_key == SDLK_SEMICOLON)// || sdl_key==SDLK_BACKQUOTE)
 				REPLACE_MODE = !REPLACE_MODE;
 			if (sdl_key==SDLK_BACKQUOTE)
 			{
@@ -2029,7 +2174,7 @@ int main(int argc, char *argv[])
 				}
 				else
 				{
-					decorations_ui(vid_buf,decorations,&bsx,&bsy);//decoration_mode = !decoration_mode;
+					hsvSave = decorations_ui(vid_buf,decorations,&bsx,&bsy,hsvSave);//decoration_mode = !decoration_mode;
 					decorations_enable = 1;
 					sys_pause=1;
 				}
