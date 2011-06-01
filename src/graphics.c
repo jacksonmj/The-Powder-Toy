@@ -853,6 +853,11 @@ int drawtext(pixel *vid, int x, int y, const char *s, int r, int g, int b, int a
 				r = g = 0;
 				b = 255;
 				break;
+			case 't':
+				b = 255;
+				g = 170;
+				r = 32;
+				break;
 			}
 			s++;
 		}
@@ -1217,8 +1222,17 @@ void draw_air(pixel *vid)
 			else if (cmode == CM_VEL)
 			{
 				c  = PIXRGB(clamp_flt(fabsf(vx[y][x]), 0.0f, 8.0f),//vx adds red
-				            clamp_flt(pv[y][x], 0.0f, 8.0f),//pressure adds green
-				            clamp_flt(fabsf(vy[y][x]), 0.0f, 8.0f));//vy adds blue
+					clamp_flt(pv[y][x], 0.0f, 8.0f),//pressure adds green
+					clamp_flt(fabsf(vy[y][x]), 0.0f, 8.0f));//vy adds blue
+			}
+			else if (cmode == CM_HEAT && aheat_enable)
+			{
+				float ttemp = hv[y][x]+(-MIN_TEMP);
+				int caddress = restrict_flt((int)( restrict_flt(ttemp, 0.0f, MAX_TEMP+(-MIN_TEMP)) / ((MAX_TEMP+(-MIN_TEMP))/1024) ) *3, 0.0f, (1024.0f*3)-3);
+				c = PIXRGB((unsigned char)color_data[caddress], (unsigned char)color_data[caddress+1], (unsigned char)color_data[caddress+2]);
+				//c  = PIXRGB(clamp_flt(fabsf(vx[y][x]), 0.0f, 8.0f),//vx adds red
+				//	clamp_flt(hv[y][x], 0.0f, 1600.0f),//heat adds green
+				//	clamp_flt(fabsf(vy[y][x]), 0.0f, 8.0f));//vy adds blue
 			}
 			else if (cmode == CM_CRACK)
 			{

@@ -58,6 +58,9 @@
 #ifdef PYCONSOLE
 #include "pyconsole.h"
 #endif
+#ifdef LUACONSOLE
+#include "luaconsole.h"
+#endif
 
 pixel *vid_buf;
 
@@ -173,6 +176,7 @@ int sys_pause = 0;
 int sys_shortcuts = 1;
 int legacy_enable = 0; //Used to disable new features such as heat, will be set by save.
 int ngrav_enable = 0; //Newtonian gravity, will be set by save
+int aheat_enable; //Ambient heat
 int decorations_enable = 1;
 int death = 0, framerender = 0;
 int amd = 1;
@@ -1560,6 +1564,9 @@ int main(int argc, char *argv[])
 	fmt.callback = mixaudio;
 	fmt.userdata = NULL;
 
+#ifdef LUACONSOLE
+	luacon_open();
+#endif
 #ifdef PYCONSOLE
 	//initialise python console
 	Py_Initialize();
@@ -1741,11 +1748,13 @@ int main(int argc, char *argv[])
 		if (!sys_pause||framerender) //only update air if not paused
 		{
 			update_air();
+			if(aheat_enable)
+				update_airh();
 		}
 #ifdef OpenGL
 		ClearScreen();
 #else
-		if (cmode==CM_VEL || cmode==CM_PRESS || cmode==CM_CRACK)//air only gets drawn in these modes
+		if (cmode==CM_VEL || cmode==CM_PRESS || cmode==CM_CRACK || (cmode==CM_HEAT && aheat_enable))//air only gets drawn in these modes
 		{
 			draw_air(vid_buf);
 		}
@@ -1769,7 +1778,13 @@ int main(int argc, char *argv[])
 			bsy = 1180;
 		if (bsy<0)
 			bsy = 0;
-
+		
+		if(ngrav_enable)
+			draw_grav(vid_buf);
+		draw_walls(vid_buf); 
+		update_particles(vid_buf); //update everything
+		draw_parts(vid_buf); //draw particles
+		
 		if(ngrav_enable){
 			pthread_mutex_lock(&gravmutex);
 			result = grav_ready;
@@ -1788,12 +1803,6 @@ int main(int argc, char *argv[])
 
 		if (!sys_pause||framerender) //Only update if not paused
 			memset(gravmap, 0, sizeof(gravmap)); //Clear the old gravmap
-		
-		if(ngrav_enable)
-			draw_grav(vid_buf);
-		draw_walls(vid_buf);
-		update_particles(vid_buf); //update everything
-		draw_parts(vid_buf); //draw particles
 
 		if (cmode==CM_PERS)
 		{
@@ -2271,6 +2280,8 @@ int main(int argc, char *argv[])
 				VINE_MODE = !VINE_MODE;
 			if (sdl_key==SDLK_SPACE)
 				sys_pause = !sys_pause;
+			if (sdl_key=='u')
+				aheat_enable = !aheat_enable;
 			if (sdl_key=='h')
 				hud_enable = !hud_enable;
 			if (sdl_key=='p')
@@ -2366,6 +2377,9 @@ int main(int argc, char *argv[])
 					}
 			}
 		}
+//#ifdef LUACONSOLE
+	//luacon_keypress(sdl_key);
+//#endif
 #ifdef PYCONSOLE
 		if (pyready==1 && pygood==1)
 			if (pkey!=NULL && sdl_key!=NULL)
@@ -2456,6 +2470,11 @@ int main(int argc, char *argv[])
 
 		bq = b; // bq is previous mouse state
 		b = SDL_GetMouseState(&x, &y); // b is current mouse state
+
+#ifdef LUACONSOLE
+		if(luacon_step(x, y, b, bq, sdl_key))
+			b = 0; //Mouse click was handled by Lua step
+#endif
 
 		for (i=0; i<SC_TOTAL; i++)//draw all the menu sections
 		{
@@ -3331,6 +3350,20 @@ int main(int argc, char *argv[])
 				if (!console_mode)
 					hud_enable = 1;
 			}
+#elif defined LUACONSOLE
+			char *console;
+			sys_pause = 1;
+			console = console_ui(vid_buf, console_error, console_more);
+			console = mystrdup(console);
+			strcpy(console_error,"");
+			if (process_command_lua(vid_buf, console, console_error)==-1)
+			{
+				free(console);
+				break;
+			}
+			free(console);
+			if (!console_mode)
+				hud_enable = 1;
 #else
 			char *console;
 			sys_pause = 1;
@@ -3384,6 +3417,9 @@ int main(int argc, char *argv[])
 	}
 	SDL_CloseAudio();
 	http_done();
+#ifdef LUACONSOLE
+	luacon_close();
+#endif
 #ifdef PYCONSOLE
 
 	PyRun_SimpleString("import os,tempfile,os.path\ntry:\n    os.remove(os.path.join(tempfile.gettempdir(),'tpt_console.py'))\nexcept:\n    pass");
