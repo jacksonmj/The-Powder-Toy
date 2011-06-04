@@ -4,7 +4,7 @@
 #include <luaconsole.h>
 
 lua_State *l;
-char *step_function = "";
+int step_functions[6] = {0, 0, 0, 0, 0, 0};
 void luacon_open(){
 	const static struct luaL_reg tptluaapi [] = {
 		{"test", &luatpt_test},
@@ -29,6 +29,7 @@ void luacon_open(){
 		{"set_shortcuts", &luatpt_set_shortcuts},
 		{"delete", &luatpt_delete},
 		{"register_step", &luatpt_register_step},
+		{"unregister_step", &luatpt_unregister_step},
 		{NULL,NULL}
 	};
 
@@ -37,8 +38,8 @@ void luacon_open(){
 	luaL_openlib(l, "tpt", tptluaapi, 0);
 }
 int luacon_step(int mx, int my, int mb, int mbq, char key){
-	int tempret = 0;
-	if(step_function && step_function[0]){
+	int tempret = 0, tempb, i;
+	if(step_functions[0]){
 		//Set mouse globals
 		lua_pushinteger(l, mbq);
 		lua_pushinteger(l, mb);
@@ -48,13 +49,22 @@ int luacon_step(int mx, int my, int mb, int mbq, char key){
 		lua_setfield(l, LUA_GLOBALSINDEX, "mousey");
 		lua_setfield(l, LUA_GLOBALSINDEX, "mouseb");
 		lua_setfield(l, LUA_GLOBALSINDEX, "mousebq");
-		lua_getfield(l, LUA_GLOBALSINDEX, step_function);
-		lua_call(l, 0, 1);
-		if(lua_isboolean(l, -1)){
-			tempret = lua_toboolean(l, -1);
-			lua_pop(l, 1);
-			return tempret;
+		for(i = 0; i<6; i++){
+			if(step_functions[i]){
+				lua_rawgeti(l, LUA_REGISTRYINDEX, step_functions[i]);
+				lua_call(l, 0, 1);
+				if(lua_isboolean(l, -1)){
+					tempb = lua_toboolean(l, -1);
+					lua_pop(l, 1);
+					if(tempb){	//Mouse click has been handled, set the global for future calls
+						lua_pushinteger(l, mb);	
+						lua_setfield(l, LUA_GLOBALSINDEX, "mouseb");
+					}
+					tempret |= tempb;
+				}
+			}
 		}
+		return tempret;
 	}
 	return 0;
 }
@@ -86,7 +96,13 @@ int process_command_lua(pixel *vid_buf, char *console, char *console_error)
 		if (strcmp(console2, "quit")==0)
 		{
 			return -1;
-		} else {
+		}
+		else if(strncmp(console, "!", 1)==0)
+		{
+			return process_command_old(vid_buf, console+1, console_error);
+		}
+		else
+		{
 			commandret = luacon_eval(console);
 			if (commandret){
 				tmp_error = luacon_geterror();
@@ -306,18 +322,125 @@ int luatpt_reset_spark(lua_State* l)
 
 int luatpt_set_property(lua_State* l)
 {
-	lua_pushstring(l, "not implemented");
-	lua_error(l);
-	//TODO: Implement luatpt_set_property
+	char *prop, *name;
+	int i, x, y, w, h, t, format, nx, ny, partsel = 0, acount;
+	float f;
+	size_t offset;
+	acount = lua_gettop(l);
+	prop = luaL_optstring(l, 1, "");
+	if(lua_isnumber(l, 3))
+		i = luaL_optint(l, 3, -1);
+	else
+		i = -1;
+	if(lua_isnumber(l, 4))
+		y = luaL_optint(l, 4, -1);
+	else
+		y = -1;
+	if(lua_isnumber(l, 5))
+		w = luaL_optint(l, 5, -1);
+	else
+		w = -1;
+	if(lua_isnumber(l, 6))
+		h = luaL_optint(l, 6, -1);
+	else
+		h = -1;
+	if (strcmp(prop,"type")==0){
+		offset = offsetof(particle, type);
+		format = 3;
+	} else if (strcmp(prop,"life")==0){
+		offset = offsetof(particle, life);
+		format = 1;
+	} else if (strcmp(prop,"ctype")==0){
+		offset = offsetof(particle, ctype);
+		format = 3;
+	} else if (strcmp(prop,"temp")==0){
+		offset = offsetof(particle, temp);
+		format = 2;
+	} else if (strcmp(prop,"tmp")==0){
+		offset = offsetof(particle, tmp);
+		format = 1;
+	} else if (strcmp(prop,"vy")==0){
+		offset = offsetof(particle, vy);
+		format = 2;
+	} else if (strcmp(prop,"vx")==0){
+		offset = offsetof(particle, vx);
+		format = 2;
+	} else if (strcmp(prop,"x")==0){
+		offset = offsetof(particle, x);
+		format = 2;
+	} else if (strcmp(prop,"y")==0){
+		offset = offsetof(particle, y);
+		format = 2;
+	} else {
+		lua_pushstring(l, "invalid property");
+		lua_error(l);
+	}
+	if(acount>2){
+		if(!lua_isnumber(l, acount) && lua_isstring(l, acount)){
+			name = luaL_optstring(l, acount, "none");
+			if (name[0]!=0)
+				console_parse_type(name, &partsel, console_error);
+		}
+	}
+	if(lua_isnumber(l, 2)){
+		if(format==2){
+			f = luaL_optnumber(l, 2, 0);
+		} else {
+			t = luaL_optint(l, 2, 0);
+		}
+		if(t >= PT_NUM && format == 3)
+			return -1;
+	} else {
+		name = luaL_optstring(l, 2, "dust");
+		if (name[0]!=0)
+			console_parse_type(name, &t, console_error);
+	}
+	if(i == -1 || (w != -1 && h != -1)){
+		// Got a region
+		if(i == -1){
+			i = 0;
+			y = 0;
+			w = XRES;
+			h = YRES;
+		}
+		x = i;
+		for (nx = x; nx<x+w; nx++)
+			for (ny = y; ny<y+h; ny++){
+				i = pmap[ny][nx]>>8;
+				if (i < 0 || i >= NPART || (partsel && partsel != parts[i].type))
+					continue;
+				if(format==2){
+					*((float*)(((void*)&parts[i])+offset)) = f;
+				} else {
+					*((int*)(((void*)&parts[i])+offset)) = t;
+				}
+			}
+	} else {
+		// Got coords or particle index
+		if(i != -1 && y != -1){
+			i = pmap[y][i]>>8;
+		}
+		if (i < 0 || i >= NPART || (partsel && partsel != parts[i].type))
+			return -1;
+		if(format==2){
+			*((float*)(((void*)&parts[i])+offset)) = f;
+		} else {
+			*((int*)(((void*)&parts[i])+offset)) = t;
+		}
+	}
 	return -1;
 }
 
 int luatpt_get_property(lua_State* l)
 {
-	int i;
+	int i, y;
 	char *prop;
 	prop = luaL_optstring(l, 1, "");
 	i = luaL_optint(l, 2, 0);
+	y = luaL_optint(l, 3, -1);
+	if(y!=-1 && y < YRES && y > 0 && i < XRES && i > 0){
+		i = pmap[y][i]>>8;
+	}
 	if (i < 0 || i >= NPART)
 		return -1;
 	if (parts[i].type)
@@ -335,7 +458,7 @@ int luatpt_get_property(lua_State* l)
 			return 1;
 		}
 		if (strcmp(prop,"temp")==0){
-			lua_pushinteger(l, parts[i].temp);
+			lua_pushnumber(l, parts[i].temp);
 			return 1;
 		}
 		if (strcmp(prop,"tmp")==0){
@@ -351,11 +474,11 @@ int luatpt_get_property(lua_State* l)
 			return 1;
 		}
 		if (strcmp(prop,"x")==0){
-			lua_pushinteger(l, parts[i].x);
+			lua_pushnumber(l, parts[i].x);
 			return 1;
 		}
 		if (strcmp(prop,"y")==0){
-			lua_pushinteger(l, parts[i].y);
+			lua_pushnumber(l, parts[i].y);
 			return 1;
 		}
 	}
@@ -475,7 +598,28 @@ int luatpt_delete(lua_State* l)
 
 int luatpt_register_step(lua_State* l)
 {
-	step_function = luaL_optstring(l, 1, "");
+	int ref, i;
+	if(lua_isfunction(l, 1)){
+		for(i = 0; i<6; i++){
+			if(!step_functions[i]){
+				ref = luaL_ref(l, LUA_REGISTRYINDEX);
+				step_functions[i] = ref;
+				break;
+			} else { //Supposed to prevent the registration of 2 functions, but this isn't working TODO: FIX!
+				lua_rawgeti(l, LUA_REGISTRYINDEX, step_functions[i]);
+				if(lua_equal(l, 1, lua_gettop(l))){
+					lua_pushstring(l, "function already registered");
+					lua_error(l);
+					return -1;
+				}
+			}
+		}
+	}
+	return 0;
+}
+int luatpt_unregister_step(lua_State* l)
+{
+	//step_function = luaL_optstring(l, 1, "");
 	return 0;
 }
 #endif

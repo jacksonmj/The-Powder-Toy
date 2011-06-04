@@ -144,16 +144,72 @@ pixel *resample_img(pixel *src, int sw, int sh, int rw, int rh)
 {
 	int y, x;
 	//int i,j,x,y,w,h,r,g,b,c;
-	pixel *q;
-	q = malloc(rw*rh*PIXELSIZE);
+	pixel *q = NULL;
 	//TODO: Actual resampling, this is just cheap nearest pixel crap
-	for (y=0; y<rh; y++)
-		for (x=0; x<rw; x++)
-		{
-			q[rw*y+x] = src[sw*(y*sh/rh)+(x*sw/rw)];
+	if(rw > sw && rh > sh){
+		float fx, fy, fyc, fxc, intp;
+		pixel tr, tl, br, bl;
+		q = malloc(rw*rh*PIXELSIZE);
+		//Bilinear interpolation for upscaling
+		for (y=0; y<rh; y++)
+			for (x=0; x<rw; x++)
+			{
+				fx = ((float)x)*((float)sw)/((float)rw);
+				fy = ((float)y)*((float)sh)/((float)rh);
+				fxc = modf(fx, &intp);
+				fyc = modf(fy, &intp);
+				tr = src[sw*(int)floor(fy)+(int)ceil(fx)];
+				tl = src[sw*(int)floor(fy)+(int)floor(fx)];
+				br = src[sw*(int)ceil(fy)+(int)ceil(fx)];
+				bl = src[sw*(int)ceil(fy)+(int)floor(fx)];
+				q[rw*y+x] = PIXRGB(
+					(int)(((((float)PIXR(tl))*(1.0f-fxc))+(((float)PIXR(tr))*(fxc)))*(1.0f-fyc) + ((((float)PIXR(bl))*(1.0f-fxc))+(((float)PIXR(br))*(fxc)))*(fyc)),
+					(int)(((((float)PIXG(tl))*(1.0f-fxc))+(((float)PIXG(tr))*(fxc)))*(1.0f-fyc) + ((((float)PIXG(bl))*(1.0f-fxc))+(((float)PIXG(br))*(fxc)))*(fyc)),
+					(int)(((((float)PIXB(tl))*(1.0f-fxc))+(((float)PIXB(tr))*(fxc)))*(1.0f-fyc) + ((((float)PIXB(bl))*(1.0f-fxc))+(((float)PIXB(br))*(fxc)))*(fyc))
+					);				
+			}
+	} else {
+		//Stairstepping
+		float fx, fy, fyc, fxc, intp;
+		pixel tr, tl, br, bl;
+		int rrw = rw, rrh = rh;
+		pixel * oq;
+		oq = malloc(sw*sh*PIXELSIZE);
+		memcpy(oq, src, sw*sh*PIXELSIZE);
+		rw = sw;
+		rh = sh;
+		while(rrw != rw && rrh != rh){
+			rw *= 0.7;
+			rh *= 0.7;
+			if(rw <= rrw || rh <= rrh){
+				rw = rrw;
+				rh = rrh;
+			}
+			q = malloc(rw*rh*PIXELSIZE);
+			//Bilinear interpolation for upscaling
+			for (y=0; y<rh; y++)
+				for (x=0; x<rw; x++)
+				{
+					fx = ((float)x)*((float)sw)/((float)rw);
+					fy = ((float)y)*((float)sh)/((float)rh);
+					fxc = modf(fx, &intp);
+					fyc = modf(fy, &intp);
+					tr = oq[sw*(int)floor(fy)+(int)ceil(fx)];
+					tl = oq[sw*(int)floor(fy)+(int)floor(fx)];
+					br = oq[sw*(int)ceil(fy)+(int)ceil(fx)];
+					bl = oq[sw*(int)ceil(fy)+(int)floor(fx)];
+					q[rw*y+x] = PIXRGB(
+						(int)(((((float)PIXR(tl))*(1.0f-fxc))+(((float)PIXR(tr))*(fxc)))*(1.0f-fyc) + ((((float)PIXR(bl))*(1.0f-fxc))+(((float)PIXR(br))*(fxc)))*(fyc)),
+						(int)(((((float)PIXG(tl))*(1.0f-fxc))+(((float)PIXG(tr))*(fxc)))*(1.0f-fyc) + ((((float)PIXG(bl))*(1.0f-fxc))+(((float)PIXG(br))*(fxc)))*(fyc)),
+						(int)(((((float)PIXB(tl))*(1.0f-fxc))+(((float)PIXB(tr))*(fxc)))*(1.0f-fyc) + ((((float)PIXB(bl))*(1.0f-fxc))+(((float)PIXB(br))*(fxc)))*(fyc))
+						);				
+				}
+			free(oq);
+			oq = q;
+			sw = rw;
+			sh = rh;
 		}
-	//*qw = w;
-	//*qh = h;
+	}
 	return q;
 }
 
@@ -3259,7 +3315,7 @@ void draw_walls(pixel *vid)
 			}
 }
 
-void create_decorations(int x, int y, int rx, int ry, int r, int g, int b)
+void create_decorations(int x, int y, int rx, int ry, int r, int g, int b, int click)
 {
 	int i,j,rp;
 	if (rx==0 && ry==0)
@@ -3267,7 +3323,10 @@ void create_decorations(int x, int y, int rx, int ry, int r, int g, int b)
 		rp = pmap[y][x];
 		if ((rp>>8)>=NPART || !rp)
 			return;
-		parts[rp>>8].dcolour = ((255<<24)|(r<<16)|(g<<8)|b);
+		if (click == 4)
+			parts[rp>>8].dcolour = 0;
+		else
+			parts[rp>>8].dcolour = ((255<<24)|(r<<16)|(g<<8)|b);
 		return;
 	}
 	for (j=-ry; j<=ry; j++)
@@ -3277,10 +3336,13 @@ void create_decorations(int x, int y, int rx, int ry, int r, int g, int b)
 					rp = pmap[y+j][x+i];
 					if ((rp>>8)>=NPART || !rp)
 						continue;
-					parts[rp>>8].dcolour = ((255<<24)|(r<<16)|(g<<8)|b);
+					if (click == 4)
+						parts[rp>>8].dcolour = 0;
+					else
+						parts[rp>>8].dcolour = ((255<<24)|(r<<16)|(g<<8)|b);
 				}
 }
-void line_decorations(int x1, int y1, int x2, int y2, int rx, int ry, int r, int g, int b)
+void line_decorations(int x1, int y1, int x2, int y2, int rx, int ry, int r, int g, int b, int click)
 {
 	int cp=abs(y2-y1)>abs(x2-x1), x, y, dx, dy, sy;
 	float e, de;
@@ -3314,9 +3376,9 @@ void line_decorations(int x1, int y1, int x2, int y2, int rx, int ry, int r, int
 	for (x=x1; x<=x2; x++)
 	{
 		if (cp)
-			create_decorations(y, x, rx, ry, r, g, b);
+			create_decorations(y, x, rx, ry, r, g, b, click);
 		else
-			create_decorations(x, y, rx, ry, r, g, b);
+			create_decorations(x, y, rx, ry, r, g, b, click);
 		e += de;
 		if (e >= 0.5f)
 		{
@@ -3324,15 +3386,15 @@ void line_decorations(int x1, int y1, int x2, int y2, int rx, int ry, int r, int
 			if (!(rx+ry))
 			{
 				if (cp)
-					create_decorations(y, x, rx, ry, r, g, b);
+					create_decorations(y, x, rx, ry, r, g, b, click);
 				else
-					create_decorations(x, y, rx, ry, r, g, b);
+					create_decorations(x, y, rx, ry, r, g, b, click);
 			}
 			e -= 1.0f;
 		}
 	}
 }
-void box_decorations(int x1, int y1, int x2, int y2, int r, int g, int b)
+void box_decorations(int x1, int y1, int x2, int y2, int r, int g, int b, int click)
 {
 	int i, j;
 	if (x1>x2)
@@ -3349,7 +3411,7 @@ void box_decorations(int x1, int y1, int x2, int y2, int r, int g, int b)
 	}
 	for (j=y1; j<=y2; j++)
 		for (i=x1; i<=x2; i++)
-			create_decorations(i, j, 0, 0, r, g, b);
+			create_decorations(i, j, 0, 0, r, g, b, click);
 }
 
 //draws the photon colors in the HUD

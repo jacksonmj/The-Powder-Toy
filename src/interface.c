@@ -2392,10 +2392,11 @@ corrupt:
 
 int search_ui(pixel *vid_buf)
 {
-	int uih=0,nyu,nyd,b=1,bq,mx=0,my=0,mxq=0,myq=0,mmt=0,gi,gj,gx,gy,pos,i,mp,dp,dap,own,last_own=search_own,last_fav=search_fav,page_count=0,last_page=0,last_date=0,j,w,h,st=0,lv;
+	int nmp,uih=0,nyu,nyd,b=1,bq,mx=0,my=0,mxq=0,myq=0,mmt=0,gi,gj,gx,gy,pos,i,mp,dp,dap,own,last_own=search_own,last_fav=search_fav,page_count=0,last_page=0,last_date=0,j,w,h,st=0,lv;
 	int is_p1=0, exp_res=GRID_X*GRID_Y, tp, view_own=0;
 	int thumb_drawn[GRID_X*GRID_Y];
 	pixel *v_buf = (pixel *)malloc(((YRES+MENUSIZE)*(XRES+BARSIZE))*PIXELSIZE);
+	pixel *bthumb_rsdata = NULL;
 	float ry;
 	time_t http_last_use=HTTP_TIMEOUT;
 	ui_edit ed;
@@ -2487,7 +2488,7 @@ int search_ui(pixel *vid_buf)
 		drawtext(vid_buf, 51, 11, "\x8F", 255, 255, 255, 255);
 		drawrect(vid_buf, 48, 8, XRES-182, 16, 192, 192, 192, 255);
 
-		if (!svf_login)
+		if (!svf_login || search_fav)
 		{
 			search_own = 0;
 			drawrect(vid_buf, XRES-64+16, 8, 56, 16, 96, 96, 96, 255);
@@ -2510,7 +2511,13 @@ int search_ui(pixel *vid_buf)
 			drawtext(vid_buf, XRES-46+16, 13, "My Own", 255, 255, 255, 255);
 		}
 
-		if (search_fav)
+		if(!svf_login)
+		{
+			search_fav = 0;
+			drawrect(vid_buf, XRES-134, 8, 16, 16, 192, 192, 192, 255);
+			drawtext(vid_buf, XRES-130, 11, "\xCC", 120, 120, 120, 255);
+		}
+		else if (search_fav)
 		{
 			fillrect(vid_buf, XRES-134, 7, 18, 18, 255, 255, 255, 255);
 			drawtext(vid_buf, XRES-130, 11, "\xCC", 192, 160, 64, 255);
@@ -2521,7 +2528,16 @@ int search_ui(pixel *vid_buf)
 			drawtext(vid_buf, XRES-130, 11, "\xCC", 192, 160, 32, 255);
 		}
 
-		if (search_date)
+		if(search_fav)
+		{
+			search_date = 0;
+			drawrect(vid_buf, XRES-129+16, 8, 60, 16, 96, 96, 96, 255);
+			drawtext(vid_buf, XRES-126+16, 11, "\xA9", 44, 48, 32, 255);
+			drawtext(vid_buf, XRES-126+16, 11, "\xA8", 32, 44, 32, 255);
+			drawtext(vid_buf, XRES-126+16, 11, "\xA7", 128, 128, 128, 255);
+			drawtext(vid_buf, XRES-111+16, 13, "By votes", 128, 128, 128, 255);
+		}
+		else if (search_date)
 		{
 			fillrect(vid_buf, XRES-130+16, 7, 62, 18, 255, 255, 255, 255);
 			drawtext(vid_buf, XRES-126+16, 11, "\xA6", 32, 32, 32, 255);
@@ -2681,7 +2697,7 @@ int search_ui(pixel *vid_buf)
 					drawrect(vid_buf, gx-2, gy-2, XRES/GRID_S+3, YRES/GRID_S+3, 160, 160, 192, 255);
 				else
 					drawrect(vid_buf, gx-2, gy-2, XRES/GRID_S+3, YRES/GRID_S+3, 128, 128, 128, 255);
-				if (own && search_fav!=1)
+				if (own || search_fav)
 				{
 					if (dp == pos)
 						drawtext(vid_buf, gx+XRES/GRID_S-4, gy-6, "\x86", 255, 48, 32, 255);
@@ -2772,8 +2788,22 @@ int search_ui(pixel *vid_buf)
 			if (gy+h>=YRES+(MENUSIZE-2)) gy=YRES+(MENUSIZE-3)-h;
 			clearrect(vid_buf, gx-2, gy-3, w+4, h);
 			drawrect(vid_buf, gx-2, gy-3, w+4, h, 160, 160, 192, 255);
-			//if (search_thumbs[mp])
-				//render_thumb(search_thumbs[mp], search_thsizes[mp], 1, vid_buf, gx+(w-(XRES/GRID_Z))/2, gy, GRID_Z);
+			if (search_thumbs[mp]){
+				if(mp != nmp && bthumb_rsdata){
+					free(bthumb_rsdata);
+					bthumb_rsdata = NULL;
+				}
+				if(!bthumb_rsdata){
+					int finh, finw;
+					pixel *thumb_imgdata = ptif_unpack(search_thumbs[mp], search_thsizes[mp], &finw, &finh);
+					if(thumb_imgdata!=NULL){
+						bthumb_rsdata = resample_img(thumb_imgdata, finw, finh, XRES/GRID_Z, YRES/GRID_Z);				
+						free(thumb_imgdata);
+					}
+				}
+				draw_image(vid_buf, bthumb_rsdata, gx+(w-(XRES/GRID_Z))/2, gy, XRES/GRID_Z, YRES/GRID_Z, 255);
+				nmp = mp;
+			}
 			drawtext(vid_buf, gx+(w-i)/2, gy+YRES/GRID_Z+4, search_names[mp], 192, 192, 192, 255);
 			drawtext(vid_buf, gx+(w-textwidth(search_owners[mp]))/2, gy+YRES/GRID_Z+16, search_owners[mp], 128, 128, 128, 255);
 		}
@@ -2796,33 +2826,49 @@ int search_ui(pixel *vid_buf)
 		if (sdl_key==SDLK_ESCAPE)
 			goto finish;
 
-		if (b && !bq && mx>=XRES-64+16 && mx<=XRES-8+16 && my>=8 && my<=24 && svf_login)
+		if (b && !bq && mx>=XRES-64+16 && mx<=XRES-8+16 && my>=8 && my<=24 && svf_login && !search_fav)
 		{
 			search_own = !search_own;
 			lasttime = TIMEOUT;
 		}
-		if (b && !bq && mx>=XRES-129+16 && mx<=XRES-65+16 && my>=8 && my<=24)
+		if (b && !bq && mx>=XRES-129+16 && mx<=XRES-65+16 && my>=8 && my<=24 && !search_fav)
 		{
 			search_date = !search_date;
 			lasttime = TIMEOUT;
 		}
-		if (b && !bq && mx>=XRES-134 && mx<=XRES-134+16 && my>=8 && my<=24)
+		if (b && !bq && mx>=XRES-134 && mx<=XRES-134+16 && my>=8 && my<=24 && svf_login)
 		{
 			search_fav = !search_fav;
+			search_own = 0;
+			search_date = 0;
 			lasttime = TIMEOUT;
 		}
 
-		if (b && !bq && dp!=-1 && search_fav==0)
-			if (confirm_ui(vid_buf, "Do you want to delete?", search_names[dp], "Delete"))
-			{
-				execute_delete(vid_buf, search_ids[dp]);
-				lasttime = TIMEOUT;
-				if (last)
+		if (b && !bq && dp!=-1)
+		{
+			if (search_fav){
+				if(confirm_ui(vid_buf, "Remove from favourites?", search_names[dp], "Remove")){
+					execute_unfav(vid_buf, search_ids[dp]);
+					lasttime = TIMEOUT;
+					if (last)
+					{
+						free(last);
+						last = NULL;
+					}
+				}
+			} else {
+				if (confirm_ui(vid_buf, "Do you want to delete?", search_names[dp], "Delete"))
 				{
-					free(last);
-					last = NULL;
+					execute_delete(vid_buf, search_ids[dp]);
+					lasttime = TIMEOUT;
+					if (last)
+					{
+						free(last);
+						last = NULL;
+					}
 				}
 			}
+		}
 		if (b && !bq && dap!=-1)
 		{
 			sprintf(ed.str, "history:%s", search_ids[dap]);
@@ -2885,7 +2931,7 @@ int search_ui(pixel *vid_buf)
 				tmp = "&ShowVotes=true";
 			else
 				tmp = "";
-			if (!search_own && !search_date && !*last)
+			if (!search_own && !search_date && !search_fav && !*last)
 			{
 				if (search_page)
 				{
@@ -3047,6 +3093,11 @@ finish:
 	for (i=0; i<IMGCONNS; i++)
 		if (img_http[i])
 			http_async_req_close(img_http[i]);
+			
+	if(bthumb_rsdata){
+		free(bthumb_rsdata);
+		bthumb_rsdata = NULL;
+	}
 
 	search_results("", 0);
 
@@ -4266,6 +4317,40 @@ void execute_fav(pixel *vid_buf, char *id)
 		free(result);
 }
 
+void execute_unfav(pixel *vid_buf, char *id)
+{
+	int status;
+	char *result;
+
+	char *names[] = {"ID", NULL};
+	char *parts[1];
+
+	parts[0] = id;
+
+	result = http_multipart_post(
+	             "http://" SERVER "/Favourite.api?Action=Remove",
+	             names, parts, NULL,
+	             svf_user_id, /*svf_pass*/NULL, svf_session_id,
+	             &status, NULL);
+
+	if (status!=200)
+	{
+		error_ui(vid_buf, status, http_ret_text(status));
+		if (result)
+			free(result);
+		return;
+	}
+	if (result && strncmp(result, "OK", 2))
+	{
+		error_ui(vid_buf, 0, result);
+		free(result);
+		return;
+	}
+
+	if (result)
+		free(result);
+}
+
 int execute_vote(pixel *vid_buf, char *id, char *action)
 {
 	int status;
@@ -4381,6 +4466,8 @@ char *console_ui(pixel *vid_buf,char error[255],char console_more) {
 			drawtext(vid_buf, 15, 15, "Welcome to The Powder Toy console v.3 (by cracker64, python by Doxin)", 255, i, i, 255);
 		else
 			drawtext(vid_buf, 15, 15, "Welcome to The Powder Toy console v.3 (by cracker64, python disabled)", 255, i, i, 255);
+#elif defined(LUACONSOLE)
+		drawtext(vid_buf, 15, 15, "Welcome to The Powder Toy console v.4 (by cracker64, Lua enabled)", 255, 255, 255, 255);
 #else
 		drawtext(vid_buf, 15, 15, "Welcome to The Powder Toy console v.3 (by cracker64, python disabled)", 255, 255, 255, 255);
 #endif
@@ -4497,7 +4584,7 @@ char *console_ui(pixel *vid_buf,char error[255],char console_more) {
 }
 
 unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int savedColor)
-{//TODO: have the text boxes be editable and update the color. Maybe use 0-360 for H in hsv to fix minor inaccuracies (rgb of 0,0,255 , comes back as 0,3,255)
+{//TODO: have the text boxes be editable and update the color.
 	int i,ss,hh,vv,cr=127,cg=0,cb=0,b = 0,mx,my,bq = 0,j, lb=0,lx=0,ly=0,lm=0,hidden=0;
 	int window_offset_x_left = 2;
 	int window_offset_x_right = XRES - 279;
@@ -4598,7 +4685,7 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 
 		drawrect(vid_buf, -1, -1, XRES+1, YRES+1, 220, 220, 220, 255);
 		drawrect(vid_buf, -1, -1, XRES+2, YRES+2, 70, 70, 70, 255);
-		drawtext(vid_buf, 2, 388, "Welcome to the decoration editor v.2 (by cracker64) \n\nClicking the current color on the window will move it to the other side. Right click is eraser. ", 255, 255, 255, 255);
+		drawtext(vid_buf, 2, 388, "Welcome to the decoration editor v.3 (by cracker64) \n\nClicking the current color on the window will move it to the other side. Right click is eraser. ", 255, 255, 255, 255);
 
 		if(!hidden)
 		{
@@ -4613,13 +4700,13 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 			ui_edit_draw(vid_buf, &box_B);
 
 			for(ss=0; ss<=255; ss++)
-				for(hh=0;hh<=255;hh++)
+				for(hh=0;hh<=359;hh++)
 				{
 					cr = 0;
 					cg = 0;
 					cb = 0;
-					HSV_to_RGB(hh,255-ss,255,&cr,&cg,&cb);
-					vid_buf[(ss+grid_offset_y)*(XRES+BARSIZE)+(hh+grid_offset_x)] = PIXRGB(cr, cg, cb);
+					HSV_to_RGB(hh,255-ss,255-ss,&cr,&cg,&cb);
+					vid_buf[(ss+grid_offset_y)*(XRES+BARSIZE)+(clamp_flt(hh, 0, 359)+grid_offset_x)] = PIXRGB(cr, cg, cb);
 				}
 			for(vv=0; vv<=255; vv++)
 				for( i=0; i<10; i++)
@@ -4627,13 +4714,13 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 					cr = 0;
 					cg = 0;
 					cb = 0;
-					HSV_to_RGB(0,0,vv,&cr,&cg,&cb);
+					HSV_to_RGB(h,s,vv,&cr,&cg,&cb);
 					vid_buf[(vv+grid_offset_y)*(XRES+BARSIZE)+(i+grid_offset_x+255+4)] = PIXRGB(cr, cg, cb);
 				}
-			addpixel(vid_buf,grid_offset_x + h,grid_offset_y-1,255,255,255,255);
+			addpixel(vid_buf,grid_offset_x + clamp_flt(h, 0, 359),grid_offset_y-1,255,255,255,255);
 			addpixel(vid_buf,grid_offset_x -1,grid_offset_y+(255-s),255,255,255,255);
 
-			addpixel(vid_buf,grid_offset_x + th,grid_offset_y-1,100,100,100,255);
+			addpixel(vid_buf,grid_offset_x + clamp_flt(th, 0, 359),grid_offset_y-1,100,100,100,255);
 			addpixel(vid_buf,grid_offset_x -1,grid_offset_y+(255-ts),100,100,100,255);
 
 			addpixel(vid_buf,grid_offset_x + 255 +3,grid_offset_y+tv,100,100,100,255);
@@ -4677,11 +4764,12 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 			if(mx >= grid_offset_x && my >= grid_offset_y && mx <= grid_offset_x+255 && my <= grid_offset_y+255)
 			{
 				th = mx - grid_offset_x;
+				th = (int)( th*359/255 );
 				ts = 255 - (my - grid_offset_y);
 				if(b)
 				{
-					h = mx - grid_offset_x;
-					s = 255 - (my - grid_offset_y);
+					h = th;
+					s = ts;
 				}
 				HSV_to_RGB(th,ts,v,&cr,&cg,&cb);
 				//clearrect(vid_buf, window_offset_x + onleft_button_offset_x +1, window_offset_y +255+6,12,12);
@@ -4750,7 +4838,7 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 				}
 				else if(lb!=3)//while mouse is held down, it draws lines between previous and current positions
 				{
-					line_decorations(lx, ly, mx, my, *bsx, *bsy, cr, cg, cb);
+					line_decorations(lx, ly, mx, my, *bsx, *bsy, cr, cg, cb, b);
 					lx = mx;
 					ly = my;
 				}
@@ -4791,7 +4879,7 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 				}
 				else //normal click, draw deco
 				{
-					create_decorations(mx,my,*bsx,*bsy,cr,cg,cb);
+					create_decorations(mx,my,*bsx,*bsy,cr,cg,cb,b);
 					lx = mx;
 					ly = my;
 					lb = b;
@@ -4810,9 +4898,9 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 			if (lb && lm) //lm is box/line tool
 			{
 				if (lm == 1)//line
-					line_decorations(lx, ly, mx, my, *bsx, *bsy, cr, cg, cb);
+					line_decorations(lx, ly, mx, my, *bsx, *bsy, cr, cg, cb, b);
 				else//box
-					box_decorations(lx, ly, mx, my, cr, cg, cb);
+					box_decorations(lx, ly, mx, my, cr, cg, cb, b);
 				lm = 0;
 			}
 			lb = 0;
