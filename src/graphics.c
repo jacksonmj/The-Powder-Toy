@@ -140,13 +140,29 @@ pixel *ptif_unpack(void *datain, int size, int *w, int *h){
 	return result;
 }
 
+pixel *resample_img_nn(pixel * src, int sw, int sh, int rw, int rh)
+{
+	int y, x;
+	pixel *q = NULL;
+	q = malloc(rw*rh*PIXELSIZE);
+	for (y=0; y<rh; y++)
+		for (x=0; x<rw; x++){
+			q[rw*y+x] = src[sw*(y*sh/rh)+(x*sw/rw)];
+		}
+	return q;
+}
+
 pixel *resample_img(pixel *src, int sw, int sh, int rw, int rh)
 {
 	int y, x;
 	//int i,j,x,y,w,h,r,g,b,c;
 	pixel *q = NULL;
 	//TODO: Actual resampling, this is just cheap nearest pixel crap
-	if(rw > sw && rh > sh){
+	if(rw == sw && rh == sh){
+		//Don't resample
+		q = malloc(rw*rh*PIXELSIZE);
+		memcpy(q, src, rw*rh*PIXELSIZE);
+	} else if(rw > sw && rh > sh){
 		float fx, fy, fyc, fxc, intp;
 		pixel tr, tl, br, bl;
 		q = malloc(rw*rh*PIXELSIZE);
@@ -1571,7 +1587,7 @@ void draw_parts(pixel *vid)
 
 			if (t==PT_SOAP)
 			{
-				if (((parts[i].ctype&1) == 1) && ((parts[i].ctype&2) == 2))
+				if ((parts[i].ctype&7) == 7)
 					draw_line(vid, nx, ny, (int)(parts[parts[i].tmp].x+0.5f), (int)(parts[parts[i].tmp].y+0.5f), 245, 245, 220, XRES+BARSIZE);
 			}
 
