@@ -834,7 +834,7 @@ static wall_type wtypes[] =
 	{PIXPACK(0x000000), PIXPACK(0x000000), -1, "Drag tool"},
 };
 
-#define CHANNELS ((int)(MAX_TEMP-73.15f)/100+2)
+#define CHANNELS ((int)(MAX_TEMP-73)/100+2)
 particle portalp[CHANNELS][8][80];
 const particle emptyparticle;
 int wireless[CHANNELS][2];
