@@ -90,6 +90,19 @@ void strlist_free(struct strlist **list)
 	}
 }
 
+void clean_text(char *text, int vwidth)
+{
+	int i = 0;
+	if(textwidth(text) > vwidth){
+		text[textwidthx(text, vwidth)] = 0;	
+	}
+	for(i = 0; i < strlen(text); i++){
+		if(! (text[i]>=' ' && text[i]<127)){
+			text[i] = ' ';
+		}
+	}
+}
+
 void save_presets(int do_update)
 {
 	FILE *f=fopen("powder.def", "wb");
@@ -621,6 +634,16 @@ void RGB_to_HSV(int r,int g,int b,int *h,int *s,int *v)//convert 0-255 RGB value
  		*h = (int)(60.0*(d - c/(x - a)));
  		*s = (int)(255.0*((x - a)/x));
  		*v = (int)(255.0*x);
+	}
+}
+
+void membwand(void * destv, void * srcv, size_t destsize, size_t srcsize)
+{
+	size_t i;
+	unsigned char * dest = destv;
+	unsigned char * src = srcv;
+	for(i = 0; i < destsize; i++){
+		dest[i] = dest[i] & src[i%srcsize];
 	}
 }
 vector2d v2d_zero = {0,0};

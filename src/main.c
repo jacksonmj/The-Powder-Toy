@@ -1007,6 +1007,8 @@ int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char 
 		else
 			stop_grav_async();
 	}
+	
+	gravity_mask();
 
 	if (p >= size)
 		goto version1;
@@ -1036,6 +1038,7 @@ int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char 
 		{
 			memcpy(signs[k].text, d+p, x);
 			signs[k].text[x] = 0;
+			clean_text(signs[k].text, 158-14 /* Current max sign length */);
 		}
 		p += x;
 	}
@@ -1059,6 +1062,7 @@ corrupt:
 
 void clear_sim(void)
 {
+	int x, y;
 	memset(bmap, 0, sizeof(bmap));
 	memset(emap, 0, sizeof(emap));
 	memset(signs, 0, sizeof(signs));
@@ -1079,6 +1083,15 @@ void clear_sim(void)
 	memset(fire_r, 0, sizeof(fire_r));
 	memset(fire_g, 0, sizeof(fire_g));
 	memset(fire_b, 0, sizeof(fire_b));
+	memset(gravmask, 0xFF, sizeof(gravmask));
+	memset(gravy, 0, sizeof(gravy));
+	memset(gravx, 0, sizeof(gravx));
+	for(x = 0; x < XRES/CELL; x++){
+		for(y = 0; y < YRES/CELL; y++){
+			hv[y][x] = 273.15f+22.0f; //Set to room temperature
+		}
+	}
+	gravity_mask();
 }
 
 // stamps library
@@ -1741,6 +1754,9 @@ int main(int argc, char *argv[])
 		http_session_check = http_async_req_start(NULL, "http://" SERVER "/Login.api?Action=CheckSession", NULL, 0, 0);
 		http_auth_headers(http_session_check, svf_user_id, NULL, svf_session_id);
 	}
+#ifdef LUACONSOLE
+	luacon_eval("dofile(\"autorun.lua\")"); //Autorun lua script
+#endif
 	while (!sdl_poll()) //the main loop
 	{
 		frameidx++;
@@ -1754,6 +1770,12 @@ int main(int argc, char *argv[])
 #ifdef OpenGL
 		ClearScreen();
 #else
+		if(gravwl_timeout)
+		{
+			if(gravwl_timeout==1)
+				gravity_mask();
+			gravwl_timeout--;
+		}
 		if (cmode==CM_VEL || cmode==CM_PRESS || cmode==CM_CRACK || (cmode==CM_HEAT && aheat_enable))//air only gets drawn in these modes
 		{
 			draw_air(vid_buf);
@@ -1784,6 +1806,8 @@ int main(int argc, char *argv[])
 		draw_walls(vid_buf); 
 		update_particles(vid_buf); //update everything
 		draw_parts(vid_buf); //draw particles
+		if(sl == WL_GRAV+100 || sr == WL_GRAV+100)
+			draw_grav_zones(vid_buf);
 		
 		if(ngrav_enable){
 			pthread_mutex_lock(&gravmutex);
@@ -1799,6 +1823,9 @@ int main(int argc, char *argv[])
 				}
 			}
 			pthread_mutex_unlock(&gravmutex);
+			//Apply the gravity mask
+			membwand(gravy, gravmask, sizeof(gravy), sizeof(gravmask));
+			membwand(gravx, gravmask, sizeof(gravx), sizeof(gravmask));
 		}
 
 		if (!sys_pause||framerender) //Only update if not paused
@@ -1824,7 +1851,7 @@ int main(int argc, char *argv[])
 		memset(vid_buf+((XRES+BARSIZE)*YRES), 0, (PIXELSIZE*(XRES+BARSIZE))*MENUSIZE);//clear menu areas
 		clearrect(vid_buf, XRES-1, 0, BARSIZE+1, YRES);
 
-		draw_svf_ui(vid_buf);
+		draw_svf_ui(vid_buf, sdl_mod & (KMOD_LCTRL|KMOD_RCTRL));
 
 		if (http_ver_check)
 		{
@@ -2636,13 +2663,22 @@ int main(int argc, char *argv[])
 				if (da < 51)
 					da ++;
 			}
-			else if (x>=37*sdl_scale && x<=187*sdl_scale && svf_login)
+			else if (x>=37*sdl_scale && x<=187*sdl_scale)
 			{
-				db = 259;
-				if (svf_open && svf_own && x<=55*sdl_scale)
-					db = 258;
-				if (da < 51)
-					da ++;
+				if(sdl_mod & (KMOD_LCTRL|KMOD_RCTRL))
+				{
+					db = 277;
+					if (da < 51)
+						da ++;
+				}
+				else if(svf_login)
+				{
+					db = 259;
+					if (svf_open && svf_own && x<=55*sdl_scale)
+						db = 258;
+					if (da < 51)
+						da ++;
+				}
 			}
 			else if (x>=((XRES+BARSIZE-(510-385))*sdl_scale) && x<=((XRES+BARSIZE-(510-476))*sdl_scale))
 			{
@@ -2660,7 +2696,10 @@ int main(int argc, char *argv[])
 			}
 			else if (x>=sdl_scale && x<=17*sdl_scale)
 			{
-				db = 262;
+				if(sdl_mod & (KMOD_LCTRL|KMOD_RCTRL))
+					db = 276;
+				else
+					db = 262;
 				if (da < 51)
 					da ++;
 			}
@@ -2852,32 +2891,45 @@ int main(int argc, char *argv[])
 							http_session_check = NULL;
 						}
 					}
-					if (x>=37 && x<=187 && svf_login)
+					if(sdl_mod & (KMOD_LCTRL|KMOD_RCTRL))
 					{
-						if (!svf_open || !svf_own || x>51)
+						if (x>=37 && x<=187)
 						{
-							if (save_name_ui(vid_buf)) {
-								execute_save(vid_buf);
-								if (svf_id[0]) {
-									copytext_ui(vid_buf, "Save ID", "Saved successfully!", svf_id);
+							save_filename_ui(vid_buf);
+									
+						}
+						if (x>=1 && x<=17)
+						{
+							catalogue_ui(vid_buf);
+						}
+					} else {
+						if (x>=37 && x<=187 && svf_login)
+						{
+							if (!svf_open || !svf_own || x>51)
+							{
+								if (save_name_ui(vid_buf)) {
+									execute_save(vid_buf);
+									if (svf_id[0]) {
+										copytext_ui(vid_buf, "Save ID", "Saved successfully!", svf_id);
+									}
 								}
 							}
+							else
+								execute_save(vid_buf);
+							while (!sdl_poll())
+								if (!SDL_GetMouseState(&x, &y))
+									break;
+							b = bq = 0;
 						}
-						else
-							execute_save(vid_buf);
-						while (!sdl_poll())
-							if (!SDL_GetMouseState(&x, &y))
-								break;
-						b = bq = 0;
-					}
-					if (x>=1 && x<=17)
-					{
-						search_ui(vid_buf);
-						memset(fire_bg, 0, XRES*YRES*PIXELSIZE);
-						memset(pers_bg, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
-						memset(fire_r, 0, sizeof(fire_r));
-						memset(fire_g, 0, sizeof(fire_g));
-						memset(fire_b, 0, sizeof(fire_b));
+						if (x>=1 && x<=17)
+						{
+							search_ui(vid_buf);
+							memset(fire_bg, 0, XRES*YRES*PIXELSIZE);
+							memset(pers_bg, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
+							memset(fire_r, 0, sizeof(fire_r));
+							memset(fire_g, 0, sizeof(fire_g));
+							memset(fire_b, 0, sizeof(fire_b));
+						}
 					}
 					if (x>=19 && x<=35 && svf_last && svf_open && !bq) {
 						//int tpval = sys_pause;
@@ -3186,6 +3238,12 @@ int main(int argc, char *argv[])
 				break;
 			case 275:
 				drawtext(vid_buf, 16, YRES-24, "You cannot vote on your own save.", 255, 255, 255, da*5);
+				break;
+			case 276:
+				drawtext(vid_buf, 16, YRES-24, "Open a simulation from your hard drive.", 255, 255, 255, da*5);
+				break;
+			case 277:
+				drawtext(vid_buf, 16, YRES-24, "Save the simulation to your hard drive.", 255, 255, 255, da*5);
 				break;
 			default:
 				drawtext(vid_buf, 16, YRES-24, (char *)ptypes[db].descs, 255, 255, 255, da*5);

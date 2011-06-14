@@ -48,6 +48,8 @@ extern unsigned int fire_alpha[CELL*3][CELL*3];
 extern pixel *fire_bg;
 extern pixel *pers_bg;
 
+void draw_rgba_image(pixel *vid, unsigned char *data, int x, int y, float a);
+
 void *ptif_pack(pixel *src, int w, int h, int *result_size);
 
 pixel *ptif_unpack(void *datain, int size, int *w, int *h);
@@ -107,6 +109,8 @@ void blendpixel(pixel *vid, int x, int y, int r, int g, int b, int a);
 void draw_icon(pixel *vid_buf, int x, int y, char ch, int flag);
 
 void draw_air(pixel *vid);
+
+void draw_grav_zones(pixel *vid);
 
 void draw_grav(pixel *vid);
 

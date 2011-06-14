@@ -8,11 +8,13 @@
 #endif
  
 #define SAVE_VERSION 50
-#define MINOR_VERSION 2
+#define MINOR_VERSION 3
 #define IDENT_VERSION "G" //Change this if you're not Simon! It should be a single letter.
 #define BETA
 
 #define SERVER "powdertoy.co.uk"
+
+#define LOCAL_SAVE_DIR "Saves"
 
 #define THUMB_CACHE_SIZE 256
 
@@ -68,6 +70,11 @@ extern unsigned char ZSIZE;
 #define GRID_P 3
 #define GRID_S 6
 #define GRID_Z 3
+
+#define CATALOGUE_X 4
+#define CATALOGUE_Y 3
+#define CATALOGUE_S 6
+#define CATALOGUE_Z 3
 
 #define STAMP_X 4
 #define STAMP_Y 4
