@@ -2133,10 +2133,6 @@ killed:
 movedone:
 			continue;
 		}
-	if (framerender) {
-		framerender = 0;
-		sys_pause = 1;
-	}
 }
 
 void update_particles(pixel *vid)//doesn't update the particles themselves, but some other things
