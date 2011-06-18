@@ -836,6 +836,20 @@ static wall_type wtypes[] =
 	{PIXPACK(0xFFEE00), PIXPACK(0xAA9900), 4, "Gravity wall"},
 };
 
+#define VIEWMODE_RESETFIRE 1
+#define VIEWMODE_RESETPERS 2
+struct view_mode_t
+{
+	char *icon;
+	pixel colour;
+	char *icon2;
+	pixel colour2;
+	char *name;
+	char properties;
+};
+typedef struct view_mode_t view_mode_t;
+extern view_mode_t view_modes[];
+
 #define CHANNELS ((int)(MAX_TEMP-73)/100+2)
 particle portalp[CHANNELS][8][80];
 const particle emptyparticle;

@@ -76,6 +76,22 @@ int zoom_wx=0, zoom_wy=0;
 unsigned char ZFACTOR = 256/ZSIZE_D;
 unsigned char ZSIZE = ZSIZE_D;
 
+view_mode_t view_modes[CM_COUNT] =
+{
+	/* VEL		*/	{"\x98",	PIXPACK(0x80A0FF),	"",		PIXPACK(0x000000),	"Velocity Display", 0},
+	/* PRESS	*/	{"\x99",	PIXPACK(0xFFD420),	"",		PIXPACK(0x000000),	"Pressure Display", 0},
+	/* PERS		*/	{"\x9A",	PIXPACK(0xD4D4D4),	"",		PIXPACK(0x000000),	"Persistent Display", VIEWMODE_RESETPERS},
+	/* FIRE		*/	{"\x9B",	PIXPACK(0xFF0000),	"\x9C",	PIXPACK(0xFFFF40),	"Fire Display", VIEWMODE_RESETFIRE},
+	/* BLOB		*/	{"\xBF",	PIXPACK(0x37FF37),	"",		PIXPACK(0x000000),	"Blob Display", VIEWMODE_RESETFIRE},
+	/* HEAT		*/	{"\xBE",	PIXPACK(0xFF0000),	"\xBD",	PIXPACK(0xFFFFFF),	"Heat Display", 0},
+	/* FANCY	*/	{"\xC4",	PIXPACK(0x6496FF),	"",		PIXPACK(0x000000),	"Fancy Display", VIEWMODE_RESETFIRE},
+	/* NOTHING	*/	{"\x00",	PIXPACK(0x000000),	"",		PIXPACK(0x000000),	"Nothing Display", 0},
+	/* GRAD		*/	{"\xD3",	PIXPACK(0xFF32FF),	"",		PIXPACK(0x000000),	"Heat Gradient Display", 0},
+	/* LIFE		*/	{"\x00",	PIXPACK(0x000000),	"",		PIXPACK(0x000000),	"Life Display", 0},
+	/* CRACK	*/	{"\xD4",	PIXPACK(0xFF3737),	"\xD5",	PIXPACK(0x37FF37),	"Alternate Velocity Display", 0},
+};
+
+
 void menu_count(void)//puts the number of elements in each section into .itemcount
 {
 	int i=0;
@@ -722,46 +738,15 @@ void draw_svf_ui(pixel *vid_buf, int alternate)// all the buttons at the bottom
 	}
 
 	//the view mode button
-	switch (cmode)
+	if (cmode>=0 && cmode<CM_COUNT)
 	{
-	case CM_VEL:
-		drawtext(vid_buf, XRES-29+BARSIZE/*481*/, YRES+(MENUSIZE-13), "\x98", 128, 160, 255, 255);
-		break;
-	case CM_PRESS:
-		drawtext(vid_buf, XRES-29+BARSIZE/*481*/, YRES+(MENUSIZE-13), "\x99", 255, 212, 32, 255);
-		break;
-	case CM_PERS:
-		drawtext(vid_buf, XRES-29+BARSIZE/*481*/, YRES+(MENUSIZE-13), "\x9A", 212, 212, 212, 255);
-		break;
-	case CM_FIRE:
-		drawtext(vid_buf, XRES-29+BARSIZE/*481*/, YRES+(MENUSIZE-13), "\x9B", 255, 0, 0, 255);
-		drawtext(vid_buf, XRES-29+BARSIZE/*481*/, YRES+(MENUSIZE-13), "\x9C", 255, 255, 64, 255);
-		break;
-	case CM_BLOB:
-		drawtext(vid_buf, XRES-29+BARSIZE/*481*/, YRES+(MENUSIZE-13), "\xBF", 55, 255, 55, 255);
-		break;
-	case CM_HEAT:
-		drawtext(vid_buf, XRES-27+BARSIZE/*481*/, YRES+(MENUSIZE-13), "\xBE", 255, 0, 0, 255);
-		drawtext(vid_buf, XRES-27+BARSIZE/*481*/, YRES+(MENUSIZE-13), "\xBD", 255, 255, 255, 255);
-		break;
-	case CM_FANCY:
-		drawtext(vid_buf, XRES-29+BARSIZE/*481*/, YRES+(MENUSIZE-13), "\xC4", 100, 150, 255, 255);
-		break;
-	case CM_NOTHING:
-		drawtext(vid_buf, XRES-29+BARSIZE/*481*/, YRES+(MENUSIZE-13), "\x00", 100, 150, 255, 255);
-		break;
-	case CM_CRACK:
-		drawtext(vid_buf, XRES-29+BARSIZE/*481*/, YRES+(MENUSIZE-13), "\xD4", 255, 55, 55, 255);
-		drawtext(vid_buf, XRES-29+BARSIZE/*481*/, YRES+(MENUSIZE-13), "\xD5", 55, 255, 55, 255);
-		break;
-	case CM_GRAD:
-		drawtext(vid_buf, XRES-29+BARSIZE/*481*/, YRES+(MENUSIZE-13), "\xD3", 255, 50, 255, 255);
-		break;
-	case CM_LIFE:
-		drawtext(vid_buf, XRES-29+BARSIZE/*481*/, YRES+(MENUSIZE-13), "\x00", 255, 50, 255, 255);
-		break;
+		int offset_x = cmode==CM_HEAT?27:29;
+		if (view_modes[cmode].icon && view_modes[cmode].icon[0])
+			drawtext(vid_buf, XRES-offset_x+BARSIZE, YRES+(MENUSIZE-13), view_modes[cmode].icon, PIXR(view_modes[cmode].colour), PIXG(view_modes[cmode].colour), PIXB(view_modes[cmode].colour), 255);
+		if (view_modes[cmode].icon2 && view_modes[cmode].icon2[0])
+			drawtext(vid_buf, XRES-offset_x+BARSIZE, YRES+(MENUSIZE-13), view_modes[cmode].icon2, PIXR(view_modes[cmode].colour2), PIXG(view_modes[cmode].colour2), PIXB(view_modes[cmode].colour2), 255);
 	}
-	drawrect(vid_buf, XRES-32+BARSIZE/*478*/, YRES+(MENUSIZE-16), 14, 14, 255, 255, 255, 255);
+	drawrect(vid_buf, XRES-32+BARSIZE, YRES+(MENUSIZE-16), 14, 14, 255, 255, 255, 255);
 
 	// special icons for admin/mods
 	if (svf_admin)
@@ -774,8 +759,7 @@ void draw_svf_ui(pixel *vid_buf, int alternate)// all the buttons at the bottom
 	{
 		drawtext(vid_buf, XRES-45+BARSIZE/*463*/, YRES+(MENUSIZE-14), "\xC9", 35, 127, 232, 255);
 		drawtext(vid_buf, XRES-45+BARSIZE/*463*/, YRES+(MENUSIZE-14), "\xC7", 255, 255, 255, 255);
-	}//else if(amd)
-	//	drawtext(vid_buf, XRES-45/*465*/, YRES+(MENUSIZE-15), "\x97", 0, 230, 153, 255); Why is this here?
+	}
 }
 
 void error_ui(pixel *vid_buf, int err, char *txt)
@@ -2299,69 +2283,22 @@ int sdl_poll(void)
 void set_cmode(int cm) // sets to given view mode
 {
 	cmode = cm;
-	itc = 51;
-	if (cmode==CM_BLOB)
+	if (cmode==CM_LIFE && !DEBUG_MODE)
+		cmode = CM_CRACK;
+	if (cmode<0 || cmode>=CM_COUNT)
+		cmode = 0;
+	if (view_modes[cmode].properties&VIEWMODE_RESETFIRE)
 	{
 		memset(fire_r, 0, sizeof(fire_r));
 		memset(fire_g, 0, sizeof(fire_g));
 		memset(fire_b, 0, sizeof(fire_b));
-		strcpy(itc_msg, "Blob Display");
 	}
-	else if (cmode==CM_HEAT)
+	if (view_modes[cmode].properties&VIEWMODE_RESETPERS)
 	{
-		strcpy(itc_msg, "Heat Display");
-	}
-	else if (cmode==CM_FANCY)
-	{
-		memset(fire_r, 0, sizeof(fire_r));
-		memset(fire_g, 0, sizeof(fire_g));
-		memset(fire_b, 0, sizeof(fire_b));
-		strcpy(itc_msg, "Fancy Display");
-	}
-	else if (cmode==CM_FIRE)
-	{
-		memset(fire_r, 0, sizeof(fire_r));
-		memset(fire_g, 0, sizeof(fire_g));
-		memset(fire_b, 0, sizeof(fire_b));
-		strcpy(itc_msg, "Fire Display");
-	}
-	else if (cmode==CM_PERS)
-	{
-		memset(fire_bg, 0, XRES*YRES*PIXELSIZE);
 		memset(pers_bg, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
-		strcpy(itc_msg, "Persistent Display");
 	}
-	else if (cmode==CM_PRESS)
-	{
-		strcpy(itc_msg, "Pressure Display");
-	}
-	else if (cmode==CM_NOTHING)
-	{
-		strcpy(itc_msg, "Nothing Display");
-	}
-	else if (cmode==CM_CRACK)
-	{
-		strcpy(itc_msg, "Alternate Velocity Display");
-	}
-	else if (cmode==CM_GRAD)
-	{
-		strcpy(itc_msg, "Heat Gradient Display");
-	}
-	else if (cmode==CM_LIFE)
-	{
-		if (DEBUG_MODE) //can only get to Life view in debug mode
-		{
-			strcpy(itc_msg, "Life Display");
-		}
-		else
-		{
-			set_cmode(CM_CRACK);
-		}
-	}
-	else //if no special text given, it will display this.
-	{
-		strcpy(itc_msg, "Velocity Display");
-	}
+	strcpy(itc_msg, view_modes[cmode].name);
+	itc = 51;
 	save_presets(0);
 }
 
