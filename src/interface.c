@@ -4194,211 +4194,92 @@ void execute_save(pixel *vid_buf)
 
 int execute_delete(pixel *vid_buf, char *id)
 {
-	int status;
-	char *result;
-
 	char *names[] = {"ID", NULL};
 	char *parts[1];
 
 	parts[0] = id;
 
-	result = http_multipart_post(
-	             "http://" SERVER "/Delete.api",
-	             names, parts, NULL,
-	             svf_user_id, /*svf_pass*/NULL, svf_session_id,
-	             &status, NULL);
-
-	if (status!=200)
-	{
-		error_ui(vid_buf, status, http_ret_text(status));
-		if (result)
-			free(result);
-		return 0;
-	}
-	if (result && strncmp(result, "INFO: ", 6)==0)
-	{
-		info_ui(vid_buf, "Info", result+6);
-		free(result);
-		return 0;
-	}
-	if (result && strncmp(result, "OK", 2))
-	{
-		error_ui(vid_buf, 0, result);
-		free(result);
-		return 0;
-	}
-
-	if (result)
-		free(result);
-	return 1;
+	return execute_do(vid_buf, names, parts, "http://" SERVER "/Delete.api");
 }
 
 void execute_submit(pixel *vid_buf, char *id, char *message)
 {
-	int status;
-	char *result;
-
 	char *names[] = {"ID", "Message", NULL};
 	char *parts[2];
 
 	parts[0] = id;
 	parts[1] = message;
 
-	result = http_multipart_post(
-	             "http://" SERVER "/Comment.api",
-	             names, parts, NULL,
-	             svf_user_id, /*svf_pass*/NULL, svf_session_id,
-	             &status, NULL);
-
-	if (status!=200)
-	{
-		error_ui(vid_buf, status, http_ret_text(status));
-		if (result)
-			free(result);
-		return;
-	}
-	if (result && strncmp(result, "OK", 2))
-	{
-		error_ui(vid_buf, 0, result);
-		free(result);
-		return;
-	}
-
-	if (result)
-		free(result);
+	execute_do(vid_buf, names, parts, "http://" SERVER "/Comment.api");
 }
 
 int execute_report(pixel *vid_buf, char *id, char *reason)
 {
-	int status;
-	char *result;
-
 	char *names[] = {"ID", "Reason", NULL};
 	char *parts[2];
 
 	parts[0] = id;
 	parts[1] = reason;
 
-	result = http_multipart_post(
-	             "http://" SERVER "/Report.api",
-	             names, parts, NULL,
-	             svf_user_id, /*svf_pass*/NULL, svf_session_id,
-	             &status, NULL);
-
-	if (status!=200)
-	{
-		error_ui(vid_buf, status, http_ret_text(status));
-		if (result)
-			free(result);
-		return 0;
-	}
-	if (result && strncmp(result, "OK", 2))
-	{
-		error_ui(vid_buf, 0, result);
-		free(result);
-		return 0;
-	}
-
-	if (result)
-		free(result);
-	return 1;
+	return execute_do(vid_buf, names, parts, "http://" SERVER "/Report.api");
 }
 
 void execute_fav(pixel *vid_buf, char *id)
 {
-	int status;
-	char *result;
-
 	char *names[] = {"ID", NULL};
 	char *parts[1];
 
 	parts[0] = id;
 
-	result = http_multipart_post(
-	             "http://" SERVER "/Favourite.api",
-	             names, parts, NULL,
-	             svf_user_id, /*svf_pass*/NULL, svf_session_id,
-	             &status, NULL);
-
-	if (status!=200)
-	{
-		error_ui(vid_buf, status, http_ret_text(status));
-		if (result)
-			free(result);
-		return;
-	}
-	if (result && strncmp(result, "OK", 2))
-	{
-		error_ui(vid_buf, 0, result);
-		free(result);
-		return;
-	}
-
-	if (result)
-		free(result);
+	execute_do(vid_buf, names, parts, "http://" SERVER "/Favourite.api");
 }
 
 void execute_unfav(pixel *vid_buf, char *id)
 {
-	int status;
-	char *result;
-
 	char *names[] = {"ID", NULL};
 	char *parts[1];
 
 	parts[0] = id;
 
-	result = http_multipart_post(
-	             "http://" SERVER "/Favourite.api?Action=Remove",
-	             names, parts, NULL,
-	             svf_user_id, /*svf_pass*/NULL, svf_session_id,
-	             &status, NULL);
-
-	if (status!=200)
-	{
-		error_ui(vid_buf, status, http_ret_text(status));
-		if (result)
-			free(result);
-		return;
-	}
-	if (result && strncmp(result, "OK", 2))
-	{
-		error_ui(vid_buf, 0, result);
-		free(result);
-		return;
-	}
-
-	if (result)
-		free(result);
+	execute_do(vid_buf, names, parts, "http://" SERVER "/Favourite.api?Action=Remove");
 }
 
 int execute_vote(pixel *vid_buf, char *id, char *action)
 {
-	int status;
-	char *result;
-
 	char *names[] = {"ID", "Action", NULL};
 	char *parts[2];
 
 	parts[0] = id;
 	parts[1] = action;
 
-	result = http_multipart_post(
-	             "http://" SERVER "/Vote.api",
+	return execute_do(vid_buf, names, parts, "http://" SERVER "/Vote.api");
+}
+
+int execute_do(pixel *vid_buf, char *names, char *parts, char *uri)
+{
+	int status;
+	char *result;
+	result = http_multipart_post(uri,
 	             names, parts, NULL,
-	             svf_user_id, /*svf_pass*/NULL, svf_session_id,
+	             svf_user_id, NULL, svf_session_id,
 	             &status, NULL);
 
 	if (status!=200)
 	{
-		error_ui(vid_buf, status, http_ret_text(status));
+		if (vid_buf) error_ui(vid_buf, status, http_ret_text(status));
 		if (result)
 			free(result);
 		return 0;
 	}
+	if (result && strncmp(result, "INFO: ", 6)==0)
+	{
+		if (vid_buf) info_ui(vid_buf, "Info", result+6);
+		free(result);
+		return 0;
+	}
 	if (result && strncmp(result, "OK", 2))
 	{
-		error_ui(vid_buf, 0, result);
+		if (vid_buf) error_ui(vid_buf, 0, result);
 		free(result);
 		return 0;
 	}
@@ -4407,6 +4288,7 @@ int execute_vote(pixel *vid_buf, char *id, char *action)
 		free(result);
 	return 1;
 }
+
 void open_link(char *uri) {
 #ifdef WIN32
 	ShellExecute(0, "OPEN", uri, NULL, NULL, 0);

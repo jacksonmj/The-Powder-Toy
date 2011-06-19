@@ -266,6 +266,7 @@ void execute_fav(pixel *vid_buf, char *id);
 void execute_unfav(pixel *vid_buf, char *id);
 
 int execute_vote(pixel *vid_buf, char *id, char *action);
+int execute_do(pixel *vid_buf, char *names, char *parts, char *uri);
 
 void open_link(char *uri);
 
