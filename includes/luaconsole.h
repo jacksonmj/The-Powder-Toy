@@ -1,8 +1,14 @@
 #ifndef LUACONSOLEH
 #define LUACONSOLEH
+#ifdef LUA_R_INCL
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+#else
 #include <lua5.1/lua.h>
 #include <lua5.1/lauxlib.h>
 #include <lua5.1/lualib.h>
+#endif
 #include <defines.h>
 
 void luacon_open();
@@ -12,6 +18,8 @@ int luacon_eval(char *command);
 char *luacon_geterror();
 void luacon_close();
 int process_command_lua(pixel *vid_buf, char *console, char *console_error);
+
+int getPartIndex_curIdx;
 
 //TPT Interface
 int luatpt_test(lua_State* l);
@@ -39,4 +47,8 @@ int luatpt_register_step(lua_State* l);
 int luatpt_unregister_step(lua_State* l);
 int luatpt_input(lua_State* l);
 int luatpt_message_box(lua_State* l);
+int luatpt_get_numOfParts(lua_State* l);
+int luatpt_start_getPartIndex(lua_State* l);
+int luatpt_getPartIndex(lua_State* l);
+int luatpt_next_getPartIndex(lua_State* l);
 #endif

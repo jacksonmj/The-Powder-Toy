@@ -215,7 +215,7 @@ int try_move(int i, int x, int y, int nx, int ny)
 			if ((r & 0xFF) < PT_NUM && ptypes[r&0xFF].hconduct)
 				parts[i].temp = parts[r>>8].temp = restrict_flt((parts[r>>8].temp+parts[i].temp)/2, MIN_TEMP, MAX_TEMP);
 		}
-		if (parts[i].type==PT_NEUT && ((r&0xFF)==PT_CLNE || (r&0xFF)==PT_PCLN || (r&0xFF)==PT_BCLN)) {
+		if (parts[i].type==PT_NEUT && ((r&0xFF)==PT_CLNE || (r&0xFF)==PT_PCLN || (r&0xFF)==PT_BCLN || (r&0xFF)==PT_PBCN)) {
 			if (!parts[r>>8].ctype)
 				parts[r>>8].ctype = PT_NEUT;
 		}
@@ -634,7 +634,7 @@ int create_part(int p, int x, int y, int t)//the function for creating a particl
 		{
 			if (t==SPC_HEAT&&parts[pmap[y][x]>>8].temp<MAX_TEMP)
 			{
-				if ((pmap[y][x]&0xFF)==PT_PUMP) {
+				if ((pmap[y][x]&0xFF)==PT_PUMP || (pmap[y][x]&0xFF)==PT_GPMP) {
 					parts[pmap[y][x]>>8].temp = restrict_flt(parts[pmap[y][x]>>8].temp + 0.1f, MIN_TEMP, MAX_TEMP);
 				} else if ((sdl_mod & (KMOD_SHIFT)) && (sdl_mod & (KMOD_CTRL))) {
 					parts[pmap[y][x]>>8].temp = restrict_flt(parts[pmap[y][x]>>8].temp + 50.0f, MIN_TEMP, MAX_TEMP);
@@ -644,7 +644,7 @@ int create_part(int p, int x, int y, int t)//the function for creating a particl
 			}
 			if (t==SPC_COOL&&parts[pmap[y][x]>>8].temp>MIN_TEMP)
 			{
-				if ((pmap[y][x]&0xFF)==PT_PUMP) {
+				if ((pmap[y][x]&0xFF)==PT_PUMP || (pmap[y][x]&0xFF)==PT_GPMP) {
 					parts[pmap[y][x]>>8].temp = restrict_flt(parts[pmap[y][x]>>8].temp - 0.1f, MIN_TEMP, MAX_TEMP);
 				} else if ((sdl_mod & (KMOD_SHIFT)) && (sdl_mod & (KMOD_CTRL))) {
 					parts[pmap[y][x]>>8].temp = restrict_flt(parts[pmap[y][x]>>8].temp - 50.0f, MIN_TEMP, MAX_TEMP);
@@ -723,7 +723,16 @@ int create_part(int p, int x, int y, int t)//the function for creating a particl
 	{
 		if (pmap[y][x])
 		{
-			if (((pmap[y][x]&0xFF)==PT_CLNE||(pmap[y][x]&0xFF)==PT_BCLN||((pmap[y][x]&0xFF)==PT_PCLN&&t!=PT_PSCN&&t!=PT_NSCN))&&(t!=PT_CLNE&&t!=PT_PCLN&&t!=PT_BCLN&&t!=PT_STKM&&t!=PT_STKM2))
+			if ((
+				(pmap[y][x]&0xFF)==PT_CLNE||
+				(pmap[y][x]&0xFF)==PT_BCLN||
+				((pmap[y][x]&0xFF)==PT_PCLN&&t!=PT_PSCN&&t!=PT_NSCN)||
+				((pmap[y][x]&0xFF)==PT_PBCN&&t!=PT_PSCN&&t!=PT_NSCN)
+			)&&(
+				t!=PT_CLNE&&t!=PT_PCLN&&
+				t!=PT_BCLN&&t!=PT_STKM&&
+				t!=PT_STKM2&&t!=PT_PBCN)
+			)
 			{
 				parts[pmap[y][x]>>8].ctype = t;
 			}
@@ -751,9 +760,14 @@ int create_part(int p, int x, int y, int t)//the function for creating a particl
 	{
 		parts[i].pavg[1] = pv[y/CELL][x/CELL];
 	}
-	if (t==PT_QRTZ)
+	else if (t==PT_QRTZ)
 	{
 		parts[i].pavg[1] = pv[y/CELL][x/CELL];
+	}
+	else
+	{
+		parts[i].pavg[0] = 0.0f;
+		parts[i].pavg[1] = 0.0f;
 	}
 	if (t!=PT_STKM&&t!=PT_STKM2)//set everything to default values first, except for stickman.
 	{
@@ -1203,6 +1217,40 @@ int nearest_part(int ci, int t)
 		}
 	}
 	return id;
+}
+
+void create_arc(int sx, int sy, int dx, int dy, int midpoints, int variance, int type)
+{
+	int i;
+	float xint, yint;
+	int *xmid, *ymid;
+	int voffset = variance/2;
+	xmid = calloc(midpoints + 2, sizeof(int));
+	ymid = calloc(midpoints + 2, sizeof(int));
+	xint = (float)(dx-sx)/(float)(midpoints+1.0f);
+	yint = (float)(dy-sy)/(float)(midpoints+1.0f);
+	xmid[0] = sx;
+	xmid[midpoints+1] = dx;
+	ymid[0] = sy;
+	ymid[midpoints+1] = dy;
+	
+	for(i = 1; i <= midpoints; i++)
+	{
+		ymid[i] = ymid[i-1]+yint;
+		xmid[i] = xmid[i-1]+xint;
+	}
+	
+	for(i = 0; i <= midpoints; i++)
+	{
+		if(i!=midpoints)
+		{
+			xmid[i+1] += (rand()%variance)-voffset;
+			ymid[i+1] += (rand()%variance)-voffset;
+		}	
+		create_line(xmid[i], ymid[i], xmid[i+1], ymid[i+1], 0, 0, type);
+	}
+	free(xmid);
+	free(ymid);
 }
 
 //the main function for updating particles

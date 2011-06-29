@@ -45,6 +45,8 @@ int svf_open = 0;
 int svf_own = 0;
 int svf_myvote = 0;
 int svf_publish = 0;
+char svf_filename[255] = "";
+int svf_fileopen = 0;
 char svf_id[16] = "";
 char svf_name[64] = "";
 char svf_description[255] = "";
@@ -79,6 +81,8 @@ int zoom_x=(XRES-ZSIZE_D)/2, zoom_y=(YRES-ZSIZE_D)/2;
 int zoom_wx=0, zoom_wy=0;
 unsigned char ZFACTOR = 256/ZSIZE_D;
 unsigned char ZSIZE = ZSIZE_D;
+
+int drawgrav_enable = 0;
 
 void menu_count(void)//puts the number of elements in each section into .itemcount
 {
@@ -640,7 +644,7 @@ void draw_svf_ui(pixel *vid_buf, int alternate)// all the buttons at the bottom
 	}
 
 	// the reload button
-	c = svf_open ? 255 : 128;
+	c = (svf_open || svf_fileopen) ? 255 : 128;
 	drawtext(vid_buf, 23, YRES+(MENUSIZE-14), "\x91", c, c, c, 255);
 	drawrect(vid_buf, 19, YRES+(MENUSIZE-16), 16, 14, c, c, c, 255);
 
@@ -649,7 +653,10 @@ void draw_svf_ui(pixel *vid_buf, int alternate)// all the buttons at the bottom
 	{
 		fillrect(vid_buf, 36, YRES+(MENUSIZE-16)-1, 152, 16, 255, 255, 255, 255);
 		drawtext(vid_buf, 40, YRES+(MENUSIZE-14), "\x82", 0, 0, 0, 255);
-		drawtext(vid_buf, 58, YRES+(MENUSIZE-12), "[save to disk]", 0, 0, 0, 255);
+		if(svf_fileopen)
+			drawtext(vid_buf, 58, YRES+(MENUSIZE-12), svf_filename, 0, 0, 0, 255);
+		else
+			drawtext(vid_buf, 58, YRES+(MENUSIZE-12), "[save to disk]", 0, 0, 0, 255);
 	} else {
 		c = svf_login ? 255 : 128;
 		drawtext(vid_buf, 40, YRES+(MENUSIZE-14), "\x82", c, c, c, 255);
@@ -1670,6 +1677,8 @@ int save_name_ui(pixel *vid_buf)
 			svf_open = 1;
 			svf_own = 1;
 			svf_publish = cb.checked;
+			svf_filename[0] = 0;
+			svf_fileopen = 0;
 			free(old_vid);
 			return nd+1;
 		}
@@ -3676,12 +3685,16 @@ int open_ui(pixel *vid_buf, char *save_id, char *save_date)
 						svf_tags[0] = 0;
 					}
 					svf_myvote = info->myvote;
+					svf_filename[0] = 0;
+					svf_fileopen = 0;
 					retval = 1;
 					break;
 				} else {
 					queue_open = 0;
 
 					svf_open = 0;
+					svf_filename[0] = 0;
+					svf_fileopen = 0;
 					svf_publish = 0;
 					svf_own = 0;
 					svf_myvote = 0;
@@ -5267,6 +5280,16 @@ int save_filename_ui(pixel *vid_buf)
 	ed.cursor = 0;
 	ed.multiline = 0;
 	ed.str[0] = 0;
+	
+	if(svf_fileopen){
+		char * dotloc = NULL;
+		strncpy(ed.str, svf_filename, 255);
+		if(dotloc = strstr(ed.str, "."))
+		{
+			dotloc[0] = 0;
+		}
+		ed.cursor = strlen(ed.str);
+	}
 
 	while (!sdl_poll())
 	{
@@ -5312,8 +5335,10 @@ int save_filename_ui(pixel *vid_buf)
 			if(b && !bq)
 			{
 				FILE *f = NULL;
+				char *savefname = malloc(strlen(ed.str)+5);
 				char *filename = malloc(strlen(LOCAL_SAVE_DIR)+strlen(PATH_SEP)+strlen(ed.str)+5);
 				sprintf(filename, "%s%s%s.cps", LOCAL_SAVE_DIR, PATH_SEP, ed.str);
+				sprintf(savefname, "%s.cps", ed.str);
 			
 #ifdef WIN32
 				_mkdir(LOCAL_SAVE_DIR);
@@ -5333,6 +5358,11 @@ int save_filename_ui(pixel *vid_buf)
 					{
 						fwrite(save_data, save_size, 1, f);
 						fclose(f);
+						if(svf_fileopen)
+						{
+							strncpy(svf_filename, savefname, 255);
+							svf_fileopen = 1;
+						}
 						break;
 					} else {
 						error_ui(vid_buf, 0, "Unable to write to save file.");
@@ -5496,6 +5526,9 @@ void catalogue_ui(pixel * vid_buf)
 							status = parse_save(data, size, 1, 0, 0, bmap, fvx, fvy, signs, parts, pmap);
 							if(!status)
 							{
+								//svf_filename[0] = 0;
+								strncpy(svf_filename, csave->name, 255);
+								svf_fileopen = 1;
 								svf_open = 0;
 								svf_publish = 0;
 								svf_own = 0;
@@ -5504,9 +5537,13 @@ void catalogue_ui(pixel * vid_buf)
 								svf_name[0] = 0;
 								svf_description[0] = 0;
 								svf_tags[0] = 0;
+								svf_last = data;
+								data = NULL;
+								svf_lsize = size;
 								goto openfin;
 							} else {
 								error_ui(vid_buf, 0, "Save data corrupt");
+								free(data);
 							}
 						} else {
 							error_ui(vid_buf, 0, "Unable to read save file");
