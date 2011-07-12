@@ -833,6 +833,8 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 		parts[i].tmp = (rand()%11);
 	if (t==PT_PQRT)
 		parts[i].tmp = (rand()%11);
+	if (t==PT_CLST)
+		parts[i].tmp = (rand()%7);
 	if (t==PT_FSEP)
 		parts[i].life = 50;
 	if (t==PT_COAL) {
@@ -2651,7 +2653,7 @@ int create_parts(int x, int y, int rx, int ry, int c)
 		else
 			for (j=-ry; j<=ry; j++)
 				for (i=-rx; i<=rx; i++)
-					if ((CURRENT_BRUSH==CIRCLE_BRUSH && (pow(i,2))/(pow(rx,2))+(pow(j,2))/(pow(ry,2))<=1)||(CURRENT_BRUSH==SQUARE_BRUSH&&i*j<=ry*rx))
+					if (InCurrentBrush(i ,j ,rx ,ry))
 						delete_part(x+i, y+j);
 		return 1;
 	}
@@ -2666,7 +2668,7 @@ int create_parts(int x, int y, int rx, int ry, int c)
 		else
 			for (j=-ry; j<=ry; j++)
 				for (i=-rx; i<=rx; i++)
-					if ((CURRENT_BRUSH==CIRCLE_BRUSH && (pow(i,2))/(pow(rx,2))+(pow(j,2))/(pow(ry,2))<=1)||(CURRENT_BRUSH==SQUARE_BRUSH&&i*j<=ry*rx))
+					if (InCurrentBrush(i ,j ,rx ,ry))
 					{
 						if ( x+i<0 || y+j<0 || x+i>=XRES || y+j>=YRES)
 							continue;
@@ -2690,7 +2692,7 @@ int create_parts(int x, int y, int rx, int ry, int c)
 		else
 			for (j=-ry; j<=ry; j++)
 				for (i=-rx; i<=rx; i++)
-					if ((CURRENT_BRUSH==CIRCLE_BRUSH && (pow(i,2))/(pow(rx,2))+(pow(j,2))/(pow(ry,2))<=1)||(CURRENT_BRUSH==SQUARE_BRUSH&&i*j<=ry*rx))
+					if (InCurrentBrush(i ,j ,rx ,ry))
 						delete_part(x+i, y+j);
 		SLALT = stemp;
 		return 1;
@@ -2712,7 +2714,7 @@ int create_parts(int x, int y, int rx, int ry, int c)
 		else
 			for (j=-ry; j<=ry; j++)
 				for (i=-rx; i<=rx; i++)
-					if ((CURRENT_BRUSH==CIRCLE_BRUSH && (pow(i,2))/(pow(rx,2))+(pow(j,2))/(pow(ry,2))<=1)||(CURRENT_BRUSH==SQUARE_BRUSH&&i*j<=ry*rx))
+					if (InCurrentBrush(i ,j ,rx ,ry))
 					{
 						if ( x+i<0 || y+j<0 || x+i>=XRES || y+j>=YRES)
 							continue;
@@ -2737,12 +2739,26 @@ int create_parts(int x, int y, int rx, int ry, int c)
 	else
 		for (j=-ry; j<=ry; j++)
 			for (i=-rx; i<=rx; i++)
-				if ((CURRENT_BRUSH==CIRCLE_BRUSH && (pow(i,2))/(pow(rx,2))+(pow(j,2))/(pow(ry,2))<=1)||(CURRENT_BRUSH==SQUARE_BRUSH&&i*j<=ry*rx))
+				if (InCurrentBrush(i ,j ,rx ,ry))
 					if (create_part(-2, x+i, y+j, c)==-1)
 						f = 1;
 	return !f;
 }
-
+int InCurrentBrush(int i, int j, int rx, int ry)
+{
+	switch(CURRENT_BRUSH)
+	{
+		case CIRCLE_BRUSH:
+			return ((pow(i,2))/(pow(rx,2))+(pow(j,2))/(pow(ry,2))<=1);
+			break;
+		case SQUARE_BRUSH:
+			return (i*j<=ry*rx);
+			break;
+		case TRI_BRUSH:
+			return (j <= ry ) && ( j >= (((-2.0*ry)/rx)*i) -ry) && ( j >= (((-2.0*ry)/(-rx))*i)-ry ) ;
+			break;
+	}
+}
 void create_line(int x1, int y1, int x2, int y2, int rx, int ry, int c)
 {
 	int cp=abs(y2-y1)>abs(x2-x1), x, y, dx, dy, sy;
