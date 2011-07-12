@@ -2054,7 +2054,7 @@ void draw_parts(pixel *vid)
 					blendpixel(vid, nx, ny, cr, cg, cb, 255);
 
 				}
-				if(t==PT_LIFE && parts[i].ctype < NGOLALT){
+				if(t==PT_LIFE && parts[i].ctype>=0 && parts[i].ctype < NGOLALT){
 					if (parts[i].ctype==NGT_LOTE)//colors for life states
 					{
 						if (parts[i].tmp==2)
@@ -4191,7 +4191,7 @@ corrupt:
 void render_cursor(pixel *vid, int x, int y, int t, int rx, int ry)
 {
 	int i,j,c;
-	if (t<PT_NUM||t==SPC_AIR||t==SPC_HEAT||t==SPC_COOL||t==SPC_VACUUM||t==SPC_WIND)
+	if (t<PT_NUM||(t&0xFF)==PT_LIFE||t==SPC_AIR||t==SPC_HEAT||t==SPC_COOL||t==SPC_VACUUM||t==SPC_WIND)
 	{
 		if (rx<=0)
 			xor_pixel(x, y, vid);
