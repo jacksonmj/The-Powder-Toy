@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
 			c = (x-(CELLW*32+200))/CELLW + (y-50)*2/(3*CELLH)*16;
 			printf("Current: %02X '%c'\n", c, c);
 		}
-		else if (!lb && b && (i<0 || i>=CELLW)) {
+		else if (!lb && b && (i<0 || i>CELLW)) {
 			if (abs(j-base) < abs(j-top))
 				mode = 2;	// BASE
 			else
