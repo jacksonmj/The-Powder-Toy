@@ -101,6 +101,7 @@ struct save_info
 	int votedown;
 	int vote;
 	int myvote;
+	int downloadcount;
 	int myfav;
 	char *tags;
 	int comment_count;
