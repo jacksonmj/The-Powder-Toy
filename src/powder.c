@@ -2760,7 +2760,7 @@ int InCurrentBrush(int i, int j, int rx, int ry)
 	switch(CURRENT_BRUSH)
 	{
 		case CIRCLE_BRUSH:
-			return ((pow(i,2))/(pow(rx,2))+(pow(j,2))/(pow(ry,2))<=1);
+			return (pow(i,2)*pow(ry,2)+pow(j,2)*pow(rx,2)<=pow(rx,2)*pow(ry,2));
 			break;
 		case SQUARE_BRUSH:
 			return (i*j<=ry*rx);
