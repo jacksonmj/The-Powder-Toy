@@ -33,6 +33,10 @@ void update_airh(void);
 
 void update_grav(void);
 
+void grav_fft_init();
+void grav_fft_cleanup();
+void update_grav_fft();
+
 void update_air(void);
 
 #endif
