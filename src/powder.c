@@ -2625,7 +2625,10 @@ int create_parts(int x, int y, int rx, int ry, int c)
 					if (((sdl_mod & (KMOD_LALT) && sdl_mod & (KMOD_CTRL))|| ((sdl_mod & (KMOD_CAPS)) && b!=WL_FANHELPER) ))
 					{
 						if (bmap[j][i]==SLALT-100)
+						{
 							b = 0;
+							if (SLALT==WL_GRAV) gravwl_timeout = 60;
+						}
 						else
 							continue;
 					}
@@ -2647,6 +2650,7 @@ int create_parts(int x, int y, int rx, int ry, int c)
 						bmap[j][i] = WL_STREAM;
 						continue;
 					}
+					if (b==0 && bmap[j][i]==WL_GRAV) gravwl_timeout = 60;
 					bmap[j][i] = b;
 				}
 			}
