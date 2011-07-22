@@ -738,6 +738,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 			)
 			{
 				parts[pmap[y][x]>>8].ctype = t;
+				if (t==PT_LIFE && v<NGOLALT) parts[pmap[y][x]>>8].tmp = v;
 			}
 			return -1;
 		}
