@@ -7,9 +7,8 @@
 
 int gravwl_timeout = 0;
 
-int isplayer = 0;
-float player[27]; //[0] is a command cell, [3]-[18] are legs positions, [19] is index, [19]-[26] are accelerations
-float player2[27];
+float player[28]; //[0] is a command cell, [3]-[18] are legs positions, [19]-[26] are accelerations, [27] shows if player was spawned
+float player2[28];
 
 particle *parts;
 particle *cb_parts;
@@ -287,13 +286,11 @@ int try_move(int i, int x, int y, int nx, int ny)
 		{
 			if (parts[i].type == PT_STKM)
 			{
-				death = 1;
-				isplayer = 0;
+				player[27] = 0;
 			}
 			if (parts[i].type == PT_STKM2)
 			{
-				death2 = 1;
-				isplayer2 = 0;
+				player2[27] = 0;
 			}
 			parts[i].type=PT_NONE;
 		}
@@ -301,13 +298,11 @@ int try_move(int i, int x, int y, int nx, int ny)
 		{
 			if (parts[i].type == PT_STKM)
 			{
-				death = 1;
-				isplayer = 0;
+				player[27] = 0;
 			}
 			if (parts[i].type == PT_STKM2)
 			{
-				death2 = 1;
-				isplayer2 = 0;
+				player2[27] = 0;
 			}
 			parts[i].type=PT_NONE;
 			if (!legacy_enable)
@@ -566,13 +561,11 @@ void kill_part(int i)//kills particle number i
 	y = (int)(parts[i].y+0.5f);
 	if (parts[i].type == PT_STKM)
 	{
-		death = 1;
-		isplayer = 0;
+		player[27] = 0;
 	}
 	if (parts[i].type == PT_STKM2)
 	{
-		death2 = 1;
-		isplayer2 = 0;
+		player2[27] = 0;
 	}
 	if (parts[i].type == PT_SPAWN)
 	{
@@ -604,6 +597,13 @@ void part_change_type(int i, int x, int y, int t)//changes the type of particle 
 		return;
 	if (!ptypes[t].enabled)
 		t = PT_NONE;
+
+	if (parts[i].type == PT_STKM)
+		player[27] = 0;
+
+	if (parts[i].type == PT_STKM2)
+		player2[27] = 0;
+
 	parts[i].type = t;
 	if (t==PT_PHOT || t==PT_NEUT)
 	{
@@ -882,7 +882,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 	}
 	if (t==PT_STKM)
 	{
-		if (isplayer==0)
+		if (player[27]==0)
 		{
 			parts[i].x = (float)x;
 			parts[i].y = (float)y;
@@ -913,7 +913,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 			player[17] = x+3;
 			player[18] = y+12;
 
-			isplayer = 1;
+			player[27] = 1;
 		}
 		else
 		{
@@ -924,7 +924,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 	}
 	if (t==PT_STKM2)
 	{
-		if (isplayer2==0)
+		if (player2[27]==0)
 		{
 			parts[i].x = (float)x;
 			parts[i].y = (float)y;
@@ -955,7 +955,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 			player2[17] = x+3;
 			player2[18] = y+12;
 
-			isplayer2 = 1;
+			player2[27] = 1;
 		}
 		else
 		{
@@ -2355,8 +2355,6 @@ void update_particles(pixel *vid)//doesn't update the particles themselves, but 
 	pthread_t *InterThreads;
 #endif
 
-	isplayer = 0;  //Needed for player spawning
-	isplayer2 = 0;
 	memset(pmap, 0, sizeof(pmap));
 	memset(photons, 0, sizeof(photons));
 	r = rand()%2;
