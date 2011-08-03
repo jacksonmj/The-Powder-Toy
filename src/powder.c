@@ -1013,6 +1013,7 @@ static void create_gain_photon(int pp)//photons from PHOT going through GLOW
 	parts[i].vy = parts[pp].vy;
 	parts[i].temp = parts[pmap[ny][nx] >> 8].temp;
 	parts[i].tmp = 0;
+	parts[i].pavg[0] = parts[i].pavg[1] = 0.0f;
 	photons[ny][nx] = PT_PHOT|(i<<8);
 
 	temp_bin = (int)((parts[i].temp-273.0f)*0.25f);
@@ -1049,6 +1050,7 @@ static void create_cherenkov_photon(int pp)//photons from NEUT going through GLA
 	parts[i].y = parts[pp].y;
 	parts[i].temp = parts[pmap[ny][nx] >> 8].temp;
 	parts[i].tmp = 0;
+	parts[i].pavg[0] = parts[i].pavg[1] = 0.0f;
 	photons[ny][nx] = PT_PHOT|(i<<8);
 
 	if (lr) {
