@@ -476,7 +476,7 @@ void *build_save(int *size, int x0, int y0, int w, int h, unsigned char bmap[YRE
 	for (j=0; j<w*h; j++)
 	{
 		i = m[j];
-		if (i && (parts[i-1].type==PT_CLNE || parts[i-1].type==PT_PCLN || parts[i-1].type==PT_BCLN || parts[i-1].type==PT_SPRK || parts[i-1].type==PT_LAVA || parts[i-1].type==PT_PIPE || parts[i-1].type==PT_LIFE || parts[i-1].type==PT_PBCN))
+		if (i && (parts[i-1].type==PT_CLNE || parts[i-1].type==PT_PCLN || parts[i-1].type==PT_BCLN || parts[i-1].type==PT_SPRK || parts[i-1].type==PT_LAVA || parts[i-1].type==PT_PIPE || parts[i-1].type==PT_LIFE || parts[i-1].type==PT_PBCN || parts[i-1].type==PT_WIRE))
 			d[p++] = parts[i-1].ctype;
 	}
 
@@ -1012,7 +1012,7 @@ int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char 
 		int gnum = 0;
 		i = m[j];
 		ty = d[pty+j];
-		if (i && (ty==PT_CLNE || (ty==PT_PCLN && ver>=43) || (ty==PT_BCLN && ver>=44) || (ty==PT_SPRK && ver>=21) || (ty==PT_LAVA && ver>=34) || (ty==PT_PIPE && ver>=43) || (ty==PT_LIFE && ver>=51) || (ty==PT_PBCN && ver>=52)))
+		if (i && (ty==PT_CLNE || (ty==PT_PCLN && ver>=43) || (ty==PT_BCLN && ver>=44) || (ty==PT_SPRK && ver>=21) || (ty==PT_LAVA && ver>=34) || (ty==PT_PIPE && ver>=43) || (ty==PT_LIFE && ver>=51) || (ty==PT_PBCN && ver>=52) || (ty==PT_WIRE && ver>=55)))
 		{
 			if (p >= size)
 				goto corrupt;
@@ -1056,7 +1056,7 @@ int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char 
 		}
 	}
 
-#ifndef RENDERER
+	#ifndef RENDERER
 	//Change the gravity state
 	if(ngrav_enable != tempGrav && replace)
 	{
@@ -1065,7 +1065,7 @@ int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char 
 		else
 			stop_grav_async();
 	}
-#endif
+	#endif
 	
 	gravity_mask();
 
@@ -2086,7 +2086,12 @@ int main(int argc, char *argv[])
 			}
 			do_s_check = (do_s_check+1) & 15;
 		}
-
+#ifdef LUACONSOLE
+	if(sdl_key){
+		if(!luacon_keypress(sdl_key, sdl_mod))
+			sdl_key = 0;
+	}
+#endif
 		if (sys_shortcuts==1)//all shortcuts can be disabled by python scripts
 		{
 			if (sdl_key=='q' || sdl_key==SDLK_ESCAPE)
@@ -2514,9 +2519,6 @@ int main(int argc, char *argv[])
 					}
 			}
 		}
-//#ifdef LUACONSOLE
-	//luacon_keypress(sdl_key);
-//#endif
 #ifdef PYCONSOLE
 		if (pyready==1 && pygood==1)
 			if (pkey!=NULL && sdl_key!=NULL)
@@ -2609,8 +2611,12 @@ int main(int argc, char *argv[])
 		b = SDL_GetMouseState(&x, &y); // b is current mouse state
 
 #ifdef LUACONSOLE
-		if(luacon_step(x/sdl_scale, y/sdl_scale, b, bq, sdl_key))
-			b = 0; //Mouse click was handled by Lua step
+		if(b){
+			if(!luacon_mouseclick(x/sdl_scale, y/sdl_scale, b, bq)){
+				b = 0;
+			}
+		}
+		luacon_step(x/sdl_scale, y/sdl_scale);
 #endif
 
 		for (i=0; i<SC_TOTAL; i++)//draw all the menu sections
