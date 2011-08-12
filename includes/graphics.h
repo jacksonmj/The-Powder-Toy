@@ -142,7 +142,7 @@ void render_signs(pixel *vid_buf);
 
 void render_fire(pixel *dst);
 
-void prepare_alpha(void);
+void prepare_alpha(int size, float intensity);
 
 void draw_image(pixel *vid, pixel *img, int x, int y, int w, int h, int a);
 
@@ -159,6 +159,8 @@ int render_thumb(void *thumb, int size, int bzip2, pixel *vid_buf, int px, int p
 void render_cursor(pixel *vid, int x, int y, int t, int rx, int ry);
 
 int sdl_open(void);
+
+int draw_debug_info(pixel* vid);
 
 #ifdef OpenGL
 void Enable2D ();
