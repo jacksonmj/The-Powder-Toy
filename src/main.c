@@ -714,7 +714,7 @@ int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char 
 				j = PT_DUST;//goto corrupt;
 			}
 			gol[x][y]=0;
-			if (j)// && !(player[27] == 1 && j==PT_STKM))
+			if (j && !(player[27] == 1 && j==PT_STKM) && !(player2[27] == 1 && j==PT_STKM2)) //Don't comment this, it's needed
 			{
 				if (pmap[y][x] && (pmap[y][x]>>8)<NPART)
 				{
@@ -1598,6 +1598,7 @@ int main(int argc, char *argv[])
 #else
 int main(int argc, char *argv[])
 {
+	limitFPS = 60;
 	pixel *part_vbuf; //Extra video buffer
 	pixel *part_vbuf_store;
 #ifdef BETA
@@ -1607,7 +1608,7 @@ int main(int argc, char *argv[])
 	char heattext[256] = "";
 	char coordtext[128] = "";
 	int currentTime = 0;
-	int FPS = 0, pastFPS = 0, elapsedTime = 0, limitFPS = 60;
+	int FPS = 0, pastFPS = 0, elapsedTime = 0; 
 	void *http_ver_check, *http_session_check = NULL;
 	char *ver_data=NULL, *check_data=NULL, *tmp;
 	//char console_error[255] = "";
@@ -1964,7 +1965,7 @@ int main(int argc, char *argv[])
 		
 		if(debug_flags)
 		{
-			draw_debug_info(vid_buf);
+			draw_debug_info(vid_buf, lm, lx, ly, x, y);
 		}
 
 		if (http_ver_check)
@@ -3219,7 +3220,7 @@ int main(int argc, char *argv[])
 					{
 						if (sdl_mod & (KMOD_CAPS))
 							c = 0;
-						if (c!=WL_STREAM+100&&c!=SPC_AIR&&c!=SPC_HEAT&&c!=SPC_COOL&&c!=SPC_VACUUM&&!REPLACE_MODE&&c!=SPC_WIND)
+						if (c!=WL_STREAM+100&&c!=SPC_AIR&&c!=SPC_HEAT&&c!=SPC_COOL&&c!=SPC_VACUUM&&!REPLACE_MODE&&c!=SPC_WIND&&c!=SPC_PGRV&&c!=SPC_NGRV)
 							flood_parts(x, y, c, -1, -1);
 						if (c==SPC_HEAT || c==SPC_COOL)
 							create_parts(x, y, bsx, bsy, c);

@@ -8,7 +8,7 @@
 #endif
  
 //VersionInfoStart
-#define SAVE_VERSION 55
+#define SAVE_VERSION 56
 #define MINOR_VERSION 0
 #define BETA
 //VersionInfoEnd
@@ -131,6 +131,7 @@ typedef unsigned int pixel;
 
 #define DEBUG_PARTS		0x0001
 #define DEBUG_PARTCOUNT	0x0002
+#define DEBUG_DRAWTOOL	0x0004
 
 typedef unsigned char uint8;
 
@@ -155,6 +156,7 @@ extern int aheat_enable;
 extern int decorations_enable;
 extern int hud_enable;
 extern int debug_flags;
+int limitFPS;
 
 extern int active_menu;
 
