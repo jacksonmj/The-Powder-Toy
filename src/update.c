@@ -274,6 +274,7 @@ void update_notify_ui_process(pixel *vid_buf, int mb, int mbq, int mx, int my)
 			int http_ret;
 			char *ver_data;
 			ver_data = http_async_req_stop(version_check_http, &http_ret, NULL);
+			version_check = 0;
 			if (http_ret==200 && ver_data)
 			{
 #ifdef BETA

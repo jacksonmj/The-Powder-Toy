@@ -2507,7 +2507,7 @@ int main(int argc, char *argv[])
 			open_link("http://" SERVER "/Conversations.html");
 		}
 		if (update_flag) update_finalize(vid_buf);
-		if (version_check) update_notify_ui_process(vid_buf, b, bq, x, y);
+		if (version_check) update_notify_ui_process(vid_buf, b, bq, x/sdl_scale, y/sdl_scale);
 
 		if (y>=sdl_scale*(YRES+(MENUSIZE-20))) //mouse checks for buttons at the bottom, to draw mouseover texts
 		{
