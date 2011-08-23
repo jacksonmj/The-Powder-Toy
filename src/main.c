@@ -56,7 +56,7 @@
 #include <icon.h>
 #include <console.h>
 #ifdef PYCONSOLE
-#include "pyconsole.h"
+#include "pythonconsole.h"
 #endif
 #ifdef LUACONSOLE
 #include "luaconsole.h"
@@ -1576,7 +1576,7 @@ int main(int argc, char *argv[])
 	void *http_ver_check, *http_session_check = NULL;
 	char *ver_data=NULL, *check_data=NULL, *tmp;
 	//char console_error[255] = "";
-	int result, i, j, bq, fire_fc=0, do_check=0, do_s_check=0, old_version=0, http_ret=0,http_s_ret=0, major, minor, old_ver_len, new_message_len=0;
+	int result, i, j, bq, bc, fire_fc=0, do_check=0, do_s_check=0, old_version=0, http_ret=0,http_s_ret=0, major, minor, old_ver_len, new_message_len=0;
 #ifdef INTERNAL
 	int vs = 0;
 #endif
@@ -1591,10 +1591,6 @@ int main(int argc, char *argv[])
 	unsigned int hsvSave = PIXRGB(0,255,127);//this is hsv format
 	SDL_AudioSpec fmt;
 	int username_flash = 0, username_flash_t = 1;
-#ifdef PYCONSOLE
-	PyObject *pname,*pmodule,*pfunc,*pvalue,*pargs,*pstep,*pkey;
-	PyObject *tpt_console_obj;
-#endif
 #ifdef PTW32_STATIC_LIB
     pthread_win32_process_attach_np();
     pthread_win32_thread_attach_np();
@@ -1626,69 +1622,7 @@ int main(int argc, char *argv[])
 	luacon_open();
 #endif
 #ifdef PYCONSOLE
-	//initialise python console
-	Py_Initialize();
-	PyRun_SimpleString("print 'python present.'");
-	Py_InitModule("tpt", EmbMethods);
-
-	//change the path to find all the correct modules
-	PyRun_SimpleString("import sys\nsys.path.append('./tptPython.zip')\nsys.path.append('.')");
-	//load the console module and whatnot
-#ifdef PYEXT
-	PyRun_SimpleString(tpt_console_py);
-	printf("using external python console file.\n");
-	pname=PyString_FromString("tpt_console");//create string object
-	pmodule = PyImport_Import(pname);//import module
-	Py_DECREF(pname);//throw away string
-#else
-	tpt_console_obj = PyMarshal_ReadObjectFromString(tpt_console_pyc+8, sizeof(tpt_console_pyc)-8);
-	pmodule=PyImport_ExecCodeModule("tpt_console", tpt_console_obj);
-#endif
-	if (pmodule!=NULL)
-	{
-		pfunc=PyObject_GetAttrString(pmodule,"handle");//get the handler function
-		if (pfunc && PyCallable_Check(pfunc))//check if it's really a function
-		{
-			printf("python console ready to go.\n");
-		}
-		else
-		{
-			PyErr_Print();
-			printf("unable to find handle function, mangled console.py?\n");
-			pyready = 0;
-			pygood = 0;
-		}
-
-		pstep=PyObject_GetAttrString(pmodule,"step");//get the handler function
-		if (pstep && PyCallable_Check(pstep))//check if it's really a function
-		{
-			printf("step function found.\n");
-		}
-		else
-		{
-			printf("unable to find step function. ignoring.\n");
-		}
-
-		pkey=PyObject_GetAttrString(pmodule,"keypress");//get the handler function
-		if (pstep && PyCallable_Check(pkey))//check if it's really a function
-		{
-			printf("key function found.\n");
-		}
-		else
-		{
-			printf("unable to find key function. ignoring.\n");
-		}
-	}
-	else
-	{
-		//sys.stderr
-		PyErr_Print();
-		printf("unable to find console module, missing file or mangled console.py?\n");
-		pyready = 0;
-		pygood = 0;
-	}
-#else
-	printf("python console disabled at compile time.\n");
+	pycon_open();
 #endif
 
 #ifdef MT
@@ -1763,9 +1697,21 @@ int main(int argc, char *argv[])
 			file_data = file_load(argv[i+1], &size);
 			if (file_data)
 			{
-				it=0;
-				parse_save(file_data, size, 0, 0, 0, bmap, fvx, fvy, signs, parts, pmap);
+				svf_last = file_data;
+				svf_lsize = size;
+				if(!parse_save(file_data, size, 1, 0, 0, bmap, fvx, fvy, signs, parts, pmap))
+				{
+					it=0;
+					svf_filename[0] = 0;
+					svf_fileopen = 1;
+				} else {
+					svf_last = NULL;
+					svf_lsize = 0;
+					free(file_data);
+					file_data = NULL;
+				}
 			}
+			i++;
 		}
 
 	}
@@ -1773,7 +1719,7 @@ int main(int argc, char *argv[])
 	save_presets(0);
 
 	make_kernel();
-	prepare_alpha(4, 1.0f);
+	prepare_alpha(CELL, 1.0f);
 
 	stamp_init();
 
@@ -1786,11 +1732,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-#ifdef BETA
 	http_ver_check = http_async_req_start(NULL, "http://" SERVER "/Update.api?Action=CheckVersion", NULL, 0, 0);
-#else
-	http_ver_check = http_async_req_start(NULL, "http://" SERVER "/Update.api?Action=CheckVersion", NULL, 0, 0);
-#endif
 	if (svf_login) {
 		http_session_check = http_async_req_start(NULL, "http://" SERVER "/Login.api?Action=CheckSession", NULL, 0, 0);
 		http_auth_headers(http_session_check, svf_user_id, NULL, svf_session_id);
@@ -2061,8 +2003,17 @@ int main(int argc, char *argv[])
 		}
 #ifdef LUACONSOLE
 	if(sdl_key){
-		if(!luacon_keypress(sdl_key, sdl_mod))
+		if(!luacon_keyevent(sdl_key, sdl_mod, LUACON_KDOWN))
 			sdl_key = 0;
+	}
+	if(sdl_rkey){
+		if(!luacon_keyevent(sdl_rkey, sdl_mod, LUACON_KUP))
+			sdl_rkey = 0;
+	}
+#endif
+#ifdef PYCONSOLE
+	if(sdl_key){
+		pycon_keypress(sdl_key, sdl_mod);
 	}
 #endif
 		if (sys_shortcuts==1)//all shortcuts can be disabled by python scripts
@@ -2492,19 +2443,6 @@ int main(int argc, char *argv[])
 					}
 			}
 		}
-#ifdef PYCONSOLE
-		if (pyready==1 && pygood==1)
-			if (pkey!=NULL && sdl_key!=NULL)
-			{
-				pargs=Py_BuildValue("(c)",sdl_key);
-				pvalue = PyObject_CallObject(pkey, pargs);
-				Py_DECREF(pargs);
-				pargs=NULL;
-				if (pvalue==NULL)
-					strcpy(console_error,"failed to execute key code.");
-				pvalue=NULL;
-			}
-#endif
 #ifdef INTERNAL
 		int counterthing;
 		if (sdl_key=='v'&&!(sdl_mod & (KMOD_LCTRL|KMOD_RCTRL)))//frame capture
@@ -2581,11 +2519,21 @@ int main(int argc, char *argv[])
 		}
 
 		bq = b; // bq is previous mouse state
-		b = SDL_GetMouseState(&x, &y); // b is current mouse state
+		bc = b = SDL_GetMouseState(&x, &y); // b is current mouse state
 
 #ifdef LUACONSOLE
-		if(b){
-			if(!luacon_mouseclick(x/sdl_scale, y/sdl_scale, b, bq)){
+		if(bc && bq){
+			if(!luacon_mouseevent(x/sdl_scale, y/sdl_scale, bc, LUACON_MPRESS)){
+				b = 0;
+			}
+		}
+		else if(bc && !bq){
+			if(!luacon_mouseevent(x/sdl_scale, y/sdl_scale, bc, LUACON_MDOWN)){
+				b = 0;
+			}
+		}
+		else if(!bc && bq){
+			if(!luacon_mouseevent(x/sdl_scale, y/sdl_scale, bq, LUACON_MUP)){
 				b = 0;
 			}
 		}
@@ -2626,6 +2574,16 @@ int main(int argc, char *argv[])
 				if ((cr&0xFF)==PT_LIFE && parts[cr>>8].ctype>=0 && parts[cr>>8].ctype<NGOLALT)
 				{
 					sprintf(nametext, "%s (%s)", ptypes[cr&0xFF].name, gmenu[parts[cr>>8].ctype].name);
+				}
+				else if ((cr&0xFF)==PT_LAVA && parts[cr>>8].ctype > 0 && parts[cr>>8].ctype < PT_NUM )
+				{
+					char lowername[6];
+					strcpy(lowername, ptypes[parts[cr>>8].ctype].name);
+					int ix;
+					for (ix = 0; lowername[ix]; ix++)
+						lowername[ix] = tolower(lowername[ix]);
+
+					sprintf(nametext, "Molten %s", lowername);
 				}
 				else if (DEBUG_MODE)
 				{
@@ -3499,7 +3457,7 @@ int main(int argc, char *argv[])
 				console = console_ui(vid_buf,console_error,console_more);
 				console = mystrdup(console);
 				strcpy(console_error,"");
-				if (process_command(vid_buf, console, console_error,pfunc)==-1)
+				if (process_command_py(vid_buf, console, console_error)==-1)
 				{
 					free(console);
 					break;
@@ -3557,19 +3515,7 @@ int main(int argc, char *argv[])
 
 		//execute python step hook
 #ifdef PYCONSOLE
-		if (pyready==1 && pygood==1)
-			if (pstep!=NULL)
-			{
-				pargs=Py_BuildValue("()");
-				pvalue = PyObject_CallObject(pstep, pargs);
-				Py_DECREF(pargs);
-				pargs=NULL;
-				if (pvalue==NULL)
-					strcpy(console_error,"failed to execute step code.");
-				//Py_DECREF(pvalue);
-				//puts("a");
-				pvalue=NULL;
-			}
+		pycon_step();
 #endif
 		sdl_blit(0, 0, XRES+BARSIZE, YRES+MENUSIZE, vid_buf, XRES+BARSIZE);
 
@@ -3598,12 +3544,7 @@ int main(int argc, char *argv[])
 	luacon_close();
 #endif
 #ifdef PYCONSOLE
-
-	PyRun_SimpleString("import os,tempfile,os.path\ntry:\n    os.remove(os.path.join(tempfile.gettempdir(),'tpt_console.py'))\nexcept:\n    pass");
-	PyRun_SimpleString("import os,tempfile,os.path\ntry:\n    os.remove(os.path.join(tempfile.gettempdir(),'tpt_console.pyo'))\nexcept:\n    pass");
-	PyRun_SimpleString("import os,tempfile,os.path\ntry:\n    os.remove(os.path.join(tempfile.gettempdir(),'tpt_console.pyc'))\nexcept:\n    pass");
-
-	Py_Finalize();//cleanup any python stuff.
+	pycon_close();
 #endif
 #ifdef PTW32_STATIC_LIB
     pthread_win32_thread_detach_np();

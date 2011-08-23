@@ -21,9 +21,12 @@
 #else
 #include <dirent.h>
 #endif
+#ifdef PYCONSOLE
+#include <pythonconsole.h>
+#endif
 
 SDLMod sdl_mod;
-int sdl_key, sdl_wheel, sdl_caps=0, sdl_ascii, sdl_zoom_trig=0;
+int sdl_key, sdl_rkey, sdl_wheel, sdl_caps=0, sdl_ascii, sdl_zoom_trig=0;
 #if (defined(LIN32) || defined(LIN64)) && defined(SDL_VIDEO_DRIVER_X11)
 SDL_SysWMinfo sdl_wminfo;
 Atom XA_CLIPBOARD, XA_TARGETS;
@@ -89,7 +92,7 @@ void menu_count(void)//puts the number of elements in each section into .itemcou
 	int i=0;
 	msections[SC_LIFE].itemcount = NGOLALT;
 	msections[SC_WALL].itemcount = UI_WALLCOUNT-4;
-	msections[SC_SPECIAL].itemcount = 4;
+	msections[SC_SPECIAL].itemcount = 7;
 	for (i=0; i<PT_NUM; i++)
 	{
 		msections[ptypes[i].menusection].itemcount+=ptypes[i].menu;
@@ -1945,6 +1948,10 @@ void menu_ui_v3(pixel *vid_buf, int i, int *sl, int *sr, int *dae, int b, int bq
 	}
 	else if (i==SC_SPECIAL)//special menu
 	{
+		if (fwidth > XRES-BARSIZE) { //fancy scrolling
+			float overflow = fwidth-(XRES-BARSIZE), location = ((float)XRES-BARSIZE)/((float)(mx-(XRES-BARSIZE)));
+			xoff = (int)(overflow / location);
+		}
 		for (n = UI_WALLSTART; n<UI_WALLSTART+UI_WALLCOUNT; n++)
 		{
 			if (n==SPC_AIR||n==SPC_HEAT||n==SPC_COOL||n==SPC_VACUUM||n==SPC_WIND||n==SPC_PGRV||n==SPC_NGRV)
@@ -1954,28 +1961,28 @@ void menu_ui_v3(pixel *vid_buf, int i, int *sl, int *sr, int *dae, int b, int bq
 					x = XRES-BARSIZE-18;
 					y += 19;
 				}*/
-				x -= draw_tool_xy(vid_buf, x, y, n, wtypes[n-UI_WALLSTART].colour)+5;
-				if (!bq && mx>=x+32 && mx<x+58 && my>=y && my< y+15)
+				x -= draw_tool_xy(vid_buf, x-xoff, y, n, wtypes[n-UI_WALLSTART].colour)+5;
+				if (!bq && mx>=x+32-xoff && mx<x+58-xoff && my>=y && my< y+15)
 				{
-					drawrect(vid_buf, x+30, y-1, 29, 17, 255, 55, 55, 255);
+					drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 255, 55, 55, 255);
 					h = n;
 				}
-				if (!bq && mx>=x+32 && mx<x+58 && my>=y && my< y+15&&(sdl_mod & (KMOD_LALT) && sdl_mod & (KMOD_CTRL)))
+				if (!bq && mx>=x+32-xoff && mx<x+58-xoff && my>=y && my< y+15&&(sdl_mod & (KMOD_LALT) && sdl_mod & (KMOD_CTRL)))
 				{
-					drawrect(vid_buf, x+30, y-1, 29, 17, 0, 255, 255, 255);
+					drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 0, 255, 255, 255);
 					h = n;
 				}
 				else if (n==SLALT)
 				{
-					drawrect(vid_buf, x+30, y-1, 29, 17, 0, 255, 255, 255);
+					drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 0, 255, 255, 255);
 				}
 				else if (n==*sl)
 				{
-					drawrect(vid_buf, x+30, y-1, 29, 17, 255, 55, 55, 255);
+					drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 255, 55, 55, 255);
 				}
 				else if (n==*sr)
 				{
-					drawrect(vid_buf, x+30, y-1, 29, 17, 55, 55, 255, 255);
+					drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 55, 55, 255, 255);
 				}
 			}
 		}
@@ -1988,28 +1995,28 @@ void menu_ui_v3(pixel *vid_buf, int i, int *sl, int *sr, int *dae, int b, int bq
 					x = XRES-BARSIZE-18;
 					y += 19;
 				}*/
-				x -= draw_tool_xy(vid_buf, x, y, n, ptypes[n].pcolors)+5;
-				if (!bq && mx>=x+32 && mx<x+58 && my>=y && my< y+15)
+				x -= draw_tool_xy(vid_buf, x-xoff, y, n, ptypes[n].pcolors)+5;
+				if (!bq && mx>=x+32-xoff && mx<x+58-xoff && my>=y && my< y+15)
 				{
-					drawrect(vid_buf, x+30, y-1, 29, 17, 255, 55, 55, 255);
+					drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 255, 55, 55, 255);
 					h = n;
 				}
-				if (!bq && mx>=x+32 && mx<x+58 && my>=y && my< y+15&&(sdl_mod & (KMOD_LALT) && sdl_mod & (KMOD_CTRL)))
+				if (!bq && mx>=x+32-xoff && mx<x+58-xoff && my>=y && my< y+15&&(sdl_mod & (KMOD_LALT) && sdl_mod & (KMOD_CTRL)))
 				{
-					drawrect(vid_buf, x+30, y-1, 29, 17, 0, 255, 255, 255);
+					drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 0, 255, 255, 255);
 					h = n;
 				}
 				else if (n==SLALT)
 				{
-					drawrect(vid_buf, x+30, y-1, 29, 17, 0, 255, 255, 255);
+					drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 0, 255, 255, 255);
 				}
 				else if (n==*sl)
 				{
-					drawrect(vid_buf, x+30, y-1, 29, 17, 255, 55, 55, 255);
+					drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 255, 55, 55, 255);
 				}
 				else if (n==*sr)
 				{
-					drawrect(vid_buf, x+30, y-1, 29, 17, 55, 55, 255, 255);
+					drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 55, 55, 255, 255);
 				}
 			}
 		}
@@ -2199,7 +2206,7 @@ int color_menu_ui(pixel *vid_buf, int i, int *cr, int *cg, int *cb, int b, int b
 int sdl_poll(void)
 {
 	SDL_Event event;
-	sdl_key=sdl_wheel=sdl_ascii=0;
+	sdl_key=sdl_rkey=sdl_wheel=sdl_ascii=0;
 	while (SDL_PollEvent(&event))
 	{
 		switch (event.type)
@@ -2259,6 +2266,7 @@ int sdl_poll(void)
 			break;
 
 		case SDL_KEYUP:
+			sdl_rkey=event.key.keysym.sym;
 			if (event.key.keysym.sym == SDLK_CAPSLOCK)
 				sdl_caps = 0;
 			if (event.key.keysym.sym == 'z')
@@ -4628,13 +4636,13 @@ char *console_ui(pixel *vid_buf,char error[255],char console_more) {
 		else
 			i=0;
 		if (pyready)
-			drawtext(vid_buf, 15, 15, "Welcome to The Powder Toy console v.3 (by cracker64, python by Doxin)", 255, i, i, 255);
+			drawtext(vid_buf, 15, 15, "Welcome to The Powder Toy console v.3 (by cracker64, Python enabled)", 255, i, i, 255);
 		else
-			drawtext(vid_buf, 15, 15, "Welcome to The Powder Toy console v.3 (by cracker64, python disabled)", 255, i, i, 255);
+			drawtext(vid_buf, 15, 15, "Welcome to The Powder Toy console v.3 (by cracker64, Python disabled)", 255, i, i, 255);
 #elif defined(LUACONSOLE)
 		drawtext(vid_buf, 15, 15, "Welcome to The Powder Toy console v.4 (by cracker64, Lua enabled)", 255, 255, 255, 255);
 #else
-		drawtext(vid_buf, 15, 15, "Welcome to The Powder Toy console v.3 (by cracker64, python disabled)", 255, 255, 255, 255);
+		drawtext(vid_buf, 15, 15, "Welcome to The Powder Toy console v.3 (by cracker64)", 255, 255, 255, 255);
 #endif
 
 		cc = 0;
