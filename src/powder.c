@@ -2605,11 +2605,12 @@ int create_parts(int x, int y, int rx, int ry, int c, int flags)
 	}
 	if (dw==1)
 	{
+		ry = ry/CELL;
 		rx = rx/CELL;
 		x = x/CELL;
 		y = y/CELL;
 		x -= rx/2;
-		y -= rx/2;
+		y -= ry/2;
 		for (ox=x; ox<=x+rx; ox++)
 		{
 			for (oy=y; oy<=y+rx; oy++)
@@ -2636,7 +2637,7 @@ int create_parts(int x, int y, int rx, int ry, int c, int flags)
 					if (b==WL_STREAM)
 					{
 						i = x + rx/2;
-						j = y + rx/2;
+						j = y + ry/2;
 						for (v=-1; v<2; v++)
 							for (u=-1; u<2; u++)
 								if (i+u>=0 && i+u<XRES/CELL &&
@@ -2823,7 +2824,7 @@ void create_line(int x1, int y1, int x2, int y2, int rx, int ry, int c, int flag
 		if (e >= 0.5f)
 		{
 			y += sy;
-			if (c==WL_EHOLE || c==WL_ALLOWGAS || c==WL_ALLOWALLELEC || c==WL_ALLOWSOLID || c==WL_ALLOWAIR || c==WL_WALL || c==WL_DESTROYALL || c==WL_ALLOWLIQUID || c==WL_FAN || c==WL_STREAM || c==WL_DETECT || c==WL_EWALL || c==WL_WALLELEC || !(rx+ry))
+			if (c==WL_EHOLE+100 || c==WL_ALLOWGAS+100 || c==WL_ALLOWALLELEC+100 || c==WL_ALLOWSOLID+100 || c==WL_ALLOWAIR+100 || c==WL_WALL+100 || c==WL_DESTROYALL+100 || c==WL_ALLOWLIQUID+100 || c==WL_FAN+100 || c==WL_STREAM+100 || c==WL_DETECT+100 || c==WL_EWALL+100 || c==WL_WALLELEC+100 || !(rx+ry))
 			{
 				if (cp)
 					create_parts(y, x, rx, ry, c, flags);

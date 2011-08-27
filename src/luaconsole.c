@@ -1,3 +1,4 @@
+#include <defines.h>
 #ifdef LUACONSOLE
 #include <powder.h>
 #include <console.h>
@@ -60,6 +61,7 @@ void luacon_open(){
 		{"setfire", &luatpt_setfire},
 		{"setdebug", &luatpt_setdebug},
 		{"setfpscap",&luatpt_setfpscap},
+		{"getscript",&luatpt_getscript},
 		{NULL,NULL}
 	};
 
@@ -1067,5 +1069,92 @@ int luatpt_setfpscap(lua_State* l)
 int fpscap = luaL_optint(l, 1, 0);
 limitFPS = fpscap;
 return 0;
+}
+int luatpt_getscript(lua_State* l)
+{
+	char *fileid = NULL, *filedata = NULL, *fileuri = NULL, *fileauthor = NULL, *filename = NULL, *lastError = NULL, *luacommand = NULL;
+	int len, ret,run_script;
+	FILE * outputfile;
+
+	fileauthor = mystrdup(luaL_optstring(l, 1, ""));
+	fileid = mystrdup(luaL_optstring(l, 2, ""));
+	run_script = luaL_optint(l, 3, 0);
+	if(!fileauthor || !fileid || strlen(fileauthor)<1 || strlen(fileid)<1)
+		goto fin;
+	if(!confirm_ui(vid_buf, "Do you want to install script?", fileid, "Install"))
+		goto fin;
+
+	fileuri = malloc(strlen(SCRIPTSERVER)+strlen(fileauthor)+strlen(fileid)+44);
+	sprintf(fileuri, "http://" SCRIPTSERVER "/GetScript.api?Author=%s&Filename=%s", fileauthor, fileid);
+	
+	filedata = http_auth_get(fileuri, svf_user_id, NULL, svf_session_id, &ret, &len);
+	
+	if(len <= 0 || !filedata)
+	{
+		lastError = "Server did not return data.";
+		goto fin;
+	}
+	if(ret != 200)
+	{
+		lastError = http_ret_text(ret);
+		goto fin;
+	}
+	
+	filename = malloc(strlen(fileauthor)+strlen(fileid)+strlen(PATH_SEP)+strlen(LOCAL_LUA_DIR)+6);
+	sprintf(filename, LOCAL_LUA_DIR PATH_SEP "%s_%s.lua", fileauthor, fileid);
+	
+#ifdef WIN32
+	_mkdir(LOCAL_LUA_DIR);
+#else
+	mkdir(LOCAL_LUA_DIR, 0755);
+#endif
+	
+	outputfile = fopen(filename, "r");
+	if(outputfile)
+	{
+		fclose(outputfile);
+		outputfile = NULL;
+		if(confirm_ui(vid_buf, "File already exists, overwrite?", filename, "Overwrite"))
+		{
+			outputfile = fopen(filename, "w");
+		}
+		else
+		{
+			goto fin;
+		}
+	}
+	else
+	{
+		outputfile = fopen(filename, "w");
+	}
+	
+	if(!outputfile)
+	{
+		lastError = "Unable to write to file";
+		goto fin;
+	}
+	
+	
+	fputs(filedata, outputfile);
+	fclose(outputfile);
+	outputfile = NULL;
+	if(run_script)
+	{
+    luacommand = malloc(strlen(filename)+20);
+    sprintf(luacommand,"dofile(\"%s\")",filename);
+    luacon_eval(luacommand);
+    }
+    
+fin:
+	if(fileid) free(fileid);
+	if(filedata) free(filedata);
+	if(fileuri) free(fileuri);
+	if(fileauthor) free(fileauthor);
+	if(filename) free(filename);
+	if(luacommand) free(luacommand);
+	luacommand = NULL;
+		
+	if(lastError) return luaL_error(l, lastError);
+	return 0;
 }
 #endif

@@ -854,6 +854,7 @@ void error_ui(pixel *vid_buf, int err, char *txt)
 	}
 }
 
+
 char *input_ui(pixel *vid_buf, char *title, char *prompt, char *text, char *shadow)
 {
 	int xsize = 244;
@@ -1191,7 +1192,6 @@ void login_ui(pixel *vid_buf)
 
 	strcpy(svf_user, ed1.str);
 	md5_ascii(svf_pass, (unsigned char *)ed2.str, 0);
-
 	res = http_multipart_post(
 	          "http://" SERVER "/Login.api",
 	          NULL, NULL, NULL,
