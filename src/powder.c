@@ -169,7 +169,7 @@ int eval_move(int pt, int nx, int ny, unsigned *rr)
 	}
 	if (bmap[ny/CELL][nx/CELL])
 	{
-		if (bmap[ny/CELL][nx/CELL]==WL_ALLOWGAS && ptypes[pt].falldown!=0 && pt!=PT_FIRE && pt!=PT_SMKE)
+		if (bmap[ny/CELL][nx/CELL]==WL_ALLOWGAS && !(ptypes[pt].properties&TYPE_GAS))// && ptypes[pt].falldown!=0 && pt!=PT_FIRE && pt!=PT_SMKE)
 			return 0;
 		if (bmap[ny/CELL][nx/CELL]==WL_ALLOWLIQUID && ptypes[pt].falldown!=2)
 			return 0;
@@ -734,6 +734,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 		if (pmap[y][x])
 		{
 			if ((
+				(pmap[y][x]&0xFF)==PT_STOR||
 				(pmap[y][x]&0xFF)==PT_CLNE||
 				(pmap[y][x]&0xFF)==PT_BCLN||
 				((pmap[y][x]&0xFF)==PT_PCLN&&t!=PT_PSCN&&t!=PT_NSCN)||
@@ -741,11 +742,12 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 			)&&(
 				t!=PT_CLNE&&t!=PT_PCLN&&
 				t!=PT_BCLN&&t!=PT_STKM&&
-				t!=PT_STKM2&&t!=PT_PBCN)
+				t!=PT_STKM2&&t!=PT_PBCN&&
+				t!=PT_STOR)
 			)
 			{
 				parts[pmap[y][x]>>8].ctype = t;
-				if (t==PT_LIFE && v<NGOLALT) parts[pmap[y][x]>>8].tmp = v;
+				if (t==PT_LIFE && v<NGOLALT && (pmap[y][x]&0xFF)!=PT_STOR) parts[pmap[y][x]>>8].tmp = v;
 			}
 			return -1;
 		}
@@ -1548,7 +1550,7 @@ void update_particles_i(pixel *vid, int start, int inc)
 			          (bmap[y/CELL][x/CELL]==WL_DESTROYALL) ||
 			          (bmap[y/CELL][x/CELL]==WL_ALLOWLIQUID && ptypes[t].falldown!=2) ||
 			          (bmap[y/CELL][x/CELL]==WL_ALLOWSOLID && ptypes[t].falldown!=1) ||
-			          (bmap[y/CELL][x/CELL]==WL_ALLOWGAS && ptypes[t].falldown!=0 && parts[i].type!=PT_FIRE && parts[i].type!=PT_SMKE && parts[i].type!=PT_HFLM) ||
+			          (bmap[y/CELL][x/CELL]==WL_ALLOWGAS && !(ptypes[t].properties&TYPE_GAS)) || //&& ptypes[t].falldown!=0 && parts[i].type!=PT_FIRE && parts[i].type!=PT_SMKE && parts[i].type!=PT_HFLM) ||
 			          (bmap[y/CELL][x/CELL]==WL_DETECT && (t==PT_METL || t==PT_SPRK)) ||
 			          (bmap[y/CELL][x/CELL]==WL_EWALL && !emap[y/CELL][x/CELL])) && (t!=PT_STKM) && (t!=PT_STKM2)))
 			{
