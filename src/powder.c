@@ -109,9 +109,9 @@ void init_can_move()
 	for (t=0;t<PT_NUM;t++)
 	{
 		// make them eat things
-		can_move[t][PT_VOID] = 2;
-		can_move[t][PT_BHOL] = 2;
-		can_move[t][PT_NBHL] = 2;
+		can_move[t][PT_VOID] = 1;
+		can_move[t][PT_BHOL] = 1;
+		can_move[t][PT_NBHL] = 1;
 		//all stickman collisions are done in stickman update function
 		can_move[t][PT_STKM] = 2;
 		can_move[t][PT_STKM2] = 2;
@@ -119,6 +119,8 @@ void init_can_move()
 		can_move[t][PT_INVIS] = 3;
 		//stop CNCT being displaced by other particles
 		can_move[t][PT_CNCT] = 0;
+		//Powered void behaviour varies on powered state
+		can_move[t][PT_PVOD] = 3;
 	}
 	for (t=0;t<PT_NUM;t++)
 	{
@@ -274,41 +276,66 @@ int try_move(int i, int x, int y, int nx, int ny)
 			if (temp_bin > 25) temp_bin = 25;
 			parts[i].ctype = 0x1F << temp_bin;
 		}
-		if ((r&0xFF)==PT_VOID) //this is where void eats particles
-		{
-			if (parts[i].type == PT_STKM)
-			{
-				player[27] = 0;
-			}
-			if (parts[i].type == PT_STKM2)
-			{
-				player2[27] = 0;
-			}
-			parts[i].type=PT_NONE;
-		}
-		if ((r&0xFF)==PT_BHOL || (r&0xFF)==PT_NBHL) //this is where blackhole eats particles
-		{
-			if (parts[i].type == PT_STKM)
-			{
-				player[27] = 0;
-			}
-			if (parts[i].type == PT_STKM2)
-			{
-				player2[27] = 0;
-			}
-			parts[i].type=PT_NONE;
-			if (!legacy_enable)
-				parts[r>>8].temp = restrict_flt(parts[r>>8].temp+parts[i].temp/2, MIN_TEMP, MAX_TEMP);
-		}
-		if (((r&0xFF)==PT_WHOL||(r&0xFF)==PT_NWHL) && parts[i].type==PT_ANAR) //whitehole eats anar
-		{
-			parts[i].type=PT_NONE;
-			if (!legacy_enable)
-				parts[r>>8].temp = restrict_flt(parts[r>>8].temp- (MAX_TEMP-parts[i].temp)/2, MIN_TEMP, MAX_TEMP);
-		}
 		return 1;
 	}
 	//else e=1 , we are trying to swap the particles, return 0 no swap/move, 1 is still overlap/move, because the swap takes place later
+
+	if ((r&0xFF)==PT_VOID) //this is where void eats particles
+	{
+		if (parts[i].type == PT_STKM)
+		{
+			player[27] = 0;
+		}
+		if (parts[i].type == PT_STKM2)
+		{
+			player2[27] = 0;
+		}
+		parts[i].type=PT_NONE;
+		return 0;
+	}
+	if ((r&0xFF)==PT_PVOD) //this is where void eats particles
+	{
+		if(parts[r>>8].life == 10){
+			if (parts[i].type == PT_STKM)
+			{
+				player[27] = 0;
+			}
+			if (parts[i].type == PT_STKM2)
+			{	
+				player2[27] = 0;
+			}
+			parts[i].type=PT_NONE;
+		}
+		return 0;
+	}
+	if ((r&0xFF)==PT_BHOL || (r&0xFF)==PT_NBHL) //this is where blackhole eats particles
+	{
+		if (parts[i].type == PT_STKM)
+		{
+			player[27] = 0;
+		}
+		if (parts[i].type == PT_STKM2)
+		{
+			player2[27] = 0;
+		}
+		parts[i].type=PT_NONE;
+		if (!legacy_enable)
+		{
+			parts[r>>8].temp = restrict_flt(parts[r>>8].temp+parts[i].temp/2, MIN_TEMP, MAX_TEMP);//3.0f;
+		}
+
+		return 0;
+	}
+	if (((r&0xFF)==PT_WHOL||(r&0xFF)==PT_NWHL) && parts[i].type==PT_ANAR) //whitehole eats anar
+	{
+		parts[i].type=PT_NONE;
+		if (!legacy_enable)
+		{
+			parts[r>>8].temp = restrict_flt(parts[r>>8].temp- (MAX_TEMP-parts[i].temp)/2, MIN_TEMP, MAX_TEMP);
+		}
+
+		return 0;
+	}
 
 	if (parts[i].type==PT_CNCT && y<ny && (pmap[y+1][x]&0xFF)==PT_CNCT)//check below CNCT for another CNCT
 		return 0;
@@ -737,6 +764,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 				(pmap[y][x]&0xFF)==PT_STOR||
 				(pmap[y][x]&0xFF)==PT_CLNE||
 				(pmap[y][x]&0xFF)==PT_BCLN||
+				(pmap[y][x]&0xFF)==PT_CONV||
 				((pmap[y][x]&0xFF)==PT_PCLN&&t!=PT_PSCN&&t!=PT_NSCN)||
 				((pmap[y][x]&0xFF)==PT_PBCN&&t!=PT_PSCN&&t!=PT_NSCN)
 			)&&(
