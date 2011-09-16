@@ -458,8 +458,8 @@ int register_extension()
 	LONG rresult;
 	HKEY newkey;
 	char *currentfilename = exe_name();
-	char *iconname;
-	char *opencommand;
+	char *iconname = NULL;
+	char *opencommand = NULL;
 	iconname = malloc(strlen(currentfilename)+6);
 	opencommand = malloc(strlen(currentfilename)+13);
 	sprintf(iconname, "%s,-102", currentfilename);
@@ -524,6 +524,10 @@ int register_extension()
 	}
 	RegCloseKey(newkey);
 
+	if(iconname) free(iconname);
+	if(opencommand) free(opencommand);
+	if(currentfilename) free(currentfilename);
+	
 	return 1;
 #elif defined(LIN32) || defined(LIN64)
 	char *currentfilename = exe_name();

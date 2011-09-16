@@ -637,7 +637,8 @@ int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char 
 	m = calloc(XRES*YRES, sizeof(int));
 
 	// make a catalog of free parts
-	memset(pmap, 0, sizeof(pmap));
+	//memset(pmap, 0, sizeof(pmap)); "Using sizeof for array given as function argument returns the size of pointer."
+	memset(pmap, 0, sizeof(unsigned)*(XRES*YRES));
 	for (i=0; i<NPART; i++)
 		if (parts[i].type)
 		{
@@ -1564,7 +1565,6 @@ int main(int argc, char *argv[])
 #else
 int main(int argc, char *argv[])
 {
-	limitFPS = 60;
 	pixel *part_vbuf; //Extra video buffer
 	pixel *part_vbuf_store;
 #ifdef BETA
@@ -1597,6 +1597,7 @@ int main(int argc, char *argv[])
     pthread_win32_process_attach_np();
     pthread_win32_thread_attach_np();
 #endif
+	limitFPS = 60;
 	vid_buf = calloc((XRES+BARSIZE)*(YRES+MENUSIZE), PIXELSIZE);
 	part_vbuf = calloc((XRES+BARSIZE)*(YRES+MENUSIZE), PIXELSIZE); //Extra video buffer
 	part_vbuf_store = part_vbuf;
@@ -2585,8 +2586,8 @@ int main(int argc, char *argv[])
 				else if ((cr&0xFF)==PT_LAVA && parts[cr>>8].ctype > 0 && parts[cr>>8].ctype < PT_NUM )
 				{
 					char lowername[6];
-					strcpy(lowername, ptypes[parts[cr>>8].ctype].name);
 					int ix;
+					strcpy(lowername, ptypes[parts[cr>>8].ctype].name);
 					for (ix = 0; lowername[ix]; ix++)
 						lowername[ix] = tolower(lowername[ix]);
 
@@ -3404,7 +3405,7 @@ int main(int argc, char *argv[])
 			if (sdl_mod&(KMOD_CAPS))
 				strappend(uitext, " [CAP LOCKS]");
 			if (GRID_MODE)
-				sprintf(uitext, "%s [GRID: %d]", uitext, GRID_MODE);
+				sprintf(uitext, "%s [GRID: %d]", uitext, GRID_MODE); //TODO: Undefined behavior: variable is used as parameter and destination in sprintf().
 #ifdef INTERNAL
 			if (vs)
 				strappend(uitext, " [FRAME CAPTURE]");
