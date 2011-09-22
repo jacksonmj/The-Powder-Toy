@@ -22,6 +22,8 @@
 
 #define LOCAL_LUA_DIR "Lua"
 
+#define APPDATA_SUBDIR "\\HardWIRED"
+
 #define THUMB_CACHE_SIZE 256
 
 #ifndef M_PI
@@ -160,6 +162,7 @@ extern int decorations_enable;
 extern int hud_enable;
 extern int debug_flags;
 int limitFPS;
+int water_equal_test;
 
 extern int active_menu;
 

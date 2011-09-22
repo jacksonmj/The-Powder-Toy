@@ -1590,7 +1590,7 @@ int main(int argc, char *argv[])
 	void *load_data=NULL;
 	pixel *load_img=NULL;//, *fbi_img=NULL;
 	int save_mode=0, save_x=0, save_y=0, save_w=0, save_h=0, copy_mode=0;
-	unsigned int hsvSave = PIXRGB(0,255,127);//this is hsv format
+	unsigned int rgbSave = PIXRGB(127,0,0);
 	SDL_AudioSpec fmt;
 	int username_flash = 0, username_flash_t = 1;
 #ifdef PTW32_STATIC_LIB
@@ -1715,6 +1715,20 @@ int main(int argc, char *argv[])
 				}
 			}
 			i++;
+		}
+		else if (!strncmp(argv[i], "ddir", 4) && i+1<argc)
+		{
+			/*char * temppath;
+			FILE *f;
+			temppath = malloc(strlen(argv[i+1])+19);
+			sprintf(temppath, "%s%s%s", argv[i+1], PATH_SEP, "powdertoydir.test")
+			f = fopen(temppath, "wb");
+			if(f){*/
+				chdir(argv[i+1]);
+			/*	fclose(f);
+				remove(temppath);
+			}
+			free(temppath);*/
 		}
 
 	}
@@ -2246,7 +2260,7 @@ int main(int argc, char *argv[])
 				}
 				else
 				{
-					hsvSave = decorations_ui(vid_buf,&bsx,&bsy,hsvSave);//decoration_mode = !decoration_mode;
+					rgbSave = decorations_ui(vid_buf,&bsx,&bsy,rgbSave);//decoration_mode = !decoration_mode;
 					decorations_enable = 1;
 					sys_pause=1;
 				}
@@ -2526,7 +2540,7 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		bq = b; // bq is previous mouse state
+		bq = bc; // bq is previous mouse state
 		bc = b = SDL_GetMouseState(&x, &y); // b is current mouse state
 
 #ifdef LUACONSOLE

@@ -2158,7 +2158,7 @@ void menu_ui_v3(pixel *vid_buf, int i, int *sl, int *sr, int *dae, int b, int bq
 		}
 	}
 }
-int color_menu_ui(pixel *vid_buf, int i, int *cr, int *cg, int *cb, int b, int bq, int mx, int my)
+int color_menu_ui(pixel *vid_buf, int i, int *cr, int *cg, int *cb, int b, int bq, int mx, int my, int *tool)
 {
 	int h,x,y,n=0,height,width,sy,rows=0,xoff=0,fwidth,a,c;
 	fwidth = colorsections[i].itemcount*31;
@@ -2166,7 +2166,7 @@ int color_menu_ui(pixel *vid_buf, int i, int *cr, int *cg, int *cb, int b, int b
 	x = XRES-BARSIZE-18;
 	y = YRES+5;
 	sy = y;
-	if(i==1) //color menu
+	if(i==0) //color menu
 	{
 		if (fwidth > XRES-BARSIZE) { //fancy scrolling
 			float overflow = fwidth-(XRES-BARSIZE), location = ((float)XRES-BARSIZE)/((float)(mx-(XRES-BARSIZE)));
@@ -2188,20 +2188,74 @@ int color_menu_ui(pixel *vid_buf, int i, int *cr, int *cg, int *cb, int b, int b
 					h = n;
 				}
 		}
+		if(h!=-1)
+		{
+			drawtext(vid_buf, XRES-textwidth((char *)colorlist[h].descs)-BARSIZE, sy+20, (char *)colorlist[h].descs, 255, 255, 255, 255);
+		}
+		else
+		{
+			drawtext(vid_buf, XRES-textwidth((char *)colorsections[i].name)-BARSIZE, sy+20, (char *)colorsections[i].name, 255, 255, 255, 255);
+		}
+		//these are click events, b=1 is left click, b=4 is right
+		//h has the value of the element it is over, and -1 if not over an element
+		if (b==1 && h!=-1)
+		{
+			*cr = PIXR(colorlist[h].colour);
+			*cg = PIXG(colorlist[h].colour);
+			*cb = PIXB(colorlist[h].colour);
+			return 1;
+		}
 	}
-	if(h!=-1)
+	if(i==1) //deco tool menu
 	{
-		drawtext(vid_buf, XRES-textwidth((char *)colorlist[h].descs)-BARSIZE, sy-14, (char *)colorlist[h].descs, 255, 255, 255, 255);
+		if (fwidth > XRES-BARSIZE) { //fancy scrolling
+			float overflow = fwidth-(XRES-BARSIZE), location = ((float)XRES-BARSIZE)/((float)(mx-(XRES-BARSIZE)));
+			xoff = (int)(overflow / location);
+		}
+		for (n = 0; n<3; n++)
+		{
+				for (a=1; a<15; a++)
+				{
+					for (c=1; c<27; c++)
+					{
+						if (n == DECO_LIGHTEN)
+							vid_buf[(XRES+BARSIZE)*(y+a)+((x-xoff)+c)] = toollist[n].colour - a*0x0A0A0A;
+						else if (n == DECO_DARKEN)
+							vid_buf[(XRES+BARSIZE)*(y+a)+((x-xoff)+c)] = toollist[n].colour + a*0x0A0A0A;
+						else if (n == DECO_DRAW)
+							vid_buf[(XRES+BARSIZE)*(y+a)+((x-xoff)+c)] = PIXRGB(*cr,*cg,*cb);
+						else
+							vid_buf[(XRES+BARSIZE)*(y+a)+((x-xoff)+c)] = toollist[n].colour;
+					}
+				}
+				x -= 26+5;
+				if (!bq && mx>=x+32-xoff && mx<x+58-xoff && my>=y && my< y+15)
+				{
+					drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 255, 55, 55, 255);
+					h = n;
+				}
+				else if (n==*tool)
+				{
+					drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 255, 55, 55, 255);
+				}
+		}
+		if(h!=-1)
+		{
+			drawtext(vid_buf, XRES-textwidth((char *)toollist[h].descs)-BARSIZE, sy+20, (char *)toollist[h].descs, 255, 255, 255, 255);
+		}
+		else
+		{
+			drawtext(vid_buf, XRES-textwidth((char *)colorsections[i].name)-BARSIZE, sy+20, (char *)colorsections[i].name, 255, 255, 255, 255);
+		}
+		//these are click events, b=1 is left click, b=4 is right
+		//h has the value of the element it is over, and -1 if not over an element
+		if (b==1 && h!=-1)
+		{
+			*tool = h;
+			return 0;
+		}
 	}
-	//these are click events, b=1 is left click, b=4 is right
-	//h has the value of the element it is over, and -1 if not over an element
-	if (b==1 && h!=-1)
-	{
-		*cr = PIXR(colorlist[h].colour);
-		*cg = PIXG(colorlist[h].colour);
-		*cb = PIXB(colorlist[h].colour);
-		return 1;
-	}
+	
 	return 0;
 }
 
@@ -4776,8 +4830,11 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 	int grid_offset_x;
 	int window_offset_x;
 	int onleft_button_offset_x;
-	int h = PIXR(savedColor), s = PIXG(savedColor), v = PIXB(savedColor); 
-	int th = h, ts = s, tv=v;
+	int currH = 0, currS = 255, currV = 127;
+	int currR = PIXR(savedColor), currG = PIXG(savedColor), currB = PIXB(savedColor);
+	int th = currH, ts = currS, tv = currV;
+	int tool = DECO_DRAW;
+	int active_color_menu= 0;
 	pixel *old_buf=calloc((XRES+BARSIZE)*(YRES+MENUSIZE), PIXELSIZE);
 	ui_edit box_R;
 	ui_edit box_G;
@@ -4829,12 +4886,10 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 
 		memcpy(vid_buf,old_buf,(XRES+BARSIZE)*(YRES+MENUSIZE)*PIXELSIZE);
 		draw_parts(vid_buf);
-		//ui_edit_process(mx, my, b, &box_R);
-		//ui_edit_process(mx, my, b, &box_G);
-		//ui_edit_process(mx, my, b, &box_B);
-		//HSV_to_RGB(h,s,v,&cr,&cg,&cb);
-		//if(cr != atoi(box_R.str))
-			//RGB_to_HSV(atoi(box_R.str),cg,cb,&h,&s,&v);
+		ui_edit_process(mx, my, b, &box_R);
+		ui_edit_process(mx, my, b, &box_G);
+		ui_edit_process(mx, my, b, &box_B);
+
 		if(on_left==1)
 		{
 			grid_offset_x = grid_offset_x_left;
@@ -4877,6 +4932,7 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 			ui_edit_draw(vid_buf, &box_G);
 			ui_edit_draw(vid_buf, &box_B);
 
+			//draw color square
 			for(ss=0; ss<=255; ss++)
 				for(hh=0;hh<=359;hh++)
 				{
@@ -4886,36 +4942,86 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 					HSV_to_RGB(hh,255-ss,255-ss,&cr,&cg,&cb);
 					vid_buf[(ss+grid_offset_y)*(XRES+BARSIZE)+(clamp_flt(hh, 0, 359)+grid_offset_x)] = PIXRGB(cr, cg, cb);
 				}
+			//draw brightness bar
 			for(vv=0; vv<=255; vv++)
 				for( i=0; i<10; i++)
 				{
 					cr = 0;
 					cg = 0;
 					cb = 0;
-					HSV_to_RGB(h,s,vv,&cr,&cg,&cb);
+					HSV_to_RGB(currH,currS,vv,&cr,&cg,&cb);
 					vid_buf[(vv+grid_offset_y)*(XRES+BARSIZE)+(i+grid_offset_x+255+4)] = PIXRGB(cr, cg, cb);
 				}
-			addpixel(vid_buf,grid_offset_x + clamp_flt(h, 0, 359),grid_offset_y-1,255,255,255,255);
-			addpixel(vid_buf,grid_offset_x -1,grid_offset_y+(255-s),255,255,255,255);
+			addpixel(vid_buf,grid_offset_x + clamp_flt(currH, 0, 359),grid_offset_y-1,255,255,255,255);
+			addpixel(vid_buf,grid_offset_x -1,grid_offset_y+(255-currS),255,255,255,255);
 
 			addpixel(vid_buf,grid_offset_x + clamp_flt(th, 0, 359),grid_offset_y-1,100,100,100,255);
 			addpixel(vid_buf,grid_offset_x -1,grid_offset_y+(255-ts),100,100,100,255);
 
 			addpixel(vid_buf,grid_offset_x + 255 +3,grid_offset_y+tv,100,100,100,255);
-			addpixel(vid_buf,grid_offset_x + 255 +3,grid_offset_y +v,255,255,255,255);
+			addpixel(vid_buf,grid_offset_x + 255 +3,grid_offset_y +currV,255,255,255,255);
 
-			HSV_to_RGB(h,s,v,&cr,&cg,&cb);
-			fillrect(vid_buf, window_offset_x + onleft_button_offset_x +1, window_offset_y +255+6, 12, 12, cr, cg, cb, 255);
+			fillrect(vid_buf, window_offset_x + onleft_button_offset_x +1, window_offset_y +255+6, 12, 12, currR, currG, currB, 255);
 		}
-		if( color_menu_ui(vid_buf, 1, &cr, &cg, &cb, b, bq, mx, my) )
-			RGB_to_HSV(cr,cg,cb,&h,&s,&v);
+		for (i=0; i<2; i++)//draw all the menu sections
+		{
+			draw_color_menu(vid_buf, i, active_color_menu);
+		}
 
-		HSV_to_RGB(h,s,v,&cr,&cg,&cb);
+		for (i=0; i<2; i++)//check mouse position to see if it is on a menu section
+		{
+			if (!b&&mx>=XRES-2 && mx<XRES+BARSIZE-1 &&my>= (i*16)+YRES+MENUSIZE-16-(DECO_SECTIONS*16) && my<(i*16)+YRES+MENUSIZE-16-(DECO_SECTIONS*16)+15)
+			{
+				active_color_menu = i;
+			}
+		}
+		if( color_menu_ui(vid_buf, active_color_menu, &currR, &currG, &currB, b, bq, mx, my, &tool) )
+			RGB_to_HSV(currR,currG,currB,&currH,&currS,&currV);
 
-		sprintf(box_R.str,"%d",cr);
-		sprintf(box_G.str,"%d",cg);
-		sprintf(box_B.str,"%d",cb);
-		fillrect(vid_buf, 250, YRES+4, 40, 15, cr, cg, cb, 255);
+		if(!box_R.focus)//prevent text update if it is being edited
+			sprintf(box_R.str,"%d",currR);
+		else
+		{
+			if(sdl_key == SDLK_RETURN)
+			{
+				cr = atoi(box_R.str);
+				if (cr > 255) cr = 255;
+				if (cr < 0) cr = 0;
+				currR = cr;
+				RGB_to_HSV(currR,currG,currB,&currH,&currS,&currV);
+				box_R.focus = 0;
+			}
+		}
+		if(!box_G.focus)
+			sprintf(box_G.str,"%d",currG);
+		else
+		{
+			if(sdl_key == SDLK_RETURN)
+			{
+				cg = atoi(box_G.str);
+				if (cg > 255) cg = 255;
+				if (cg < 0) cg = 0;
+				currG = cg;
+				RGB_to_HSV(currR,currG,currB,&currH,&currS,&currV);
+				box_G.focus = 0;
+			}
+		}
+		if(!box_B.focus)
+			sprintf(box_B.str,"%d",currB);
+		else
+		{
+			if(sdl_key == SDLK_RETURN)
+			{
+				cb = atoi(box_B.str);
+				if (cb > 255) cb = 255;
+				if (cb < 0) cb = 0;
+				currB = cb;
+				RGB_to_HSV(currR,currG,currB,&currH,&currS,&currV);
+				box_B.focus = 0;
+			}
+		}
+
+		fillrect(vid_buf, 250, YRES+4, 40, 15, currR, currG, currB, 255);
 
 		drawrect(vid_buf, 295, YRES+5, 25, 12, 255, 255, 255, 255);
 		if(hidden)
@@ -4925,20 +5031,26 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 
 		if(!lb && !hidden && mx >= window_offset_x && my >= window_offset_y && mx <= window_offset_x+255+4+10+5 && my <= window_offset_y+255+20)//in the main window
 		{
+			//inside brightness bar
 			if(mx >= grid_offset_x +255+4 && my >= grid_offset_y && mx <= grid_offset_x+255+4+10 && my <= grid_offset_y+255)
 			{
 				tv =  my - grid_offset_y;
 				if(b)
 				{
-					v =my - grid_offset_y;
+					currV =my - grid_offset_y;
+					HSV_to_RGB(currH,currS,tv,&currR,&currG,&currB);
 				}
-				HSV_to_RGB(h,s,tv,&cr,&cg,&cb);
+				HSV_to_RGB(currH,currS,tv,&cr,&cg,&cb);
 				//clearrect(vid_buf, window_offset_x + onleft_button_offset_x +1, window_offset_y +255+6,12,12);
 				fillrect(vid_buf, window_offset_x + onleft_button_offset_x +1, window_offset_y +255+6, 12, 12, cr, cg, cb, 255);
-				sprintf(box_R.str,"%d",cr);
-				sprintf(box_G.str,"%d",cg);
-				sprintf(box_B.str,"%d",cb);
+				if(!box_R.focus)
+					sprintf(box_R.str,"%d",cr);
+				if(!box_G.focus)
+					sprintf(box_G.str,"%d",cg);
+				if(!box_B.focus)
+					sprintf(box_B.str,"%d",cb);
 			}
+			//inside color grid
 			if(mx >= grid_offset_x && my >= grid_offset_y && mx <= grid_offset_x+255 && my <= grid_offset_y+255)
 			{
 				th = mx - grid_offset_x;
@@ -4946,22 +5058,28 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 				ts = 255 - (my - grid_offset_y);
 				if(b)
 				{
-					h = th;
-					s = ts;
+					currH = th;
+					currS = ts;
+					HSV_to_RGB(th,ts,currV,&currR,&currG,&currB);
 				}
-				HSV_to_RGB(th,ts,v,&cr,&cg,&cb);
+				HSV_to_RGB(th,ts,currV,&cr,&cg,&cb);
 				//clearrect(vid_buf, window_offset_x + onleft_button_offset_x +1, window_offset_y +255+6,12,12);
 				fillrect(vid_buf, window_offset_x + onleft_button_offset_x +1, window_offset_y +255+6, 12, 12, cr, cg, cb, 255);
 				//sprintf(box_R.def,"%d",cr);
-				sprintf(box_R.str,"%d",cr);
-				sprintf(box_G.str,"%d",cg);
-				sprintf(box_B.str,"%d",cb);
+				if(!box_R.focus)
+					sprintf(box_R.str,"%d",cr);
+				if(!box_G.focus)
+					sprintf(box_G.str,"%d",cg);
+				if(!box_B.focus)
+					sprintf(box_B.str,"%d",cb);
 			}
+			//switch side button
 			if(b && !bq && mx >= window_offset_x + onleft_button_offset_x +1 && my >= window_offset_y +255+6 && mx <= window_offset_x + onleft_button_offset_x +13 && my <= window_offset_y +255+5 +13)
 			{
 				on_left = !on_left;
 				lb = 3;//prevent immediate drawing after clicking
 			}
+			//clear button
 			if(b && !bq && mx >= window_offset_x + 230 && my >= window_offset_y +255+6 && mx <= window_offset_x + 230 +26 && my <= window_offset_y +255+5 +13)
 				if (confirm_ui(vid_buf, "Reset Decoration Layer", "Do you really want to erase everything?", "Erase") )
 				{
@@ -4970,9 +5088,9 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 						parts[i].dcolour = 0;
 				}
 		}
-		else if (mx > XRES || my > YRES)
+		else if (mx > XRES || my > YRES)//mouse outside normal drawing area
 		{
-			//click outside normal drawing area
+			//hide/show button
 			if (!zoom_en && b && !bq && mx >= 295 && mx <= 295+25 && my >= YRES+5 && my<= YRES+5+12)
 				hidden = !hidden;
 		}
@@ -4995,19 +5113,13 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 		}
 		else if (b)//there is a click, outside color window
 		{
-			if (!(b&1))
-			{
-				cr = 0;
-				cg = 0;
-				cb = 0;
-			}
 			if (lb)//mouse is held down
 			{
-				if (lm == 1)//line tool
+				if (lm == 1)//line tool preview
 				{
 					xor_line(lx, ly, mx, my, vid_buf);
 				}
-				else if (lm == 2)//box tool
+				else if (lm == 2)//box tool preview
 				{
 					xor_line(lx, ly, lx, my, vid_buf);
 					xor_line(lx, my, mx, my, vid_buf);
@@ -5016,7 +5128,7 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 				}
 				else if(lb!=3)//while mouse is held down, it draws lines between previous and current positions
 				{
-					line_decorations(lx, ly, mx, my, *bsx, *bsy, cr, cg, cb, b);
+					line_decorations(lx, ly, mx, my, *bsx, *bsy, currR, currG, currB, b, tool);
 					lx = mx;
 					ly = my;
 				}
@@ -5048,7 +5160,11 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 						cg = PIXG(tempcolor);
 						cb = PIXB(tempcolor);
 						if (cr || cg || cb)
-							RGB_to_HSV(cr,cg,cb,&h,&s,&v);
+						{
+							currR = cr;
+							currG = cg;
+							currB = cb;
+						}
 					}
 					lx = mx;
 					ly = my;
@@ -5057,7 +5173,7 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 				}
 				else //normal click, draw deco
 				{
-					create_decorations(mx,my,*bsx,*bsy,cr,cg,cb,b);
+					create_decorations(mx,my,*bsx,*bsy,currR,currG,currB,b, tool);
 					lx = mx;
 					ly = my;
 					lb = b;
@@ -5067,18 +5183,12 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 		}
 		else
 		{
-			if (!(lb&1))
-			{
-				cr = 0;
-				cg = 0;
-				cb = 0;
-			}
 			if (lb && lm) //lm is box/line tool
 			{
 				if (lm == 1)//line
-					line_decorations(lx, ly, mx, my, *bsx, *bsy, cr, cg, cb, lb);
+					line_decorations(lx, ly, mx, my, *bsx, *bsy, currR, currG, currB, lb, tool);
 				else//box
-					box_decorations(lx, ly, mx, my, cr, cg, cb, lb);
+					box_decorations(lx, ly, mx, my, currR, currG, currB, lb, tool);
 				lm = 0;
 			}
 			lb = 0;
@@ -5234,11 +5344,11 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 		if(sdl_key=='b' || sdl_key==SDLK_ESCAPE)
 		{
 			free(old_buf);
-			return PIXRGB(h,s,v);
+			return PIXRGB(currR,currG,currB);
 		}
 	}
 	free(old_buf);
-	return PIXRGB(h,s,v);
+	return PIXRGB(currR,currG,currB);
 }
 struct savelist_e {
 	char *filename;
@@ -5710,7 +5820,7 @@ openfin:
 void simulation_ui(pixel * vid_buf)
 {
 	int xsize = 300;
-	int ysize = 164;
+	int ysize = 192;
 	int x0=(XRES-xsize)/2,y0=(YRES-MENUSIZE-ysize)/2,b=1,bq,mx,my;
 	int new_scale, new_kiosk;
 	ui_checkbox cb;
@@ -5718,6 +5828,7 @@ void simulation_ui(pixel * vid_buf)
 	ui_checkbox cb3;
 	ui_checkbox cb4;
 	ui_checkbox cb5;
+	ui_checkbox cb6;
 
 	cb.x = x0+xsize-16;		//Heat simulation
 	cb.y = y0+23;
@@ -5730,12 +5841,12 @@ void simulation_ui(pixel * vid_buf)
 	cb2.checked = ngrav_enable;
 	
 	cb3.x = x0+xsize-16;	//Large window
-	cb3.y = y0+113;
+	cb3.y = y0+143;
 	cb3.focus = 0;
 	cb3.checked = (sdl_scale==2)?1:0;
 	
 	cb4.x = x0+xsize-16;	//Fullscreen
-	cb4.y = y0+129;
+	cb4.y = y0+157;
 	cb4.focus = 0;
 	cb4.checked = (kiosk_enable==1)?1:0;
 	
@@ -5743,6 +5854,11 @@ void simulation_ui(pixel * vid_buf)
 	cb5.y = y0+51;
 	cb5.focus = 0;
 	cb5.checked = aheat_enable;
+
+	cb6.x = x0+xsize-16;	//Ambient heat
+	cb6.y = y0+107;
+	cb6.focus = 0;
+	cb6.checked = water_equal_test;
 
 	while (!sdl_poll())
 	{
@@ -5773,14 +5889,18 @@ void simulation_ui(pixel * vid_buf)
 		drawtext(vid_buf, x0+8, y0+82, "Newtonian gravity", 255, 255, 255, 255);
 		drawtext(vid_buf, x0+12+textwidth("Newtonian gravity"), y0+82, "Introduced in version 48.", 255, 255, 255, 180);
 		drawtext(vid_buf, x0+12, y0+96, "May also cause slow performance on older computers", 255, 255, 255, 120);
+
+		drawtext(vid_buf, x0+8, y0+110, "Water Equalization Test", 255, 255, 255, 255);
+		drawtext(vid_buf, x0+12+textwidth("Water Equalization Test"), y0+110, "Introduced in version 61.", 255, 255, 255, 180);
+		drawtext(vid_buf, x0+12, y0+124, "May lag with lots of water.", 255, 255, 255, 120);
 		
-		draw_line(vid_buf, x0, y0+110, x0+xsize, y0+110, 150, 150, 150, XRES+BARSIZE);
+		draw_line(vid_buf, x0, y0+138, x0+xsize, y0+138, 150, 150, 150, XRES+BARSIZE);
 		
-		drawtext(vid_buf, x0+8, y0+116, "Large window", 255, 255, 255, 255);
-		drawtext(vid_buf, x0+12+textwidth("Large window"), y0+116, "Double window size for small screens", 255, 255, 255, 180);
+		drawtext(vid_buf, x0+8, y0+144, "Large window", 255, 255, 255, 255);
+		drawtext(vid_buf, x0+12+textwidth("Large window"), y0+144, "Double window size for small screens", 255, 255, 255, 180);
 		
-		drawtext(vid_buf, x0+8, y0+132, "Fullscreen", 255, 255, 255, 255);
-		drawtext(vid_buf, x0+12+textwidth("Fullscreen"), y0+132, "Fill the entire screen", 255, 255, 255, 180);
+		drawtext(vid_buf, x0+8, y0+158, "Fullscreen", 255, 255, 255, 255);
+		drawtext(vid_buf, x0+12+textwidth("Fullscreen"), y0+158, "Fill the entire screen", 255, 255, 255, 180);
 
 		//TODO: Options for Air and Normal gravity
 		//Maybe save/load defaults too.
@@ -5793,12 +5913,14 @@ void simulation_ui(pixel * vid_buf)
 		ui_checkbox_draw(vid_buf, &cb3);
 		ui_checkbox_draw(vid_buf, &cb4);
 		ui_checkbox_draw(vid_buf, &cb5);
+		ui_checkbox_draw(vid_buf, &cb6);
 		sdl_blit(0, 0, (XRES+BARSIZE), YRES+MENUSIZE, vid_buf, (XRES+BARSIZE));
 		ui_checkbox_process(mx, my, b, bq, &cb);
 		ui_checkbox_process(mx, my, b, bq, &cb2);
 		ui_checkbox_process(mx, my, b, bq, &cb3);
 		ui_checkbox_process(mx, my, b, bq, &cb4);
 		ui_checkbox_process(mx, my, b, bq, &cb5);
+		ui_checkbox_process(mx, my, b, bq, &cb6);
 
 		if (b && !bq && mx>=x0 && mx<x0+xsize && my>=y0+ysize-16 && my<=y0+ysize)
 			break;
@@ -5809,6 +5931,7 @@ void simulation_ui(pixel * vid_buf)
 			break;
 	}
 
+	water_equal_test = cb6.checked;
 	legacy_enable = !cb.checked;
 	aheat_enable = cb5.checked;
 	new_scale = (cb3.checked)?2:1;

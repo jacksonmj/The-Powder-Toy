@@ -63,6 +63,7 @@ void luacon_open(){
 		{"setfpscap",&luatpt_setfpscap},
 		{"getscript",&luatpt_getscript},
 		{"setwindowsize",&luatpt_setwindowsize},
+		{"watertest",&luatpt_togglewater},
 		{NULL,NULL}
 	};
 
@@ -268,6 +269,12 @@ int luatpt_togglepause(lua_State* l)
 	return 0;
 }
 
+int luatpt_togglewater(lua_State* l)
+{
+	water_equal_test=!water_equal_test;
+	return 0;
+}
+
 int luatpt_setconsole(lua_State* l)
 {
 	int consolestate;
@@ -464,6 +471,9 @@ int luatpt_set_property(lua_State* l)
 	} else if (strcmp(prop,"y")==0){
 		offset = offsetof(particle, y);
 		format = 2;
+	} else if (strcmp(prop,"dcolour")==0){
+		offset = offsetof(particle, dcolour);
+		format = 1;
 	} else {
 		return luaL_error(l, "Invalid property '%s'", prop);
 	}
@@ -610,6 +620,10 @@ int luatpt_get_property(lua_State* l)
 		}
 		if (strcmp(prop,"y")==0){
 			lua_pushnumber(l, parts[i].y);
+			return 1;
+		}
+		if (strcmp(prop,"dcolour")==0){
+			lua_pushinteger(l, parts[i].dcolour);
 			return 1;
 		}
 		if (strcmp(prop,"id")==0){
