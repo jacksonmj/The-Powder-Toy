@@ -108,7 +108,7 @@ void clean_text(char *text, int vwidth)
 void save_presets(int do_update)
 {
 	FILE *f=fopen("powder.def", "wb");
-	unsigned char sig[4] = {0x50, 0x44, 0x65, 0x67};
+	unsigned char sig[4] = {0x50, 0x44, 0x65, 0x68};
 	unsigned char tmp = sdl_scale;
 	if (!f)
 		return;
@@ -128,6 +128,8 @@ void save_presets(int do_update)
 	tmp = SAVE_VERSION;
 	fwrite(&tmp, 1, 1, f);
 	tmp = MINOR_VERSION;
+	fwrite(&tmp, 1, 1, f);
+	tmp = BUILD_NUM;
 	fwrite(&tmp, 1, 1, f);
 	tmp = do_update;
 	fwrite(&tmp, 1, 1, f);
@@ -166,8 +168,9 @@ void load_presets(void)
 				remove("powder.def");
 				goto fail;
 			}
-			last_major = sig[0];
-			last_minor = sig[1];
+			//last_major = sig[0];
+			//last_minor = sig[1];
+			last_build = 0;
 			update_flag = sig[2];
 		}
 		fclose(f);
@@ -202,8 +205,16 @@ void load_presets(void)
 	svf_mod = tmp;
 	if (load_string(f, http_proxy_string, 255))
 		goto fail;
-	if (fread(sig, 1, 3, f) != 3)
-		goto fail;
+
+	if (sig[3]!=0x68) { //Pre v64 format
+		if (fread(sig, 1, 3, f) != 3)
+			goto fail;
+		last_build = 0;
+	} else {
+		if (fread(sig, 1, 4, f) != 4)
+			goto fail;
+		last_build = sig[3];
+	}
 	last_major = sig[0];
 	last_minor = sig[1];
 	update_flag = sig[2];
