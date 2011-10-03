@@ -860,6 +860,7 @@ int draw_tool_xy(pixel *vid_buf, int x, int y, int b, unsigned pc)
 		case SPC_WIND:
 		case SPC_PGRV:
 		case SPC_NGRV:
+		case SPC_PROP:
 			for (j=1; j<15; j++)
 				for (i=1; i<27; i++)
 					vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = pc;
@@ -886,6 +887,8 @@ int draw_tool_xy(pixel *vid_buf, int x, int y, int b, unsigned pc)
 				drawtext(vid_buf, x+14-textwidth("PGRV")/2, y+4, "PGRV", c, c, c, 255);
 			else if (b==SPC_NGRV)
 				drawtext(vid_buf, x+14-textwidth("NGRV")/2, y+4, "NGRV", c, c, c, 255);
+			else if (b==SPC_PROP)
+				drawtext(vid_buf, x+14-textwidth("PROP")/2, y+4, "PROP", c, c, c, 255);
 			break;
 		default:
 			for (j=1; j<15; j++)
@@ -1869,7 +1872,7 @@ void draw_parts(pixel *vid)
 							cr += (parts[i].ctype >> (x+18)) & 1;
 							cb += (parts[i].ctype >>  x)     & 1;
 						}
-						for (x=0; x<14; x++)
+						for (x=0; x<12; x++)
 							cg += (parts[i].ctype >> (x+9))  & 1;
 						x = 624/(cr+cg+cb+1);
 						cr *= x;
@@ -2451,7 +2454,7 @@ void draw_parts(pixel *vid)
 						cr += (parts[i].ctype >> (x+18)) & 1;
 						cb += (parts[i].ctype >>  x)     & 1;
 					}
-					for (x=0; x<14; x++)
+					for (x=0; x<12; x++)
 						cg += (parts[i].ctype >> (x+9))  & 1;
 					x = 624/(cr+cg+cb+1);
 					cr *= x;
@@ -2622,7 +2625,7 @@ void draw_parts(pixel *vid)
 						cr += (parts[i].ctype >> (x+18)) & 1;
 						cb += (parts[i].ctype >>  x)     & 1;
 					}
-					for (x=0; x<14; x++)
+					for (x=0; x<12; x++)
 						cg += (parts[i].ctype >> (x+9))  & 1;
 					x = 624/(cr+cg+cb+1);
 					cr *= x;
@@ -2645,7 +2648,7 @@ void draw_parts(pixel *vid)
 							cr += (parts[i].ctype >> (x+18)) & 1;
 							cb += (parts[i].ctype >>  x)     & 1;
 						}
-						for (x=0; x<14; x++)
+						for (x=0; x<12; x++)
 							cg += (parts[i].ctype >> (x+9))  & 1;
 						x = 624/(cr+cg+cb+1);
 						cr *= x;
@@ -2670,7 +2673,7 @@ void draw_parts(pixel *vid)
 							cr += (parts[i].ctype >> (x+18)) & 1;
 							cb += (parts[i].ctype >>  x)     & 1;
 						}
-						for (x=0; x<14; x++)
+						for (x=0; x<12; x++)
 							cg += (parts[i].ctype >> (x+9))  & 1;
 						x = 624/(cr+cg+cb+1);
 						cr *= x;
@@ -2700,7 +2703,7 @@ void draw_parts(pixel *vid)
 							cr += (parts[i].ctype >> (x+18)) & 1;
 							cb += (parts[i].ctype >>  x)     & 1;
 						}
-						for (x=0; x<14; x++)
+						for (x=0; x<12; x++)
 							cg += (parts[i].ctype >> (x+9))  & 1;
 						x = 624/(cr+cg+cb+1);
 						cr *= x;
@@ -2731,7 +2734,7 @@ void draw_parts(pixel *vid)
 							cr += (parts[i].ctype >> (x+18)) & 1;
 							cb += (parts[i].ctype >>  x)     & 1;
 						}
-						for (x=0; x<14; x++)
+						for (x=0; x<12; x++)
 							cg += (parts[i].ctype >> (x+9))  & 1;
 						x = 624/(cr+cg+cb+1);
 						cr *= x;
@@ -3669,7 +3672,7 @@ void draw_parts(pixel *vid)
 						cr += (parts[i].ctype >> (x+18)) & 1;
 						cb += (parts[i].ctype >>  x)     & 1;
 					}
-					for (x=0; x<14; x++)
+					for (x=0; x<12; x++)
 						cg += (parts[i].ctype >> (x+9))  & 1;
 					x = 624/(cr+cg+cb+1);
 					cr *= x;
@@ -4063,7 +4066,7 @@ void draw_wavelengths(pixel *vid, int x, int y, int h, int wl)
 				cr += (tmp >> (j+18)) & 1;
 				cb += (tmp >>  j)     & 1;
 			}
-			for (j=0; j<14; j++)
+			for (j=0; j<13; j++)
 				cg += (tmp >> (j+9))  & 1;
 			tmp = 624/(cr+cg+cb+1);
 			cr *= tmp;
