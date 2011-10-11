@@ -9,6 +9,8 @@ int gravwl_timeout = 0;
 
 int wire_placed = 0;
 
+int lighting_recreate = 0;
+
 float player[28]; //[0] is a command cell, [3]-[18] are legs positions, [19]-[26] are accelerations, [27] shows if player was spawned
 float player2[28];
 
@@ -834,6 +836,12 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 		parts[i].tmp = 0;
 		parts[i].tmp2 = 0;
 	}
+	if (t==PT_LIGH)
+	{
+	    parts[i].tmp = 270;
+	    if (p==-2)
+            parts[i].tmp2 = 4;
+	}
 	if (t==PT_SOAP)
 	{
 		parts[i].tmp = -1;
@@ -979,6 +987,20 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 		photons[y][x] = t|(i<<8);
 	if (t!=PT_STKM&&t!=PT_STKM2 && t!=PT_PHOT && t!=PT_NEUT)
 		pmap[y][x] = t|(i<<8);
+		
+	//Fancy dust effects for powder types
+	if((ptypes[t].properties & TYPE_PART) && pretty_powder)
+	{
+		int colr, colg, colb, randa;
+		randa = (rand()%30)-15;
+		colr = (PIXR(ptypes[t].pcolors)+sandcolour_r+(rand()%20)-10+randa);
+		colg = (PIXG(ptypes[t].pcolors)+sandcolour_g+(rand()%20)-10+randa);
+		colb = (PIXB(ptypes[t].pcolors)+sandcolour_b+(rand()%20)-10+randa);
+		colr = colr>255 ? 255 : (colr<0 ? 0 : colr);
+		colg = colg>255 ? 255 : (colg<0 ? 0 : colg);
+		colb = colb>255 ? 255 : (colb<0 ? 0 : colb);
+		parts[i].dcolour = 0xFF000000 | (colr<<16) | (colg<<8) | colb;
+	}
 
 	return i;
 }
@@ -1220,9 +1242,9 @@ int parts_avg(int ci, int ni,int t)//t is the particle you are looking for, retu
 }
 
 
-int nearest_part(int ci, int t)
+int nearest_part(int ci, int t, int max_d)
 {
-	int distance = MAX_DISTANCE;
+	int distance = (max_d!=-1)?max_d:MAX_DISTANCE;
 	int ndistance = 0;
 	int id = -1;
 	int i = 0;
@@ -1230,7 +1252,7 @@ int nearest_part(int ci, int t)
 	int cy = (int)parts[ci].y;
 	for (i=0; i<=parts_lastActiveIndex; i++)
 	{
-		if (parts[i].type==t&&!parts[i].life&&i!=ci)
+		if ((parts[i].type==t||t==-1)&&!parts[i].life&&i!=ci)
 		{
 			ndistance = abs(cx-parts[i].x)+abs(cy-parts[i].y);// Faster but less accurate  Older: sqrt(pow(cx-parts[i].x, 2)+pow(cy-parts[i].y, 2));
 			if (ndistance<distance)
@@ -1291,10 +1313,33 @@ void update_particles_i(pixel *vid, int start, int inc)
 	int starti = (start*-1);
 	int surround[8];
 	int surround_hconduct[8];
+	int lighting_ok=1;
 	float pGravX, pGravY, pGravD;
 
+	if (sys_pause&&lighting_recreate>0)
+    {
+        for (i=0; i<=parts_lastActiveIndex; i++)
+        {
+            if (parts[i].type==PT_LIGH && parts[i].tmp2>0)
+            {
+                lighting_ok=0;
+                break;
+            }
+        }
+    }
+	
+	if (lighting_ok)
+        lighting_recreate--;
+
+    if (lighting_recreate<0)
+        lighting_recreate=1;
+
+    if (lighting_recreate>21)
+        lighting_recreate=21;
+	
 	if (sys_pause&&!framerender)//do nothing if paused
 		return;
+		
 	if (ISGRAV==1)//crappy grav color handling, i will change this someday
 	{
 		ISGRAV = 0;
@@ -2737,7 +2782,7 @@ int flood_water(int x, int y, int i, int originaly, int check)
 //this creates particles from a brush, don't use if you want to create one particle
 int create_parts(int x, int y, int rx, int ry, int c, int flags)
 {
-	int i, j, r, f = 0, u, v, oy, ox, b = 0, dw = 0, stemp = 0;//n;
+	int i, j, r, f = 0, u, v, oy, ox, b = 0, dw = 0, stemp = 0, p;//n;
 
 	int wall = c - 100;
 	if (c==SPC_WIND){
@@ -2769,6 +2814,23 @@ int create_parts(int x, int y, int rx, int ry, int c, int flags)
 	{
 		gravwl_timeout = 60;
 	}
+	if (c==PT_LIGH)
+	{
+	    if (lighting_recreate>0 && rx+ry>0)
+            return 0;
+        int p=create_part(-2, x, y, c);
+        if (p!=-1)
+        {
+            parts[p].life=rx+ry;
+            if (parts[p].life>55)
+                parts[p].life=55;
+            parts[p].temp=parts[p].life*150; // temperatute of the lighting shows the power of the lighting
+            lighting_recreate+=parts[p].life/2+1;
+            return 1;
+        }
+        else return 0;
+	}
+	
 	if (dw==1)
 	{
 		ry = ry/CELL;
@@ -2907,6 +2969,31 @@ int create_parts(int x, int y, int rx, int ry, int c, int flags)
 
 	}
 	//else, no special modes, draw element like normal.
+	if(c==PT_TESC)
+	{
+		if (rx==0&&ry==0)//workaround for 1pixel brush/floodfill crashing. todo: find a better fix later.
+		{
+			if (create_part(-2, x, y, c)==-1)
+				f = 1;
+		}
+		else
+			for (j=-ry; j<=ry; j++)
+				for (i=-rx; i<=rx; i++)
+					if (InCurrentBrush(i ,j ,rx ,ry))
+					{
+						p = create_part(-2, x+i, y+j, c);
+						if (p==-1)
+						{
+							f = 1;
+						} else {
+							parts[p].tmp=rx*4+ry*4+7;
+							if (parts[p].tmp>300)
+								parts[p].tmp=300;
+						}
+					}
+		return !f;
+	}
+	
 	if (rx==0&&ry==0)//workaround for 1pixel brush/floodfill crashing. todo: find a better fix later.
 	{
 		if (create_part(-2, x, y, c)==-1)

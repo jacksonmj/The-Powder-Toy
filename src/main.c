@@ -153,7 +153,7 @@ static const char *it_msg =
     "\n"
     "Contributors: \bgStanislaw K Skowronek (\brhttp://powder.unaligned.org\bg, \bbirc.unaligned.org #wtf\bg),\n"
     "\bgSimon Robertshaw, Skresanov Savely, cracker64, Catelite, Bryan Hoyle, Nathan Cousins, jacksonmj,\n"
-	"\bgLieuwe Mosch, Anthony Boot, Matthew Miller\n"
+	"\bgLieuwe Mosch, Anthony Boot, Matthew Miller, MaksProg\n"
     "\n"
     "\bgTo use online features such as saving, you need to register at: \brhttp://powdertoy.co.uk/Register.html"
     ;
@@ -179,6 +179,7 @@ int decorations_enable = 1;
 int hud_enable = 1;
 int active_menu = 0;
 int framerender = 0;
+int pretty_powder = 0;
 int amd = 1;
 int FPSB = 0;
 int MSIGN =-1;
@@ -1801,12 +1802,20 @@ int main(int argc, char *argv[])
 			bsy = 1180;
 		if (bsy<0)
 			bsy = 0;
+			
+		//Pretty powders, colour cycle
+		//sandcolour_r = 0;
+		//sandcolour_g = 0;
+		sandcolour_b = sandcolour_r = sandcolour_g = (int)(20.0f*sin((float)sandcolour_frame*(M_PI/180.0f)));
+		sandcolour_frame++;
+		sandcolour_frame%=360;
 		
 		if(ngrav_enable && drawgrav_enable)
 			draw_grav(vid_buf);
 		draw_walls(part_vbuf);
 		update_particles(part_vbuf); //update everything
 		draw_parts(part_vbuf); //draw particles
+		draw_other(part_vbuf);
 		if(sl == WL_GRAV+100 || sr == WL_GRAV+100)
 			draw_grav_zones(part_vbuf);
 		
@@ -2362,6 +2371,8 @@ int main(int argc, char *argv[])
 				aheat_enable = !aheat_enable;
 			if (sdl_key=='h')
 				hud_enable = !hud_enable;
+			if (sdl_key=='n')
+				pretty_powder = !pretty_powder;
 			if (sdl_key=='p')
 				dump_frame(vid_buf, XRES, YRES, XRES+BARSIZE);
 			if (sdl_key=='v'&&(sdl_mod & (KMOD_LCTRL|KMOD_RCTRL)))
@@ -2616,13 +2627,13 @@ int main(int argc, char *argv[])
 				}
 				if (DEBUG_MODE)
 				{
-					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d", nametext, pv[(y/sdl_scale)/CELL][(x/sdl_scale)/CELL], parts[cr>>8].temp-273.15f, parts[cr>>8].life);
+					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d, Tmp:%d", nametext, pv[(y/sdl_scale)/CELL][(x/sdl_scale)/CELL], parts[cr>>8].temp-273.15f, parts[cr>>8].life, parts[cr>>8].tmp);
 					sprintf(coordtext, "#%d, X:%d Y:%d", cr>>8, x/sdl_scale, y/sdl_scale);
 				}
 				else
 				{
 #ifdef BETA
-					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d", nametext, pv[(y/sdl_scale)/CELL][(x/sdl_scale)/CELL], parts[cr>>8].temp-273.15f, parts[cr>>8].life);
+					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d, Tmp:%d", nametext, pv[(y/sdl_scale)/CELL][(x/sdl_scale)/CELL], parts[cr>>8].temp-273.15f, parts[cr>>8].life, parts[cr>>8].tmp);
 #else
 					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C", nametext, pv[(y/sdl_scale)/CELL][(x/sdl_scale)/CELL], parts[cr>>8].temp-273.15f);
 #endif
