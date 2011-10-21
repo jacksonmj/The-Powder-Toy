@@ -9,9 +9,8 @@
  
 //VersionInfoStart
 #define SAVE_VERSION 65
-#define MINOR_VERSION 3
-#define BETA
-#define BUILD_NUM 95
+#define MINOR_VERSION 4
+#define BUILD_NUM 97
 //VersionInfoEnd
 
 #define IDENT_VERSION "G" //Change this if you're not Simon! It should be a single letter.
@@ -164,6 +163,7 @@ extern int aheat_enable;
 extern int decorations_enable;
 extern int hud_enable;
 extern int pretty_powder;
+extern int drawgrav_enable;
 int limitFPS;
 int water_equal_test;
 
