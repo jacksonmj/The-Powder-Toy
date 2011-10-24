@@ -1049,6 +1049,10 @@ int drawtext(pixel *vid, int x, int y, const char *s, int r, int g, int b, int a
 				r = 255;
 				g = b = 0;
 				break;
+			case 'l':
+				r = 255;
+				g = b = 75;
+				break;
 			case 'b':
 				r = g = 0;
 				b = 255;
@@ -1127,9 +1131,18 @@ int drawtextwrap(pixel *vid, int x, int y, int w, const char *s, int r, int g, i
 					r = 255;
 					g = b = 0;
 					break;
+				case 'l':
+					r = 255;
+					g = b = 75;
+					break;
 				case 'b':
 					r = g = 0;
 					b = 255;
+					break;
+				case 't':
+					b = 255;
+					g = 170;
+					r = 32;
 					break;
 				}
 				s++;
@@ -1745,7 +1758,7 @@ void draw_parts(pixel *vid)
 	int orbd[4] = {0, 0, 0, 0};
 	int orbl[4] = {0, 0, 0, 0};
 	int cr, cg, cb;
-	float fr, fg, fb;
+	float fr, fg, fb, div_n;
 	float pt = R_TEMP;
 	if (GRID_MODE)//draws the grid
 	{
@@ -3462,7 +3475,7 @@ void draw_parts(pixel *vid)
 
                             addpixel(vid, nx, ny+newx, cr, cg, cb, gradv);
                             addpixel(vid, nx, ny-newx, cr, cg, cb, gradv);
-                            float div_n=1.2f-0.006*parts[i].life;
+                            div_n=1.2f-0.006*parts[i].life;
                             if (div_n<1.01f)
                                 div_n=1.01f;
                             gradv = gradv/div_n;

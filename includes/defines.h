@@ -9,11 +9,14 @@
  
 //VersionInfoStart
 #define SAVE_VERSION 65
-#define MINOR_VERSION 4
-#define BUILD_NUM 97
+#define MINOR_VERSION 5
+#define BUILD_NUM 100
 //VersionInfoEnd
 
 #define IDENT_VERSION "G" //Change this if you're not Simon! It should be a single letter.
+
+#define MTOS_EXPAND(str) #str
+#define MTOS(str) MTOS_EXPAND(str)
 
 #define SERVER "powdertoy.co.uk"
 #define SCRIPTSERVER "powdertoy.co.uk"
@@ -166,6 +169,7 @@ extern int pretty_powder;
 extern int drawgrav_enable;
 int limitFPS;
 int water_equal_test;
+extern int quickoptions_tooltip_fade;
 
 extern int debug_flags;
 #define DEBUG_PERF_FRAMECOUNT 256

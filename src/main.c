@@ -131,7 +131,7 @@ void play_sound(char *file)
 }
 
 static const char *it_msg =
-    "\brThe Powder Toy - http://powdertoy.co.uk, irc.freenode.net #powder\n"
+    "\blThe Powder Toy - Version " MTOS(SAVE_VERSION) "." MTOS(MINOR_VERSION) " - http://powdertoy.co.uk, irc.freenode.net #powder\n"
     "\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F\x7F\n"
     "\n"
     "\bgControl+C/V/X are Copy, Paste and cut respectively.\n"
@@ -1579,13 +1579,13 @@ int main(int argc, char *argv[])
 	void *http_ver_check, *http_session_check = NULL;
 	char *ver_data=NULL, *check_data=NULL, *tmp;
 	//char console_error[255] = "";
-	int result, i, j, bq, bc, fire_fc=0, do_check=0, do_s_check=0, old_version=0, http_ret=0,http_s_ret=0, major, minor, buildnum, is_beta = 0, old_ver_len, new_message_len=0;
+	int result, i, j, bq, bc = 0, fire_fc=0, do_check=0, do_s_check=0, old_version=0, http_ret=0,http_s_ret=0, major, minor, buildnum, is_beta = 0, old_ver_len, new_message_len=0;
 #ifdef INTERNAL
 	int vs = 0;
 #endif
 	int wavelength_gfx = 0;
 	int x, y, line_x, line_y, b = 0, sl=1, sr=0, su=0, c, lb = 0, lx = 0, ly = 0, lm = 0;//, tx, ty;
-	int da = 0, dae = 0, db = 0, it = 2047, mx, my, bsx = 2, bsy = 2;
+	int da = 0, dae = 0, db = 0, it = 2047, mx, my, bsx = 2, bsy = 2, quickoptions_tooltip_fade_invert, it_invert = 0;
 	float nfvx, nfvy;
 	int load_mode=0, load_w=0, load_h=0, load_x=0, load_y=0, load_size=0;
 	void *load_data=NULL;
@@ -2415,10 +2415,22 @@ int main(int argc, char *argv[])
 			if (sdl_key==SDLK_SPACE)
 				sys_pause = !sys_pause;
 			if (sdl_key=='u')
-
 				aheat_enable = !aheat_enable;
-			if (sdl_key=='h')
+			if (sdl_key=='h' && !(sdl_mod & KMOD_LCTRL))
+			{
 				hud_enable = !hud_enable;
+			}
+			if (sdl_key==SDLK_F1 || (sdl_key=='h' && (sdl_mod & KMOD_LCTRL)))
+			{
+				if(!it)
+				{
+					it = 8047;
+				}
+				else
+				{
+					it = 0;
+				}
+			}
 			if (sdl_key=='n')
 				pretty_powder = !pretty_powder;
 			if (sdl_key=='p')
@@ -3479,29 +3491,34 @@ int main(int argc, char *argv[])
 			if (vs)
 				strappend(uitext, " [FRAME CAPTURE]");
 #endif
-
+			quickoptions_tooltip_fade_invert = 255 - (quickoptions_tooltip_fade*20);
+			it_invert = 50 - it;
+			if(it_invert < 0)
+				it_invert = 0;
+			if(it_invert > 50)
+				it_invert = 50;
 			if (sdl_zoom_trig||zoom_en)
 			{
 				if (zoom_x<XRES/2)
 				{
-					fillrect(vid_buf, XRES-20-textwidth(heattext), 266, textwidth(heattext)+8, 15, 0, 0, 0, 140);
-					drawtext(vid_buf, XRES-16-textwidth(heattext), 270, heattext, 255, 255, 255, 200);
+					fillrect(vid_buf, XRES-20-textwidth(heattext), 266, textwidth(heattext)+8, 15, 0, 0, 0, quickoptions_tooltip_fade_invert*0.5);
+					drawtext(vid_buf, XRES-16-textwidth(heattext), 270, heattext, 255, 255, 255, quickoptions_tooltip_fade_invert*0.75);
 					if (DEBUG_MODE)
 					{
-						fillrect(vid_buf, XRES-20-textwidth(coordtext), 280, textwidth(coordtext)+8, 13, 0, 0, 0, 140);
-						drawtext(vid_buf, XRES-16-textwidth(coordtext), 282, coordtext, 255, 255, 255, 200);
+						fillrect(vid_buf, XRES-20-textwidth(coordtext), 280, textwidth(coordtext)+8, 13, 0, 0, 0, quickoptions_tooltip_fade_invert*0.5);
+						drawtext(vid_buf, XRES-16-textwidth(coordtext), 282, coordtext, 255, 255, 255, quickoptions_tooltip_fade_invert*0.75);
 					}
 					if (wavelength_gfx)
 						draw_wavelengths(vid_buf,XRES-20-textwidth(heattext),265,2,wavelength_gfx);
 				}
 				else
 				{
-					fillrect(vid_buf, 12, 266, textwidth(heattext)+8, 15, 0, 0, 0, 140);
-					drawtext(vid_buf, 16, 270, heattext, 255, 255, 255, 200);
+					fillrect(vid_buf, 12, 266, textwidth(heattext)+8, 15, 0, 0, 0, quickoptions_tooltip_fade_invert*0.5);
+					drawtext(vid_buf, 16, 270, heattext, 255, 255, 255, quickoptions_tooltip_fade_invert*0.75);
 					if (DEBUG_MODE)
 					{
-						fillrect(vid_buf, 12, 280, textwidth(coordtext)+8, 13, 0, 0, 0, 140);
-						drawtext(vid_buf, 16, 282, coordtext, 255, 255, 255, 200);
+						fillrect(vid_buf, 12, 280, textwidth(coordtext)+8, 13, 0, 0, 0, quickoptions_tooltip_fade_invert*0.5);
+						drawtext(vid_buf, 16, 282, coordtext, 255, 255, 255, quickoptions_tooltip_fade_invert*0.75);
 					}
 					if (wavelength_gfx)
 						draw_wavelengths(vid_buf,12,265,2,wavelength_gfx);
@@ -3509,19 +3526,18 @@ int main(int argc, char *argv[])
 			}
 			else
 			{
-				fillrect(vid_buf, XRES-20-textwidth(heattext), 12, textwidth(heattext)+8, 15, 0, 0, 0, 140);
-				drawtext(vid_buf, XRES-16-textwidth(heattext), 16, heattext, 255, 255, 255, 200);
+				fillrect(vid_buf, XRES-20-textwidth(heattext), 12, textwidth(heattext)+8, 15, 0, 0, 0, quickoptions_tooltip_fade_invert*0.5);
+				drawtext(vid_buf, XRES-16-textwidth(heattext), 16, heattext, 255, 255, 255, quickoptions_tooltip_fade_invert*0.75);
 				if (DEBUG_MODE)
 				{
-					fillrect(vid_buf, XRES-20-textwidth(coordtext), 26, textwidth(coordtext)+8, 11, 0, 0, 0, 140);
-					drawtext(vid_buf, XRES-16-textwidth(coordtext), 27, coordtext, 255, 255, 255, 200);
+					fillrect(vid_buf, XRES-20-textwidth(coordtext), 26, textwidth(coordtext)+8, 11, 0, 0, 0, quickoptions_tooltip_fade_invert*0.5);
+					drawtext(vid_buf, XRES-16-textwidth(coordtext), 27, coordtext, 255, 255, 255, quickoptions_tooltip_fade_invert*0.75);
 				}
 				if (wavelength_gfx)
 					draw_wavelengths(vid_buf,XRES-20-textwidth(heattext),11,2,wavelength_gfx);
 			}
 			wavelength_gfx = 0;
-			fillrect(vid_buf, 12, 12, textwidth(uitext)+8, 15, 0, 0, 0, 140);
-			drawtext(vid_buf, 16, 16, uitext, 32, 216, 255, 200);
+			drawtext_outline(vid_buf, 16, 16, uitext, 32, 216, 255, it_invert * 4, 0, 0, 0, it_invert * 4);
 
 		}
 
