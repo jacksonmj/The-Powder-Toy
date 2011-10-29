@@ -55,9 +55,6 @@
 #include <air.h>
 #include <icon.h>
 #include <console.h>
-#ifdef PYCONSOLE
-#include "pythonconsole.h"
-#endif
 #ifdef LUACONSOLE
 #include "luaconsole.h"
 #endif
@@ -980,21 +977,34 @@ int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char 
 		// no more particle properties to load, so we can change type here without messing up loading
 		if (i && i<=NPART)
 		{
-			if ((player[27] == 1 && ty==PT_STKM) || (player2[27] == 1 && ty==PT_STKM2))
+			if ((player.spwn == 1 && ty==PT_STKM) || (player2.spwn == 1 && ty==PT_STKM2))
 			{
 				parts[i-1].type = PT_NONE;
 			}
 			else if (parts[i-1].type == PT_STKM)
 			{
-				//player[2] = PT_DUST;
-				STKM_init_legs(player, i-1);
-				player[27] = 1;
+				STKM_init_legs(&player, i-1);
+				player.spwn = 1;
+				player.elem = PT_DUST;
 			}
 			else if (parts[i-1].type == PT_STKM2)
 			{
-				//player2[2] = PT_DUST;
-				STKM_init_legs(player2, i-1);
-				player2[27] = 1;
+				STKM_init_legs(&player2, i-1);
+				player2.spwn = 1;
+				player2.elem = PT_DUST;
+			}
+			else if (parts[i-1].type == PT_FIGH)
+			{
+				unsigned char fcount = 0;
+				while (fcount < 100 && fcount < (fighcount+1) && fighters[fcount].spwn==1) fcount++;
+				if (fcount < 100 && fighters[fcount].spwn==0)
+				{
+					parts[i-1].tmp = fcount;
+					fighters[fcount].spwn = 1;
+					fighters[fcount].elem = PT_DUST;
+					fighcount++;
+					STKM_init_legs(&(fighters[fcount]), i-1);
+				}
 			}
 
 			if (ver<48 && (ty==OLD_PT_WIND || (ty==PT_BRAY&&parts[i-1].life==0)))
@@ -1113,9 +1123,11 @@ void clear_sim(void)
 	memset(wireless, 0, sizeof(wireless));
 	memset(gol2, 0, sizeof(gol2));
 	memset(portalp, 0, sizeof(portalp));
+	memset(fighters, 0, sizeof(fighters));
+	fighcount = 0;
 	ISSPAWN1 = ISSPAWN2 = 0;
-	player[27] = 0;
-	player2[27] = 0;
+	player.spwn = 0;
+	player2.spwn = 0;
 	memset(pers_bg, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
 	memset(fire_r, 0, sizeof(fire_r));
 	memset(fire_g, 0, sizeof(fire_g));
@@ -1459,6 +1471,9 @@ void start_grav_async()
 		pthread_create(&gravthread, NULL, update_grav_async, NULL); //Start asynchronous gravity simulation
 		ngrav_enable = 1;
 	}
+	memset(gravyf, 0, sizeof(gravyf));
+	memset(gravxf, 0, sizeof(gravxf));
+	memset(gravpf, 0, sizeof(gravpf));
 }
 
 void stop_grav_async()
@@ -1474,6 +1489,9 @@ void stop_grav_async()
 		memset(gravx, 0, sizeof(gravx)); //Clear the grav velocities
 		ngrav_enable = 0;
 	}
+	memset(gravyf, 0, sizeof(gravyf));
+	memset(gravxf, 0, sizeof(gravxf));
+	memset(gravpf, 0, sizeof(gravpf));
 }
 
 #ifdef RENDERER
@@ -1497,8 +1515,8 @@ int main(int argc, char *argv[])
 	pers_bg = calloc((XRES+BARSIZE)*YRES, PIXELSIZE);
 	
 	prepare_alpha(4, 1.0f);
-	player[2] = player2[2] = PT_DUST;
-	player[28] = player2[28] = 0;
+	player.elem = player2.elem = PT_DUST;
+	player.frames = player2.frames = 0;
 
 	sprintf(ppmfilename, "%s.ppm", argv[2]);
 	sprintf(ptifilename, "%s.pti", argv[2]);
@@ -1513,7 +1531,7 @@ int main(int argc, char *argv[])
 			memset(vid_buf, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
 			draw_walls(vid_buf);
 			update_particles(vid_buf);
-			draw_parts(vid_buf);
+			render_parts(vid_buf);
 			render_fire(vid_buf);
 		}
 		
@@ -1625,10 +1643,6 @@ int main(int argc, char *argv[])
 #ifdef LUACONSOLE
 	luacon_open();
 #endif
-#ifdef PYCONSOLE
-	pycon_open();
-#endif
-
 #ifdef MT
 	numCores = core_count();
 #endif
@@ -1726,7 +1740,6 @@ int main(int argc, char *argv[])
 	}
 
 	make_kernel();
-	prepare_alpha(CELL, 1.0f);
 
 	stamp_init();
 
@@ -1738,6 +1751,11 @@ int main(int argc, char *argv[])
 	}
 	save_presets(0);
 	http_init(http_proxy_string[0] ? http_proxy_string : NULL);
+
+	prepare_alpha(CELL, 1.0f);
+	prepare_graphicscache();
+	flm_data = generate_gradient(flm_data_colours, flm_data_pos, flm_data_points, 200);
+	plasma_data = generate_gradient(plasma_data_colours, plasma_data_pos, plasma_data_points, 200);
 
 	if (cpu_check())
 	{
@@ -1764,9 +1782,6 @@ int main(int argc, char *argv[])
 			if(aheat_enable)
 				update_airh();
 		}
-#ifdef OpenGL
-		ClearScreen();
-#else
 
 		if(ngrav_enable && cmode==CM_FANCY)
 		{
@@ -1782,6 +1797,22 @@ int main(int argc, char *argv[])
 				gravity_mask();
 			gravwl_timeout--;
 		}
+#ifdef OGLR
+		if (cmode==CM_PERS)//save background for persistent, then clear
+		{
+			clearScreen(0.01f);
+			memset(part_vbuf, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
+        }
+		else //clear screen every frame
+		{
+            clearScreen(1.0f);
+			memset(part_vbuf, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
+			if (cmode==CM_VEL || cmode==CM_PRESS || cmode==CM_CRACK || (cmode==CM_HEAT && aheat_enable))//air only gets drawn in these modes
+			{
+				draw_air(part_vbuf);
+			}
+		}
+#else
 		if (cmode==CM_VEL || cmode==CM_PRESS || cmode==CM_CRACK || (cmode==CM_HEAT && aheat_enable))//air only gets drawn in these modes
 		{
 			draw_air(part_vbuf);
@@ -1790,7 +1821,7 @@ int main(int argc, char *argv[])
 		{
 			memcpy(part_vbuf, pers_bg, (XRES+BARSIZE)*YRES*PIXELSIZE);
 			memset(part_vbuf+((XRES+BARSIZE)*YRES), 0, ((XRES+BARSIZE)*YRES*PIXELSIZE)-((XRES+BARSIZE)*YRES*PIXELSIZE));
-}
+        }
 		else //clear screen every frame
 		{
 			memset(part_vbuf, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
@@ -1845,7 +1876,7 @@ int main(int argc, char *argv[])
 			#endif
 		}
 		
-		draw_parts(part_vbuf); //draw particles
+		render_parts(part_vbuf); //draw particles
 		draw_other(part_vbuf);
 		
 		if(debug_flags & (DEBUG_PERFORMANCE_CALC|DEBUG_PERFORMANCE_FRAME))
@@ -1922,8 +1953,11 @@ int main(int argc, char *argv[])
 			}
 			fire_fc = (fire_fc+1) % 3;
 		}
+		
+#ifndef OGLR
 		if (cmode==CM_FIRE||cmode==CM_BLOB||cmode==CM_FANCY)
 			render_fire(part_vbuf);
+#endif
 
 		render_signs(part_vbuf);
 
@@ -2081,11 +2115,6 @@ int main(int argc, char *argv[])
 			sdl_rkey = 0;
 	}
 #endif
-#ifdef PYCONSOLE
-	if(sdl_key){
-		pycon_keypress(sdl_key, sdl_mod);
-	}
-#endif
 		if (sys_shortcuts==1)//all shortcuts can be disabled by python scripts
 		{
 			if (sdl_key=='q' || sdl_key==SDLK_ESCAPE)
@@ -2144,7 +2173,7 @@ int main(int argc, char *argv[])
 						free(load_data);
 				}
 			}
-			if (sdl_key=='s' && ((sdl_mod & (KMOD_CTRL)) || !player2[27]))
+			if (sdl_key=='s' && ((sdl_mod & (KMOD_CTRL)) || !player2.spwn))
 			{
 				if (it > 50)
 					it = 50;
@@ -2278,7 +2307,7 @@ int main(int argc, char *argv[])
 						bsy = 0;
 				}
 			}
-			if (sdl_key=='d' && ((sdl_mod & (KMOD_CTRL)) || !player2[27]))
+			if (sdl_key=='d' && ((sdl_mod & (KMOD_CTRL)) || !player2.spwn))
 				DEBUG_MODE = !DEBUG_MODE;
 			if (sdl_key=='i')
 			{
@@ -2362,7 +2391,7 @@ int main(int argc, char *argv[])
 				}
 			}
 
-			if (sdl_key=='w' && (!player2[27] || (sdl_mod & (KMOD_SHIFT)))) //Gravity, by Moach
+			if (sdl_key=='w' && (!player2.spwn || (sdl_mod & (KMOD_SHIFT)))) //Gravity, by Moach
 			{
 				++gravityMode; // cycle gravity mode
 				itc = 51;
@@ -3115,7 +3144,7 @@ int main(int argc, char *argv[])
 				c = (b&1) ? sl : sr; //c is element to be spawned
 				su = c;
 
-				if (c!=WL_SIGN+100)
+				if (c!=WL_SIGN+100 && c!=PT_FIGH)
 				{
 					if (!bq)
 						for (signi=0; signi<MAXSIGNS; signi++)
@@ -3143,6 +3172,12 @@ int main(int argc, char *argv[])
 				{
 					if (!bq)
 						add_sign_ui(vid_buf, x, y);
+				}
+
+				if (c==PT_FIGH)
+				{
+					if (!bq)
+						create_part(-1, x, y, PT_FIGH);
 				}
 				//for the click functions, lx and ly, are the positions of where the FIRST click happened.  x,y are current mouse position.
 				else if (lb)//lb means you are holding mouse down
@@ -3543,41 +3578,7 @@ int main(int argc, char *argv[])
 
 		if (console_mode)
 		{
-#ifdef PYCONSOLE
-			if (pyready==1 && pygood==1)
-			{
-				char *console;
-				//char error[255] = "error!";
-				sys_pause = 1;
-				console = console_ui(vid_buf,console_error,console_more);
-				console = mystrdup(console);
-				strcpy(console_error,"");
-				if (process_command_py(vid_buf, console, console_error)==-1)
-				{
-					free(console);
-					break;
-				}
-				free(console);
-				if (!console_mode)
-					hud_enable = 1;
-			}
-			else
-			{
-				char *console;
-				sys_pause = 1;
-				console = console_ui(vid_buf,console_error,console_more);
-				console = mystrdup(console);
-				strcpy(console_error,"");
-				if (process_command_old(vid_buf, console, console_error)==-1)
-				{
-					free(console);
-					break;
-				}
-				free(console);
-				if (!console_mode)
-					hud_enable = 1;
-			}
-#elif defined LUACONSOLE
+#ifdef LUACONSOLE
 			char *console;
 			sys_pause = 1;
 			console = console_ui(vid_buf, console_error, console_more);
@@ -3609,25 +3610,22 @@ int main(int argc, char *argv[])
 		}
 
 		//execute python step hook
-#ifdef PYCONSOLE
-		pycon_step();
-#endif
 		sdl_blit(0, 0, XRES+BARSIZE, YRES+MENUSIZE, vid_buf, XRES+BARSIZE);
 
 		//Setting an element for the stick man
-		if (player[27]==0)
+		if (player.spwn==0)
 		{
-			if ((sr<PT_NUM && ptypes[sr].falldown>0) || sr==SPC_AIR || sr == PT_NEUT || sr == PT_PHOT)
-				player[2] = sr;
+			if ((sr<PT_NUM && ptypes[sr].falldown>0) || sr==SPC_AIR || sr == PT_NEUT || sr == PT_PHOT || sr == PT_LIGH)
+				player.elem = sr;
 			else
-				player[2] = PT_DUST;
+				player.elem = PT_DUST;
 		}
-		if (player2[27]==0)
+		if (player2.spwn==0)
 		{
-			if ((sr<PT_NUM && ptypes[sr].falldown>0) || sr==SPC_AIR || sr == PT_NEUT || sr == PT_PHOT)
-				player2[2] = sr;
+			if ((sr<PT_NUM && ptypes[sr].falldown>0) || sr==SPC_AIR || sr == PT_NEUT || sr == PT_PHOT || sr == PT_LIGH)
+				player2.elem = sr;
 			else
-				player2[2] = PT_DUST;
+				player2.elem = PT_DUST;
 		}
 	}
 	SDL_CloseAudio();
@@ -3637,9 +3635,6 @@ int main(int argc, char *argv[])
 #endif
 #ifdef LUACONSOLE
 	luacon_close();
-#endif
-#ifdef PYCONSOLE
-	pycon_close();
 #endif
 #ifdef PTW32_STATIC_LIB
     pthread_win32_thread_detach_np();

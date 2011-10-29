@@ -8,9 +8,10 @@
 #endif
  
 //VersionInfoStart
-#define SAVE_VERSION 65
-#define MINOR_VERSION 5
-#define BUILD_NUM 100
+#define SAVE_VERSION 66
+#define MINOR_VERSION 2
+#define BETA
+#define BUILD_NUM 103
 //VersionInfoEnd
 
 #define IDENT_VERSION "G" //Change this if you're not Simon! It should be a single letter.
@@ -22,8 +23,6 @@
 #define SCRIPTSERVER "powdertoy.co.uk"
 
 #define LOCAL_SAVE_DIR "Saves"
-
-#define LOCAL_LUA_DIR "Lua"
 
 #define APPDATA_SUBDIR "\\HardWIRED"
 
@@ -99,13 +98,6 @@ extern unsigned char ZSIZE;
 #define TRI_BRUSH 2
 #define BRUSH_NUM 3
 
-
-//#define GRAVFFT
-//#define LUACONSOLE
-//#define PYCONSOLE
-//#define PYEXT
-//no longer needed
-
 #ifdef PIX16
 typedef unsigned short pixel;
 #else
@@ -170,6 +162,14 @@ extern int drawgrav_enable;
 int limitFPS;
 int water_equal_test;
 extern int quickoptions_tooltip_fade;
+
+extern int debug_flags;
+#define DEBUG_PERF_FRAMECOUNT 256
+extern int debug_perf_istart;
+extern int debug_perf_iend;
+extern long debug_perf_frametime[DEBUG_PERF_FRAMECOUNT];
+extern long debug_perf_partitime[DEBUG_PERF_FRAMECOUNT];
+extern long debug_perf_time;
 
 extern int debug_flags;
 #define DEBUG_PERF_FRAMECOUNT 256

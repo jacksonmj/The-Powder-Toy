@@ -11,10 +11,11 @@ int wire_placed = 0;
 
 int lighting_recreate = 0;
 
-//[0] is a command cell, [3]-[18] are legs positions, [19]-[26] are accelerations, [27] shows if player was spawned
-//[28] is frames since last particle spawn - used when spawning LIGH
-float player[29];
-float player2[29];
+playerst player;
+playerst player2;
+
+playerst fighters[256]; //255 is the maximum number of fighters
+unsigned char fighcount = 0; //Contains the number of fighters
 
 particle *parts;
 particle *cb_parts;
@@ -110,6 +111,7 @@ void init_can_move()
 		//all stickman collisions are done in stickman update function
 		can_move[PT_STKM][t] = 2;
 		can_move[PT_STKM2][t] = 2;
+		can_move[PT_FIGH][t] = 2;
 	}
 	for (t=0;t<PT_NUM;t++)
 	{
@@ -120,6 +122,7 @@ void init_can_move()
 		//all stickman collisions are done in stickman update function
 		can_move[t][PT_STKM] = 2;
 		can_move[t][PT_STKM2] = 2;
+		can_move[PT_FIGH][t] = 2;
 		//INVIS behaviour varies with pressure
 		can_move[t][PT_INVIS] = 3;
 		//stop CNCT being displaced by other particles
@@ -304,11 +307,16 @@ int try_move(int i, int x, int y, int nx, int ny)
 	{
 		if (parts[i].type == PT_STKM)
 		{
-			player[27] = 0;
+			player.spwn = 0;
 		}
 		if (parts[i].type == PT_STKM2)
 		{
-			player2[27] = 0;
+			player2.spwn = 0;
+		}
+		if (parts[i].type == PT_FIGH)
+		{
+			fighters[(unsigned char)parts[i].tmp].spwn = 0;
+			fighcount--;
 		}
 		parts[i].type=PT_NONE;
 		return 0;
@@ -317,11 +325,16 @@ int try_move(int i, int x, int y, int nx, int ny)
 	{
 		if (parts[i].type == PT_STKM)
 		{
-			player[27] = 0;
+			player.spwn = 0;
 		}
 		if (parts[i].type == PT_STKM2)
 		{
-			player2[27] = 0;
+			player2.spwn = 0;
+		}
+		if (parts[i].type == PT_FIGH)
+		{
+			fighters[(unsigned char)parts[i].tmp].spwn = 0;
+			fighcount--;
 		}
 		parts[i].type=PT_NONE;
 		if (!legacy_enable)
@@ -586,11 +599,16 @@ void kill_part(int i)//kills particle number i
 	y = (int)(parts[i].y+0.5f);
 	if (parts[i].type == PT_STKM)
 	{
-		player[27] = 0;
+		player.spwn = 0;
 	}
 	if (parts[i].type == PT_STKM2)
 	{
-		player2[27] = 0;
+		player2.spwn = 0;
+	}
+	if (parts[i].type == PT_FIGH)
+	{
+		fighters[(unsigned char)parts[i].tmp].spwn = 0;
+		fighcount--;
 	}
 	if (parts[i].type == PT_SPAWN)
 	{
@@ -624,10 +642,16 @@ void part_change_type(int i, int x, int y, int t)//changes the type of particle 
 		t = PT_NONE;
 
 	if (parts[i].type == PT_STKM)
-		player[27] = 0;
+		player.spwn = 0;
 
 	if (parts[i].type == PT_STKM2)
-		player2[27] = 0;
+		player2.spwn = 0;
+
+	if (parts[i].type == PT_FIGH)
+	{
+		fighters[(unsigned char)parts[i].tmp].spwn = 0;
+		fighcount--;
+	}
 
 	parts[i].type = t;
 	if (t==PT_PHOT || t==PT_NEUT)
@@ -753,7 +777,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 		{
 			if ((pmap[y][x]&0xFF)!=PT_SPAWN&&(pmap[y][x]&0xFF)!=PT_SPAWN2)
 			{
-				if (t!=PT_STKM&&t!=PT_STKM2)
+				if (t!=PT_STKM&&t!=PT_STKM2&&t!=PT_FIGH)
 				{
 					return -1;
 				}
@@ -779,7 +803,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 				t!=PT_CLNE&&t!=PT_PCLN&&
 				t!=PT_BCLN&&t!=PT_STKM&&
 				t!=PT_STKM2&&t!=PT_PBCN&&
-				t!=PT_STOR)
+				t!=PT_STOR&&t!=PT_FIGH)
 			)
 			{
 				parts[pmap[y][x]>>8].ctype = t;
@@ -828,7 +852,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 		parts[i].pavg[0] = 0.0f;
 		parts[i].pavg[1] = 0.0f;
 	}
-	if (t!=PT_STKM&&t!=PT_STKM2)//set everything to default values first, except for stickman.
+	if (t!=PT_STKM&&t!=PT_STKM2&&t!=PT_FIGH)//set everything to default values first, except for stickman.
 	{
 		parts[i].x = (float)x;
 		parts[i].y = (float)y;
@@ -953,7 +977,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 	}
 	if (t==PT_STKM)
 	{
-		if (player[27]==0)
+		if (player.spwn==0)
 		{
 			parts[i].x = (float)x;
 			parts[i].y = (float)y;
@@ -963,8 +987,8 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 			parts[i].life = 100;
 			parts[i].ctype = 0;
 			parts[i].temp = ptypes[t].heat;
-			STKM_init_legs(player, i);
-			player[27] = 1;
+			STKM_init_legs(&player, i);
+			player.spwn = 1;
 		}
 		else
 		{
@@ -975,7 +999,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 	}
 	if (t==PT_STKM2)
 	{
-		if (player2[27]==0)
+		if (player2.spwn==0)
 		{
 			parts[i].x = (float)x;
 			parts[i].y = (float)y;
@@ -985,8 +1009,8 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 			parts[i].life = 100;
 			parts[i].ctype = 0;
 			parts[i].temp = ptypes[t].heat;
-			STKM_init_legs(player2, i);
-			player2[27] = 1;
+			STKM_init_legs(&player2, i);
+			player2.spwn = 1;
 		}
 		else
 		{
@@ -995,12 +1019,36 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 		create_part(-1,x,y,PT_SPAWN2);
 		ISSPAWN2 = 1;
 	}
+	if (t==PT_FIGH)
+	{
+		unsigned char fcount = 0;
+		while (fcount < 100 && fcount < (fighcount+1) && fighters[fcount].spwn==1) fcount++;
+		if (fcount < 100 && fighters[fcount].spwn==0)
+		{
+			parts[i].x = (float)x;
+			parts[i].y = (float)y;
+			parts[i].type = PT_FIGH;
+			parts[i].vx = 0;
+			parts[i].vy = 0;
+			parts[i].life = 100;
+			parts[i].ctype = 0;
+			parts[i].tmp = fcount;
+			parts[i].temp = ptypes[t].heat;
+			STKM_init_legs(&fighters[fcount], i);
+			fighters[fcount].spwn = 1;
+			fighters[fcount].elem = PT_DUST;
+			fighcount++;
+
+			return i;
+		}
+		return -1;
+	}
 	if (t==PT_BIZR||t==PT_BIZRG)
 		parts[i].ctype = 0x47FFFF;
 	//and finally set the pmap/photon maps to the newly created particle
 	if (t==PT_PHOT||t==PT_NEUT)
 		photons[y][x] = t|(i<<8);
-	if (t!=PT_STKM&&t!=PT_STKM2 && t!=PT_PHOT && t!=PT_NEUT)
+	if (t!=PT_STKM&&t!=PT_STKM2 && t!=PT_FIGH && t!=PT_PHOT && t!=PT_NEUT)
 		pmap[y][x] = t|(i<<8);
 		
 	//Fancy dust effects for powder types
@@ -1650,7 +1698,7 @@ void update_particles_i(pixel *vid, int start, int inc)
 			          (bmap[y/CELL][x/CELL]==WL_ALLOWGAS && !(ptypes[t].properties&TYPE_GAS)) || //&& ptypes[t].falldown!=0 && parts[i].type!=PT_FIRE && parts[i].type!=PT_SMKE && parts[i].type!=PT_HFLM) ||
 			          (bmap[y/CELL][x/CELL]==WL_ALLOWENERGY && !(ptypes[t].properties&TYPE_ENERGY)) ||
 					  (bmap[y/CELL][x/CELL]==WL_DETECT && (t==PT_METL || t==PT_SPRK)) ||
-			          (bmap[y/CELL][x/CELL]==WL_EWALL && !emap[y/CELL][x/CELL])) && (t!=PT_STKM) && (t!=PT_STKM2)))
+			          (bmap[y/CELL][x/CELL]==WL_EWALL && !emap[y/CELL][x/CELL])) && (t!=PT_STKM) && (t!=PT_STKM2) && (t!=PT_FIGH)))
 			{
 				kill_part(i);
 				continue;
@@ -1712,7 +1760,7 @@ void update_particles_i(pixel *vid, int start, int inc)
 				pGravX -= gravxf[(y*XRES)+x];
 				pGravY -= gravyf[(y*XRES)+x];
 			}
-			else if(t!=PT_STKM && t!=PT_STKM2 && !(ptypes[t].properties & TYPE_SOLID))
+			else if(t!=PT_STKM && t!=PT_STKM2 && t!=PT_FIGH && !(ptypes[t].properties & TYPE_SOLID))
 			{
 				pGravX += gravxf[(y*XRES)+x];
 				pGravY += gravyf[(y*XRES)+x];
@@ -2814,9 +2862,9 @@ int create_parts(int x, int y, int rx, int ry, int c, int flags)
 	int i, j, r, f = 0, u, v, oy, ox, b = 0, dw = 0, stemp = 0, p;//n;
 
 	int wall = c - 100;
-	if (c==SPC_WIND){
+	if (c==SPC_WIND || c==PT_FIGH)
 		return 0;
-	}
+
 	if(c==SPC_PROP){
 		prop_edit_ui(vid_buf, x, y);
 		return 0;
