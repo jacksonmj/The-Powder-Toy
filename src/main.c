@@ -1034,6 +1034,23 @@ int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char 
 					}
 				}
 			}
+			if(ver<67 && (ty==PT_LCRY)){
+				//New LCRY uses TMP not life
+				if(parts[i-1].life>=10)
+				{
+					parts[i-1].life = 10;
+					parts[i-1].tmp = 3;
+				}
+				else if(parts[i-1].life<=0)
+				{
+					parts[i-1].life = 0;
+					parts[i-1].tmp = 0;
+				}
+				else if(parts[i-1].life < 10 && parts[i-1].life > 0)
+				{
+					parts[i-1].tmp = 1;
+				}
+			}
 			if (!ptypes[parts[i-1].type].enabled)
 				parts[i-1].type = PT_NONE;
 		}
@@ -1783,6 +1800,9 @@ int main(int argc, char *argv[])
 				update_airh();
 		}
 
+#ifdef OGLR
+		part_vbuf = vid_buf;
+#else
 		if(ngrav_enable && cmode==CM_FANCY)
 		{
 			part_vbuf = part_vbuf_store;
@@ -1790,6 +1810,7 @@ int main(int argc, char *argv[])
 		} else {
 			part_vbuf = vid_buf;
 		}
+#endif
 
 		if(gravwl_timeout)
 		{
@@ -1961,8 +1982,10 @@ int main(int argc, char *argv[])
 
 		render_signs(part_vbuf);
 
+#ifndef OGLR
 		if(ngrav_enable && cmode==CM_FANCY)
 			render_gravlensing(part_vbuf, vid_buf);
+#endif
 
 		memset(vid_buf+((XRES+BARSIZE)*YRES), 0, (PIXELSIZE*(XRES+BARSIZE))*MENUSIZE);//clear menu areas
 		clearrect(vid_buf, XRES-1, 0, BARSIZE+1, YRES);
@@ -3376,7 +3399,9 @@ int main(int argc, char *argv[])
 			mousex = mx/sdl_scale;
 			mousey = my/sdl_scale;
 		}
-
+#ifdef OGLR
+		draw_parts_fbo();
+#endif		
 		if (zoom_en)
 			render_zoom(vid_buf);
 

@@ -196,6 +196,9 @@
 
 #define PT_EMP 134
 #define PT_BREC 135
+#define PT_ELEC 136
+#define PT_ACEL 137
+#define PT_DCEL 138
 
 #define PT_BOYL 141
 
@@ -311,6 +314,10 @@ int graphics_DEST(GRAPHICS_FUNC_ARGS);
 int graphics_EMP(GRAPHICS_FUNC_ARGS);
 int graphics_LIGH(GRAPHICS_FUNC_ARGS);
 int graphics_FIGH(GRAPHICS_FUNC_ARGS);
+int graphics_ELEC(GRAPHICS_FUNC_ARGS);
+int graphics_WIRE(GRAPHICS_FUNC_ARGS);
+int graphics_ACEL(GRAPHICS_FUNC_ARGS);
+int graphics_DCEL(GRAPHICS_FUNC_ARGS);
 
 #define UPDATE_FUNC_ARGS int i, int x, int y, int surround_space, int nt
 // to call another update function with same arguments:
@@ -417,6 +424,9 @@ int update_DEST(UPDATE_FUNC_ARGS);
 int update_EMP(UPDATE_FUNC_ARGS);
 int update_LIGH(UPDATE_FUNC_ARGS);
 int update_FIGH(UPDATE_FUNC_ARGS);
+int update_ELEC(UPDATE_FUNC_ARGS);
+int update_ACEL(UPDATE_FUNC_ARGS);
+int update_DCEL(UPDATE_FUNC_ARGS);
 
 int update_MISC(UPDATE_FUNC_ARGS);
 int update_legacy_PYRO(UPDATE_FUNC_ARGS);
@@ -503,7 +513,7 @@ static const part_type ptypes[PT_NUM] =
 	{"NEUT",	PIXPACK(0x20E0FF),	0.0f,	0.00f * CFDS,	1.00f,	1.00f,	-0.99f,	0.0f,	0.01f,	0.002f	* CFDS,	0,	0,		0,	0,	0,	1,	1,	-1,		SC_NUCLEAR,		R_TEMP+4.0f	+273.15f,	60,		"Neutrons. Interact with matter in odd ways.", ST_GAS, TYPE_ENERGY|PROP_LIFE_DEC|PROP_LIFE_KILL_DEC, &update_NEUT, &graphics_NEUT},
 	{"PLUT",	PIXPACK(0x407020),	0.4f,	0.01f * CFDS,	0.99f,	0.95f,	0.0f,	0.4f,	0.00f,	0.000f	* CFDS,	1,	0,		0,	0,	0,	1,	1,	90,		SC_NUCLEAR,		R_TEMP+4.0f	+273.15f,	251,	"Heavy particles. Fissile. Generates neutrons under pressure.", ST_SOLID, TYPE_PART|PROP_NEUTPENETRATE|PROP_RADIOACTIVE, &update_PLUT, NULL},
 	{"PLNT",	PIXPACK(0x0CAC00),	0.0f,	0.00f * CFDS,	0.95f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	20,		0,	0,	10,	1,	1,	100,	SC_SOLIDS,		R_TEMP+0.0f	+273.15f,	65,		"Plant, drinks water and grows.", ST_SOLID, TYPE_SOLID|PROP_NEUTPENETRATE|PROP_LIFE_DEC, &update_PLNT, NULL},
-	{"ACID",	PIXPACK(0xED55FF),	0.6f,	0.01f * CFDS,	0.98f,	0.95f,	0.0f,	0.1f,	0.00f,	0.000f	* CFDS,	2,	40,		0,	0,	1,	1,	1,	10,		SC_LIQUID,		R_TEMP+0.0f	+273.15f,	34,		"Dissolves almost everything.", ST_LIQUID, TYPE_LIQUID, &update_ACID, &graphics_ACID},
+	{"ACID",	PIXPACK(0xED55FF),	0.6f,	0.01f * CFDS,	0.98f,	0.95f,	0.0f,	0.1f,	0.00f,	0.000f	* CFDS,	2,	40,		0,	0,	1,	1,	1,	10,		SC_LIQUID,		R_TEMP+0.0f	+273.15f,	34,		"Dissolves almost everything.", ST_LIQUID, TYPE_LIQUID|PROP_DEADLY, &update_ACID, &graphics_ACID},
 	{"VOID",	PIXPACK(0x790B0B),	0.0f,	0.00f * CFDS,	1.00f,	0.00f,	0.0f,	0.0f,	0.00f,	-0.0003f* CFDS,	0,	0,		0,	0,	0,	1,	1,	100,	SC_SPECIAL,		R_TEMP+0.0f	+273.15f,	251,	"Hole, will drain away any particles.", ST_SOLID, TYPE_SOLID, NULL, NULL},
 	{"WTRV",	PIXPACK(0xA0A0FF),	1.0f,	0.01f * CFDS,	0.99f,	0.30f,	-0.1f,	-0.1f,	0.75f,	0.0003f	* CFDS,	0,	0,		0,	0,	4,	1,	1,	1,		SC_GAS,			R_TEMP+100.0f+273.15f,	48,		"Steam, heats up air, produced from hot water.", ST_GAS, TYPE_GAS, &update_WTRV, NULL},
 	{"CNCT",	PIXPACK(0xC0C0C0),	0.4f,	0.04f * CFDS,	0.94f,	0.95f,	-0.1f,	0.3f,	0.00f,	0.000f	* CFDS,	1,	0,		0,	2,	2,	1,	1,	55,		SC_POWDERS,		R_TEMP+0.0f	+273.15f,	100,	"Concrete, stronger than stone.", ST_SOLID, TYPE_PART|PROP_HOT_GLOW, NULL, NULL},
@@ -568,7 +578,7 @@ static const part_type ptypes[PT_NUM] =
 	{"STOR",	PIXPACK(0x50DFDF),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	1,	1,	1,	100,	SC_POWERED,		R_TEMP+0.0f	+273.15f,	251,	"Solid. Stores a single particle, releases when charged with PSCN, also passes to PIPE", ST_NONE, TYPE_SOLID, &update_STOR, &graphics_STOR},
 	{"PVOD",	PIXPACK(0x792020),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	1,	1,	1,	100,	SC_POWERED,		R_TEMP+0.0f	+273.15f,	251,	"Solid. When activated, destroys entering particles", ST_NONE, TYPE_SOLID, &update_PVOD, &graphics_PVOD},
 	{"CONV",	PIXPACK(0x0AAB0A),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	1,	1,	1,	100,	SC_SPECIAL,		R_TEMP+0.0f	+273.15f,	251,	"Solid. Converts whatever touches it into its ctype.", ST_NONE, TYPE_SOLID, &update_CONV, NULL},
-	{"CAUS",	PIXPACK(0x80FFA0),	2.0f,   0.00f * CFDS,   0.99f,	0.30f,	-0.1f,	0.0f,	1.50f,	0.000f	* CFDS,	0,	0,  	0,	0,	0,	1,	1,	1,		SC_GAS,		 	R_TEMP+0.0f	+273.15f,   70,		"Caustic Gas, acts like Acid", ST_GAS, TYPE_GAS, &update_CAUS, NULL},
+	{"CAUS",	PIXPACK(0x80FFA0),	2.0f,   0.00f * CFDS,   0.99f,	0.30f,	-0.1f,	0.0f,	1.50f,	0.000f	* CFDS,	0,	0,  	0,	0,	0,	1,	1,	1,		SC_GAS,		 	R_TEMP+0.0f	+273.15f,   70,		"Caustic Gas, acts like Acid", ST_GAS, TYPE_GAS|PROP_DEADLY, &update_CAUS, NULL},
 	{"LIGH",	PIXPACK(0xFFFFC0),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	1,	1,	1,	1,	100,	SC_ELEC,		R_TEMP+0.0f	+273.15f,	0,	    "More realistic lighting. Set pen size for setting size of the lighting.", ST_SOLID, TYPE_SOLID, &update_LIGH, &graphics_LIGH},
     {"TESC",	PIXPACK(0x707040),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	1,	1,	1,	1,	100,	SC_ELEC,		R_TEMP+0.0f	+273.15f,	251,	"Tesla coil!", ST_SOLID, TYPE_SOLID|PROP_CONDUCTS|PROP_LIFE_DEC|PROP_HOT_GLOW, NULL, NULL},
     {"DEST",	PIXPACK(0xFF3311),  -0.05f,	0.00f * CFDS,	0.95f,	0.95f,	-0.1f,	0.4f,	0.00f,	0.000f	* CFDS,	1,	0,		0,  0,	0,	1,	1,	101,	SC_EXPLOSIVE,	R_TEMP+0.0f	+273.15f,	150,	"More destructive Bomb.", ST_SOLID, TYPE_PART|PROP_LIFE_DEC|PROP_LIFE_KILL_DEC, &update_DEST, &graphics_DEST},
@@ -618,9 +628,9 @@ static const part_type ptypes[PT_NUM] =
 	{"PQRT",	PIXPACK(0x88BBBB),	0.4f,	0.04f * CFDS,	0.94f,	0.95f,	-0.1f,	0.27f,	0.00f,	0.000f	* CFDS,	1,	0,		0,	0,	0,	1,	1,	90,		SC_POWDERS,		R_TEMP+0.0f	+273.15f,	3,		"Broken quartz.", ST_SOLID, TYPE_PART| PROP_HOT_GLOW, &update_QRTZ, &graphics_QRTZ},
 	{"EMP",	    PIXPACK(0x66AAFF),	0.0f,   0.00f * CFDS,   0.90f,  0.00f,  0.0f,   0.0f,   0.0f,   0.0f	* CFDS, 0,	0,		0,	0,	3,	1,	1,	100,	SC_ELEC,		R_TEMP+0.0f	+273.15f,	121,	"Breaks activated electronics.", ST_SOLID, TYPE_SOLID|PROP_LIFE_DEC, &update_EMP, &graphics_EMP},
 	{"BREL",	PIXPACK(0x707060),	0.4f,	0.04f * CFDS,	0.94f,	0.95f,	-0.1f,	0.18f,	0.00f,	0.000f	* CFDS,	1,	0,		0,	2,	2,	1,	1,	90,		SC_POWDERS,		R_TEMP+0.0f	+273.15f,	211,	"Broken electronics", ST_SOLID, TYPE_PART|PROP_CONDUCTS|PROP_LIFE_DEC|PROP_HOT_GLOW, NULL, NULL},
-	/*FREE*/{"COAG",	PIXPACK(0x9ACD32),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	0,	0,	0,	100,	SC_LIFE,		9000.0f,				40,		"B378/S235678", ST_NONE, TYPE_SOLID|PROP_LIFE, NULL, NULL},
-	/*FREE*/{"WALL",	PIXPACK(0x0047AB),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	0,	0,	0,	100,	SC_LIFE,		9000.0f,				40,		"B45678/S2345", ST_NONE, TYPE_SOLID|PROP_LIFE, NULL, NULL},
-	/*FREE*/{"GNAR",	PIXPACK(0xE5B73B),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	0,	0,	0,	100,	SC_LIFE,		9000.0f,				40,		"B1/S1", ST_NONE, TYPE_SOLID|PROP_LIFE, NULL, NULL},
+	{"ELEC",	PIXPACK(0xDFEFFF),	0.0f,	0.00f * CFDS,	1.00f,	1.00f,	-0.99f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	0,	1,	1,	-1,		SC_NUCLEAR,		R_TEMP+200.0f+273.15f,	251,	"Electrons", ST_GAS, TYPE_ENERGY|PROP_LIFE_DEC|PROP_LIFE_KILL_DEC, &update_ELEC, &graphics_ELEC},
+	{"ACEL",	PIXPACK(0x0099CC),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	1,	1,	1,	100,	SC_POWERED,		R_TEMP+0.0f	+273.15f,	251,	"Accelerator", ST_NONE, TYPE_SOLID, &update_ACEL, &graphics_ACEL},
+	{"DCEL",	PIXPACK(0x99CC00),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	1,	1,	1,	100,	SC_POWERED,		R_TEMP+0.0f	+273.15f,	251,	"Decelerator", ST_NONE, TYPE_SOLID, &update_DCEL, &graphics_DCEL},
 	/*FREE*/{"REPL",	PIXPACK(0x259588),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	0,	0,	0,	100,	SC_LIFE,		9000.0f,				40,		"B1357/S1357", ST_NONE, TYPE_SOLID|PROP_LIFE, NULL, NULL},
 	/*FREE*/{"MYST",	PIXPACK(0x0C3C00),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	0,	0,	0,	100,	SC_LIFE,		9000.0f,				40,		"B3458/S05678", ST_NONE, TYPE_SOLID|PROP_LIFE, NULL, NULL},
 	{"BOYL",	PIXPACK(0x0A3200),	1.0f,	0.01f * CFDS,	0.99f,	0.30f,	-0.1f,	0.0f,	0.18f,	0.000f	* CFDS,	0,	0,		0,	0,	1,	1,	1,	1,		SC_GAS,			R_TEMP+2.0f	+273.15f,	42,		"Boyle, variable pressure gas. Expands when heated.", ST_GAS, TYPE_GAS, &update_BOYL, NULL},
@@ -638,7 +648,7 @@ static const part_type ptypes[PT_NUM] =
 	{"PBCN",	PIXPACK(0x3B1D0A),	0.0f,	0.00f * CFDS,	0.97f,	0.50f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	12,	1,	1,	100,	SC_POWERED,		R_TEMP+0.0f	+273.15f,	251,	"Powered breakable clone", ST_NONE, TYPE_SOLID, &update_PBCN, &graphics_PBCN},
 	{"GPMP",	PIXPACK(0x0A3B3B),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	1,	1,	1,	1,	100,	SC_POWERED,		0.0f		+273.15f,	0,		"Changes gravity to its temp when activated. (use HEAT/COOL).", ST_NONE, TYPE_SOLID, &update_GPMP, &graphics_GPMP},
 	{"CLST",	PIXPACK(0xE4A4A4),	0.7f,	0.02f * CFDS,	0.94f,	0.95f,	0.0f,	0.2f,	0.00f,	0.000f	* CFDS,	1,	0,		0,	2,	2,	1,	1,	55,		SC_POWDERS,		R_TEMP+0.0f	+273.15f,	70,		"Clay dust. Produces paste when mixed with water.", ST_SOLID, TYPE_PART, &update_CLST, &graphics_CLST},	
-	{"WIRE",    PIXPACK(0xFFCC00),  0.0f,   0.00f * CFDS,   0.00f,  0.00f,  0.0f,   0.0f,   0.00f,  0.000f  * CFDS, 0,  0,      0,  0,  0,  1,  1,  100,    SC_ELEC,        R_TEMP+0.0f +273.15f,   250,    "WireWorld wires.",ST_SOLID,TYPE_SOLID,&update_WIRE, NULL},
+	{"WIRE",    PIXPACK(0xFFCC00),  0.0f,   0.00f * CFDS,   0.00f,  0.00f,  0.0f,   0.0f,   0.00f,  0.000f  * CFDS, 0,  0,      0,  0,  0,  1,  1,  100,    SC_ELEC,        R_TEMP+0.0f +273.15f,   250,    "WireWorld wires.",ST_SOLID,TYPE_SOLID,&update_WIRE, &graphics_WIRE},
 	{"GBMB",	PIXPACK(0x1144BB),	0.6f,	0.01f * CFDS,	0.98f,	0.95f,	0.0f,	0.1f,	0.00f,	0.000f	* CFDS,	1,	0,		0,	0,	20,	1,	1,	30,		SC_EXPLOSIVE,	R_TEMP-2.0f	+273.15f,	29,		"Sticks to first object it touches then produces strong gravity push.", ST_NONE, TYPE_PART|PROP_LIFE_DEC|PROP_LIFE_KILL_DEC, &update_GBMB, &graphics_GBMB},
 	{"FIGH",	PIXPACK(0x000000),	0.5f,	0.00f * CFDS,	0.2f,	1.0f,	0.0f,	0.0f,	0.0f,	0.00f	* CFDS,	0,	0,		0,	0,	0,	1,	1,	50,		SC_SPECIAL,		R_TEMP+14.6f+273.15f,	0,		"Fighter. Tries to kill stickmans.", ST_NONE, 0, &update_FIGH, &graphics_FIGH},
 	//Name		Colour				Advec	Airdrag			Airloss	Loss	Collid	Grav	Diffus	Hotair			Fal	Burn	Exp	Mel	Hrd M	Use	Weight	Section			H						Ins		Description

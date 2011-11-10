@@ -210,7 +210,7 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS) {
 				if (!r && !bmap[(y+ry)/CELL][(x+rx)/CELL])
 					continue;
 				
-				if (ptypes[r&0xFF].falldown!=0 || (r&0xFF) == PT_NEUT || (r&0xFF) == PT_PHOT)
+				if (ptypes[r&0xFF].falldown!=0 || ptypes[r&0xFF].state == ST_GAS || (r&0xFF) == PT_NEUT || (r&0xFF) == PT_PHOT)
 				{
 					playerp->elem = r&0xFF;  //Current element
 				}
@@ -426,14 +426,18 @@ void STKM_interact(playerst* playerp, int i, int x, int y)
 			parts[i].life -= 2;
 			playerp->accs[3] -= 1;
 		}
-
-		if ((r&0xFF)==PT_ACID)  //If on acid
-			parts[i].life -= 5;
-
-		if ((r&0xFF)==PT_PLUT)  //If on plut
-			parts[i].life -= 1;
 			
 		if (ptypes[r&0xFF].properties&PROP_DEADLY)
+			switch (r&0xFF)
+			{
+				case PT_ACID:
+					parts[i].life -= 5;
+					break;
+				default:
+					parts[i].life -= 1;
+			}
+
+		if (ptypes[r&0xFF].properties&PROP_RADIOACTIVE)
 			parts[i].life -= 1;
 
 		if ((r&0xFF)==PT_PRTI && parts[i].type)
