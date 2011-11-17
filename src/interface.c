@@ -6066,12 +6066,12 @@ void render_ui(pixel * vid_buf, int xcoord, int ycoord, int orientation)
 	
 	int display_optioncount = 7;
 	int display_options[] = {DISPLAY_AIRC, DISPLAY_AIRP, DISPLAY_AIRV, DISPLAY_AIRH, DISPLAY_WARP, DISPLAY_PERS, DISPLAY_EFFE};
-	int display_optionicons[] = {0xCC, 0xC3, 0x9B, 0xC4, 0xD1, 0xD1, 0xD1};
+	int display_optionicons[] = {0xD4, 0x99, 0x98, 0xBD, 0xD1, 0x9A, 0xD1};
 	char * display_desc[] = {"Air: Cracker", "Air: Pressure", "Air: Velocity", "Air: Heat", "Warp effect", "Persistent", "Effects"};
 	
 	int colour_optioncount = 2;
 	int colour_options[] = {COLOUR_LIFE, COLOUR_HEAT};
-	int colour_optionicons[] = {0xCC, 0xC3};
+	int colour_optionicons[] = {0xCC, 0xBD};
 	char * colour_desc[] = {"Life", "Heat"};
 
 	yoffset = 16;
