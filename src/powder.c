@@ -4,6 +4,9 @@
 #include <powder.h>
 #include <air.h>
 #include <misc.h>
+#ifdef LUACONSOLE
+#include <luaconsole.h>
+#endif
 
 int gravwl_timeout = 0;
 
@@ -140,6 +143,14 @@ void init_can_move()
 	}
 	can_move[PT_ELEC][PT_LCRY] = 2;
 	can_move[PT_PHOT][PT_LCRY] = 3;//varies according to LCRY life
+	
+	can_move[PT_PHOT][PT_BIZR] = 2;
+	can_move[PT_ELEC][PT_BIZR] = 2;
+	can_move[PT_PHOT][PT_BIZRG] = 2;
+	can_move[PT_ELEC][PT_BIZRG] = 2;
+	can_move[PT_PHOT][PT_BIZRS] = 2;
+	can_move[PT_ELEC][PT_BIZRS] = 2;
+	
 	can_move[PT_NEUT][PT_INVIS] = 2;
 	//whol eats anar
 	can_move[PT_ANAR][PT_WHOL] = 1;
@@ -2070,11 +2081,22 @@ void update_particles_i(pixel *vid, int start, int inc)
 			}
 
 			//call the particle update function, if there is one
+#ifdef LUACONSOLE
+			if (ptypes[t].update_func && lua_el_mode[t] != 2)
+#else
 			if (ptypes[t].update_func)
+#endif
 			{
 				if ((*(ptypes[t].update_func))(i,x,y,surround_space,nt))
 					continue;
 			}
+#ifdef LUACONSOLE
+			if(lua_el_mode[t])
+			{
+				if(luacon_part_update(t,i,x,y,surround_space,nt))
+					continue;
+			}
+#endif
 			if (legacy_enable)//if heat sim is off
 				update_legacy_all(i,x,y,surround_space,nt);
 
@@ -2204,6 +2226,17 @@ killed:
 						continue;
 					}
 					r = pmap[fin_y][fin_x];
+					
+					if ((r & 0xFF) == PT_PIPE && !(parts[r>>8].tmp&0xFF))
+					{
+						parts[r>>8].tmp =  (parts[r>>8].tmp&~0xFF) | parts[i].type;
+						parts[r>>8].temp = parts[i].temp;
+						parts[r>>8].flags = parts[i].life;
+						parts[r>>8].pavg[0] = parts[i].tmp;
+						parts[r>>8].pavg[1] = parts[i].ctype;
+						kill_part(i);
+						continue;
+					}
 
 					// this should be replaced with a particle type attribute ("photwl" or something)
 					if ((r & 0xFF) == PT_PSCN) parts[i].ctype  = 0x00000000;
@@ -2673,6 +2706,7 @@ int flood_prop(int x, int y, size_t propoffset, void * propvalue, int proptype)
 	memset(bitmap, 0, XRES*YRES);
 	r = pmap[y][x];
 	flood_prop_2(x, y, propoffset, propvalue, proptype, r&0xFF, bitmap);
+	free(bitmap);
 }
 
 int flood_parts(int x, int y, int fullc, int cm, int bm, int flags)
