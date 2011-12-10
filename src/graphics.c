@@ -1415,7 +1415,7 @@ void draw_grav_zones(pixel * vid)
 	{
 		for (x=0; x<XRES/CELL; x++)
 		{
-			if(gravmask[y][x])
+			if(gravmaskf[y*CELL*XRES+x*CELL])
 			{
 				for (j=0; j<CELL; j++)//draws the colors
 					for (i=0; i<CELL; i++)
