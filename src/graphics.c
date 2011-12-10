@@ -3804,33 +3804,49 @@ void render_cursor(pixel *vid, int x, int y, int t, int rx, int ry)
 			xor_pixel(x, y, vid);
 		if (rx+ry<=0)
 			xor_pixel(x, y, vid);
-		else if (CURRENT_BRUSH==SQUARE_BRUSH)
+		/*else if (CURRENT_BRUSH==SQUARE_BRUSH)
 		{
-			for (j=0; j<=ry; j++)
-				for (i=0; i<=rx; i++)
-					if (i*j<=ry*rx && ((i+1)>rx || (j+1)>ry))
-					{
-						xor_pixel(x+i, y+j, vid);
-						xor_pixel(x-i, y-j, vid);
-						if (i&&j)xor_pixel(x+i, y-j, vid);
-						if (i&&j)xor_pixel(x-i, y+j, vid);
-					}
-		}
+			matrix2d brush_rotation_matrix = m2d_new(brush_rotation_cos, brush_rotation_sin, -brush_rotation_sin, brush_rotation_cos);
+			vector2d corner1 = m2d_multiply_v2d(brush_rotation_matrix, v2d_new(rx, ry));
+			vector2d corner2 = m2d_multiply_v2d(brush_rotation_matrix, v2d_new(-rx, ry));
+			if (corner1.x>0) corner1.x = ceil(corner1.x);
+			else corner1.x = floor(corner1.x);
+			if (corner1.y>0) corner1.y = ceil(corner1.y);
+			else corner1.y = floor(corner1.y);
+			if (corner2.x>0) corner2.x = ceil(corner2.x);
+			else corner2.x = floor(corner2.x);
+			if (corner2.y>0) corner2.y = ceil(corner2.y);
+			else corner2.y = floor(corner2.y);
+			xor_line(x+corner1.x, y+corner1.y, x+corner2.x, y+corner2.y, vid);
+			xor_line(x+corner2.x, y+corner2.y, x-corner1.x, y-corner1.y, vid);
+			xor_line(x-corner1.x, y-corner1.y, x-corner2.x, y-corner2.y, vid);
+			xor_line(x-corner2.x, y-corner2.y, x+corner1.x, y+corner1.y, vid);
+			// xor corners a third time, to make them match the rest of the brush outline
+			xor_pixel(x+corner1.x, y+corner1.y, vid);
+			xor_pixel(x+corner2.x, y+corner2.y, vid);
+			xor_pixel(x-corner1.x, y-corner1.y, vid);
+			xor_pixel(x-corner2.x, y-corner2.y, vid);
+		}*/
 		else if (CURRENT_BRUSH==CIRCLE_BRUSH)
 		{
-			for (j=0; j<=ry; j++)
-				for (i=0; i<=rx; i++)
-					if (pow(i,2)*pow(ry,2)+pow(j,2)*pow(rx,2)<=pow(rx,2)*pow(ry,2) &&
-					  (pow(i+1,2)*pow(ry,2)+pow(j,2)*pow(rx,2)>pow(rx,2)*pow(ry,2) ||
-					   pow(i,2)*pow(ry,2)+pow(j+1,2)*pow(rx,2)>pow(rx,2)*pow(ry,2)))
+			int rmax = (rx>ry)?rx:ry;
+			rmax = ceil(rmax*sqrt(2));
+			for (j=0; j<=rmax; j++)
+				for (i=0; i<=rmax; i++)
+				{
+					if (InCurrentBrush(i,j,rx,ry) && (!InCurrentBrush(i+1,j,rx,ry) || !InCurrentBrush(i,j+1,rx,ry)))
 					{
 						xor_pixel(x+i, y+j, vid);
-						if (j) xor_pixel(x+i, y-j, vid);
-						if (i) xor_pixel(x-i, y+j, vid);
-						if (i&&j) xor_pixel(x-i, y-j, vid);
+						if (j) xor_pixel(x-i, y-j, vid);
 					}
+					if (InCurrentBrush(-i,j,rx,ry) && (!InCurrentBrush(-i-1,j,rx,ry) || !InCurrentBrush(-i,j+1,rx,ry)))
+					{
+						xor_pixel(x-i, y+j, vid);
+						if (j) xor_pixel(x+i, y-j, vid);
+					}
+				}
 		}
-		else if (CURRENT_BRUSH==TRI_BRUSH)
+		/*else if (CURRENT_BRUSH==TRI_BRUSH)
  		{
 			for (j=-ry; j<=ry; j++)
 				for (i=-rx; i<=0; i++)
@@ -3839,6 +3855,23 @@ void render_cursor(pixel *vid, int x, int y, int t, int rx, int ry)
 							xor_pixel(x+i, y+j, vid);
 							if (i) xor_pixel(x-i, y+j, vid);
 						}
+		}*/
+		else
+		{
+			int rmax = (rx>ry)?rx:ry;
+			rmax = ceil(rmax*sqrt(2));
+			for (j=0; j<=rmax; j++)
+				for (i=0; i<=rmax; i++)
+				{
+					if (InCurrentBrush(i,j,rx,ry) && (!InCurrentBrush(i+1,j,rx,ry) || !InCurrentBrush(i,j+1,rx,ry)))
+						xor_pixel(x+i, y+j, vid);
+					if (i && InCurrentBrush(-i,j,rx,ry) && (!InCurrentBrush(-i-1,j,rx,ry) || !InCurrentBrush(-i,j+1,rx,ry)))
+						xor_pixel(x-i, y+j, vid);
+					if (j && InCurrentBrush(i,-j,rx,ry) && (!InCurrentBrush(i+1,-j,rx,ry) || !InCurrentBrush(i,-j-1,rx,ry)))
+						xor_pixel(x+i, y-j, vid);
+					if (i && j && InCurrentBrush(-i,-j,rx,ry) && (!InCurrentBrush(-i-1,-j,rx,ry) || !InCurrentBrush(-i,-j-1,rx,ry)))
+						xor_pixel(x-i, y-j, vid);
+				}
 		}
 	}
 	else //wall cursor

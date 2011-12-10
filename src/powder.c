@@ -2902,6 +2902,9 @@ int create_parts(int x, int y, int rx, int ry, int c, int flags)
 	int i, j, r, f = 0, u, v, oy, ox, b = 0, dw = 0, stemp = 0, p;//n;
 
 	int wall = c - 100;
+	int rmax = (rx>ry)?rx:ry;
+	rmax = ceil(rmax*sqrt(2)); //needed to make sure rotated triangle corners are created correctly
+
 	if (c==SPC_WIND || c==PT_FIGH)
 		return 0;
 
@@ -3008,8 +3011,8 @@ int create_parts(int x, int y, int rx, int ry, int c, int flags)
 			delete_part(x, y, 0);
 		}
 		else
-			for (j=-ry; j<=ry; j++)
-				for (i=-rx; i<=rx; i++)
+			for (j=-rmax; j<=rmax; j++)
+				for (i=-rmax; i<=rmax; i++)
 					if (InCurrentBrush(i ,j ,rx ,ry))
 						delete_part(x+i, y+j, 0);
 		return 1;
@@ -3023,8 +3026,8 @@ int create_parts(int x, int y, int rx, int ry, int c, int flags)
 			delete_part(x, y, flags);
 		}
 		else
-			for (j=-ry; j<=ry; j++)
-				for (i=-rx; i<=rx; i++)
+			for (j=-rmax; j<=rmax; j++)
+				for (i=-rmax; i<=rmax; i++)
 					if (InCurrentBrush(i ,j ,rx ,ry))
 						delete_part(x+i, y+j, flags);
 		return 1;
@@ -3038,8 +3041,8 @@ int create_parts(int x, int y, int rx, int ry, int c, int flags)
 			create_part(-2, x, y, c);
 		}
 		else
-			for (j=-ry; j<=ry; j++)
-				for (i=-rx; i<=rx; i++)
+			for (j=-rmax; j<=rmax; j++)
+				for (i=-rmax; i<=rmax; i++)
 					if (InCurrentBrush(i ,j ,rx ,ry))
 					{
 						if ( x+i<0 || y+j<0 || x+i>=XRES || y+j>=YRES)
@@ -3067,8 +3070,9 @@ int create_parts(int x, int y, int rx, int ry, int c, int flags)
 			}
 		}
 		else
-			for (j=-ry; j<=ry; j++)
-				for (i=-rx; i<=rx; i++)
+		{
+			for (j=-rmax; j<=rmax; j++)
+				for (i=-rmax; i<=rmax; i++)
 					if (InCurrentBrush(i ,j ,rx ,ry))
 					{
 						if ( x+i<0 || y+j<0 || x+i>=XRES || y+j>=YRES)
@@ -3082,6 +3086,7 @@ int create_parts(int x, int y, int rx, int ry, int c, int flags)
 								create_part_add_props(-2, x+i, y+j, c, rx, ry);
 						}
 					}
+		}
 		return 1;
 
 	}
@@ -3092,22 +3097,40 @@ int create_parts(int x, int y, int rx, int ry, int c, int flags)
 			f = 1;
 	}
 	else
-		for (j=-ry; j<=ry; j++)
-			for (i=-rx; i<=rx; i++)
+		for (j=-rmax; j<=rmax; j++)
+			for (i=-rmax; i<=rmax; i++)
 				if (InCurrentBrush(i ,j ,rx ,ry))
 					if (create_part_add_props(-2, x+i, y+j, c, rx, ry)==-1)
 						f = 1;
 	return !f;
 }
-int InCurrentBrush(int i, int j, int rx, int ry)
+
+float brush_rotation_degrees = 0, brush_rotation_sin = 0, brush_rotation_cos = 1;
+void brush_set_rotation(float angle_degrees)
 {
+	angle_degrees = fmod(angle_degrees, 360.0f);
+	brush_rotation_degrees = angle_degrees;
+	//avoid recalculating these every time InCurrentBrush is called:
+	brush_rotation_sin = sinf(brush_rotation_degrees*M_PI/180.0f);
+	brush_rotation_cos = cosf(brush_rotation_degrees*M_PI/180.0f);
+	//round sin/cos answers - needed to make sure that multiples of 90 degrees give expected results
+	//otherwise rounding errors in sin/cos/pi give lines that aren't horizontal or vertical
+	//1048576 is 2^20, to make sure no rounding errors occur during division - division will just change exponent
+	brush_rotation_sin = round(brush_rotation_sin*1048576.0f)/1048576.0f;
+	brush_rotation_cos = round(brush_rotation_cos*1048576.0f)/1048576.0f;
+}
+int InCurrentBrush(int i_in, int j_in, int rx, int ry)
+{
+	float i, j;
+	i = i_in*brush_rotation_cos - j_in*brush_rotation_sin;
+	j = i_in*brush_rotation_sin + j_in*brush_rotation_cos;
 	switch(CURRENT_BRUSH)
 	{
 		case CIRCLE_BRUSH:
 			return (pow(i,2)*pow(ry,2)+pow(j,2)*pow(rx,2)<=pow(rx,2)*pow(ry,2));
 			break;
 		case SQUARE_BRUSH:
-			return (i*j<=ry*rx);
+			return abs(i)<=rx && abs(j)<=ry;
 			break;
 		case TRI_BRUSH:
 			return (j <= ry ) && ( j >= (((-2.0*ry)/rx)*i) -ry) && ( j >= (((-2.0*ry)/(-rx))*i)-ry ) ;

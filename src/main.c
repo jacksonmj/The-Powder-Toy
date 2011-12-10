@@ -2166,13 +2166,17 @@ int main(int argc, char *argv[])
 						bsx -= 1;
 						bsy -= 1;
 					}
-					else if (sdl_mod & (KMOD_SHIFT) && !(sdl_mod & (KMOD_CTRL)))
+					else if (sdl_mod & (KMOD_SHIFT) && !(sdl_mod & (KMOD_CTRL|KMOD_ALT)))
 					{
 						bsx -= 1;
 					}
-					else if (sdl_mod & (KMOD_CTRL) && !(sdl_mod & (KMOD_SHIFT)))
+					else if (sdl_mod & (KMOD_CTRL) && !(sdl_mod & (KMOD_SHIFT|KMOD_ALT)))
 					{
 						bsy -= 1;
+					}
+					else if (sdl_mod & (KMOD_ALT) && sdl_mod & (KMOD_CTRL))
+					{
+						brush_set_rotation(brush_rotation_degrees-5.0f);
 					}
 					else
 					{
@@ -2206,13 +2210,17 @@ int main(int argc, char *argv[])
 						bsx += 1;
 						bsy += 1;
 					}
-					else if (sdl_mod & (KMOD_SHIFT) && !(sdl_mod & (KMOD_CTRL)))
+					else if (sdl_mod & (KMOD_SHIFT) && !(sdl_mod & (KMOD_CTRL|KMOD_ALT)))
 					{
 						bsx += 1;
 					}
-					else if (sdl_mod & (KMOD_CTRL) && !(sdl_mod & (KMOD_SHIFT)))
+					else if (sdl_mod & (KMOD_CTRL) && !(sdl_mod & (KMOD_SHIFT|KMOD_ALT)))
 					{
 						bsy += 1;
+					}
+					else if (sdl_mod & (KMOD_ALT) && sdl_mod & (KMOD_CTRL))
+					{
+						brush_set_rotation(brush_rotation_degrees+5.0f);
 					}
 					else
 					{
@@ -2524,18 +2532,22 @@ int main(int argc, char *argv[])
 			}
 			else //change brush size
 			{
-				if (!(sdl_mod & (KMOD_SHIFT|KMOD_CTRL)))
+				if (!(sdl_mod & (KMOD_SHIFT|KMOD_CTRL|KMOD_ALT)))
 				{
 					bsx += sdl_wheel;
 					bsy += sdl_wheel;
 				}
-				else if (sdl_mod & (KMOD_SHIFT) && !(sdl_mod & (KMOD_CTRL)))
+				else if (sdl_mod & (KMOD_SHIFT) && !(sdl_mod & (KMOD_CTRL|KMOD_ALT)))
 				{
 					bsx += sdl_wheel;
 				}
-				else if (sdl_mod & (KMOD_CTRL) && !(sdl_mod & (KMOD_SHIFT)))
+				else if (sdl_mod & (KMOD_CTRL) && !(sdl_mod & (KMOD_SHIFT|KMOD_ALT)))
 				{
 					bsy += sdl_wheel;
+				}
+				else if (sdl_mod & (KMOD_ALT) && sdl_mod & (KMOD_CTRL))
+				{
+					brush_set_rotation(brush_rotation_degrees+sdl_wheel);
 				}
 				if (bsx>1180)
 					bsx = 1180;

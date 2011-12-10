@@ -1092,6 +1092,8 @@ void detach(int i);
 
 void part_change_type(int i, int x, int y, int t);
 
+extern float brush_rotation_degrees, brush_rotation_sin, brush_rotation_cos;
+void brush_set_rotation(float angle_degrees);
 int InCurrentBrush(int i, int j, int rx, int ry);
 
 int get_brush_flags();
