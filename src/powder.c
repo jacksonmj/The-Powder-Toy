@@ -947,6 +947,9 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 		parts[i].life = 110;
 		parts[i].tmp = 50;
 	}
+	if (t==PT_IGNT) {
+		parts[i].life = 3;
+	}
 	if (t==PT_FRZW)
 		parts[i].life = 100;
 	if (t==PT_PIPE)
