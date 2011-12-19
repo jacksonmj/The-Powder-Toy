@@ -3769,26 +3769,42 @@ void render_cursor(pixel *vid, int x, int y, int t, int rx, int ry)
 		rx *= sdl_scale;
 		if (CURRENT_BRUSH==SQUARE_BRUSH)
 		{
-			glVertex2f(x-rx+1, (/*(YRES+MENUSIZE)*sdl_scale-*/y)-ry+1);
-			glVertex2f(x+rx+1, (/*(YRES+MENUSIZE)*sdl_scale-*/y)-ry+1);
-			glVertex2f(x+rx+1, (/*(YRES+MENUSIZE)*sdl_scale-*/y)+ry+1);
-			glVertex2f(x-rx+1, (/*(YRES+MENUSIZE)*sdl_scale-*/y)+ry+1);
-			glVertex2f(x-rx+1, (/*(YRES+MENUSIZE)*sdl_scale-*/y)-ry+1);
+			matrix2d brush_rotation_matrix = m2d_new(brush_rotation_cos, brush_rotation_sin, -brush_rotation_sin, brush_rotation_cos);
+			vector2d corner1 = m2d_multiply_v2d(brush_rotation_matrix, v2d_new(rx, ry));
+			vector2d corner2 = m2d_multiply_v2d(brush_rotation_matrix, v2d_new(-rx, ry));
+			// round away from zero
+			corner1.x = corner1.x>0 ? ceil(corner1.x) : floor(corner1.x);
+			corner1.y = corner1.y>0 ? ceil(corner1.y) : floor(corner1.y);
+			corner2.x = corner2.x>0 ? ceil(corner2.x) : floor(corner2.x);
+			corner2.y = corner2.y>0 ? ceil(corner2.y) : floor(corner2.y);
+			// draw the cursor shape, using symmetry so that only two corners need to be calculated
+			glVertex2f(x+corner1.x+0.5f, y+corner1.y+0.5f);
+			glVertex2f(x+corner2.x+0.5f, y+corner2.y+0.5f);
+			glVertex2f(x-corner1.x+0.5f, y-corner1.y+0.5f);
+			glVertex2f(x-corner2.x+0.5f, y-corner2.y+0.5f);
 		}
 		else if (CURRENT_BRUSH==CIRCLE_BRUSH)
 		{
+			int draw_x, draw_y;
 			for (i = 0; i < 360; i++)
 			{
-			  float degInRad = i*(M_PI/180.0f);
-			  glVertex2f((cos(degInRad)*rx)+x, (sin(degInRad)*ry)+/*(YRES+MENUSIZE)*sdl_scale-*/y);
+				float degInRad = i*(M_PI/180.0f);
+				float angle_sin = round(sin(degInRad)*1048576.0f)/1048576.0f;
+				float angle_cos = round(cos(degInRad)*1048576.0f)/1048576.0f;
+				draw_x = trunc(angle_cos*rx*brush_rotation_cos + angle_sin*ry*brush_rotation_sin);
+				draw_y = trunc(-angle_cos*rx*brush_rotation_sin + angle_sin*ry*brush_rotation_cos);
+				glVertex2f(draw_x+x+0.5f, draw_y+y+0.5f);
 			}
 		}
 		else if (CURRENT_BRUSH==TRI_BRUSH)
 		{
-			glVertex2f(x+1, (/*(YRES+MENUSIZE)*sdl_scale-*/y)+ry+1);
-			glVertex2f(x+rx+1, (/*(YRES+MENUSIZE)*sdl_scale-*/y)-ry+1);
-			glVertex2f(x-rx+1, (/*(YRES+MENUSIZE)*sdl_scale-*/y)-ry+1);
-			glVertex2f(x+1, (/*(YRES+MENUSIZE)*sdl_scale-*/y)+ry+1);
+			matrix2d brush_rotation_matrix = m2d_new(brush_rotation_cos, brush_rotation_sin, -brush_rotation_sin, brush_rotation_cos);
+			vector2d corner1 = m2d_multiply_v2d(brush_rotation_matrix, v2d_new(0, -ry));
+			vector2d corner2 = m2d_multiply_v2d(brush_rotation_matrix, v2d_new(rx, ry));
+			vector2d corner3 = m2d_multiply_v2d(brush_rotation_matrix, v2d_new(-rx, ry));
+			glVertex2f(x+round(corner1.x)+0.5f, y+round(corner1.y)+0.5f);
+			glVertex2f(x+round(corner2.x)+0.5f, y+round(corner2.y)+0.5f);
+			glVertex2f(x+round(corner3.x)+0.5f, y+round(corner3.y)+0.5f);
 		}
 		glEnd();
 		glDisable(GL_COLOR_LOGIC_OP);
@@ -3809,14 +3825,11 @@ void render_cursor(pixel *vid, int x, int y, int t, int rx, int ry)
 			matrix2d brush_rotation_matrix = m2d_new(brush_rotation_cos, brush_rotation_sin, -brush_rotation_sin, brush_rotation_cos);
 			vector2d corner1 = m2d_multiply_v2d(brush_rotation_matrix, v2d_new(rx, ry));
 			vector2d corner2 = m2d_multiply_v2d(brush_rotation_matrix, v2d_new(-rx, ry));
-			if (corner1.x>0) corner1.x = ceil(corner1.x);
-			else corner1.x = floor(corner1.x);
-			if (corner1.y>0) corner1.y = ceil(corner1.y);
-			else corner1.y = floor(corner1.y);
-			if (corner2.x>0) corner2.x = ceil(corner2.x);
-			else corner2.x = floor(corner2.x);
-			if (corner2.y>0) corner2.y = ceil(corner2.y);
-			else corner2.y = floor(corner2.y);
+			// round away from zero
+			corner1.x = corner1.x>0 ? ceil(corner1.x) : floor(corner1.x);
+			corner1.y = corner1.y>0 ? ceil(corner1.y) : floor(corner1.y);
+			corner2.x = corner2.x>0 ? ceil(corner2.x) : floor(corner2.x);
+			corner2.y = corner2.y>0 ? ceil(corner2.y) : floor(corner2.y);
 			xor_line(x+corner1.x, y+corner1.y, x+corner2.x, y+corner2.y, vid);
 			xor_line(x+corner2.x, y+corner2.y, x-corner1.x, y-corner1.y, vid);
 			xor_line(x-corner1.x, y-corner1.y, x-corner2.x, y-corner2.y, vid);
@@ -3858,6 +3871,7 @@ void render_cursor(pixel *vid, int x, int y, int t, int rx, int ry)
 		}*/
 		else
 		{
+			// slow, but the cursor shape perfectly matches the area where particles will be created
 			int rmax = (rx>ry)?rx:ry;
 			rmax = ceil(rmax*sqrt(2));
 			for (j=0; j<=rmax; j++)
