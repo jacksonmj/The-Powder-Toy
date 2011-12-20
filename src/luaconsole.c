@@ -14,7 +14,7 @@ int *mouseclick_functions = NULL;
 int tptProperties; //Table for some TPT properties
 int tptPropertiesVersion;
 int tptElements; //Table for TPT element names
-int tptParts, tptPartsMeta, tptElementTransitions;
+int tptParts, tptPartsMeta, tptElementTransitions, tptPartsCData, tptPartMeta, tptPart, cIndex;
 void luacon_open(){
 	int i = 0, j;
 	char tmpname[12];
@@ -116,32 +116,10 @@ tpt.parts = ffi.cast(\"particle *\", tpt.partsdata)\n\
 ffi = nil\n\
 tpt.partsdata = nil");
 	//Since ffi is REALLY REALLY dangrous, we'll remove it from the environment completely (TODO)
-	
+	//lua_pushstring(l, "parts");
+	//tptPartsCData = lua_gettable(l, tptProperties);
 #else
-	//This uses a lot of memory (60MB+), but very good performance
 	lua_newtable(l);
-	tptParts = lua_gettop(l);
-	for(i = 0; i < NPART; i++)
-	{
-		int currentPart, currentPartMeta;
-		lua_newtable(l);
-		currentPart = lua_gettop(l);
-		lua_newtable(l);
-		currentPartMeta = lua_gettop(l);
-		lua_pushinteger(l, i);
-		lua_setfield(l, currentPart, "id");
-		lua_pushcfunction(l, luacon_partwrite);
-		lua_setfield(l, currentPartMeta, "__newindex");
-		lua_pushcfunction(l, luacon_partread);
-		lua_setfield(l, currentPartMeta, "__index");
-		lua_setmetatable(l, currentPart);
-		
-		lua_rawseti (l, tptParts, i);
-	}
-	lua_setfield(l, tptProperties, "parts");
-	
-	//Poor performance (nested metatabled created on get/set) but good little memory usage
-	/*lua_newtable(l);
 	tptParts = lua_gettop(l);
 	lua_newtable(l);
 	tptPartsMeta = lua_gettop(l);
@@ -150,7 +128,19 @@ tpt.partsdata = nil");
 	lua_pushcfunction(l, luacon_partsread);
 	lua_setfield(l, tptPartsMeta, "__index");
 	lua_setmetatable(l, tptParts);
-	lua_setfield(l, tptProperties, "parts");*/
+	lua_setfield(l, tptProperties, "parts");
+	
+	lua_newtable(l);
+	tptPart = lua_gettop(l);
+	lua_newtable(l);
+	tptPartMeta = lua_gettop(l);
+	lua_pushcfunction(l, luacon_partwrite);
+	lua_setfield(l, tptPartMeta, "__newindex");
+	lua_pushcfunction(l, luacon_partread);
+	lua_setfield(l, tptPartMeta, "__index");
+	lua_setmetatable(l, tptPart);
+	
+	tptPart = luaL_ref(l, LUA_REGISTRYINDEX);
 #endif
 	
 	lua_newtable(l);
@@ -211,30 +201,29 @@ tpt.partsdata = nil");
 }
 #ifndef FFI
 int luacon_partread(lua_State* l){
-	int format, offset;
-	char * tempstring;
-	int tempinteger;
+	int format, offset, tempinteger;
 	float tempfloat;
 	int i;
 	char * key = mystrdup(luaL_optstring(l, 2, ""));
 	offset = luacon_particle_getproperty(key, &format);
-	free(key);
-	
-	//Get Raw Index value for particle
-	lua_pushstring(l, "id");
-	lua_rawget(l, 1);
-	
-	i = lua_tointeger (l, lua_gettop(l));
-	
-	lua_pop(l, 1);
+
+	i = cIndex;
 	
 	if(i < 0 || i >= NPART || offset==-1)
 	{
-		if(i < 0 || i >= NPART)
+		if(i < 0 || i >= NPART) {
+			free(key);
 			return luaL_error(l, "Out of range");
-		else
+		} else if(strcmp(key, "id")==0) {
+			free(key);
+			lua_pushnumber(l, i);
+			return 1;
+		} else {
+			free(key);
 			return luaL_error(l, "Invalid property");
+		}
 	}
+	free(key);
 	switch(format)
 	{
 	case 0:
@@ -250,29 +239,23 @@ int luacon_partread(lua_State* l){
 }
 int luacon_partwrite(lua_State* l){
 	int format, offset;
-	char * tempstring;
-	int tempinteger;
-	float tempfloat;
 	int i;
 	char * key = mystrdup(luaL_optstring(l, 2, ""));
 	offset = luacon_particle_getproperty(key, &format);
-	free(key);
 	
-	//Get Raw Index value for particle
-	lua_pushstring(l, "id");
-	lua_rawget(l, 1);
-	
-	i = lua_tointeger (l, lua_gettop(l));
-	
-	lua_pop(l, 1);
+	i = cIndex;
 	
 	if(i < 0 || i >= NPART || offset==-1)
 	{
-		if(i < 0 || i >= NPART)
-			return luaL_error(l, "Out of range");
-		else
+		if(i < 0 || i >= NPART) {
+			free(key);
+			return luaL_error(l, "array index out of bounds");
+		} else {
+			free(key);
 			return luaL_error(l, "Invalid property");
+		}
 	}
+	free(key);
 	switch(format)
 	{
 	case 0:
@@ -294,23 +277,16 @@ int luacon_partsread(lua_State* l){
 	i = luaL_optinteger(l, 2, 0);
 	
 	if(i<0 || i>=NPART)
-		return luaL_error(l, "Out of range");
+	{
+		return luaL_error(l, "array index out of bounds");
+	}
 	
-	lua_newtable(l);
-	currentPart = lua_gettop(l);
-	lua_newtable(l);
-	currentPartMeta = lua_gettop(l);
-	lua_pushinteger(l, i);
-	lua_setfield(l, currentPart, "id");
-	lua_pushcfunction(l, luacon_partwrite);
-	lua_setfield(l, currentPartMeta, "__newindex");
-	lua_pushcfunction(l, luacon_partread);
-	lua_setfield(l, currentPartMeta, "__index");
-	lua_setmetatable(l, currentPart);
+	lua_rawgeti(l, LUA_REGISTRYINDEX, tptPart);
+	cIndex = i;
 	return 1;
 }
 int luacon_partswrite(lua_State* l){
-	return luaL_error(l, "Not writable");
+	return luaL_error(l, "table readonly");
 }
 #endif
 int luacon_particle_getproperty(char * key, int * format)
@@ -993,7 +969,7 @@ int luatpt_set_gravity(lua_State* l)
 	for (nx = x1; nx<x1+width; nx++)
 		for (ny = y1; ny<y1+height; ny++)
 		{
-			gravmap[ny][nx] = value;
+			gravmap[ny*(XRES/CELL)+nx] = value;
 		}
 	return 0;
 }
@@ -1004,22 +980,22 @@ int luatpt_reset_gravity_field(lua_State* l)
 	int x1, y1, width, height;
 	x1 = abs(luaL_optint(l, 1, 0));
 	y1 = abs(luaL_optint(l, 2, 0));
-	width = abs(luaL_optint(l, 3, XRES));
-	height = abs(luaL_optint(l, 4, YRES));
-	if(x1 > XRES-1)
-		x1 = XRES-1;
-	if(y1 > YRES-1)
-		y1 = YRES-1;
-	if(x1+width > XRES-1)
-		width = XRES-x1;
-	if(y1+height > YRES-1)
-		height = YRES-y1;
+	width = abs(luaL_optint(l, 3, XRES/CELL));
+	height = abs(luaL_optint(l, 4, YRES/CELL));
+	if(x1 > (XRES/CELL)-1)
+		x1 = (XRES/CELL)-1;
+	if(y1 > (YRES/CELL)-1)
+		y1 = (YRES/CELL)-1;
+	if(x1+width > (XRES/CELL)-1)
+		width = (XRES/CELL)-x1;
+	if(y1+height > (YRES/CELL)-1)
+		height = (YRES/CELL)-y1;
 	for (nx = x1; nx<x1+width; nx++)
 		for (ny = y1; ny<y1+height; ny++)
 		{
-			gravxf[ny*XRES+nx] = 0;
-			gravyf[ny*XRES+nx] = 0;
-			gravpf[ny*XRES+nx] = 0;
+			gravx[ny*(XRES/CELL)+nx] = 0;
+			gravy[ny*(XRES/CELL)+nx] = 0;
+			gravp[ny*(XRES/CELL)+nx] = 0;
 		}
 	return 0;
 }

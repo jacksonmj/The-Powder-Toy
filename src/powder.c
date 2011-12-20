@@ -752,13 +752,13 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 	}
 	if (t==SPC_PGRV)
 	{
-	gravmap[y/CELL][x/CELL] = 5;
-	return -1;
+		gravmap[(y/CELL)*(XRES/CELL)+(x/CELL)] = 5;
+		return -1;
 	}
 	if (t==SPC_NGRV)
 	{
-	gravmap[y/CELL][x/CELL] = -5;
-	return -1;
+		gravmap[(y/CELL)*(XRES/CELL)+(x/CELL)] = -5;
+		return -1;
 	}
 
 
@@ -1777,13 +1777,13 @@ void update_particles_i(pixel *vid, int start, int inc)
 			if (t==PT_ANAR)
 			{
 				// perhaps we should have a ptypes variable for this
-				pGravX -= gravxf[(y*XRES)+x];
-				pGravY -= gravyf[(y*XRES)+x];
+				pGravX -= gravx[(y/CELL)*(XRES/CELL)+(x/CELL)];
+				pGravY -= gravy[(y/CELL)*(XRES/CELL)+(x/CELL)];
 			}
 			else if(t!=PT_STKM && t!=PT_STKM2 && t!=PT_FIGH && !(ptypes[t].properties & TYPE_SOLID))
 			{
-				pGravX += gravxf[(y*XRES)+x];
-				pGravY += gravyf[(y*XRES)+x];
+				pGravX += gravx[(y/CELL)*(XRES/CELL)+(x/CELL)];
+				pGravY += gravy[(y/CELL)*(XRES/CELL)+(x/CELL)];
 			}
 			//velocity updates for the particle
 			parts[i].vx *= ptypes[t].loss;
@@ -2039,7 +2039,7 @@ void update_particles_i(pixel *vid, int start, int inc)
 
 
 			s = 1;
-			gravtot = fabs(gravyf[(y*XRES)+x])+fabs(gravxf[(y*XRES)+x]);
+			gravtot = fabs(gravy[(y/CELL)*(XRES/CELL)+(x/CELL)])+fabs(gravx[(y/CELL)*(XRES/CELL)+(x/CELL)]);
 			if (pv[y/CELL][x/CELL]>ptransitions[t].phv&&ptransitions[t].pht>-1) {
 				// particle type change due to high pressure
 				if (ptransitions[t].pht!=PT_NUM)
@@ -2425,8 +2425,8 @@ killed:
 										pGravX = ptGrav * ((float)(nx - XCNTR) / pGravD);
 										pGravY = ptGrav * ((float)(ny - YCNTR) / pGravD);
 								}
-								pGravX += gravxf[(ny*XRES)+nx];
-								pGravY += gravyf[(ny*XRES)+nx];
+								pGravX += gravx[(ny/CELL)*(XRES/CELL)+(nx/CELL)];
+								pGravY += gravy[(ny/CELL)*(XRES/CELL)+(nx/CELL)];
 								if (fabsf(pGravY)>fabsf(pGravX))
 									mv = fabsf(pGravY);
 								else
@@ -2484,8 +2484,8 @@ killed:
 											pGravX = ptGrav * ((float)(nx - XCNTR) / pGravD);
 											pGravY = ptGrav * ((float)(ny - YCNTR) / pGravD);
 									}
-									pGravX += gravxf[(ny*XRES)+nx];
-									pGravY += gravyf[(ny*XRES)+nx];
+									pGravX += gravx[(ny/CELL)*(XRES/CELL)+(nx/CELL)];
+									pGravY += gravy[(ny/CELL)*(XRES/CELL)+(nx/CELL)];
 									if (fabsf(pGravY)>fabsf(pGravX))
 										mv = fabsf(pGravY);
 									else
