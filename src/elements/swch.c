@@ -20,7 +20,7 @@ int update_SWCH(UPDATE_FUNC_ARGS) {
 						else if (parts[i].life==0&&parts[r>>8].life==10)
 							parts[i].life = 10;
 					}
-					else if (rt==PT_SPRK&&parts[i].life==10&&parts[r>>8].ctype!=PT_PSCN&&parts[r>>8].ctype!=PT_NSCN) {
+					else if (rt==PT_SPRK&&parts[i].life==10&&parts[r>>8].ctype!=PT_PSCN&&parts[r>>8].ctype!=PT_NSCN && parts[r>>8].life<4) {
 						part_change_type(i,x,y,PT_SPRK);
 						parts[i].ctype = PT_SWCH;
 						parts[i].life = 4;

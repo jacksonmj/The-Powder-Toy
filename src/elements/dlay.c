@@ -19,7 +19,7 @@ int update_DLAY(UPDATE_FUNC_ARGS) {
 					r = pmap[y+ry][x+rx];
 					if (!r)
 						continue;
-					if ((r&0xFF)==PT_SPRK && parts[i].life==0 && parts[r>>8].ctype==PT_PSCN)
+					if ((r&0xFF)==PT_SPRK && parts[i].life==0 && parts[r>>8].life<4 && parts[r>>8].ctype==PT_PSCN)
 					{
 						parts[i].life = (int)(parts[i].temp-273.15);
 					}
@@ -28,14 +28,10 @@ int update_DLAY(UPDATE_FUNC_ARGS) {
 						if(!parts[i].life && parts[r>>8].life)
 						{
 							parts[i].life = parts[r>>8].life;
-							if((r>>8)>i) //If the other particle hasn't been life updated
-								parts[i].life--;
 						}
 						else if(parts[i].life && !parts[r>>8].life)
 						{
 							parts[r>>8].life = parts[i].life;
-							if((r>>8)>i) //If the other particle hasn't been life updated
-								parts[r>>8].life++;
 						}
 					}
 					else if((r&0xFF)==PT_NSCN && oldl==1)
