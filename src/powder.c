@@ -1404,6 +1404,7 @@ void update_particles_i(pixel *vid, int start, int inc)
 	int surround[8];
 	int surround_hconduct[8];
 	int lighting_ok=1;
+	unsigned int elem_properties;
 	float pGravX, pGravY, pGravD;
 
 	if (sys_pause&&lighting_recreate>0)
@@ -1678,6 +1679,27 @@ void update_particles_i(pixel *vid, int start, int inc)
 			else
 				wireless[q][1] = 0;
 	}
+	for (i=0; i<=parts_lastActiveIndex; i++)
+		if (parts[i].type && (ptypes[parts[i].type].properties&(PROP_LIFE_DEC|PROP_LIFE_KILL|PROP_LIFE_KILL_DEC)))
+		{
+			elem_properties = ptypes[parts[i].type].properties;
+			if (parts[i].life>0 && (elem_properties&PROP_LIFE_DEC))
+			{
+				// automatically decrease life
+				parts[i].life--;
+				if (parts[i].life<=0 && (elem_properties&(PROP_LIFE_KILL_DEC|PROP_LIFE_KILL)))
+				{
+					// kill on change to no life
+					kill_part(i);
+				}
+			}
+			else if (parts[i].life<=0 && (elem_properties&PROP_LIFE_KILL))
+			{
+				// kill if no life
+				kill_part(i);
+			}
+		}
+
 	//the main particle loop function, goes over all particles.
 	for (i=0; i<=parts_lastActiveIndex; i++)
 		if (parts[i].type)
@@ -1691,24 +1713,6 @@ void update_particles_i(pixel *vid, int start, int inc)
 				continue;
 			}
 			//printf("parts[%d].type: %d\n", i, parts[i].type);
-
-			if (parts[i].life>0 && (ptypes[t].properties&PROP_LIFE_DEC))
-			{
-				// automatically decrease life
-				parts[i].life--;
-				if (parts[i].life<=0 && (ptypes[t].properties&(PROP_LIFE_KILL_DEC|PROP_LIFE_KILL)))
-				{
-					// kill on change to no life
-					kill_part(i);
-					continue;
-				}
-			}
-			else if (parts[i].life<=0 && (ptypes[t].properties&PROP_LIFE_KILL))
-			{
-				// kill if no life
-				kill_part(i);
-				continue;
-			}
 
 			x = (int)(parts[i].x+0.5f);
 			y = (int)(parts[i].y+0.5f);
