@@ -9,9 +9,8 @@
  
 //VersionInfoStart
 #define SAVE_VERSION 71
-#define MINOR_VERSION 0
-#define BETA
-#define BUILD_NUM 133
+#define MINOR_VERSION 3
+#define BUILD_NUM 137
 //VersionInfoEnd
 
 #define IDENT_VERSION "G" //Change this if you're not Simon! It should be a single letter
@@ -21,6 +20,7 @@
 
 #define SERVER "powdertoy.co.uk"
 #define SCRIPTSERVER "powdertoy.co.uk"
+#define STATICSERVER "static.powdertoy.co.uk"
 
 #define LOCAL_SAVE_DIR "Saves"
 
@@ -88,7 +88,7 @@ extern unsigned char ZSIZE;
 
 #define STAMP_MAX 240
 
-#define SAVE_OPS
+//#define SAVE_OPS
 
 #define NGOL 25
 #define NGOLALT 24 //NGOL should be 24, but use this var until I find out why
