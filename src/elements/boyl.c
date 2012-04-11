@@ -36,7 +36,7 @@ int update_BOYL(UPDATE_FUNC_ARGS) {
 				{
 					kill_part(r>>8);
 					part_change_type(i,x,y,PT_WATR);
-					pv[y/CELL][x/CELL] += 4.0;
+					pv[y/CELL][x/CELL] += 4.0f;
 				}
 			}
 	return 0;

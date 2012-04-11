@@ -6,11 +6,11 @@ int graphics_QRTZ(GRAPHICS_FUNC_ARGS) //QRTZ and PQRT
 	int t = cpart->type, z = cpart->tmp - 5;//speckles!
 	if (cpart->temp>(ptransitions[t].thv-800.0f))//hotglow for quartz
 	{
-		float frequency = 3.1415/(2*ptransitions[t].thv-(ptransitions[t].thv-800.0f));
+		float frequency = 3.1415f/(2*ptransitions[t].thv-(ptransitions[t].thv-800.0f));
 		int q = (cpart->temp>ptransitions[t].thv)?ptransitions[t].thv-(ptransitions[t].thv-800.0f):cpart->temp-(ptransitions[t].thv-800.0f);
-		*colr += sin(frequency*q) * 226 + (z * 16);
-		*colg += sin(frequency*q*4.55 +3.14) * 34 + (z * 16);
-		*colb += sin(frequency*q*2.22 +3.14) * 64 + (z * 16);
+		*colr += sinf(frequency*q) * 226 + (z * 16);
+		*colg += sinf(frequency*q*4.55f +3.14f) * 34 + (z * 16);
+		*colb += sinf(frequency*q*2.22f +3.14f) * 64 + (z * 16);
 	}
 	else
 	{
@@ -160,11 +160,11 @@ int graphics_GRAV(GRAPHICS_FUNC_ARGS)
 }
 int graphics_WIFI(GRAPHICS_FUNC_ARGS)
 {
-	float frequency = 0.0628;
+	float frequency = 0.0628f;
 	int q = cpart->tmp;
-	*colr = sin(frequency*q + 0) * 127 + 128;
-	*colg = sin(frequency*q + 2) * 127 + 128;
-	*colb = sin(frequency*q + 4) * 127 + 128;
+	*colr = sinf(frequency*q + 0) * 127 + 128;
+	*colg = sinf(frequency*q + 2) * 127 + 128;
+	*colb = sinf(frequency*q + 4) * 127 + 128;
 	*pixel_mode |= EFFECT_LINES;
 	return 0;
 }
@@ -211,9 +211,9 @@ int graphics_BIZR(GRAPHICS_FUNC_ARGS) //BIZR, BIZRG, BIZRS
 	if(fabs(cpart->vx)+fabs(cpart->vy)>0)
 	{
 		*firea = 255;
-		*fireg = *colg/5 * fabs(cpart->vx)+fabs(cpart->vy);
-		*fireb = *colb/5 * fabs(cpart->vx)+fabs(cpart->vy);
-		*firer = *colr/5 * fabs(cpart->vx)+fabs(cpart->vy);
+		*fireg = *colg/5 * (fabsf(cpart->vx)+fabsf(cpart->vy));
+		*fireb = *colb/5 * (fabsf(cpart->vx)+fabsf(cpart->vy));
+		*firer = *colr/5 * (fabsf(cpart->vx)+fabsf(cpart->vy));
 		*pixel_mode |= FIRE_ADD;
 	}
 	return 0;
@@ -411,7 +411,7 @@ int graphics_PBCN(GRAPHICS_FUNC_ARGS)
 }
 int graphics_DLAY(GRAPHICS_FUNC_ARGS)
 {
-	int stage = (int)(((float)cpart->life/(cpart->temp-273.15))*100.0f);
+	int stage = (int)(((float)cpart->life/(cpart->temp-273.15f))*100.0f);
 	*colr += stage;
 	*colg += stage;
 	*colb += stage;
@@ -531,12 +531,12 @@ int graphics_COAL(GRAPHICS_FUNC_ARGS) //Both COAL and Broken Coal
 
 	if((cpart->temp-295.15f) > 300.0f-200.0f)
 	{
-		float frequency = 3.1415/(2*300.0f-(300.0f-200.0f));
+		float frequency = 3.1415f/(2*300.0f-(300.0f-200.0f));
 		int q = ((cpart->temp-295.15f)>300.0f)?300.0f-(300.0f-200.0f):(cpart->temp-295.15f)-(300.0f-200.0f);
 
-		*colr += sin(frequency*q) * 226;
-		*colg += sin(frequency*q*4.55 +3.14) * 34;
-		*colb += sin(frequency*q*2.22 +3.14) * 64;
+		*colr += sinf(frequency*q) * 226;
+		*colg += sinf(frequency*q*4.55f +3.14f) * 34;
+		*colb += sinf(frequency*q*2.22f +3.14f) * 64;
 	}
 	return 0;
 }

@@ -644,7 +644,7 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 				}
 				
 				//VX (optional), 1 byte
-				if(fabs(partsptr[i].vx) > 0.001f)
+				if(fabsf(partsptr[i].vx) > 0.001f)
 				{
 					fieldDesc |= 1 << 7;
 					vTemp = (int)(partsptr[i].vx*16.0f+127.5f);
@@ -654,7 +654,7 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 				}
 				
 				//VY (optional), 1 byte
-				if(fabs(partsptr[i].vy) > 0.001f)
+				if(fabsf(partsptr[i].vy) > 0.001f)
 				{
 					fieldDesc |= 1 << 8;
 					vTemp = (int)(partsptr[i].vy*16.0f+127.5f);
@@ -2065,7 +2065,7 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned c
 							ttv = (d[p++])<<8;
 							ttv |= (d[p++]);
 							if (parts[i-1].type==PT_PUMP) {
-								parts[i-1].temp = ttv + 0.15;//fix PUMP saved at 0, so that it loads at 0.
+								parts[i-1].temp = ttv + 0.15f;//fix PUMP saved at 0, so that it loads at 0.
 							} else {
 								parts[i-1].temp = ttv;
 							}
@@ -2370,10 +2370,10 @@ void *transform_save(void *odata, int *size, matrix2d transform, vector2d transl
 		if (tmp.y>cbr.y) cbr.y = tmp.y;
 	}
 	// casting as int doesn't quite do what we want with negative numbers, so use floor()
-	tmp = v2d_new(floor(ctl.x+0.5f),floor(ctl.y+0.5f));
+	tmp = v2d_new(floorf(ctl.x+0.5f),floorf(ctl.y+0.5f));
 	translate = v2d_sub(translate,tmp);
-	nw = floor(cbr.x+0.5f)-floor(ctl.x+0.5f)+1;
-	nh = floor(cbr.y+0.5f)-floor(ctl.y+0.5f)+1;
+	nw = floorf(cbr.x+0.5f)-floorf(ctl.x+0.5f)+1;
+	nh = floorf(cbr.y+0.5f)-floorf(ctl.y+0.5f)+1;
 	if (nw>XRES) nw = XRES;
 	if (nh>YRES) nh = YRES;
 	// rotate and translate signs, parts, walls
@@ -2382,8 +2382,8 @@ void *transform_save(void *odata, int *size, matrix2d transform, vector2d transl
 		if (!signst[i].text[0]) continue;
 		pos = v2d_new(signst[i].x, signst[i].y);
 		pos = v2d_add(m2d_multiply_v2d(transform,pos),translate);
-		nx = floor(pos.x+0.5f);
-		ny = floor(pos.y+0.5f);
+		nx = floorf(pos.x+0.5f);
+		ny = floorf(pos.y+0.5f);
 		if (nx<0 || nx>=nw || ny<0 || ny>=nh)
 		{
 			signst[i].text[0] = 0;
@@ -2397,8 +2397,8 @@ void *transform_save(void *odata, int *size, matrix2d transform, vector2d transl
 		if (!partst[i].type) continue;
 		pos = v2d_new(partst[i].x, partst[i].y);
 		pos = v2d_add(m2d_multiply_v2d(transform,pos),translate);
-		nx = floor(pos.x+0.5f);
-		ny = floor(pos.y+0.5f);
+		nx = floorf(pos.x+0.5f);
+		ny = floorf(pos.y+0.5f);
 		if (nx<0 || nx>=nw || ny<0 || ny>=nh)
 		{
 			partst[i].type = PT_NONE;

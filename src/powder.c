@@ -539,7 +539,7 @@ int get_normal(int pt, int x, int y, float dx, float dy, float *nx, float *ny)
 
 	ex = rx - lx;
 	ey = ry - ly;
-	r = 1.0f/hypot(ex, ey);
+	r = 1.0f/hypotf(ex, ey);
 	*nx =  ey * r;
 	*ny = -ex * r;
 
@@ -889,7 +889,7 @@ inline int create_part(int p, int x, int y, int tv)//the function for creating a
             parts[i].tmp = rand()%360;
             break;
         case 2:
-            parts[i].tmp = atan2(x-XCNTR, y-YCNTR)*(180.0f/M_PI)+90;
+            parts[i].tmp = atan2f(x-XCNTR, y-YCNTR)*(180.0f/(float)M_PI)+90;
         }
         parts[i].tmp2 = 4;
 	}
@@ -1102,11 +1102,11 @@ static void create_gain_photon(int pp)//photons from PHOT going through GLOW
 	lr = rand() % 2;
 
 	if (lr) {
-		xx = parts[pp].x - 0.3*parts[pp].vy;
-		yy = parts[pp].y + 0.3*parts[pp].vx;
+		xx = parts[pp].x - 0.3f*parts[pp].vy;
+		yy = parts[pp].y + 0.3f*parts[pp].vx;
 	} else {
-		xx = parts[pp].x + 0.3*parts[pp].vy;
-		yy = parts[pp].y - 0.3*parts[pp].vx;
+		xx = parts[pp].x + 0.3f*parts[pp].vy;
+		yy = parts[pp].y - 0.3f*parts[pp].vx;
 	}
 
 	nx = (int)(xx + 0.5f);
@@ -1179,7 +1179,7 @@ static void create_cherenkov_photon(int pp)//photons from NEUT going through GLA
 	}
 
 	/* photons have speed of light. no discussion. */
-	r = 1.269 / hypotf(parts[i].vx, parts[i].vy);
+	r = 1.269f / hypotf(parts[i].vx, parts[i].vy);
 	parts[i].vx *= r;
 	parts[i].vy *= r;
 }
@@ -1864,18 +1864,18 @@ void update_particles_i(pixel *vid, int start, int inc)
 					if (aheat_enable)
 					{
 #ifdef REALISTIC
-						c_heat = parts[i].temp*96.645/ptypes[t].hconduct*fabs(ptypes[t].weight)
+						c_heat = parts[i].temp*96.645f/ptypes[t].hconduct*fabsf(ptypes[t].weight)
 							+ hv[y/CELL][x/CELL]*100*(pv[y/CELL][x/CELL]+273.15f)/256;
-						c_Cm = 96.645/ptypes[t].hconduct*fabs(ptypes[t].weight) 
+						c_Cm = 96.645f/ptypes[t].hconduct*fabsf(ptypes[t].weight) 
 							+ 100*(pv[y/CELL][x/CELL]+273.15f)/256;
 						pt = c_heat/c_Cm;
 						pt = restrict_flt(pt, -MAX_TEMP+MIN_TEMP, MAX_TEMP-MIN_TEMP);
 						parts[i].temp = pt;
 						//Pressure increase from heat (temporary)
-						pv[y/CELL][x/CELL] += (pt-hv[y/CELL][x/CELL])*0.004;
+						pv[y/CELL][x/CELL] += (pt-hv[y/CELL][x/CELL])*0.004f;
 						hv[y/CELL][x/CELL] = pt;
 #else
-						c_heat = (hv[y/CELL][x/CELL]-parts[i].temp)*0.04;
+						c_heat = (hv[y/CELL][x/CELL]-parts[i].temp)*0.04f;
 						c_heat = restrict_flt(c_heat, -MAX_TEMP+MIN_TEMP, MAX_TEMP-MIN_TEMP);
 						parts[i].temp += c_heat;
 						hv[y/CELL][x/CELL] -= c_heat;
@@ -1895,8 +1895,8 @@ void update_particles_i(pixel *vid, int start, int inc)
 						{
 							surround_hconduct[j] = r>>8;
 #ifdef REALISTIC 
-							c_heat += parts[r>>8].temp*96.645/ptypes[rt].hconduct*fabs(ptypes[rt].weight);
-							c_Cm += 96.645/ptypes[rt].hconduct*fabs(ptypes[rt].weight);
+							c_heat += parts[r>>8].temp*96.645f/ptypes[rt].hconduct*fabsf(ptypes[rt].weight);
+							c_Cm += 96.645f/ptypes[rt].hconduct*fabsf(ptypes[rt].weight);
 #else
 							c_heat += parts[r>>8].temp;
 #endif
@@ -1905,12 +1905,12 @@ void update_particles_i(pixel *vid, int start, int inc)
 					}
 #ifdef REALISTIC
 					if (t == PT_PHOT)
-						pt = (c_heat+parts[i].temp*96.645)/(c_Cm+96.645);
+						pt = (c_heat+parts[i].temp*96.645f)/(c_Cm+96.645f);
 					else
-						pt = (c_heat+parts[i].temp*96.645/ptypes[t].hconduct*fabs(ptypes[t].weight))/(c_Cm+96.645/ptypes[t].hconduct*fabs(ptypes[t].weight));
+						pt = (c_heat+parts[i].temp*96.645f/ptypes[t].hconduct*fabsf(ptypes[t].weight))/(c_Cm+96.645f/ptypes[t].hconduct*fabsf(ptypes[t].weight));
 
-					c_heat += parts[i].temp*96.645/ptypes[t].hconduct*fabs(ptypes[t].weight);
-					c_Cm += 96.645/ptypes[t].hconduct*fabs(ptypes[t].weight);
+					c_heat += parts[i].temp*96.645f/ptypes[t].hconduct*fabsf(ptypes[t].weight);
+					c_Cm += 96.645f/ptypes[t].hconduct*fabsf(ptypes[t].weight);
 					parts[i].temp = restrict_flt(pt, MIN_TEMP, MAX_TEMP);
 #else
 					pt = (c_heat+parts[i].temp)/(h_count+1);
@@ -2156,7 +2156,7 @@ void update_particles_i(pixel *vid, int start, int inc)
 
 
 			s = 1;
-			gravtot = fabs(gravy[(y/CELL)*(XRES/CELL)+(x/CELL)])+fabs(gravx[(y/CELL)*(XRES/CELL)+(x/CELL)]);
+			gravtot = fabsf(gravy[(y/CELL)*(XRES/CELL)+(x/CELL)])+fabsf(gravx[(y/CELL)*(XRES/CELL)+(x/CELL)]);
 			if (pv[y/CELL][x/CELL]>ptransitions[t].phv&&ptransitions[t].pht>-1) {
 				// particle type change due to high pressure
 				if (ptransitions[t].pht!=PT_NUM)
@@ -3243,7 +3243,7 @@ int InCurrentBrush(int i, int j, int rx, int ry)
 	switch(CURRENT_BRUSH)
 	{
 		case CIRCLE_BRUSH:
-			return (pow((double)i,2)*pow((double)ry,2)+pow((double)j,2)*pow((double)rx,2)<=pow((double)rx,2)*pow((double)ry,2));
+			return (powf((float)i,2)*powf((float)ry,2)+powf((float)j,2)*powf((float)rx,2)<=powf((float)rx,2)*powf((float)ry,2));
 			break;
 		case SQUARE_BRUSH:
 			return (abs(i) <= rx && abs(j) <= ry);

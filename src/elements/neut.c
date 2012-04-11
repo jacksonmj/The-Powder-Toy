@@ -16,7 +16,7 @@ int create_n_parts(int n, int x, int y, float vx, float vy, float temp, int t)//
 
 	for (c=0; c<n; c++) {
 		float r = (rand()%128+128)/127.0f;
-		float a = (rand()%360)*M_PI/180.0f;
+		float a = (rand()%360)*(float)M_PI/180.0f;
 		if (pfree == -1)
 			return -1;
 		i = pfree;
@@ -54,8 +54,8 @@ int update_NEUT(UPDATE_FUNC_ARGS) {
 					continue;
 				if ((r&0xFF)==PT_WATR || (r&0xFF)==PT_ICEI || (r&0xFF)==PT_SNOW)
 				{
-					parts[i].vx *= 0.995;
-					parts[i].vy *= 0.995;
+					parts[i].vx *= 0.995f;
+					parts[i].vy *= 0.995f;
 				}
 				if ((r&0xFF)==PT_PLUT && pressureFactor>(rand()%1000))
 				{

@@ -248,7 +248,7 @@ int process_command_old(pixel *vid_buf, char *console, char *console_error)
 
 					for (i = 1; i<=30; i++)
 					{
-						rem2 = create_part(-1, nx+18*cosf(i/5.0), ny+18*sinf(i/5.0), PT_SOAP);
+						rem2 = create_part(-1, nx+18*cosf(i/5.0f), ny+18*sinf(i/5.0f), PT_SOAP);
 
 						parts[rem1].ctype = 7;
 						parts[rem1].tmp = rem2;

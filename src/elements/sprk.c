@@ -73,16 +73,16 @@ int update_SPRK(UPDATE_FUNC_ARGS) {
 							parts[p].life=rand()%(2+parts[i].tmp/15)+parts[i].tmp/7;
 							if (parts[i].life>60)
 								parts[i].life=60;
-							parts[p].temp=parts[p].life*parts[i].tmp/2.5;
+							parts[p].temp=parts[p].life*parts[i].tmp/2.5f;
 							parts[p].tmp2=1;
-							parts[p].tmp=acos(1.0*rx/sqrt(rx*rx+ry*ry))/M_PI*360;
+							parts[p].tmp=(int)(acosf(1.0f*rx/sqrtf(rx*rx+ry*ry))/(float)M_PI*360+0.5f);
 							parts[i].temp-=parts[i].tmp*2+parts[i].temp/5; // slight self-cooling
-							if (fabs(pv[y/CELL][x/CELL])!=0.0f)
+							if (fabsf(pv[y/CELL][x/CELL])!=0.0f)
 							{
-								if (fabs(pv[y/CELL][x/CELL])<=0.5f)
+								if (fabsf(pv[y/CELL][x/CELL])<=0.5f)
 									pv[y/CELL][x/CELL]=0;
 								else
-									pv[y/CELL][x/CELL]-=(pv[y/CELL][x/CELL]>0)?0.5:-0.5;
+									pv[y/CELL][x/CELL]-=(pv[y/CELL][x/CELL]>0)?0.5f:-0.5f;
 							}
 						}
 					}
@@ -169,7 +169,7 @@ int update_SPRK(UPDATE_FUNC_ARGS) {
 				if (ct==PT_INST&&rt!=PT_NSCN) conduct_sprk = 0;
 				if (ct==PT_SWCH && (rt==PT_PSCN||rt==PT_NSCN||rt==PT_WATR||rt==PT_SLTW||rt==PT_NTCT||rt==PT_PTCT||rt==PT_INWR))
 					conduct_sprk = 0;
-				if (rt==PT_QRTZ && !((ct==PT_NSCN||ct==PT_METL||ct==PT_PSCN||ct==PT_QRTZ) && (parts[r>>8].temp<173.15||pv[(y+ry)/CELL][(x+rx)/CELL]>8)))
+				if (rt==PT_QRTZ && !((ct==PT_NSCN||ct==PT_METL||ct==PT_PSCN||ct==PT_QRTZ) && (parts[r>>8].temp<173.15f||pv[(y+ry)/CELL][(x+rx)/CELL]>8)))
 					conduct_sprk = 0;
 				if (rt==PT_NTCT && !(ct==PT_NSCN || ct==PT_NTCT || (ct==PT_PSCN&&parts[r>>8].temp>373.0f)))
 					conduct_sprk = 0;

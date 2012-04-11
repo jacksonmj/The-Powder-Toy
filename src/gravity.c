@@ -37,7 +37,7 @@ void bilinear_interpolation(float *src, float *dst, int sw, int sh, int rw, int 
 {
 	int y, x, fxceil, fyceil;
 	float fx, fy, fyc, fxc;
-	double intp;
+	float intp;
 	float tr, tl, br, bl;
 	//Bilinear interpolation for upscaling
 	for (y=0; y<rh; y++)
@@ -45,8 +45,8 @@ void bilinear_interpolation(float *src, float *dst, int sw, int sh, int rw, int 
 		{
 			fx = ((float)x)*((float)sw)/((float)rw);
 			fy = ((float)y)*((float)sh)/((float)rh);
-			fxc = modf(fx, &intp);
-			fyc = modf(fy, &intp);
+			fxc = modff(fx, &intp);
+			fyc = modff(fy, &intp);
 			fxceil = (int)ceil(fx);
 			fyceil = (int)ceil(fy);
 			if (fxceil>=sw) fxceil = sw-1;
@@ -243,9 +243,9 @@ void grav_fft_init()
 		for (x=0; x<xblock2; x++)
 		{
 			if (x==XRES/CELL && y==YRES/CELL) continue;
-			distance = sqrtf(pow(x-(XRES/CELL), 2) + pow(y-(YRES/CELL), 2));
-			th_ptgravx[y*xblock2+x] = scaleFactor*(x-(XRES/CELL)) / pow(distance, 3);
-			th_ptgravy[y*xblock2+x] = scaleFactor*(y-(YRES/CELL)) / pow(distance, 3);
+			distance = sqrtf(powf(x-(XRES/CELL), 2) + powf(y-(YRES/CELL), 2));
+			th_ptgravx[y*xblock2+x] = scaleFactor*(x-(XRES/CELL)) / powf(distance, 3);
+			th_ptgravy[y*xblock2+x] = scaleFactor*(y-(YRES/CELL)) / powf(distance, 3);
 		}
 	}
 	th_ptgravx[yblock2*xblock2/2+xblock2/2] = 0.0f;
@@ -342,7 +342,7 @@ void update_grav()
 			{
 				th_gravx[y*(XRES/CELL)+x] = th_gravxbig[y*xblock2+x];
 				th_gravy[y*(XRES/CELL)+x] = th_gravybig[y*xblock2+x];
-				th_gravp[y*(XRES/CELL)+x] = sqrtf(pow(th_gravxbig[y*xblock2+x],2)+pow(th_gravybig[y*xblock2+x],2));
+				th_gravp[y*(XRES/CELL)+x] = sqrtf(powf(th_gravxbig[y*xblock2+x],2)+powf(th_gravybig[y*xblock2+x],2));
 			}
 		}
 	}
@@ -394,15 +394,15 @@ void update_grav(void)
 					for (x = 0; x < XRES / CELL; x++) {
 						if (x == j && y == i)//Ensure it doesn't calculate with itself
 							continue;
-						distance = sqrt(pow(j - x, 2) + pow(i - y, 2));
+						distance = sqrtf(powf(j - x, 2) + powf(i - y, 2));
 #ifdef GRAV_DIFF
 						val = th_gravmap[i*(XRES/CELL)+j] - th_ogravmap[i*(XRES/CELL)+j];
 #else
 						val = th_gravmap[i*(XRES/CELL)+j];
 #endif
-						th_gravx[y*(XRES/CELL)+x] += M_GRAV * val * (j - x) / pow(distance, 3);
-						th_gravy[y*(XRES/CELL)+x] += M_GRAV * val * (i - y) / pow(distance, 3);
-						th_gravp[y*(XRES/CELL)+x] += M_GRAV * val / pow(distance, 2);
+						th_gravx[y*(XRES/CELL)+x] += M_GRAV * val * (j - x) / powf(distance, 3);
+						th_gravy[y*(XRES/CELL)+x] += M_GRAV * val * (i - y) / powf(distance, 3);
+						th_gravp[y*(XRES/CELL)+x] += M_GRAV * val / powf(distance, 2);
 					}
 				}
 			}

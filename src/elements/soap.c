@@ -3,7 +3,7 @@
 int update_SOAP(UPDATE_FUNC_ARGS) 
 {
 	int r, rx, ry, nr, ng, nb, na;
-	float tr, tg, tb, ta;
+	unsigned int tr, tg, tb, ta;
 	float blend;
 	
 	//0x01 - bubble on/off
@@ -142,7 +142,7 @@ int update_SOAP(UPDATE_FUNC_ARGS)
 			dx = parts[i].x - parts[parts[i].tmp].x;
 			dy = parts[i].y - parts[parts[i].tmp].y;
 
-			d = 9/(pow(dx, 2)+pow(dy, 2)+9)-0.5;
+			d = 9/(powf(dx, 2)+powf(dy, 2)+9)-0.5f;
 
 			parts[parts[i].tmp].vx -= dx*d;
 			parts[parts[i].tmp].vy -= dy*d;
@@ -160,7 +160,7 @@ int update_SOAP(UPDATE_FUNC_ARGS)
 				dx = parts[ii].x - parts[parts[i].tmp].x;
 				dy = parts[ii].y - parts[parts[i].tmp].y;
 
-				d = 81/(pow(dx, 2)+pow(dy, 2)+81)-0.5;
+				d = 81/(powf(dx, 2)+powf(dy, 2)+81)-0.5f;
 
 				parts[parts[i].tmp].vx -= dx*d*0.5f;
 				parts[parts[i].tmp].vy -= dy*d*0.5f;

@@ -112,8 +112,8 @@ int graphics_EMP(GRAPHICS_FUNC_ARGS)
 {
 	if(cpart->life)
 	{
-		*colr = cpart->life*1.5;
-		*colg = cpart->life*1.5;
+		*colr = cpart->life*1.5f;
+		*colg = cpart->life*1.5f;
 		*colb = 200-(cpart->life);
 		if (*colr>255)
 			*colr = 255;

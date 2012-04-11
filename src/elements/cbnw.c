@@ -11,7 +11,7 @@ int update_CBNW(UPDATE_FUNC_ARGS) {
            	parts[i].ctype = 5;
         	pv[y/CELL][x/CELL] += 0.5f;
         }
-        else if(pv[y/CELL][x/CELL]<=-0.5)
+        else if(pv[y/CELL][x/CELL]<=-0.5f)
     	{
             part_change_type(i,x,y,PT_CO2);
            	parts[i].ctype = 5;

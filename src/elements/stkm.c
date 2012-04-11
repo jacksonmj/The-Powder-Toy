@@ -32,7 +32,7 @@ int graphics_STKM(GRAPHICS_FUNC_ARGS)
 int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS) {
 	int r, rx, ry;
 	float pp, d;
-	float dt = 0.9;///(FPSB*FPSB);  //Delta time in square
+	float dt = 0.9f;///(FPSB*FPSB);  //Delta time in square
 	float gvx, gvy;
 	float gx, gy, dl, dr;
 
@@ -130,8 +130,8 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS) {
 
 	gx = (playerp->legs[4] + playerp->legs[12])/2 - gvy;
 	gy = (playerp->legs[5] + playerp->legs[13])/2 + gvx;
-	dl = pow(gx - playerp->legs[4], 2) + pow(gy - playerp->legs[5], 2);
-	dr = pow(gx - playerp->legs[12], 2) + pow(gy - playerp->legs[13], 2);
+	dl = powf(gx - playerp->legs[4], 2) + powf(gy - playerp->legs[5], 2);
+	dr = powf(gx - playerp->legs[12], 2) + powf(gy - playerp->legs[13], 2);
 	
 	//Go left
 	if (((int)(playerp->comm)&0x01) == 0x01)
@@ -193,10 +193,10 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS) {
 	}
 
 	//Charge detector wall if foot inside
-	if (bmap[(int)(playerp->legs[5]+0.5)/CELL][(int)(playerp->legs[4]+0.5)/CELL]==WL_DETECT)
+	if (bmap[(int)(playerp->legs[5]+0.5f)/CELL][(int)(playerp->legs[4]+0.5f)/CELL]==WL_DETECT)
 		set_emap((int)playerp->legs[4]/CELL, (int)playerp->legs[5]/CELL);
-	if (bmap[(int)(playerp->legs[13]+0.5)/CELL][(int)(playerp->legs[12]+0.5)/CELL]==WL_DETECT)
-		set_emap((int)(playerp->legs[12]+0.5)/CELL, (int)(playerp->legs[13]+0.5)/CELL);
+	if (bmap[(int)(playerp->legs[13]+0.5f)/CELL][(int)(playerp->legs[12]+0.5f)/CELL]==WL_DETECT)
+		set_emap((int)(playerp->legs[12]+0.5f)/CELL, (int)(playerp->legs[13]+0.5f)/CELL);
 
 	//Searching for particles near head
 	for (rx=-2; rx<3; rx++)
@@ -285,7 +285,7 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS) {
 					float angle;
 					int power = 100;
 					if (gvx!=0 || gvy!=0)
-						angle = atan2(gvx, gvy)*180.0f/M_PI;
+						angle = atan2f(gvx, gvy)*180.0f/(float)M_PI;
 					else
 						angle = rand()%360;
 					if (((int)playerp->comm)&0x01)
@@ -296,7 +296,7 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS) {
 						angle+=360;
 					parts[np].tmp = angle;
 					parts[np].life=rand()%(2+power/15)+power/7;
-					parts[np].temp=parts[np].life*power/2.5;
+					parts[np].temp=parts[np].life*power/2.5f;
 					parts[np].tmp2=1;
 				}
 				else if (playerp->elem != SPC_AIR)
@@ -312,25 +312,25 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS) {
 	}
 
 	//Simulation of joints
-	d = 25/(pow((playerp->legs[0]-playerp->legs[4]), 2) + pow((playerp->legs[1]-playerp->legs[5]), 2)+25) - 0.5;  //Fast distance
+	d = 25/(powf((playerp->legs[0]-playerp->legs[4]), 2) + powf((playerp->legs[1]-playerp->legs[5]), 2)+25) - 0.5f;  //Fast distance
 	playerp->legs[4] -= (playerp->legs[0]-playerp->legs[4])*d;
 	playerp->legs[5] -= (playerp->legs[1]-playerp->legs[5])*d;
 	playerp->legs[0] += (playerp->legs[0]-playerp->legs[4])*d;
 	playerp->legs[1] += (playerp->legs[1]-playerp->legs[5])*d;
 
-	d = 25/(pow((playerp->legs[8]-playerp->legs[12]), 2) + pow((playerp->legs[9]-playerp->legs[13]), 2)+25) - 0.5;
+	d = 25/(powf((playerp->legs[8]-playerp->legs[12]), 2) + powf((playerp->legs[9]-playerp->legs[13]), 2)+25) - 0.5f;
 	playerp->legs[12] -= (playerp->legs[8]-playerp->legs[12])*d;
 	playerp->legs[13] -= (playerp->legs[9]-playerp->legs[13])*d;
 	playerp->legs[8] += (playerp->legs[8]-playerp->legs[12])*d;
 	playerp->legs[9] += (playerp->legs[9]-playerp->legs[13])*d;
 
-	d = 36/(pow((playerp->legs[0]-parts[i].x), 2) + pow((playerp->legs[1]-parts[i].y), 2)+36) - 0.5;
+	d = 36/(powf((playerp->legs[0]-parts[i].x), 2) + powf((playerp->legs[1]-parts[i].y), 2)+36) - 0.5f;
 	parts[i].vx -= (playerp->legs[0]-parts[i].x)*d;
 	parts[i].vy -= (playerp->legs[1]-parts[i].y)*d;
 	playerp->legs[0] += (playerp->legs[0]-parts[i].x)*d;
 	playerp->legs[1] += (playerp->legs[1]-parts[i].y)*d;
 
-	d = 36/(pow((playerp->legs[8]-parts[i].x), 2) + pow((playerp->legs[9]-parts[i].y), 2)+36) - 0.5;
+	d = 36/(powf((playerp->legs[8]-parts[i].x), 2) + powf((playerp->legs[9]-parts[i].y), 2)+36) - 0.5f;
 	parts[i].vx -= (playerp->legs[8]-parts[i].x)*d;
 	parts[i].vy -= (playerp->legs[9]-parts[i].y)*d;
 	playerp->legs[8] += (playerp->legs[8]-parts[i].x)*d;
@@ -372,11 +372,11 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS) {
 
 		if (tvx || tvy)
 		{
-			playerp->accs[2] -= 0.2*tvx/hypot(tvx, tvy);
-			playerp->accs[3] -= 0.2*tvy/hypot(tvx, tvy);
+			playerp->accs[2] -= 0.2f*tvx/hypotf(tvx, tvy);
+			playerp->accs[3] -= 0.2f*tvy/hypotf(tvx, tvy);
 
-			playerp->accs[6] += 0.2*tvx/hypot(tvx, tvy);
-			playerp->accs[7] += 0.2*tvy/hypot(tvx, tvy);
+			playerp->accs[6] += 0.2f*tvx/hypotf(tvx, tvy);
+			playerp->accs[7] += 0.2f*tvy/hypotf(tvx, tvy);
 		}
 	}
 
@@ -388,19 +388,19 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS) {
 
 		if (tvx || tvy)
 		{
-			playerp->accs[0] -= 0.2*tvx/hypot(tvx, tvy);
-			playerp->accs[1] -= 0.2*tvy/hypot(tvx, tvy);
+			playerp->accs[0] -= 0.2f*tvx/hypotf(tvx, tvy);
+			playerp->accs[1] -= 0.2f*tvy/hypotf(tvx, tvy);
 
-			playerp->accs[4] += 0.2*tvx/hypot(tvx, tvy);
-			playerp->accs[5] += 0.2*tvy/hypot(tvx, tvy);
+			playerp->accs[4] += 0.2f*tvx/hypotf(tvx, tvy);
+			playerp->accs[5] += 0.2f*tvy/hypotf(tvx, tvy);
 		}
 	}
 
 	//If legs touch something
-	STKM_interact(playerp, i, (int)(playerp->legs[4]+0.5), (int)(playerp->legs[5]+0.5));
-	STKM_interact(playerp, i, (int)(playerp->legs[12]+0.5), (int)(playerp->legs[13]+0.5));
-	STKM_interact(playerp, i, (int)(playerp->legs[4]+0.5), (int)playerp->legs[5]);
-	STKM_interact(playerp, i, (int)(playerp->legs[12]+0.5), (int)playerp->legs[13]);
+	STKM_interact(playerp, i, (int)(playerp->legs[4]+0.5f), (int)(playerp->legs[5]+0.5f));
+	STKM_interact(playerp, i, (int)(playerp->legs[12]+0.5f), (int)(playerp->legs[13]+0.5f));
+	STKM_interact(playerp, i, (int)(playerp->legs[4]+0.5f), (int)playerp->legs[5]);
+	STKM_interact(playerp, i, (int)(playerp->legs[12]+0.5f), (int)playerp->legs[13]);
 	if (!parts[i].type)
 		return 1;
 

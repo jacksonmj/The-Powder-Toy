@@ -37,7 +37,7 @@ int update_SING(UPDATE_FUNC_ARGS) {
 		spawncount = (parts[i].tmp>255)?255:parts[i].tmp;
 		if (spawncount>=1)
 			spawncount = spawncount/8;
-		spawncount = spawncount*spawncount*M_PI;
+		spawncount = spawncount*spawncount*(float)M_PI;
 		for (j=0;j<spawncount;j++)
 		{
 			switch(rand()%3)
@@ -55,7 +55,7 @@ int update_SING(UPDATE_FUNC_ARGS) {
 			if (nb!=-1) {
 				parts[nb].life = (rand()%300);
 				parts[nb].temp = MAX_TEMP/2;
-				angle = rand()*2.0f*M_PI/RAND_MAX;
+				angle = rand()*2.0f*(float)M_PI/RAND_MAX;
 				v = (float)(rand())*5.0f/RAND_MAX;
 				parts[nb].vx = v*cosf(angle);
 				parts[nb].vy = v*sinf(angle);

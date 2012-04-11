@@ -172,19 +172,19 @@ int update_PIPE(UPDATE_FUNC_ARGS) {
 	}
 	else if (!parts[i].ctype && parts[i].life<=10)
 	{
-		if (parts[i].temp<272.15)//manual pipe colors
+		if (parts[i].temp<272.15f)//manual pipe colors
 		{
-			if (parts[i].temp>173.25&&parts[i].temp<273.15)
+			if (parts[i].temp>173.25f&&parts[i].temp<273.15f)
 			{
 				parts[i].ctype = 2;
 				parts[i].life = 0;
 			}
-			if (parts[i].temp>73.25&&parts[i].temp<=173.15)
+			if (parts[i].temp>73.25f&&parts[i].temp<=173.15f)
 			{
 				parts[i].ctype = 3;
 				parts[i].life = 0;
 			}
-			if (parts[i].temp>=0&&parts[i].temp<=73.15)
+			if (parts[i].temp>=0.0f&&parts[i].temp<=73.15f)
 			{
 				parts[i].ctype = 4;
 				parts[i].life = 0;
@@ -306,21 +306,21 @@ int graphics_PIPE(GRAPHICS_FUNC_ARGS)
 			*colg = 1;
 			*colb = 50;
 		}
-		else if (cpart->temp<272.15&&cpart->ctype!=1)
+		else if (cpart->temp<272.15f&&cpart->ctype!=1)
 		{
-			if (cpart->temp>173.25&&cpart->temp<273.15)
+			if (cpart->temp>173.25f&&cpart->temp<273.15f)
 			{
 				*colr = 50;
 				*colg = 1;
 				*colb = 1;
 			}
-			if (cpart->temp>73.25&&cpart->temp<=173.15)
+			if (cpart->temp>73.25f&&cpart->temp<=173.15f)
 			{
 				*colr = 1;
 				*colg = 50;
 				*colb = 1;
 			}
-			if (cpart->temp>=0&&cpart->temp<=73.15)
+			if (cpart->temp>=0.0f&&cpart->temp<=73.15f)
 			{
 				*colr = 1;
 				*colg = 1;

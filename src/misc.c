@@ -814,38 +814,38 @@ void HSV_to_RGB(int h,int s,int v,int *r,int *g,int *b)//convert 0-255(0-360 for
 	ss = s/255.0f;
 	vv = v/255.0f;
 	c = vv * ss;
-	x = c * ( 1 - fabs(fmod(hh,2.0) -1) );
+	x = c * ( 1 - fabsf(fmodf(hh,2.0f) -1) );
 	if(hh<1){
-		*r = (int)(c*255.0);
-		*g = (int)(x*255.0);
+		*r = (int)(c*255.0f);
+		*g = (int)(x*255.0f);
 		*b = 0;
 	}
 	else if(hh<2){
-		*r = (int)(x*255.0);
-		*g = (int)(c*255.0);
+		*r = (int)(x*255.0f);
+		*g = (int)(c*255.0f);
 		*b = 0;
 	}
 	else if(hh<3){
 		*r = 0;
-		*g = (int)(c*255.0);
-		*b = (int)(x*255.0);
+		*g = (int)(c*255.0f);
+		*b = (int)(x*255.0f);
 	}
 	else if(hh<4){
 		*r = 0;
-		*g = (int)(x*255.0);
-		*b = (int)(c*255.0);
+		*g = (int)(x*255.0f);
+		*b = (int)(c*255.0f);
 	}
 	else if(hh<5){
-		*r = (int)(x*255.0);
+		*r = (int)(x*255.0f);
 		*g = 0;
-		*b = (int)(c*255.0);
+		*b = (int)(c*255.0f);
 	}
 	else if(hh<6){
-		*r = (int)(c*255.0);
+		*r = (int)(c*255.0f);
 		*g = 0;
-		*b = (int)(x*255.0);
+		*b = (int)(x*255.0f);
 	}
-	m = (int)((vv-c)*255.0);
+	m = (int)((vv-c)*255.0f);
 	*r += m;
 	*g += m;
 	*b += m;
@@ -857,23 +857,23 @@ void RGB_to_HSV(int r,int g,int b,int *h,int *s,int *v)//convert 0-255 RGB value
 	rr = r/255.0f;//normalize values
 	gg = g/255.0f;
 	bb = b/255.0f;
-	a = fmin(rr,gg);
-	a = fmin(a,bb);
-	x = fmax(rr,gg);
-	x = fmax(x,bb);
+	a = fminf(rr,gg);
+	a = fminf(a,bb);
+	x = fmaxf(rr,gg);
+	x = fmaxf(x,bb);
 	if (a==x)//greyscale
 	{
 		*h = 0;
 		*s = 0;
-		*v = (int)(a*255.0);
+		*v = (int)(a*255.0f);
 	}
 	else
 	{
  		c = (rr==a) ? gg-bb : ((bb==a) ? rr-gg : bb-rr);
  		d = (rr==a) ? 3 : ((bb==a) ? 1 : 5);
- 		*h = (int)(60.0*(d - c/(x - a)));
- 		*s = (int)(255.0*((x - a)/x));
- 		*v = (int)(255.0*x);
+ 		*h = (int)(60.0f*(d - c/(x - a)));
+ 		*s = (int)(255.0f*((x - a)/x));
+ 		*v = (int)(255.0f*x);
 	}
 }
 

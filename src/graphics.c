@@ -292,7 +292,7 @@ pixel *resample_img(pixel *src, int sw, int sh, int rw, int rh)
 		memcpy(q, src, rw*rh*PIXELSIZE);
 	} else if(rw > sw && rh > sh){
 		float fx, fy, fyc, fxc;
-		double intp;
+		float intp;
 		pixel tr, tl, br, bl;
 		q = malloc(rw*rh*PIXELSIZE);
 		//Bilinear interpolation for upscaling
@@ -301,8 +301,8 @@ pixel *resample_img(pixel *src, int sw, int sh, int rw, int rh)
 			{
 				fx = ((float)x)*((float)sw)/((float)rw);
 				fy = ((float)y)*((float)sh)/((float)rh);
-				fxc = modf(fx, &intp);
-				fyc = modf(fy, &intp);
+				fxc = modff(fx, &intp);
+				fyc = modff(fy, &intp);
 				fxceil = (int)ceil(fx);
 				fyceil = (int)ceil(fy);
 				if (fxceil>=sw) fxceil = sw-1;
@@ -320,7 +320,7 @@ pixel *resample_img(pixel *src, int sw, int sh, int rw, int rh)
 	} else {
 		//Stairstepping
 		float fx, fy, fyc, fxc;
-		double intp;
+		float intp;
 		pixel tr, tl, br, bl;
 		int rrw = rw, rrh = rh;
 		pixel * oq;
@@ -329,8 +329,8 @@ pixel *resample_img(pixel *src, int sw, int sh, int rw, int rh)
 		rw = sw;
 		rh = sh;
 		while(rrw != rw && rrh != rh){
-			rw *= 0.7;
-			rh *= 0.7;
+			rw *= 0.7f;
+			rh *= 0.7f;
 			if(rw <= rrw || rh <= rrh){
 				rw = rrw;
 				rh = rrh;
@@ -342,8 +342,8 @@ pixel *resample_img(pixel *src, int sw, int sh, int rw, int rh)
 				{
 					fx = ((float)x)*((float)sw)/((float)rw);
 					fy = ((float)y)*((float)sh)/((float)rh);
-					fxc = modf(fx, &intp);
-					fyc = modf(fy, &intp);
+					fxc = modff(fx, &intp);
+					fyc = modff(fy, &intp);
 					fxceil = (int)ceil(fx);
 					fyceil = (int)ceil(fy);
 					if (fxceil>=sw) fxceil = sw-1;
@@ -698,7 +698,7 @@ int draw_tool_xy(pixel *vid_buf, int x, int y, int b, unsigned pc)
 			}
 			for (i=9; i<27; i++)
 			{
-				drawpixel(vid_buf, x+i, y+8+(int)(3.9f*cos(i*0.3f)), 255, 255, 255, 255);
+				drawpixel(vid_buf, x+i, y+8+(int)(3.9f*cosf(i*0.3f)), 255, 255, 255, 255);
 			}
 			break;
 		case WL_SIGN+100:
@@ -1695,8 +1695,8 @@ void draw_other(pixel *vid) // EMP effect
 		glVertex2f(0, YRES+MENUSIZE);
 		glEnd();
 #else
-		int r=emp_decor*2.5, g=100+emp_decor*1.5, b=255;
-		int a=(1.0*emp_decor/110)*255;
+		int r=emp_decor*2.5f, g=100+emp_decor*1.5f, b=255;
+		int a=(1.0f*emp_decor/110)*255;
 		if (r>255) r=255;
 		if (g>255) g=255;
 		if (b>255) g=255;
@@ -1863,11 +1863,11 @@ void render_parts(pixel *vid)
 				}
 				if(ptypes[t].properties & PROP_HOT_GLOW && parts[i].temp>(ptransitions[t].thv-800.0f))
 				{
-					gradv = 3.1415/(2*ptransitions[t].thv-(ptransitions[t].thv-800.0f));
+					gradv = 3.1415f/(2*ptransitions[t].thv-(ptransitions[t].thv-800.0f));
 					caddress = (parts[i].temp>ptransitions[t].thv)?ptransitions[t].thv-(ptransitions[t].thv-800.0f):parts[i].temp-(ptransitions[t].thv-800.0f);
-					colr += sin(gradv*caddress) * 226;;
-					colg += sin(gradv*caddress*4.55 +3.14) * 34;
-					colb += sin(gradv*caddress*2.22 +3.14) * 64;
+					colr += sinf(gradv*caddress) * 226;;
+					colg += sinf(gradv*caddress*4.55f +3.14f) * 34;
+					colb += sinf(gradv*caddress*2.22f +3.14f) * 64;
 				}
 				
 				if(pixel_mode & FIRE_ADD && !(render_mode & FIRE_ADD))
@@ -1898,10 +1898,10 @@ void render_parts(pixel *vid)
 				{
 					gradv = 0.4f;
 					if (!(parts[i].life<5))
-						q = sqrt(parts[i].life);
+						q = sqrtf(parts[i].life);
 					else
 						q = parts[i].life;
-					colr = colg = colb = sin(gradv*q) * 100 + 128;
+					colr = colg = colb = sinf(gradv*q) * 100 + 128;
 					cola = 255;
 					if(pixel_mode & (FIREMODE | PMODE_GLOW)) pixel_mode = (pixel_mode & ~(FIREMODE|PMODE_GLOW)) | PMODE_BLUR;
 				}
@@ -1933,11 +1933,11 @@ void render_parts(pixel *vid)
 
 				if (colour_mode & COLOUR_GRAD)
 				{
-					float frequency = 0.05;
+					float frequency = 0.05f;
 					int q = parts[i].temp-40;
-					colr = sin(frequency*q) * 16 + colr;
-					colg = sin(frequency*q) * 16 + colg;
-					colb = sin(frequency*q) * 16 + colb;
+					colr = sinf(frequency*q) * 16 + colr;
+					colg = sinf(frequency*q) * 16 + colg;
+					colb = sinf(frequency*q) * 16 + colb;
 					if(pixel_mode & (FIREMODE | PMODE_GLOW)) pixel_mode = (pixel_mode & ~(FIREMODE|PMODE_GLOW)) | PMODE_BLUR;
 				}
 				
@@ -2261,7 +2261,7 @@ void render_parts(pixel *vid)
 				    cline++;
 #else
 					gradv = 4*parts[i].life + flicker;
-					for (x = 0; gradv>0.5; x++) {
+					for (x = 0; gradv>0.5f; x++) {
 						addpixel(vid, nx+x, ny, colr, colg, colb, gradv);
 						addpixel(vid, nx-x, ny, colr, colg, colb, gradv);
 
@@ -2324,7 +2324,7 @@ void render_parts(pixel *vid)
 				    lineV[clineV++] = fny+10;
 				    cline++;
 #else
-					gradv = flicker + fabs(parts[i].vx)*17 + fabs(parts[i].vy)*17;
+					gradv = flicker + fabsf(parts[i].vx)*17 + fabsf(parts[i].vy)*17;
 					blendpixel(vid, nx, ny, colr, colg, colb, (gradv*4)>255?255:(gradv*4) );
 					blendpixel(vid, nx+1, ny, colr, colg, colb, (gradv*2)>255?255:(gradv*2) );
 					blendpixel(vid, nx-1, ny, colr, colg, colb, (gradv*2)>255?255:(gradv*2) );
@@ -2335,7 +2335,7 @@ void render_parts(pixel *vid)
 					blendpixel(vid, nx-1, ny-1, colr, colg, colb, gradv);
 					blendpixel(vid, nx+1, ny+1, colr, colg, colb, gradv);
 					blendpixel(vid, nx-1, ny+1, colr, colg, colb, gradv);
-					for (x = 1; gradv>0.5; x++) {
+					for (x = 1; gradv>0.5f; x++) {
 						addpixel(vid, nx+x, ny, colr, colg, colb, gradv);
 						addpixel(vid, nx-x, ny, colr, colg, colb, gradv);
 						addpixel(vid, nx, ny+x, colr, colg, colb, gradv);
@@ -2397,7 +2397,7 @@ void render_parts(pixel *vid)
 				    lineV[clineV++] = fny+70;
 				    cline++;
 #else
-					gradv = flicker + fabs(parts[i].vx)*17 + fabs(parts[i].vy)*17;
+					gradv = flicker + fabsf(parts[i].vx)*17 + fabsf(parts[i].vy)*17;
 					blendpixel(vid, nx, ny, colr, colg, colb, (gradv*4)>255?255:(gradv*4) );
 					blendpixel(vid, nx+1, ny, colr, colg, colb, (gradv*2)>255?255:(gradv*2) );
 					blendpixel(vid, nx-1, ny, colr, colg, colb, (gradv*2)>255?255:(gradv*2) );
@@ -2408,7 +2408,7 @@ void render_parts(pixel *vid)
 					blendpixel(vid, nx-1, ny-1, colr, colg, colb, gradv);
 					blendpixel(vid, nx+1, ny+1, colr, colg, colb, gradv);
 					blendpixel(vid, nx-1, ny+1, colr, colg, colb, gradv);
-					for (x = 1; gradv>0.5; x++) {
+					for (x = 1; gradv>0.5f; x++) {
 						addpixel(vid, nx+x, ny, colr, colg, colb, gradv);
 						addpixel(vid, nx-x, ny, colr, colg, colb, gradv);
 						addpixel(vid, nx, ny+x, colr, colg, colb, gradv);
@@ -2428,9 +2428,9 @@ void render_parts(pixel *vid)
 					orbitalparts_get(parts[i].life, parts[i].ctype, orbd, orbl);
 					for (r = 0; r < 4; r++) {
 						ddist = ((float)orbd[r])/16.0f;
-						drad = (M_PI * ((float)orbl[r]) / 180.0f)*1.41f;
-						nxo = (int)(ddist*cos(drad));
-						nyo = (int)(ddist*sin(drad));
+						drad = ((float)M_PI * ((float)orbl[r]) / 180.0f)*1.41f;
+						nxo = (int)(ddist*cosf(drad));
+						nyo = (int)(ddist*sinf(drad));
 						if (ny+nyo>0 && ny+nyo<YRES && nx+nxo>0 && nx+nxo<XRES && (pmap[ny+nyo][nx+nxo]&0xFF) != PT_PRTI)
 							addpixel(vid, nx+nxo, ny+nyo, colr, colg, colb, 255-orbd[r]);
 					}
@@ -2446,9 +2446,9 @@ void render_parts(pixel *vid)
 					orbitalparts_get(parts[i].life, parts[i].ctype, orbd, orbl);
 					for (r = 0; r < 4; r++) {
 						ddist = ((float)orbd[r])/16.0f;
-						drad = (M_PI * ((float)orbl[r]) / 180.0f)*1.41f;
-						nxo = (int)(ddist*cos(drad));
-						nyo = (int)(ddist*sin(drad));
+						drad = ((float)M_PI * ((float)orbl[r]) / 180.0f)*1.41f;
+						nxo = (int)(ddist*cosf(drad));
+						nyo = (int)(ddist*sinf(drad));
 						if (ny+nyo>0 && ny+nyo<YRES && nx+nxo>0 && nx+nxo<XRES && (pmap[ny+nyo][nx+nxo]&0xFF) != PT_PRTO)
 							addpixel(vid, nx+nxo, ny+nyo, colr, colg, colb, 255-orbd[r]);
 					}
@@ -2980,7 +2980,7 @@ void create_decoration(int x, int y, int r, int g, int b, int click, int tool)
 		tr = (parts[rp>>8].dcolour>>16)&0xFF;
 		tg = (parts[rp>>8].dcolour>>8)&0xFF;
 		tb = (parts[rp>>8].dcolour)&0xFF;
-		parts[rp>>8].dcolour = ((parts[rp>>8].dcolour&0xFF000000)|(clamp_flt(tr+(255-tr)*0.02+1, 0,255)<<16)|(clamp_flt(tg+(255-tg)*0.02+1, 0,255)<<8)|clamp_flt(tb+(255-tb)*0.02+1, 0,255));
+		parts[rp>>8].dcolour = ((parts[rp>>8].dcolour&0xFF000000)|(clamp_flt(tr+(255-tr)*0.02f+1, 0,255)<<16)|(clamp_flt(tg+(255-tg)*0.02f+1, 0,255)<<8)|clamp_flt(tb+(255-tb)*0.02f+1, 0,255));
 	}
 	else if (tool == DECO_DARKEN)
 	{
@@ -2989,7 +2989,7 @@ void create_decoration(int x, int y, int r, int g, int b, int click, int tool)
 		tr = (parts[rp>>8].dcolour>>16)&0xFF;
 		tg = (parts[rp>>8].dcolour>>8)&0xFF;
 		tb = (parts[rp>>8].dcolour)&0xFF;
-		parts[rp>>8].dcolour = ((parts[rp>>8].dcolour&0xFF000000)|(clamp_flt(tr-(tr)*0.02, 0,255)<<16)|(clamp_flt(tg-(tg)*0.02, 0,255)<<8)|clamp_flt(tb-(tb)*0.02, 0,255));
+		parts[rp>>8].dcolour = ((parts[rp>>8].dcolour&0xFF000000)|(clamp_flt(tr-(tr)*0.02f, 0,255)<<16)|(clamp_flt(tg-(tg)*0.02f, 0,255)<<8)|clamp_flt(tb-(tb)*0.02f, 0,255));
 	}
 	else if (tool == DECO_SMUDGE)
 	{
@@ -3008,10 +3008,10 @@ void create_decoration(int x, int y, int r, int g, int b, int click, int tool)
 			}
 		if (num == 0)
 			return;
-		ta = fminf(255,(int)((float)ta/num+.5));
-		tr = fminf(255,(int)((float)tr/num+.5));
-		tg = fminf(255,(int)((float)tg/num+.5));
-		tb = fminf(255,(int)((float)tb/num+.5));
+		ta = fminf(255,(int)((float)ta/num+.5f));
+		tr = fminf(255,(int)((float)tr/num+.5f));
+		tg = fminf(255,(int)((float)tg/num+.5f));
+		tb = fminf(255,(int)((float)tb/num+.5f));
 		if (!parts[rp>>8].dcolour)
 			ta = fmaxf(0,ta-3);
 		parts[rp>>8].dcolour = ((ta<<24)|(tr<<16)|(tg<<8)|tb);

@@ -16,7 +16,7 @@ int update_C5(UPDATE_FUNC_ARGS) {
 						part_change_type(i,x,y,PT_HFLM);
 						parts[r>>8].temp = parts[i].temp = 0;
 						parts[i].life = rand()%150+50;
-						pv[y/CELL][x/CELL] += 1.5;
+						pv[y/CELL][x/CELL] += 1.5f;
 					}
 				}
 			}

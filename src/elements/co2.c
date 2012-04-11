@@ -27,7 +27,7 @@ int update_CO2(UPDATE_FUNC_ARGS) {
 					kill_part(r>>8);
 				}
 			}
-	if (parts[i].temp > 9773.15 && pv[y/CELL][x/CELL] > 200.0f)
+	if (parts[i].temp > 9773.15f && pv[y/CELL][x/CELL] > 200.0f)
 	{
 		if (rand()%5 < 1)
 		{

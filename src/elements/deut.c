@@ -2,7 +2,7 @@
 
 int update_DEUT(UPDATE_FUNC_ARGS) {
 	int r, rx, ry, trade, np;
-	float gravtot = fabs(gravy[(y/CELL)*(XRES/CELL)+(x/CELL)])+fabs(gravx[(y/CELL)*(XRES/CELL)+(x/CELL)]);
+	float gravtot = fabsf(gravy[(y/CELL)*(XRES/CELL)+(x/CELL)])+fabsf(gravx[(y/CELL)*(XRES/CELL)+(x/CELL)]);
 	int maxlife = ((10000/(parts[i].temp + 1))-1);
 	if ((10000%((int)parts[i].temp+1))>rand()%((int)parts[i].temp+1))
 		maxlife ++;

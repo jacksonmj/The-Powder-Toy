@@ -32,7 +32,7 @@
 #define M_PI 3.14159265f
 #endif
 #ifndef M_GRAV
-#define M_GRAV 6.67300e-1
+#define M_GRAV 6.67300e-1f
 #endif
 
 #define IMGCONNS 3
@@ -53,7 +53,7 @@
 #define XCNTR   306
 #define YCNTR   192
 
-#define MAX_DISTANCE sqrt(pow(XRES, 2)+pow(YRES, 2))
+#define MAX_DISTANCE sqrtf(XRES*XRES + YRES*YRES)
 
 #define GRAV_DIFF
 
@@ -114,8 +114,8 @@ typedef unsigned int pixel;
 
 /* heavy flint glass, for awesome refraction/dispersion
    this way you can make roof prisms easily */
-#define GLASS_IOR      1.9
-#define GLASS_DISP     0.07
+#define GLASS_IOR      1.9f
+#define GLASS_DISP     0.07f
 
 #ifdef WIN32
 #define strcasecmp stricmp

@@ -1,6 +1,6 @@
 #include <element.h>
 
-#define LIGHTING_POWER 0.65
+#define LIGHTING_POWER 0.65f
 
 int LIGH_nearest_part(int ci, int max_d)
 {
@@ -143,7 +143,7 @@ int update_LIGH(UPDATE_FUNC_ARGS)
 							create_part(r>>8,x+rx,y+ry,PT_SPRK);
 						}
 						pv[y/CELL][x/CELL] += powderful/400;
-						if (ptypes[r&0xFF].hconduct) parts[r>>8].temp = restrict_flt(parts[r>>8].temp+powderful/1.5, MIN_TEMP, MAX_TEMP);
+						if (ptypes[r&0xFF].hconduct) parts[r>>8].temp = restrict_flt(parts[r>>8].temp+powderful/1.5f, MIN_TEMP, MAX_TEMP);
 					}
 					if ((r&0xFF)==PT_DEUT || (r&0xFF)==PT_PLUT) // start nuclear reactions
 					{
@@ -197,7 +197,7 @@ int update_LIGH(UPDATE_FUNC_ARGS)
 
 	angle2=-1;
 
-	near = LIGH_nearest_part(i, parts[i].life*2.5);
+	near = LIGH_nearest_part(i, parts[i].life*2.5f);
 	if (near!=-1)
 	{
 		int t=parts[near].type;
@@ -205,12 +205,12 @@ int update_LIGH(UPDATE_FUNC_ARGS)
 		rx=parts[near].x-x;
 		ry=parts[near].y-y;
 		if (rx*rx+ry*ry!=0)
-			n_angle = asin(-ry/sqrt(rx*rx+ry*ry));
+			n_angle = asinf(-ry/sqrtf(rx*rx+ry*ry));
 		else
 			n_angle = 0;
 		if (n_angle<0)
-			n_angle+=M_PI*2;
-		if (parts[i].life<5 || fabs(n_angle-parts[i].tmp*M_PI/180)<M_PI*0.8) // lightning strike
+			n_angle+=(float)M_PI*2;
+		if (parts[i].life<5 || fabsf(n_angle-parts[i].tmp*(float)M_PI/180)<(float)M_PI*0.8f) // lightning strike
 		{
 			create_line_par(x, y, x+rx, y+ry, PT_LIGH, parts[i].temp, parts[i].life, parts[i].tmp-90, 0);
 
@@ -245,9 +245,9 @@ int update_LIGH(UPDATE_FUNC_ARGS)
 			angle-=360;
 	}
 
-	multipler=parts[i].life*1.5+rand()%((int)(parts[i].life+1));
-	rx=cos(angle*M_PI/180)*multipler;
-	ry=-sin(angle*M_PI/180)*multipler;
+	multipler=parts[i].life*1.5f+rand()%((int)(parts[i].life+1));
+	rx=cosf(angle*(float)M_PI/180)*multipler;
+	ry=-sinf(angle*(float)M_PI/180)*multipler;
 	create_line_par(x, y, x+rx, y+ry, PT_LIGH, parts[i].temp, parts[i].life, angle, 0);
 
 	if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
@@ -264,9 +264,9 @@ int update_LIGH(UPDATE_FUNC_ARGS)
 
 	if (angle2!=-1)
 	{
-		multipler=parts[i].life*1.5+rand()%((int)(parts[i].life+1));
-		rx=cos(angle2*M_PI/180)*multipler;
-		ry=-sin(angle2*M_PI/180)*multipler;
+		multipler=parts[i].life*1.5f+rand()%((int)(parts[i].life+1));
+		rx=cosf(angle2*(float)M_PI/180)*multipler;
+		ry=-sinf(angle2*(float)M_PI/180)*multipler;
 		create_line_par(x, y, x+rx, y+ry, PT_LIGH, parts[i].temp, parts[i].life, angle2, 0);
 
 		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
