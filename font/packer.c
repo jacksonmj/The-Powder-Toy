@@ -77,6 +77,9 @@ int main(int argc, char *argv[])
     fread(font, CELLW*CELLH, 256, f);
     fclose(f);
 
+	// Redirect stdout to file
+	freopen("font.h", "w", stdout);
+
     printf("#ifndef FONT_H_CHECK\n");
     printf("#define FONT_H_CHECK\n");
     
