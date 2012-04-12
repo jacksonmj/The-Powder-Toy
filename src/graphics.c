@@ -1,6 +1,9 @@
 #include <math.h>
 #include <SDL/SDL.h>
 #include <bzlib.h>
+#ifdef WIN32
+#include <SDL/SDL_syswm.h>
+#endif
 
 #if defined(OGLR)
 #ifdef MACOSX
@@ -28,6 +31,15 @@
 #include <font.h>
 #include <misc.h>
 #include "hmap.h"
+
+#if defined(LIN32) || defined(LIN64)
+#include "icon.h"
+#endif
+
+
+#ifdef WIN32
+IMAGE_DOS_HEADER __ImageBase;
+#endif
 
 //unsigned cmode = CM_FIRE;
 unsigned int *render_modes;
@@ -77,6 +89,13 @@ void init_display_modes()
 	render_modes[0] = RENDER_FIRE;
 	render_modes[1] = 0;
 	
+	update_display_modes();
+}
+
+// Combine all elements of the display_modes and render_modes arrays into single variables using bitwise or
+void update_display_modes()
+{
+	int i;
 	display_mode = 0;
 	i = 0;
 	while(display_modes[i])
@@ -879,11 +898,7 @@ int drawchar(pixel *vid, int x, int y, int c, int r, int g, int b, int a)
 	return x + w;
 }
 
-#if defined(WIN32) && !defined(__GNUC__)
 int addchar(pixel *vid, int x, int y, int c, int r, int g, int b, int a)
-#else
-inline int addchar(pixel *vid, int x, int y, int c, int r, int g, int b, int a)
-#endif
 {
 	int i, j, w, bn = 0, ba = 0;
 	char *rp = font_data + font_ptrs[c];
@@ -1306,14 +1321,19 @@ void draw_air(pixel *vid)
 					clamp_flt(pv[y][x], 0.0f, 8.0f),//pressure adds green
 					clamp_flt(fabsf(vy[y][x]), 0.0f, 8.0f));//vy adds blue
 			}
-			else if (display_mode & DISPLAY_AIRH)
+			else if ((display_mode & DISPLAY_AIRH))
 			{
-				float ttemp = hv[y][x]+(-MIN_TEMP);
-				int caddress = restrict_flt((int)( restrict_flt(ttemp, 0.0f, MAX_TEMP+(-MIN_TEMP)) / ((MAX_TEMP+(-MIN_TEMP))/1024) ) *3, 0.0f, (1024.0f*3)-3);
-				c = PIXRGB((int)((unsigned char)color_data[caddress]*0.7f), (int)((unsigned char)color_data[caddress+1]*0.7f), (int)((unsigned char)color_data[caddress+2]*0.7f));
-				//c  = PIXRGB(clamp_flt(fabsf(vx[y][x]), 0.0f, 8.0f),//vx adds red
-				//	clamp_flt(hv[y][x], 0.0f, 1600.0f),//heat adds green
-				//	clamp_flt(fabsf(vy[y][x]), 0.0f, 8.0f));//vy adds blue
+				if (aheat_enable)
+				{
+					float ttemp = hv[y][x]+(-MIN_TEMP);
+					int caddress = restrict_flt((int)( restrict_flt(ttemp, 0.0f, MAX_TEMP+(-MIN_TEMP)) / ((MAX_TEMP+(-MIN_TEMP))/1024) ) *3, 0.0f, (1024.0f*3)-3);
+					c = PIXRGB((int)((unsigned char)color_data[caddress]*0.7f), (int)((unsigned char)color_data[caddress+1]*0.7f), (int)((unsigned char)color_data[caddress+2]*0.7f));
+					//c  = PIXRGB(clamp_flt(fabsf(vx[y][x]), 0.0f, 8.0f),//vx adds red
+					//	clamp_flt(hv[y][x], 0.0f, 1600.0f),//heat adds green
+					//	clamp_flt(fabsf(vy[y][x]), 0.0f, 8.0f));//vy adds blue
+				}
+				else
+					c = PIXRGB(0,0,0);
 			}
 			else if (display_mode & DISPLAY_AIRC)
 			{
@@ -1794,7 +1814,7 @@ void render_parts(pixel *vid)
 					fireg = graphicscache[t].fireg;
 					fireb = graphicscache[t].fireb;
 				}
-				else
+				else if(!(colour_mode & COLOUR_BASC))	//Don't get special effects for BASIC colour mode
 				{
 					if (ptypes[t].graphics_func)
 					{
@@ -1845,7 +1865,7 @@ void render_parts(pixel *vid)
 				if(pixel_mode & PMODE_BLUR && !(render_mode & PMODE_BLUR))
 					pixel_mode |= PMODE_FLAT;
 				if(pixel_mode & PMODE_GLOW && !(render_mode & PMODE_GLOW))
-					pixel_mode |= PMODE_FLAT;
+					pixel_mode |= PMODE_BLEND;
 				if (render_mode & PMODE_BLOB)
 					pixel_mode |= PMODE_BLOB;
 					
@@ -1873,18 +1893,16 @@ void render_parts(pixel *vid)
 					cola = 255;
 					if(pixel_mode & (FIREMODE | PMODE_GLOW)) pixel_mode = (pixel_mode & ~(FIREMODE|PMODE_GLOW)) | PMODE_BLUR;
 				}
-				else if (colour_mode & COLOUR_GRAD)
+				else if (colour_mode & COLOUR_BASC)
 				{
-					float frequency = 0.05;
-					int q = parts[i].temp-40;
-					colr = sin(frequency*q) * 16 + colr;
-					colg = sin(frequency*q) * 16 + colg;
-					colb = sin(frequency*q) * 16 + colb;
-					if(pixel_mode & (FIREMODE | PMODE_GLOW)) pixel_mode = (pixel_mode & ~(FIREMODE|PMODE_GLOW)) | PMODE_BLUR;
+					colr = PIXR(ptypes[t].pcolors);
+					colg = PIXG(ptypes[t].pcolors);
+					colb = PIXB(ptypes[t].pcolors);
+					pixel_mode = PMODE_FLAT;
 				}
 								
 				//Apply decoration colour
-				if(!colour_mode)
+				if(!(colour_mode & ~COLOUR_GRAD))
 				{
 					if(!(pixel_mode & NO_DECO) && decorations_enable)
 					{
@@ -1900,6 +1918,16 @@ void render_parts(pixel *vid)
 						fireb = (deca*decb + (255-deca)*fireb) >> 8;
 					}
 				}
+
+				if (colour_mode & COLOUR_GRAD)
+				{
+					float frequency = 0.05;
+					int q = parts[i].temp-40;
+					colr = sin(frequency*q) * 16 + colr;
+					colg = sin(frequency*q) * 16 + colg;
+					colb = sin(frequency*q) * 16 + colb;
+					if(pixel_mode & (FIREMODE | PMODE_GLOW)) pixel_mode = (pixel_mode & ~(FIREMODE|PMODE_GLOW)) | PMODE_BLUR;
+				}
 				
 	#ifndef OGLR
 				//All colours are now set, check ranges
@@ -1914,6 +1942,11 @@ void render_parts(pixel *vid)
 	#endif
 					
 				//Pixel rendering
+				if (t==PT_SOAP)
+				{
+					if ((parts[i].ctype&7) == 7)
+						draw_line(vid, nx, ny, (int)(parts[parts[i].tmp].x+0.5f), (int)(parts[parts[i].tmp].y+0.5f), 245, 245, 220, XRES+BARSIZE);
+				}
 				if(pixel_mode & PSPEC_STICKMAN)
 				{
 					char buff[20];  //Buffer for HP
@@ -2105,6 +2138,7 @@ void render_parts(pixel *vid)
 				}
 				if(pixel_mode & PMODE_GLOW)
 				{
+					int cola1 = (5*cola)/255;
 #ifdef OGLR
                     glowV[cglowV++] = nx;
                     glowV[cglowV++] = ny;
@@ -2114,24 +2148,24 @@ void render_parts(pixel *vid)
                     glowC[cglowC++] = 1.0f;
                     cglow++;
 #else
-					addpixel(vid, nx, ny, colr, colg, colb, 192);
-					addpixel(vid, nx+1, ny, colr, colg, colb, 96);
-					addpixel(vid, nx-1, ny, colr, colg, colb, 96);
-					addpixel(vid, nx, ny+1, colr, colg, colb, 96);
-					addpixel(vid, nx, ny-1, colr, colg, colb, 96);
+					addpixel(vid, nx, ny, colr, colg, colb, (192*cola)/255);
+					addpixel(vid, nx+1, ny, colr, colg, colb, (96*cola)/255);
+					addpixel(vid, nx-1, ny, colr, colg, colb, (96*cola)/255);
+					addpixel(vid, nx, ny+1, colr, colg, colb, (96*cola)/255);
+					addpixel(vid, nx, ny-1, colr, colg, colb, (96*cola)/255);
 					
 					for (x = 1; x < 6; x++) {
-						addpixel(vid, nx, ny-x, colr, colg, colb, 5);
-						addpixel(vid, nx, ny+x, colr, colg, colb, 5);
-						addpixel(vid, nx-x, ny, colr, colg, colb, 5);
-						addpixel(vid, nx+x, ny, colr, colg, colb, 5);
+						addpixel(vid, nx, ny-x, colr, colg, colb, cola1);
+						addpixel(vid, nx, ny+x, colr, colg, colb, cola1);
+						addpixel(vid, nx-x, ny, colr, colg, colb, cola1);
+						addpixel(vid, nx+x, ny, colr, colg, colb, cola1);
 						for (y = 1; y < 6; y++) {
 							if(x + y > 7)
 								continue;
-							addpixel(vid, nx+x, ny-y, colr, colg, colb, 5);
-							addpixel(vid, nx-x, ny+y, colr, colg, colb, 5);
-							addpixel(vid, nx+x, ny+y, colr, colg, colb, 5);
-							addpixel(vid, nx-x, ny-y, colr, colg, colb, 5);
+							addpixel(vid, nx+x, ny-y, colr, colg, colb, cola1);
+							addpixel(vid, nx-x, ny+y, colr, colg, colb, cola1);
+							addpixel(vid, nx+x, ny+y, colr, colg, colb, cola1);
+							addpixel(vid, nx-x, ny-y, colr, colg, colb, cola1);
 						}
 					}
 #endif
@@ -2383,9 +2417,9 @@ void render_parts(pixel *vid)
 					for (r = 0; r < 4; r++) {
 						ddist = ((float)orbd[r])/16.0f;
 						drad = (M_PI * ((float)orbl[r]) / 180.0f)*1.41f;
-						nxo = ddist*cos(drad);
-						nyo = ddist*sin(drad);
-						if (ny+nyo>0 && ny+nyo<YRES && nx+nxo>0 && nx+nxo<XRES)
+						nxo = (int)(ddist*cos(drad));
+						nyo = (int)(ddist*sin(drad));
+						if (ny+nyo>0 && ny+nyo<YRES && nx+nxo>0 && nx+nxo<XRES && (pmap[ny+nyo][nx+nxo]&0xFF) != PT_PRTI)
 							addpixel(vid, nx+nxo, ny+nyo, colr, colg, colb, 255-orbd[r]);
 					}
 				}
@@ -2401,10 +2435,29 @@ void render_parts(pixel *vid)
 					for (r = 0; r < 4; r++) {
 						ddist = ((float)orbd[r])/16.0f;
 						drad = (M_PI * ((float)orbl[r]) / 180.0f)*1.41f;
-						nxo = ddist*cos(drad);
-						nyo = ddist*sin(drad);
-						if (ny+nyo>0 && ny+nyo<YRES && nx+nxo>0 && nx+nxo<XRES)
+						nxo = (int)(ddist*cos(drad));
+						nyo = (int)(ddist*sin(drad));
+						if (ny+nyo>0 && ny+nyo<YRES && nx+nxo>0 && nx+nxo<XRES && (pmap[ny+nyo][nx+nxo]&0xFF) != PT_PRTO)
 							addpixel(vid, nx+nxo, ny+nyo, colr, colg, colb, 255-orbd[r]);
+					}
+				}
+				if ((pixel_mode & EFFECT_LINES) && DEBUG_MODE)
+				{
+					if (mousex==(nx) && mousey==(ny))//draw lines connecting wifi/portal channels
+					{
+						int z;
+						int type = parts[i].type;
+						if (type == PT_PRTI)
+							type = PT_PRTO;
+						else if (type == PT_PRTO)
+							type = PT_PRTI;
+						for (z = 0; z<NPART; z++) {
+							if (parts[z].type)
+							{
+								if (parts[z].type==type&&parts[z].tmp==parts[i].tmp)
+									xor_line(nx,ny,(int)(parts[z].x+0.5f),(int)(parts[z].y+0.5f),vid);
+							}
+						}
 					}
 				}
 				//Fire effects
@@ -2897,7 +2950,7 @@ void create_decorations(int x, int y, int rx, int ry, int r, int g, int b, int c
 }
 void create_decoration(int x, int y, int r, int g, int b, int click, int tool)
 {
-	int rp, tr,tg,tb;
+	int rp, tr = 0, tg = 0, tb = 0;
 	rp = pmap[y][x];
 	if (!rp)
 		return;
@@ -2925,6 +2978,31 @@ void create_decoration(int x, int y, int r, int g, int b, int click, int tool)
 		tg = (parts[rp>>8].dcolour>>8)&0xFF;
 		tb = (parts[rp>>8].dcolour)&0xFF;
 		parts[rp>>8].dcolour = ((parts[rp>>8].dcolour&0xFF000000)|(clamp_flt(tr-(tr)*0.02, 0,255)<<16)|(clamp_flt(tg-(tg)*0.02, 0,255)<<8)|clamp_flt(tb-(tb)*0.02, 0,255));
+	}
+	else if (tool == DECO_SMUDGE)
+	{
+		int rx, ry, num = 0, ta = 0;
+		for (rx=-2; rx<3; rx++)
+			for (ry=-2; ry<3; ry++)
+			{
+				if ((pmap[y+ry][x+rx]&0xFF) && parts[pmap[y+ry][x+rx]>>8].dcolour)
+				{
+					num++;
+					ta += (parts[pmap[y+ry][x+rx]>>8].dcolour>>24)&0xFF;
+					tr += (parts[pmap[y+ry][x+rx]>>8].dcolour>>16)&0xFF;
+					tg += (parts[pmap[y+ry][x+rx]>>8].dcolour>>8)&0xFF;
+					tb += (parts[pmap[y+ry][x+rx]>>8].dcolour)&0xFF;
+				}
+			}
+		if (num == 0)
+			return;
+		ta = fminf(255,(int)((float)ta/num+.5));
+		tr = fminf(255,(int)((float)tr/num+.5));
+		tg = fminf(255,(int)((float)tg/num+.5));
+		tb = fminf(255,(int)((float)tb/num+.5));
+		if (!parts[rp>>8].dcolour)
+			ta = fmaxf(0,ta-3);
+		parts[rp>>8].dcolour = ((ta<<24)|(tr<<16)|(tg<<8)|tb);
 	}
 }
 void line_decorations(int x1, int y1, int x2, int y2, int rx, int ry, int r, int g, int b, int click, int tool)
@@ -3568,7 +3646,7 @@ void render_cursor(pixel *vid, int x, int y, int t, int rx, int ry)
 {
 #ifdef OGLR
 	int i;
-	if (t<PT_NUM||(t&0xFF)==PT_LIFE||t==SPC_AIR||t==SPC_HEAT||t==SPC_COOL||t==SPC_VACUUM||t==SPC_WIND||t==SPC_PGRV||t==SPC_NGRV)
+	if (t<PT_NUM||(t&0xFF)==PT_LIFE||t==SPC_AIR||t==SPC_HEAT||t==SPC_COOL||t==SPC_VACUUM||t==SPC_WIND||t==SPC_PGRV||t==SPC_NGRV||t==SPC_PROP)
 	{
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, partsFbo);
 		glEnable(GL_COLOR_LOGIC_OP);
@@ -3608,49 +3686,40 @@ void render_cursor(pixel *vid, int x, int y, int t, int rx, int ry)
 	}
 #else
 	int i,j,c;
-	if (t<PT_NUM||(t&0xFF)==PT_LIFE||t==SPC_AIR||t==SPC_HEAT||t==SPC_COOL||t==SPC_VACUUM||t==SPC_WIND||t==SPC_PGRV||t==SPC_NGRV)
+	if (t<PT_NUM||(t&0xFF)==PT_LIFE||t==SPC_AIR||t==SPC_HEAT||t==SPC_COOL||t==SPC_VACUUM||t==SPC_WIND||t==SPC_PGRV||t==SPC_NGRV||t==SPC_PROP)
 	{
 		if (rx<=0)
-			xor_pixel(x, y, vid);
-		else if (ry<=0)
-			xor_pixel(x, y, vid);
-		if (rx+ry<=0)
-			xor_pixel(x, y, vid);
-		else if (CURRENT_BRUSH==SQUARE_BRUSH)
+			for (j = y - ry; j <= y + ry; j++)
+				xor_pixel(x, j, vid);
+		else
 		{
-			for (j=0; j<=ry; j++)
-				for (i=0; i<=rx; i++)
-					if (i*j<=ry*rx && ((i+1)>rx || (j+1)>ry))
-					{
-						xor_pixel(x+i, y+j, vid);
-						xor_pixel(x-i, y-j, vid);
-						if (i&&j)xor_pixel(x+i, y-j, vid);
-						if (i&&j)xor_pixel(x-i, y+j, vid);
-					}
-		}
-		else if (CURRENT_BRUSH==CIRCLE_BRUSH)
-		{
-			for (j=0; j<=ry; j++)
-				for (i=0; i<=rx; i++)
-					if (pow(i,2)*pow(ry,2)+pow(j,2)*pow(rx,2)<=pow(rx,2)*pow(ry,2) &&
-					  (pow(i+1,2)*pow(ry,2)+pow(j,2)*pow(rx,2)>pow(rx,2)*pow(ry,2) ||
-					   pow(i,2)*pow(ry,2)+pow(j+1,2)*pow(rx,2)>pow(rx,2)*pow(ry,2)))
-					{
-						xor_pixel(x+i, y+j, vid);
-						if (j) xor_pixel(x+i, y-j, vid);
-						if (i) xor_pixel(x-i, y+j, vid);
-						if (i&&j) xor_pixel(x-i, y-j, vid);
-					}
-		}
-		else if (CURRENT_BRUSH==TRI_BRUSH)
- 		{
-			for (j=-ry; j<=ry; j++)
-				for (i=-rx; i<=0; i++)
-					if ((j <= ry ) && ( j >= (((-2.0*ry)/(rx))*i)-ry ) && (j+1>ry || ( j-1 < (((-2.0*ry)/(rx))*i)-ry )) )
-						{
-							xor_pixel(x+i, y+j, vid);
-							if (i) xor_pixel(x-i, y+j, vid);
-						}
+			int tempy = y, i, j, oldy;
+			if (CURRENT_BRUSH == TRI_BRUSH)
+				tempy = y + ry;
+			for (i = x - rx; i <= x; i++) {
+				oldy = tempy;
+				if (!InCurrentBrush(i-x,tempy-y,rx,ry))
+					continue;
+				while (InCurrentBrush(i-x,tempy-y,rx,ry))
+					tempy = tempy - 1;
+				tempy = tempy + 1;
+				if (oldy != tempy && CURRENT_BRUSH != SQUARE_BRUSH)
+					oldy--;
+				if (CURRENT_BRUSH == TRI_BRUSH)
+					oldy = tempy;
+				for (j = tempy; j <= oldy; j++) {
+					int i2 = 2*x-i, j2 = 2*y-j;
+					if (CURRENT_BRUSH == TRI_BRUSH)
+						j2 = y+ry;
+					xor_pixel(i, j, vid);
+					if (i2 != i)
+						xor_pixel(i2, j, vid);
+					if (j2 != j)
+						xor_pixel(i, j2, vid);
+					if (i2 != i && j2 != j)
+						xor_pixel(i2, j2, vid);
+				}
+			}
 		}
 	}
 	else //wall cursor
@@ -3685,12 +3754,38 @@ void render_cursor(pixel *vid, int x, int y, int t, int rx, int ry)
 int sdl_opened = 0;
 int sdl_open(void)
 {
+#ifdef WIN32
+	SDL_SysWMinfo SysInfo;
+	HWND WindowHandle;
+	HICON hIconSmall;
+	HICON hIconBig;
+#elif defined(LIN32) || defined(LIN64)
+	SDL_Surface *icon;
+#endif
 	int status;
 	if (SDL_Init(SDL_INIT_VIDEO)<0)
 	{
 		fprintf(stderr, "Initializing SDL: %s\n", SDL_GetError());
 		return 0;
 	}
+	
+#ifdef WIN32
+	SDL_VERSION(&SysInfo.version);
+	if(SDL_GetWMInfo(&SysInfo) <= 0) {
+	    printf("%s : %d\n", SDL_GetError(), SysInfo.window);
+	    exit(-1);
+	}
+	WindowHandle = SysInfo.window;
+	hIconSmall = (HICON)LoadImage(&__ImageBase, MAKEINTRESOURCE(101), IMAGE_ICON, 16, 16, LR_SHARED);
+	hIconBig = (HICON)LoadImage(&__ImageBase, MAKEINTRESOURCE(101), IMAGE_ICON, 32, 32, LR_SHARED);
+	SendMessage(WindowHandle, WM_SETICON, ICON_SMALL, (LPARAM)hIconSmall);
+	SendMessage(WindowHandle, WM_SETICON, ICON_BIG, (LPARAM)hIconBig);
+#elif defined(LIN32) || defined(LIN64)
+	icon = SDL_CreateRGBSurfaceFrom(app_icon, 16, 16, 32, 64, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+	SDL_WM_SetIcon(icon, NULL);
+#endif
+	SDL_WM_SetCaption("The Powder Toy", "Powder Toy");
+	
 	atexit(SDL_Quit);
 #if defined(OGLR)
 	sdl_scrn=SDL_SetVideoMode(XRES*sdl_scale + BARSIZE*sdl_scale,YRES*sdl_scale + MENUSIZE*sdl_scale,32,SDL_OPENGL);
@@ -3889,8 +3984,6 @@ int sdl_open(void)
 		fprintf(stderr, "Creating window: %s\n", SDL_GetError());
 		return 0;
 	}
-	SDL_WM_SetCaption("The Powder Toy", "Powder Toy");
-	sdl_seticon();
 	SDL_EnableUNICODE(1);
 	//SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 #if (defined(LIN32) || defined(LIN64)) && defined(SDL_VIDEO_DRIVER_X11)
