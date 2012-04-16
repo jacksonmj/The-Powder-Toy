@@ -1142,10 +1142,20 @@ inline int create_part(int p, int x, int y, int tv)//the function for creating a
 			if (t==PT_PHOT)
 			{
 				float a = (rand()%8) * 0.78540f;
+				float velocity = 3.0f;
 				parts[i].life = 680;
 				parts[i].ctype = 0x3FFFFFFF;
-				parts[i].vx = 3.0f*cosf(a);
-				parts[i].vy = 3.0f*sinf(a);
+				if ((pmap[y][x]&0xFF)==PT_GLAS)
+				{
+					float nn;
+					int wl = get_wavelength_bin(&parts[i].ctype);
+					nn = GLASS_IOR - GLASS_DISP*(wl-15)/15.0f;
+					//velocity = sqrtf((velocity*velocity-1.0f)/powf(nn, 4)+1.0f); // works with old incorrect refraction
+					velocity = velocity/nn;
+				}
+				parts[i].life = 680;
+				parts[i].vx = velocity*cosf(a);
+				parts[i].vy = velocity*sinf(a);
 			}
 			if (t==PT_ELEC)
 			{
@@ -2519,6 +2529,8 @@ killed:
 
 					r = eval_move(PT_PHOT, fin_x, fin_y, NULL);
 					if (((rt==PT_GLAS && lt!=PT_GLAS) || (rt!=PT_GLAS && lt==PT_GLAS)) && r) {
+						float v_magnitude;
+
 						if (!get_normal_interp(REFRACT|t, parts[i].x, parts[i].y, parts[i].vx, parts[i].vy, &nrx, &nry)) {
 							kill_part(i);
 							continue;
@@ -2529,18 +2541,23 @@ killed:
 							kill_part(i);
 							continue;
 						}
+
+						// Vector form of Snells's law
+						// nn = refractive index
+						// ct1 = cos(theta1) = cos(angle of incidence) = dot product of normalised velocity vector and normalised surface normal vector
+						// ct2 = cos(theta2) = cos(angle of refraction)
 						nn = GLASS_IOR - GLASS_DISP*(r-15)/15.0f;
-						nn *= nn;
 						nrx = -nrx;
 						nry = -nry;
 						if (rt==PT_GLAS && lt!=PT_GLAS)
 							nn = 1.0f/nn;
-						ct1 = parts[i].vx*nrx + parts[i].vy*nry;
-						ct2 = 1.0f - (nn*nn)*(1.0f-(ct1*ct1));
+						v_magnitude = sqrtf(powf(parts[i].vx, 2) + powf(parts[i].vy, 2));
+						ct1 = (parts[i].vx*nrx + parts[i].vy*nry) / v_magnitude;
+						ct2 = 1.0f - (nn*nn)*(1.0f-(ct1*ct1)); // square of cos(theta2)
 						if (ct2 < 0.0f) {
 							// total internal reflection
-							parts[i].vx -= 2.0f*ct1*nrx;
-							parts[i].vy -= 2.0f*ct1*nry;
+							parts[i].vx -= 2.0f*ct1*nrx*v_magnitude;
+							parts[i].vy -= 2.0f*ct1*nry*v_magnitude;
 							fin_xf = parts[i].x;
 							fin_yf = parts[i].y;
 							fin_x = x;
@@ -2549,8 +2566,8 @@ killed:
 							// refraction
 							ct2 = sqrtf(ct2);
 							ct2 = ct2 - nn*ct1;
-							parts[i].vx = nn*parts[i].vx + ct2*nrx;
-							parts[i].vy = nn*parts[i].vy + ct2*nry;
+							parts[i].vx = nn*nn*parts[i].vx + ct2*nrx*v_magnitude*nn;
+							parts[i].vy = nn*nn*parts[i].vy + ct2*nry*v_magnitude*nn;
 						}
 					}
 				}

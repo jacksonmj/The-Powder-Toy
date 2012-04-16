@@ -72,8 +72,17 @@ int update_PCLN(UPDATE_FUNC_ARGS) {
 						int r = create_part(-1, x+rx, y+ry, parts[i].ctype);
 						if (r!=-1)
 						{
-							parts[r].vx = rx*3;
-							parts[r].vy = ry*3;
+							float velocity = 3.0f;
+							if ((pmap[y+ry][x+rx]&0xFF)==PT_GLAS)
+							{
+								float nn;
+								int wl = get_wavelength_bin(&parts[r].ctype);
+								nn = GLASS_IOR - GLASS_DISP*(wl-15)/15.0f;
+								//velocity = sqrtf((velocity*velocity-1.0f)/powf(nn, 4)+1.0f); // works with old incorrect refraction
+								velocity = velocity/nn;
+							}
+							parts[r].vx = rx*velocity;
+							parts[r].vy = ry*velocity;
 							if (r>i)
 							{
 								// Make sure movement doesn't happen until next frame, to avoid gaps in the beams of photons produced
