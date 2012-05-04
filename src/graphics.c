@@ -791,8 +791,8 @@ int draw_tool_xy(pixel *vid_buf, int x, int y, int b, unsigned pc)
 					if (r < 15) rd = 1;
 					if (g < 15) gd = 1;
 					if (b < 15) bd = 1;
-					rc = max(0,r); gc = max(0,g); bc = max(0,b);
-					rc = min(150,rc); gc = min(200,gc); bc = min(200,bc);
+					rc = fmax(0,r); gc = fmax(0,g); bc = fmax(0,b);
+					rc = fmin(150,rc); gc = fmin(200,gc); bc = fmin(200,bc);
 					vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = rc*256*256+gc*256+bc;
 				}
 			}
@@ -3356,12 +3356,12 @@ void create_decoration(int x, int y, int r, int g, int b, int a, int click, int 
 			}
 		if (num == 0)
 			return;
-		ta = min(255,(int)((float)ta/num+.5));
-		tr = min(255,(int)((float)tr/num+.5));
-		tg = min(255,(int)((float)tg/num+.5));
-		tb = min(255,(int)((float)tb/num+.5));
+		ta = fmin(255,(int)((float)ta/num+.5));
+		tr = fmin(255,(int)((float)tr/num+.5));
+		tg = fmin(255,(int)((float)tg/num+.5));
+		tb = fmin(255,(int)((float)tb/num+.5));
 		if (!parts[rp>>8].dcolour)
-			ta = max(0,ta-3);
+			ta = fmax(0,ta-3);
 		parts[rp>>8].dcolour = ((ta<<24)|(tr<<16)|(tg<<8)|tb);
 	}
 	if (parts[rp>>8].type == PT_ANIM)
