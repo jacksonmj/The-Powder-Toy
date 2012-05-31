@@ -1,3 +1,18 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <element.h>
 
 int update_BOMB(UPDATE_FUNC_ARGS) {
@@ -29,18 +44,6 @@ int update_BOMB(UPDATE_FUNC_ARGS) {
 						int nxi;
 						int nxj;
 						pmap[y][x] = 0;
-						for (nxj=-(rad+1); nxj<=(rad+1); nxj++)
-							for (nxi=-(rad+1); nxi<=(rad+1); nxi++)
-								if ((pow(nxi,2))/(pow((rad+1),2))+(pow(nxj,2))/(pow((rad+1),2))<=1) {
-									nb = create_part(-1, x+nxi, y+nxj, PT_BOMB);
-									if (nb!=-1) {
-										parts[nb].tmp = 1;
-										parts[nb].life = 50;
-										parts[nb].temp = MAX_TEMP;
-										parts[nb].vx = rand()%20-10;
-										parts[nb].vy = rand()%20-10;
-									}
-								}
 						for (nxj=-rad; nxj<=rad; nxj++)
 							for (nxi=-rad; nxi<=rad; nxi++)
 								if ((pow(nxi,2))/(pow(rad,2))+(pow(nxj,2))/(pow(rad,2))<=1)
@@ -54,6 +57,18 @@ int update_BOMB(UPDATE_FUNC_ARGS) {
 											parts[nb].temp = MAX_TEMP;
 										}
 									}
+						for (nxj=-(rad+1); nxj<=(rad+1); nxj++)
+							for (nxi=-(rad+1); nxi<=(rad+1); nxi++)
+								if ((pow(nxi,2))/(pow((rad+1),2))+(pow(nxj,2))/(pow((rad+1),2))<=1) {
+									nb = create_part(-1, x+nxi, y+nxj, PT_BOMB);
+									if (nb!=-1) {
+										parts[nb].tmp = 1;
+										parts[nb].life = 50;
+										parts[nb].temp = MAX_TEMP;
+										parts[nb].vx = rand()%20-10;
+										parts[nb].vy = rand()%20-10;
+									}
+								}
 						//create_parts(x, y, 9, 9, PT_BOMB);
 						//create_parts(x, y, 8, 8, PT_NONE);
 						kill_part(i);

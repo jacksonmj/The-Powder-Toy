@@ -11,7 +11,7 @@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -20,8 +20,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02111-1301  USA
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <defines.h>
@@ -49,7 +48,6 @@
 #include "gravity.h"
 #include <graphics.h>
 #include <powdergraphics.h>
-#include <version.h>
 #include <http.h>
 #include <md5.h>
 #include <update.h>
@@ -153,7 +151,7 @@ static const char *it_msg =
     "\n"
     "Contributors: \bgStanislaw K Skowronek (\brhttp://powder.unaligned.org\bg, \bbirc.unaligned.org #wtf\bg),\n"
     "\bgSimon Robertshaw, Skresanov Savely, cracker64, Catelite, Bryan Hoyle, Nathan Cousins, jacksonmj,\n"
-	"\bgLieuwe Mosch, Anthony Boot, Matthew \"me4502\", MaksProg\n"
+	"\bgLieuwe Mosch, Anthony Boot, Matthew \"me4502\", MaksProg, jacob1\n"
     "\n"
     "\bgTo use online features such as saving, you need to register at: \brhttp://powdertoy.co.uk/Register.html\n"
 	"\n"
@@ -204,6 +202,8 @@ static const char *old_ver_msg = "A new version is available - click here!";
 char new_message_msg[255];
 float mheat = 0.0f;
 
+int saveURIOpen = 0;
+
 int do_open = 0;
 int sys_pause = 0;
 int sys_shortcuts = 1;
@@ -221,6 +221,7 @@ int frameidx = 0;
 //int CGOL = 0;
 //int GSPEED = 1;//causes my .exe to crash..
 int sound_enable = 0;
+int loop_time = 0;
 
 int debug_flags = 0;
 int debug_perf_istart = 1;
@@ -306,6 +307,8 @@ void dump_frame(pixel *src, int w, int h, int pitch)
  *                    STATE MANAGEMENT                     *
  ***********************************************************/
 
+char bframe = 0;
+
 void clear_sim(void)
 {
 	int i, x, y;
@@ -351,6 +354,8 @@ void clear_sim(void)
 			hv[y][x] = 273.15f+22.0f; //Set to room temperature
 		}
 	}
+	if(bframe)
+		draw_bframe();
 }
 
 // stamps library
@@ -657,6 +662,7 @@ int main(int argc, char *argv[])
 	
 	colour_mode = COLOUR_DEFAULT;
 	init_display_modes();
+	TRON_init_graphics();
 
 	sys_pause = 1;
 	parts = calloc(sizeof(particle), NPART);
@@ -754,7 +760,7 @@ int main(int argc, char *argv[])
 	void *http_ver_check, *http_session_check = NULL;
 	char *ver_data=NULL, *check_data=NULL, *tmp;
 	//char console_error[255] = "";
-	int result, i, j, bq, bc = 0, fire_fc=0, do_check=0, do_s_check=0, old_version=0, http_ret=0,http_s_ret=0, major, minor, buildnum, is_beta = 0, old_ver_len, new_message_len=0;
+	int result, i, j, bq, bc = 0, do_check=0, do_s_check=0, old_version=0, http_ret=0,http_s_ret=0, major, minor, buildnum, is_beta = 0, old_ver_len, new_message_len=0;
 #ifdef INTERNAL
 	int vs = 0;
 #endif
@@ -769,6 +775,7 @@ int main(int argc, char *argv[])
 	unsigned int rgbSave = PIXRGB(127,0,0);
 	SDL_AudioSpec fmt;
 	int username_flash = 0, username_flash_t = 1;
+	int saveOpenError = 0;
 #ifdef PTW32_STATIC_LIB
     pthread_win32_process_attach_np();
     pthread_win32_thread_attach_np();
@@ -798,7 +805,6 @@ int main(int argc, char *argv[])
 	parts = calloc(sizeof(particle), NPART);
 	cb_parts = calloc(sizeof(particle), NPART);
 	init_can_move();
-	clear_sim();
 	
 #ifdef LUACONSOLE
 	luacon_open();
@@ -806,17 +812,18 @@ int main(int argc, char *argv[])
 	
 	colour_mode = COLOUR_DEFAULT;
 	init_display_modes();
+	TRON_init_graphics();
 
 	//fbi_img = render_packed_rgb(fbi, FBI_W, FBI_H, FBI_CMP);
 
 	for (i=1; i<argc; i++)
 	{
-		if (!strncmp(argv[i], "ddir", 4) && i+1<argc)
+		if (!strncmp(argv[i], "ddir", 5) && i+1<argc)
 		{
 			chdir(argv[i+1]);
 			i++;
 		}
-		else if (!strncmp(argv[i], "open", 4) && i+1<argc)
+		else if (!strncmp(argv[i], "open", 5) && i+1<argc)
 		{
 			int size;
 			void *file_data;
@@ -831,6 +838,7 @@ int main(int argc, char *argv[])
 					svf_filename[0] = 0;
 					svf_fileopen = 1;
 				} else {
+					saveOpenError = 1;
 					svf_last = NULL;
 					svf_lsize = 0;
 					free(file_data);
@@ -839,10 +847,17 @@ int main(int argc, char *argv[])
 			}
 			i++;
 		}
-
+		else if (!strncmp(argv[i], "ptsave", 7) && i+1<argc)
+		{
+			//Prevent reading of any arguments after ptsave for security
+			i++;
+			argc = i+2;
+			break;
+		}
 	}
 	
 	load_presets();
+	clear_sim();
 
 	for (i=1; i<argc; i++)
 	{
@@ -878,19 +893,68 @@ int main(int argc, char *argv[])
 				SDL_PauseAudio(0);
 			}
 		}
-		else if (!strncmp(argv[i], "scripts", 5))
+		else if (!strncmp(argv[i], "scripts", 8))
 		{
 			file_script = 1;
 		}
-		else if (!strncmp(argv[i], "open", 4) && i+1<argc)
+		else if (!strncmp(argv[i], "open", 5) && i+1<argc)
 		{
 			i++;
 		}
-		else if (!strncmp(argv[i], "ddir", 4) && i+1<argc)
+		else if (!strncmp(argv[i], "ddir", 5) && i+1<argc)
 		{
 			i++;
 		}
-
+		else if (!strncmp(argv[i], "ptsave", 7) && i+1<argc)
+		{
+			int ci = 0, ns = 0, okay = 0;
+			char * tempString = argv[i+1];
+			int tempStringLength = strlen(argv[i+1])-7;
+			int tempSaveID = 0;
+			char tempNumberString[32];
+			puts("Got ptsave");
+			i++;
+			tempNumberString[31] = 0;
+			tempNumberString[0] = 0;
+			if(!strncmp(tempString, "ptsave:", 7) && tempStringLength)
+			{
+				puts("ptsave:// protocol");
+				tempString+=7;
+				while(tempString[ci] && ns<30 && ci<tempStringLength)
+				{
+					if(tempString[ci]>=48 && tempString[ci]<=57)
+					{
+						tempNumberString[ns++] = tempString[ci];
+						tempNumberString[ns] = 0;
+					}
+					else if(tempString[ci]=='#')
+					{
+						okay = 1;
+						break;
+					}
+					else
+					{
+						puts("ptsave: invalid save ID");
+						break;
+					}
+					ci++;
+				}
+				if(!tempString[ci])
+				{
+					okay = 1;
+				}
+				if(okay)
+				{
+					tempSaveID = atoi(tempNumberString);
+				}
+			}
+			if(tempSaveID > 0)
+			{
+				puts("Got ptsave:id");
+				saveURIOpen = tempSaveID;
+			}
+			break;
+		}
 	}
 
 	make_kernel();
@@ -916,6 +980,11 @@ int main(int argc, char *argv[])
 		error_ui(vid_buf, 0, "Unsupported CPU. Try another version.");
 		return 1;
 	}
+	
+	if(saveOpenError)
+	{
+		error_ui(vid_buf, 0, "Unable to open save file.");
+	}
 
 	http_ver_check = http_async_req_start(NULL, "http://" SERVER "/Update.api?Action=CheckVersion", NULL, 0, 0);
 	if (svf_login) {
@@ -937,54 +1006,12 @@ int main(int argc, char *argv[])
 				update_airh();
 		}
 
-#ifdef OGLR
-		part_vbuf = vid_buf;
-#else
-		if(ngrav_enable && display_mode & DISPLAY_WARP)
-		{
-			part_vbuf = part_vbuf_store;
-			memset(vid_buf, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
-		} else {
-			part_vbuf = vid_buf;
-		}
-#endif
-
 		if(gravwl_timeout)
 		{
 			if(gravwl_timeout==1)
 				gravity_mask();
 			gravwl_timeout--;
 		}
-#ifdef OGLR
-		if (display_mode & DISPLAY_PERS)//save background for persistent, then clear
-		{
-			clearScreen(0.01f);
-			memset(part_vbuf, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
-        }
-		else //clear screen every frame
-		{
-            clearScreen(1.0f);
-			memset(part_vbuf, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
-			if (display_mode & DISPLAY_AIR)//air only gets drawn in these modes
-			{
-				draw_air(part_vbuf);
-			}
-		}
-#else
-		if (display_mode & DISPLAY_AIR)//air only gets drawn in these modes
-		{
-			draw_air(part_vbuf);
-		}
-		else if (display_mode & DISPLAY_PERS)//save background for persistent, then clear
-		{
-			memcpy(part_vbuf, pers_bg, (XRES+BARSIZE)*YRES*PIXELSIZE);
-			memset(part_vbuf+((XRES+BARSIZE)*YRES), 0, ((XRES+BARSIZE)*YRES*PIXELSIZE)-((XRES+BARSIZE)*YRES*PIXELSIZE));
-        }
-		else //clear screen every frame
-		{
-			memset(part_vbuf, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
-		}
-#endif
 
 		//Can't be too sure (Limit the cursor size)
 		if (bsx>1180)
@@ -1002,10 +1029,19 @@ int main(int argc, char *argv[])
 		sandcolour_b = sandcolour_r = sandcolour_g = (int)(20.0f*sin((float)sandcolour_frame*(M_PI/180.0f)));
 		sandcolour_frame++;
 		sandcolour_frame%=360;
-		
-		if(ngrav_enable && drawgrav_enable)
-			draw_grav(vid_buf);
-		draw_walls(part_vbuf);
+
+#ifdef OGLR
+		part_vbuf = vid_buf;
+#else
+		if(ngrav_enable && (display_mode & DISPLAY_WARP))
+		{
+			part_vbuf = part_vbuf_store;
+			memset(vid_buf, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
+		} else {
+			part_vbuf = vid_buf;
+		}
+#endif
+		render_before(part_vbuf);
 		
 		if(debug_flags & (DEBUG_PERFORMANCE_CALC|DEBUG_PERFORMANCE_FRAME))
 		{
@@ -1034,8 +1070,9 @@ int main(int argc, char *argv[])
 			#endif
 		}
 		
-		render_parts(part_vbuf); //draw particles
-		draw_other(part_vbuf);
+		render_after(part_vbuf, vid_buf);
+		if(su == WL_GRAV+100)
+			draw_grav_zones(part_vbuf);
 		
 		if(debug_flags & (DEBUG_PERFORMANCE_CALC|DEBUG_PERFORMANCE_FRAME))
 		{
@@ -1053,9 +1090,6 @@ int main(int argc, char *argv[])
 			debug_perf_istart %= DEBUG_PERF_FRAMECOUNT;
 		}
 		
-		if(sl == WL_GRAV+100 || sr == WL_GRAV+100)
-			draw_grav_zones(part_vbuf);
-		
 		gravity_update_async(); //Check for updated velocity maps from gravity thread
 		if (!sys_pause||framerender) //Only update if not paused
 			memset(gravmap, 0, (XRES/CELL)*(YRES/CELL)*sizeof(float)); //Clear the old gravmap
@@ -1064,31 +1098,6 @@ int main(int argc, char *argv[])
 			framerender = 0;
 			sys_pause = 1;
 		}
-
-		if (display_mode & DISPLAY_PERS)
-		{
-			if (!fire_fc)//fire_fc has nothing to do with fire... it is a counter for diminishing persistent view every 3 frames
-			{
-				dim_copy_pers(pers_bg, vid_buf);
-			}
-			else
-			{
-				memcpy(pers_bg, vid_buf, (XRES+BARSIZE)*YRES*PIXELSIZE);
-			}
-			fire_fc = (fire_fc+1) % 3;
-		}
-		
-#ifndef OGLR
-		if (render_mode & FIREMODE)
-			render_fire(part_vbuf);
-#endif
-
-		render_signs(part_vbuf);
-
-#ifndef OGLR
-		if(ngrav_enable && display_mode & DISPLAY_WARP)
-			render_gravlensing(part_vbuf, vid_buf);
-#endif
 
 		memset(vid_buf+((XRES+BARSIZE)*YRES), 0, (PIXELSIZE*(XRES+BARSIZE))*MENUSIZE);//clear menu areas
 		clearrect(vid_buf, XRES-1, 0, BARSIZE+1, YRES);
@@ -1128,6 +1137,7 @@ int main(int argc, char *argv[])
 		{
 			if (!do_s_check && http_async_req_status(http_session_check))
 			{
+				char saveURIOpenString[512];
 				check_data = http_async_req_stop(http_session_check, &http_s_ret, NULL);
 				if (http_ret==200 && check_data)
 				{
@@ -1212,7 +1222,15 @@ int main(int argc, char *argv[])
 					svf_messages = 0;
 				}
 				http_session_check = NULL;
+				if(saveURIOpen)
+				{
+					sprintf(saveURIOpenString, "%d", saveURIOpen);
+					open_ui(vid_buf, saveURIOpenString, NULL);
+					saveURIOpen = 0;
+				}
 			} else {
+				if(saveURIOpen)
+					info_box_overlay(vid_buf, "Waiting for login...");
 				clearrect(vid_buf, XRES-125+BARSIZE/*385*/, YRES+(MENUSIZE-16), 91, 14);
 				drawrect(vid_buf, XRES-125+BARSIZE/*385*/, YRES+(MENUSIZE-16), 91, 14, 255, 255, 255, 255);
 				drawtext(vid_buf, XRES-122+BARSIZE/*388*/, YRES+(MENUSIZE-13), "\x84", 255, 255, 255, 255);
@@ -1230,6 +1248,16 @@ int main(int argc, char *argv[])
 					drawtext(vid_buf, XRES-104+BARSIZE/*406*/, YRES+(MENUSIZE-12), "[checking]", 255, 255, 255, 255);
 			}
 			do_s_check = (do_s_check+1) & 15;
+		}
+		else
+		{
+			char saveURIOpenString[512];
+			if(saveURIOpen)
+			{
+				sprintf(saveURIOpenString, "%d", saveURIOpen);
+				open_ui(vid_buf, saveURIOpenString, NULL);
+				saveURIOpen = 0;
+			}
 		}
 #ifdef LUACONSOLE
 	if(sdl_key){
@@ -1304,6 +1332,10 @@ int main(int argc, char *argv[])
 				if (it > 50)
 					it = 50;
 				save_mode = 1;
+			}
+			if(sdl_key=='e')
+			{
+				element_search_ui(vid_buf, &sl, &sr);
 			}
 			//TODO: Superseded by new display mode switching, need some keyboard shortcuts
 			if (sdl_key=='1')
@@ -1465,9 +1497,8 @@ int main(int argc, char *argv[])
 				}
 				else
 				{
-					rgbSave = decorations_ui(vid_buf,&bsx,&bsy,rgbSave);//decoration_mode = !decoration_mode;
 					decorations_enable = 1;
-					sys_pause=1;
+					rgbSave = decorations_ui(vid_buf,&bsx,&bsy,rgbSave);//decoration_mode = !decoration_mode;
 				}
 			}
 			if (sdl_key=='g')
@@ -1502,8 +1533,13 @@ int main(int argc, char *argv[])
 					for (i=0; i<NPART; i++)
 						if (parts[i].type==PT_SPRK)
 						{
-							parts[i].type = parts[i].ctype;
-							parts[i].life = 0;
+							if (parts[i].ctype >= 0 && parts[i].ctype < PT_NUM)
+							{
+								parts[i].type = parts[i].ctype;
+								parts[i].life = 0;
+							}
+							else
+								kill_part(i);
 						}
 				}
 				else
@@ -1761,25 +1797,25 @@ int main(int argc, char *argv[])
 		}
 
 		bq = bc; // bq is previous mouse state
-		bc = b = SDL_GetMouseState(&x, &y); // b is current mouse state
+		bc = b = mouse_get_state(&x, &y); // b is current mouse state
 
 #ifdef LUACONSOLE
 		if(bc && bq){
-			if(!luacon_mouseevent(x/sdl_scale, y/sdl_scale, bc, LUACON_MPRESS)){
+			if(!luacon_mouseevent(x, y, bc, LUACON_MPRESS)){
 				b = 0;
 			}
 		}
 		else if(bc && !bq){
-			if(!luacon_mouseevent(x/sdl_scale, y/sdl_scale, bc, LUACON_MDOWN)){
+			if(!luacon_mouseevent(x, y, bc, LUACON_MDOWN)){
 				b = 0;
 			}
 		}
 		else if(!bc && bq){
-			if(!luacon_mouseevent(x/sdl_scale, y/sdl_scale, bq, LUACON_MUP)){
+			if(!luacon_mouseevent(x, y, bq, LUACON_MUP)){
 				b = 0;
 			}
 		}
-		luacon_step(x/sdl_scale, y/sdl_scale,sl,sr);
+		luacon_step(x, y,sl,sr);
 #endif
 
 		quickoptions_menu(vid_buf, b, bq, x, y);
@@ -1791,27 +1827,21 @@ int main(int argc, char *argv[])
 
 		for (i=0; i<SC_TOTAL; i++)//check mouse position to see if it is on a menu section
 		{
-			if (!b&&x>=sdl_scale*(XRES-2) && x<sdl_scale*(XRES+BARSIZE-1) &&y>= sdl_scale*((i*16)+YRES+MENUSIZE-16-(SC_TOTAL*16)) && y<sdl_scale*((i*16)+YRES+MENUSIZE-16-(SC_TOTAL*16)+15))
+			if (!b&&x>=(XRES-2) && x<(XRES+BARSIZE-1) &&y>= ((i*16)+YRES+MENUSIZE-16-(SC_TOTAL*16)) && y<((i*16)+YRES+MENUSIZE-16-(SC_TOTAL*16)+15))
 			{
 				active_menu = i;
 			}
 		}
 		menu_ui_v3(vid_buf, active_menu, &sl, &sr, &su, &dae, b, bq, x, y); //draw the elements in the current menu
-		if (zoom_en && x>=sdl_scale*zoom_wx && y>=sdl_scale*zoom_wy //change mouse position while it is in a zoom window
-		        && x<sdl_scale*(zoom_wx+ZFACTOR*ZSIZE)
-		        && y<sdl_scale*(zoom_wy+ZFACTOR*ZSIZE))
-		{
-			x = (((x/sdl_scale-zoom_wx)/ZFACTOR)+zoom_x)*sdl_scale;
-			y = (((y/sdl_scale-zoom_wy)/ZFACTOR)+zoom_y)*sdl_scale;
-		}
-		if (y>0 && y<sdl_scale*YRES && x>0 && x<sdl_scale*XRES)
+		mouse_coords_window_to_sim(&x, &y, x, y);//change mouse position while it is in a zoom window
+		if (y>=0 && y<YRES && x>=0 && x<XRES)
 		{
 			int cr; //cr is particle under mouse, for drawing HUD information
 			char nametext[50];
-			if (photons[y/sdl_scale][x/sdl_scale]) {
-				cr = photons[y/sdl_scale][x/sdl_scale];
+			if (photons[y][x]) {
+				cr = photons[y][x];
 			} else {
-				cr = pmap[y/sdl_scale][x/sdl_scale];
+				cr = pmap[y][x];
 			}
 			if (cr)
 			{
@@ -1856,28 +1886,28 @@ int main(int argc, char *argv[])
 				}
 				if (DEBUG_MODE)
 				{
-					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d, Tmp:%d", nametext, pv[(y/sdl_scale)/CELL][(x/sdl_scale)/CELL], parts[cr>>8].temp-273.15f, parts[cr>>8].life, parts[cr>>8].tmp);
-					sprintf(coordtext, "#%d, X:%d Y:%d", cr>>8, x/sdl_scale, y/sdl_scale);
+					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d, Tmp:%d", nametext, pv[y/CELL][x/CELL], parts[cr>>8].temp-273.15f, parts[cr>>8].life, parts[cr>>8].tmp);
+					sprintf(coordtext, "#%d, X:%d Y:%d", cr>>8, x, y);
 				}
 				else
 				{
 #ifdef BETA
-					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d, Tmp:%d", nametext, pv[(y/sdl_scale)/CELL][(x/sdl_scale)/CELL], parts[cr>>8].temp-273.15f, parts[cr>>8].life, parts[cr>>8].tmp);
+					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d, Tmp:%d", nametext, pv[y/CELL][x/CELL], parts[cr>>8].temp-273.15f, parts[cr>>8].life, parts[cr>>8].tmp);
 #else
-					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C", nametext, pv[(y/sdl_scale)/CELL][(x/sdl_scale)/CELL], parts[cr>>8].temp-273.15f);
+					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C", nametext, pv[y/CELL][x/CELL], parts[cr>>8].temp-273.15f);
 #endif
 				}
 				if ((cr&0xFF)==PT_PHOT) wavelength_gfx = parts[cr>>8].ctype;
 			}
 			else
 			{
-				sprintf(heattext, "Empty, Pressure: %3.2f", pv[(y/sdl_scale)/CELL][(x/sdl_scale)/CELL]);
+				sprintf(heattext, "Empty, Pressure: %3.2f", pv[y/CELL][x/CELL]);
 				if (DEBUG_MODE)
 				{
 					if (ngrav_enable)
-						sprintf(coordtext, "X:%d Y:%d. GX: %.2f GY: %.2f", x/sdl_scale, y/sdl_scale, gravx[(((y/sdl_scale)/CELL)*(XRES/CELL))+((x/sdl_scale)/CELL)], gravy[(((y/sdl_scale)/CELL)*(XRES/CELL))+((x/sdl_scale)/CELL)]);
+						sprintf(coordtext, "X:%d Y:%d. GX: %.2f GY: %.2f", x, y, gravx[((y/CELL)*(XRES/CELL))+(x/CELL)], gravy[((y/CELL)*(XRES/CELL))+(x/CELL)]);
 					else
-						sprintf(coordtext, "X:%d Y:%d", x/sdl_scale, y/sdl_scale);
+						sprintf(coordtext, "X:%d Y:%d", x, y);
 				}
 			}
 		}
@@ -1885,8 +1915,8 @@ int main(int argc, char *argv[])
 
 		mx = x;
 		my = y;
-		if (b && !bq && x>=(XRES-19-new_message_len)*sdl_scale &&
-		        x<=(XRES-14)*sdl_scale && y>=(YRES-37)*sdl_scale && y<=(YRES-24)*sdl_scale && svf_messages)
+		if (b && !bq && x>=(XRES-19-new_message_len) &&
+		        x<=(XRES-14) && y>=(YRES-37) && y<=(YRES-24) && svf_messages)
 		{
 			open_link("http://" SERVER "/Conversations.html");
 		}
@@ -1908,8 +1938,8 @@ int main(int argc, char *argv[])
 			update_flag = 0;
 		}
 
-		if (b && !bq && x>=(XRES-19-old_ver_len)*sdl_scale &&
-		        x<=(XRES-14)*sdl_scale && y>=(YRES-22)*sdl_scale && y<=(YRES-9)*sdl_scale && old_version)
+		if (b && !bq && x>=(XRES-19-old_ver_len) &&
+		        x<=(XRES-14) && y>=(YRES-22) && y<=(YRES-9) && old_version)
 		{
 			tmp = malloc(128);
 #ifdef BETA
@@ -1954,9 +1984,9 @@ int main(int argc, char *argv[])
 				old_version = 0;
 			}
 		}
-		if (y>=sdl_scale*(YRES+(MENUSIZE-20))) //mouse checks for buttons at the bottom, to draw mouseover texts
+		if (y>=(YRES+(MENUSIZE-20))) //mouse checks for buttons at the bottom, to draw mouseover texts
 		{
-			if (x>=189*sdl_scale && x<=202*sdl_scale && svf_login && svf_open && svf_myvote==0)
+			if (x>=189 && x<=202 && svf_login && svf_open && svf_myvote==0)
 			{
 				db = svf_own ? 275 : 272;
 				if (da < 51)
@@ -1974,25 +2004,25 @@ int main(int argc, char *argv[])
 				if (da < 51)
 					da ++;
 			}
-			else if (x>=219*sdl_scale && x<=((XRES+BARSIZE-(510-349))*sdl_scale) && svf_login && svf_open)
+			else if (x>=219 && x<=((XRES+BARSIZE-(510-349))) && svf_login && svf_open)
 			{
 				db = svf_own ? 257 : 256;
 				if (da < 51)
 					da ++;
 			}
-			else if (x>=((XRES+BARSIZE-(510-351))*sdl_scale) && x<((XRES+BARSIZE-(510-366))*sdl_scale))
+			else if (x>=((XRES+BARSIZE-(510-351))) && x<((XRES+BARSIZE-(510-366))))
 			{
 				db = 270;
 				if (da < 51)
 					da ++;
 			}
-			else if (x>=((XRES+BARSIZE-(510-367))*sdl_scale) && x<((XRES+BARSIZE-(510-383))*sdl_scale))
+			else if (x>=((XRES+BARSIZE-(510-367))) && x<((XRES+BARSIZE-(510-383))))
 			{
 				db = 266;
 				if (da < 51)
 					da ++;
 			}
-			else if (x>=37*sdl_scale && x<=187*sdl_scale)
+			else if (x>=37 && x<=187)
 			{
 				if(sdl_mod & (KMOD_LCTRL|KMOD_RCTRL))
 				{
@@ -2003,13 +2033,13 @@ int main(int argc, char *argv[])
 				else if(svf_login)
 				{
 					db = 259;
-					if (svf_open && svf_own && x<=55*sdl_scale)
+					if (svf_open && svf_own && x<=55)
 						db = 258;
 					if (da < 51)
 						da ++;
 				}
 			}
-			else if (x>=((XRES+BARSIZE-(510-385))*sdl_scale) && x<=((XRES+BARSIZE-(510-476))*sdl_scale))
+			else if (x>=((XRES+BARSIZE-(510-385))) && x<=((XRES+BARSIZE-(510-476))))
 			{
 				db = svf_login ? 261 : 260;
 				if (svf_admin)
@@ -2023,7 +2053,7 @@ int main(int argc, char *argv[])
 				if (da < 51)
 					da ++;
 			}
-			else if (x>=sdl_scale && x<=17*sdl_scale)
+			else if (x>=1 && x<=17)
 			{
 				if(sdl_mod & (KMOD_LCTRL|KMOD_RCTRL))
 					db = 276;
@@ -2032,19 +2062,19 @@ int main(int argc, char *argv[])
 				if (da < 51)
 					da ++;
 			}
-			else if (x>=((XRES+BARSIZE-(510-494))*sdl_scale) && x<=((XRES+BARSIZE-(510-509))*sdl_scale))
+			else if (x>=((XRES+BARSIZE-(510-494))) && x<=((XRES+BARSIZE-(510-509))))
 			{
 				db = sys_pause ? 264 : 263;
 				if (da < 51)
 					da ++;
 			}
-			else if (x>=((XRES+BARSIZE-(510-476))*sdl_scale) && x<=((XRES+BARSIZE-(510-491))*sdl_scale))
+			else if (x>=((XRES+BARSIZE-(510-476))) && x<=((XRES+BARSIZE-(510-491))))
 			{
 				db = 267;
 				if (da < 51)
 					da ++;
 			}
-			else if (x>=19*sdl_scale && x<=35*sdl_scale && svf_open)
+			else if (x>=19 && x<=35 && svf_open)
 			{
 				db = 265;
 				if (da < 51)
@@ -2067,8 +2097,8 @@ int main(int argc, char *argv[])
 
 		if (load_mode)
 		{
-			load_x = CELL*((mx/sdl_scale-load_w/2+CELL/2)/CELL);
-			load_y = CELL*((my/sdl_scale-load_h/2+CELL/2)/CELL);
+			load_x = CELL*((mx-load_w/2+CELL/2)/CELL);
+			load_y = CELL*((my-load_h/2+CELL/2)/CELL);
 			if (load_x+load_w>XRES) load_x=XRES-load_w;
 			if (load_y+load_h>YRES) load_y=YRES-load_h;
 			if (load_x<0) load_x=0;
@@ -2089,8 +2119,8 @@ int main(int argc, char *argv[])
 		}
 		else if (save_mode==1)//getting the area you are selecting
 		{
-			save_x = mx/sdl_scale;
-			save_y = my/sdl_scale;
+			save_x = mx;
+			save_y = my;
 			if (save_x >= XRES) save_x = XRES-1;
 			if (save_y >= YRES) save_y = YRES-1;
 			save_w = 1;
@@ -2107,8 +2137,8 @@ int main(int argc, char *argv[])
 		}
 		else if (save_mode==2)
 		{
-			save_w = mx/sdl_scale + 1 - save_x;
-			save_h = my/sdl_scale + 1 - save_y;
+			save_w = mx + 1 - save_x;
+			save_h = my + 1 - save_y;
 			if (save_w+save_x>XRES) save_w = XRES-save_x;
 			if (save_h+save_y>YRES) save_h = YRES-save_y;
 			if (save_w<1) save_w = 1;
@@ -2139,8 +2169,6 @@ int main(int argc, char *argv[])
 		}
 		else if (sdl_zoom_trig && zoom_en<2)
 		{
-			x /= sdl_scale;
-			y /= sdl_scale;
 			x -= ZSIZE/2;
 			y -= ZSIZE/2;
 			if (x<0) x=0;
@@ -2162,8 +2190,6 @@ int main(int argc, char *argv[])
 		{
 			if (it > 50)
 				it = 50;
-			x /= sdl_scale;
-			y /= sdl_scale;
 			if (y>=YRES+(MENUSIZE-20))//check if mouse is on menu buttons
 			{
 				if (!lb)//mouse is NOT held down, so it is a first click
@@ -2245,7 +2271,7 @@ int main(int argc, char *argv[])
 							else
 								execute_save(vid_buf);
 							while (!sdl_poll())
-								if (!SDL_GetMouseState(&x, &y))
+								if (!mouse_get_state(&x, &y))
 									break;
 							b = bq = 0;
 						}
@@ -2265,7 +2291,7 @@ int main(int argc, char *argv[])
 					}
 					if (x>=(XRES+BARSIZE-(510-476)) && x<=(XRES+BARSIZE-(510-491)) && !bq)
 					{
-						render_ui(vid_buf, XRES+BARSIZE-(510-491), YRES-2, 3);
+						render_ui(vid_buf, XRES+BARSIZE-(510-491)+1, YRES+22, 3);
 					}
 					if (x>=(XRES+BARSIZE-(510-494)) && x<=(XRES+BARSIZE-(510-509)) && !bq)
 						sys_pause = !sys_pause;
@@ -2303,7 +2329,7 @@ int main(int argc, char *argv[])
 							}
 				}
 
-				if (c==WL_SIGN+100)
+				if (c==WL_SIGN+100 || MSIGN!=-1) // if sign tool is selected or a sign is being moved
 				{
 					if (!bq)
 						add_sign_ui(vid_buf, x, y);
@@ -2475,8 +2501,6 @@ int main(int argc, char *argv[])
 		{
 			if (lb && lm) //lm is box/line tool
 			{
-				x /= sdl_scale;
-				y /= sdl_scale;
 				c = (lb&1) ? sl : sr;
 				su = c;
 				if (lm == 1)//line
@@ -2506,9 +2530,9 @@ int main(int argc, char *argv[])
 
 		if (zoom_en!=1 && !load_mode && !save_mode)//draw normal cursor
 		{
-			render_cursor(vid_buf, mx/sdl_scale, my/sdl_scale, su, bsx, bsy);
-			mousex = mx/sdl_scale;
-			mousey = my/sdl_scale;
+			render_cursor(vid_buf, mx, my, su, bsx, bsy);
+			mousex = mx;
+			mousey = my;
 		}
 #ifdef OGLR
 		draw_parts_fbo();
@@ -2655,7 +2679,7 @@ int main(int argc, char *argv[])
 			if (REPLACE_MODE)
 				strappend(uitext, " [REPLACE MODE]");
 			if (sdl_mod&(KMOD_CAPS))
-				strappend(uitext, " [CAP LOCKS]");
+				strappend(uitext, " [CAPS LOCK]");
 			if (GRID_MODE)
 			{
 				char gridtext[15];
@@ -2731,8 +2755,6 @@ int main(int argc, char *argv[])
 				break;
 			}
 			free(console);
-			if (!console_mode)
-				hud_enable = 1;
 #else
 			char *console;
 			sys_pause = 1;
@@ -2745,12 +2767,9 @@ int main(int argc, char *argv[])
 				break;
 			}
 			free(console);
-			if (!console_mode)
-				hud_enable = 1;
 #endif
 		}
 
-		//execute python step hook
 		sdl_blit(0, 0, XRES+BARSIZE, YRES+MENUSIZE, vid_buf, XRES+BARSIZE);
 
 		//Setting an element for the stick man

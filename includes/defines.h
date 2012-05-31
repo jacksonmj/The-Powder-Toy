@@ -1,3 +1,19 @@
+/**
+ * Powder Toy - Main source
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #ifndef DEFINE_H
 #define DEFINE_H
 
@@ -8,9 +24,10 @@
 #endif
  
 //VersionInfoStart
-#define SAVE_VERSION 74
-#define MINOR_VERSION 1
-#define BUILD_NUM 152
+#define SAVE_VERSION 79
+#define MINOR_VERSION 4
+#define BETA
+#define BUILD_NUM 169
 //VersionInfoEnd
 
 #define IDENT_VERSION "G" //Change this if you're not Simon! It should be a single letter
@@ -88,7 +105,7 @@ extern unsigned char ZSIZE;
 
 #define STAMP_MAX 240
 
-//#define SAVE_OPS
+#define SAVE_OPS
 //#define REALISTIC
 
 #define NGOL 25
@@ -144,6 +161,8 @@ typedef unsigned int pixel;
 
 typedef unsigned char uint8;
 
+extern int saveURIOpen;
+
 extern int amd;
 
 extern int FPSB;
@@ -167,17 +186,11 @@ extern int hud_enable;
 extern int pretty_powder;
 extern int drawgrav_enable;
 extern int ngrav_enable;
+extern char bframe;
 int limitFPS;
 int water_equal_test;
 extern int quickoptions_tooltip_fade;
-
-extern int debug_flags;
-#define DEBUG_PERF_FRAMECOUNT 256
-extern int debug_perf_istart;
-extern int debug_perf_iend;
-extern long debug_perf_frametime[DEBUG_PERF_FRAMECOUNT];
-extern long debug_perf_partitime[DEBUG_PERF_FRAMECOUNT];
-extern long debug_perf_time;
+extern int loop_time;
 
 extern int debug_flags;
 #define DEBUG_PERF_FRAMECOUNT 256

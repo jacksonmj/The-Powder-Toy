@@ -1,3 +1,18 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <element.h>
 
 int update_GPMP(UPDATE_FUNC_ARGS) {
@@ -12,8 +27,6 @@ int update_GPMP(UPDATE_FUNC_ARGS) {
 			parts[i].temp = -256.0+273.15;
 
 		gravmap[(y/CELL)*(XRES/CELL)+(x/CELL)] = 0.2f*(parts[i].temp-273.15);
-		if (y+CELL<YRES && pv[y/CELL+1][x/CELL]<(parts[i].temp-273.15))
-			gravmap[(y/CELL+1)*(XRES/CELL)+(x/CELL)] += 0.1f*((parts[i].temp-273.15)-gravmap[(y/CELL+1)*(XRES/CELL)+(x/CELL)]);
 		for (rx=-2; rx<3; rx++)
 			for (ry=-2; ry<3; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))

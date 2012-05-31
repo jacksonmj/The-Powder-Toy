@@ -1,3 +1,19 @@
+/**
+ * Powder Toy - particle simulation (header)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #ifndef POWDER_H
 #define POWDER_H
 
@@ -201,6 +217,9 @@
 #define PT_BANG	139
 #define PT_IGNT 140
 #define PT_BOYL 141
+#define PT_GEL 142
+#define PT_TRON 143
+#define PT_TTAN	144
 
 #define OLD_PT_WIND 147
 #define PT_H2   148
@@ -234,7 +253,7 @@
 #define TYPE_PART			0x00001 //1 Powders
 #define TYPE_LIQUID			0x00002 //2 Liquids
 #define TYPE_SOLID			0x00004 //4 Solids
-#define TYPE_GAS			0x00008 //8 Gasses (Includes plasma)
+#define TYPE_GAS			0x00008 //8 Gases (Includes plasma)
 #define TYPE_ENERGY			0x00010 //16 Energy (Thunder, Light, Neutrons etc.)
 #define PROP_CONDUCTS		0x00020 //32 Conducts electricity
 #define PROP_BLACK			0x00040 //64 Absorbs Photons (not currently implemented or used, a photwl attribute might be better)
@@ -247,11 +266,13 @@
 #define PROP_RADIOACTIVE	0x02000 //8192 Radioactive
 #define PROP_LIFE_DEC		0x04000 //2^14 Life decreases by one every frame if > zero
 #define PROP_LIFE_KILL		0x08000 //2^15 Kill when life value is <= zero
-#define PROP_LIFE_KILL_DEC	0x10000 //2^16 Kill when life value is decremented to <= zero
+#define PROP_LIFE_KILL_DEC	0x10000 //2^16 Kill when life value is decremented to<= zero
 #define PROP_SPARKSETTLE	0x20000	//2^17 Allow Sparks/Embers to settle
+#define PROP_NOAMBHEAT      0x40000 //2^18 Don't transfer or receive heat from ambient heat.
 
 #define FLAG_STAGNANT	1
 #define FLAG_SKIPMOVE	0x2 // skip movement for one frame, only implemented for PHOT
+#define FLAG_MOVABLE	0x4 // if can move
 
 #define GRAPHICS_FUNC_ARGS particle *cpart, int nx, int ny, int *pixel_mode, int* cola, int *colr, int *colg, int *colb, int *firea, int *firer, int *fireg, int *fireb
 #define GRAPHICS_FUNC_SUBCALL_ARGS cpart, nx, ny, pixel_mode, cola, colr, colg, colb, firea, firer, fireg, fireb
@@ -262,6 +283,9 @@ struct particle
 	int type;
 	int life, ctype;
 	float x, y, vx, vy;
+#ifdef OGLR
+	float lastX, lastY;
+#endif
 	float temp;
 	float pavg[2];
 	int flags;
@@ -271,6 +295,7 @@ struct particle
 };
 typedef struct particle particle;
 
+int graphics_DEFAULT(GRAPHICS_FUNC_ARGS);
 int graphics_FIRE(GRAPHICS_FUNC_ARGS);
 int graphics_SMKE(GRAPHICS_FUNC_ARGS);
 int graphics_PLSM(GRAPHICS_FUNC_ARGS);
@@ -322,6 +347,10 @@ int graphics_ELEC(GRAPHICS_FUNC_ARGS);
 int graphics_WIRE(GRAPHICS_FUNC_ARGS);
 int graphics_ACEL(GRAPHICS_FUNC_ARGS);
 int graphics_DCEL(GRAPHICS_FUNC_ARGS);
+int graphics_GEL(GRAPHICS_FUNC_ARGS);
+int graphics_TRON(GRAPHICS_FUNC_ARGS);
+
+void TRON_init_graphics();
 
 #define UPDATE_FUNC_ARGS int i, int x, int y, int surround_space, int nt
 // to call another update function with same arguments:
@@ -362,6 +391,7 @@ int update_FSEP(UPDATE_FUNC_ARGS);
 int update_FUSE(UPDATE_FUNC_ARGS);
 int update_FIRW(UPDATE_FUNC_ARGS);
 int update_FWRK(UPDATE_FUNC_ARGS);
+int update_GEL(UPDATE_FUNC_ARGS);
 int update_GLAS(UPDATE_FUNC_ARGS);
 int update_GLOW(UPDATE_FUNC_ARGS);
 int update_GOO(UPDATE_FUNC_ARGS);
@@ -437,6 +467,8 @@ int update_BANG(UPDATE_FUNC_ARGS);
 int update_IGNT(UPDATE_FUNC_ARGS);
 int update_FRAY(UPDATE_FUNC_ARGS);
 int update_REPL(UPDATE_FUNC_ARGS);
+int update_TRON(UPDATE_FUNC_ARGS);
+int update_TTAN(UPDATE_FUNC_ARGS);
 
 int update_MISC(UPDATE_FUNC_ARGS);
 int update_legacy_PYRO(UPDATE_FUNC_ARGS);
@@ -696,17 +728,17 @@ static wall_type wtypes[] =
 	{PIXPACK(0x808080), PIXPACK(0x000000), 0, "Erases walls."},
 	{PIXPACK(0x808080), PIXPACK(0x000000), 3, "Wall. Indestructible. Blocks everything."},
 	{PIXPACK(0x3C3C3C), PIXPACK(0x000000), 1, "Wall. Indestructible. Blocks particles, allows air"},
-	{PIXPACK(0x575757), PIXPACK(0x000000), 1, "Wall. Indestructible. Blocks liquids and gasses, allows powders"},
+	{PIXPACK(0x575757), PIXPACK(0x000000), 1, "Wall. Indestructible. Blocks liquids and gases, allows powders"},
 	{PIXPACK(0xFFFF22), PIXPACK(0x101010), 2, "Conductor, allows particles, conducts electricity"},
 	{PIXPACK(0x242424), PIXPACK(0x101010), 0, "E-Hole, absorbs particles, release them when powered"},
 	{PIXPACK(0xFFFFFF), PIXPACK(0x000000), -1, "Air, creates airflow and pressure"},
-	{PIXPACK(0xFFBB00), PIXPACK(0x000000), -1, "Heats the targetted element."},
-	{PIXPACK(0x00BBFF), PIXPACK(0x000000), -1, "Cools the targetted element."},
+	{PIXPACK(0xFFBB00), PIXPACK(0x000000), -1, "Heats the targeted element."},
+	{PIXPACK(0x00BBFF), PIXPACK(0x000000), -1, "Cools the targeted element."},
 	{PIXPACK(0x303030), PIXPACK(0x000000), -1, "Vacuum, reduces air pressure."},
-	{PIXPACK(0x579777), PIXPACK(0x000000), 1, "Wall. Indestructible. Blocks liquids and solids, allows gasses"},
+	{PIXPACK(0x579777), PIXPACK(0x000000), 1, "Wall. Indestructible. Blocks liquids and solids, allows gases"},
 	{PIXPACK(0x000000), PIXPACK(0x000000), -1, "Drag tool"},
 	{PIXPACK(0xFFEE00), PIXPACK(0xAA9900), 4, "Gravity wall"},
-	{PIXPACK(0x0000BB), PIXPACK(0x000000), -1, "Postive gravity tool."},
+	{PIXPACK(0x0000BB), PIXPACK(0x000000), -1, "Positive gravity tool."},
 	{PIXPACK(0x000099), PIXPACK(0x000000), -1, "Negative gravity tool."},
 	{PIXPACK(0xFFAA00), PIXPACK(0xAA5500), 4, "Energy wall, allows only energy type particles to pass"},
 	{PIXPACK(0xFFAA00), PIXPACK(0xAA5500), -1, "Property edit tool"},

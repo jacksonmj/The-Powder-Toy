@@ -1,3 +1,18 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <element.h>
 
 int update_STOR(UPDATE_FUNC_ARGS) {
@@ -15,7 +30,7 @@ int update_STOR(UPDATE_FUNC_ARGS) {
 				{
 					parts[i].tmp = parts[r>>8].type;
 					parts[i].temp = parts[r>>8].temp;
-					parts[i].flags = parts[r>>8].life;
+					parts[i].tmp2 = parts[r>>8].life;
 					parts[i].pavg[0] = parts[r>>8].tmp;
 					parts[i].pavg[1] = parts[r>>8].ctype;
 					kill_part(r>>8);
@@ -28,7 +43,7 @@ int update_STOR(UPDATE_FUNC_ARGS) {
 							if (np!=-1)
 							{
 								parts[np].temp = parts[i].temp;
-								parts[np].life = parts[i].flags;
+								parts[np].life = parts[i].tmp2;
 								parts[np].tmp = parts[i].pavg[0];
 								parts[np].ctype = parts[i].pavg[1];
 								parts[i].tmp = 0;

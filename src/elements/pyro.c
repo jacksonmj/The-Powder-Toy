@@ -1,3 +1,18 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <element.h>
 
 int update_PYRO(UPDATE_FUNC_ARGS) {
@@ -46,7 +61,7 @@ int update_PYRO(UPDATE_FUNC_ARGS) {
 					(t!=PT_SPRK || (rt!=PT_RBDM && rt!=PT_LRBD && rt!=PT_INSL)) &&
 					(t!=PT_PHOT || rt!=PT_INSL) &&
 				    (rt!=PT_SPNG || parts[r>>8].life==0) &&
-					(rt!=PT_H2 || (parts[r>>8].temp < 2273.15 && pv[y/CELL][x/CELL] < 50.0f)) &&
+					(rt!=PT_H2 || parts[r>>8].temp < 2273.15) &&
 					ptypes[rt].flammable && (ptypes[rt].flammable + (int)(pv[(y+ry)/CELL][(x+rx)/CELL]*10.0f))>(rand()%1000))
 				{
 					part_change_type(r>>8,x+rx,y+ry,PT_FIRE);

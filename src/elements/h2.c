@@ -1,3 +1,18 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <element.h>
 
 int update_H2(UPDATE_FUNC_ARGS)
@@ -20,7 +35,7 @@ int update_H2(UPDATE_FUNC_ARGS)
 				}
 				if (parts[r>>8].temp > 2273.15)// && pv[y/CELL][x/CELL] > 50.0f)
 					continue;
-				if (parts[i].tmp != 1)
+				if (parts[i].temp < 2273.15)
 				{
 					if (rt==PT_FIRE)
 					{
@@ -39,20 +54,18 @@ int update_H2(UPDATE_FUNC_ARGS)
 			}
 	if (parts[i].temp > 2273.15 && pv[y/CELL][x/CELL] > 50.0f)
 	{
-		parts[i].tmp = 1;
 		if (rand()%5 < 1)
 		{
 			int j;
 			float temp = parts[i].temp;
 			part_change_type(i,x,y,PT_PLSM);
 			parts[i].life = rand()%150+50;
-			create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_NEUT);
-			create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_ELEC);
+			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_NEUT); if (j != -1) parts[j].temp = temp;
+			if (!(rand()%10)) { j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_ELEC); if (j != -1) parts[j].temp = temp; }
 			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_PHOT);
 			if (j != -1) { parts[j].ctype = 0xFFFF00; parts[j].temp = temp; }
 
-			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_NBLE);
-			if (j != -1) { parts[j].tmp = 1; parts[j].temp = temp; }
+			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_NBLE); if (j != -1) parts[j].temp = temp;
 
 			if (rand()%2)
 			{
@@ -60,7 +73,7 @@ int update_H2(UPDATE_FUNC_ARGS)
 				if (j != -1) { parts[j].tmp = 1; parts[j].temp = temp; }
 			}
 
-			parts[i].temp += 6000;
+			parts[i].temp += 750+rand()%500;
 			pv[y/CELL][x/CELL] += 30;
 		}
 	}

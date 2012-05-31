@@ -1,3 +1,20 @@
+/**
+ * Powder Toy - simple console
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <powder.h>
 #include <console.h>
 #include <math.h>
@@ -340,7 +357,7 @@ int process_command_old(pixel *vid_buf, char *console, char *console_error)
 						}
 					}
 				}
-				if (strcmp(console3, "type")==0)
+				else if (strcmp(console3, "type")==0)
 				{
 					if (strcmp(console4, "all")==0)
 					{
@@ -369,7 +386,7 @@ int process_command_old(pixel *vid_buf, char *console, char *console_error)
 						}
 					}
 				}
-				if (strcmp(console3, "temp")==0)
+				else if (strcmp(console3, "temp")==0)
 				{
 					if (strcmp(console4, "all")==0)
 					{
@@ -398,7 +415,7 @@ int process_command_old(pixel *vid_buf, char *console, char *console_error)
 						}
 					}
 				}
-				if (strcmp(console3, "tmp")==0)
+				else if (strcmp(console3, "tmp")==0)
 				{
 					if (strcmp(console4, "all")==0)
 					{
@@ -427,7 +444,36 @@ int process_command_old(pixel *vid_buf, char *console, char *console_error)
 						}
 					}
 				}
-				if (strcmp(console3, "x")==0)
+				else if (strcmp(console3, "tmp2")==0)
+				{
+					if (strcmp(console4, "all")==0)
+					{
+						j = atoi(console5);
+						for (i=0; i<NPART; i++)
+						{
+							if (parts[i].type)
+								parts[i].tmp2 = j;
+						}
+					}
+					else if (console_parse_type(console4, &j, console_error))
+					{
+						k = atoi(console5);
+						for (i=0; i<NPART; i++)
+						{
+							if (parts[i].type == j)
+								parts[i].tmp2 = k;
+						}
+					}
+					else
+					{
+						if (console_parse_partref(console4, &i, console_error))
+						{
+							j = atoi(console5);
+							parts[i].tmp2 = j;
+						}
+					}
+				}
+				else if (strcmp(console3, "x")==0)
 				{
 					if (strcmp(console4, "all")==0)
 					{
@@ -456,7 +502,7 @@ int process_command_old(pixel *vid_buf, char *console, char *console_error)
 						}
 					}
 				}
-				if (strcmp(console3, "y")==0)
+				else if (strcmp(console3, "y")==0)
 				{
 					if (strcmp(console4, "all")==0)
 					{
@@ -485,7 +531,7 @@ int process_command_old(pixel *vid_buf, char *console, char *console_error)
 						}
 					}
 				}
-				if (strcmp(console3, "ctype")==0)
+				else if (strcmp(console3, "ctype")==0)
 				{
 					if (strcmp(console4, "all")==0)
 					{
@@ -514,7 +560,7 @@ int process_command_old(pixel *vid_buf, char *console, char *console_error)
 						}
 					}
 				}
-				if (strcmp(console3, "vx")==0)
+				else if (strcmp(console3, "vx")==0)
 				{
 					if (strcmp(console4, "all")==0)
 					{
@@ -543,7 +589,7 @@ int process_command_old(pixel *vid_buf, char *console, char *console_error)
 						}
 					}
 				}
-				if (strcmp(console3, "vy")==0)
+				else if (strcmp(console3, "vy")==0)
 				{
 					if (strcmp(console4, "all")==0)
 					{
@@ -572,6 +618,8 @@ int process_command_old(pixel *vid_buf, char *console, char *console_error)
 						}
 					}
 				}
+				else
+					strcpy(console_error, "Invalid property");
 			}
 			else
 				strcpy(console_error, "Invalid Command");

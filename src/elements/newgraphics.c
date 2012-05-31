@@ -1,3 +1,18 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <element.h>
 #include "hmap.h"
 
@@ -107,7 +122,7 @@ int graphics_DUST(GRAPHICS_FUNC_ARGS)
 	if(cpart->life >= 1)
 	{
 		*firea = 120;
-		*firer = *colr = cpart->flags;
+		*firer = *colr = cpart->tmp2;
 		*fireg = *colg = cpart->tmp;
 		*fireb = *colb = cpart->ctype;
 		if (decorations_enable && cpart->dcolour)
@@ -166,6 +181,14 @@ int graphics_WIFI(GRAPHICS_FUNC_ARGS)
 	*colg = sin(frequency*q + 2) * 127 + 128;
 	*colb = sin(frequency*q + 4) * 127 + 128;
 	*pixel_mode |= EFFECT_LINES;
+	return 0;
+}
+int graphics_GEL(GRAPHICS_FUNC_ARGS)
+{
+	int q = cpart->tmp;
+	*colr = q*(32-255)/120+255;
+	*colg = q*(48-186)/120+186;
+	*colb = q*208/120;
 	return 0;
 }
 int graphics_PRTI(GRAPHICS_FUNC_ARGS)

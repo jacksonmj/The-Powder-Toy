@@ -1,3 +1,18 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <element.h>
 
 
@@ -25,6 +40,10 @@ int create_n_parts(int n, int x, int y, float vx, float vy, float temp, int t)//
 
 		parts[i].x = (float)x;
 		parts[i].y = (float)y;
+#ifdef OGLR
+		parts[i].lastX = (float)x;
+		parts[i].lastY = (float)y;
+#endif
 		parts[i].type = t;
 		parts[i].life = rand()%480+480;
 		parts[i].vx = r*cosf(a);
@@ -123,6 +142,11 @@ int update_NEUT(UPDATE_FUNC_ARGS) {
 					parts[r>>8].ctype = PT_DUST;
 				else if ((r&0xFF)==PT_ACID && 5>(rand()%100))
 					create_part(r>>8, x+rx, y+ry, PT_ISOZ);
+				else if ((r&0xFF)==PT_TTAN && 5>(rand()%100))
+				{
+					kill_part(i);
+					return 1;
+				}
 				/*if(parts[r>>8].type>1 && parts[r>>8].type!=PT_NEUT && parts[r>>8].type-1!=PT_NEUT && parts[r>>8].type-1!=PT_STKM &&
 				  (ptypes[parts[r>>8].type-1].menusection==SC_LIQUID||
 				  ptypes[parts[r>>8].type-1].menusection==SC_EXPLOSIVE||
@@ -140,6 +164,7 @@ int graphics_NEUT(GRAPHICS_FUNC_ARGS)
 	*fireg = 80;
 	*fireb = 120;
 
-	*pixel_mode |= FIRE_ADD;
+	*pixel_mode &= ~PMODE_FLAT;
+	*pixel_mode |= FIRE_ADD | PMODE_ADD;
 	return 1;
 }

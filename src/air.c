@@ -1,3 +1,20 @@
+/**
+ * Powder Toy - air simulation
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <math.h>
 #include <air.h>
 #include <powder.h>
@@ -40,11 +57,7 @@ void update_airh(void)
 {
 	int x, y, i, j;
 	float odh, dh, dx, dy, f, tx, ty;
-	for (y=0; y<YRES/CELL; y++)
-		for (x=0; x<XRES/CELL; x++)
-		{
-			bmap_blockairh[y][x] = (bmap[y][x]==WL_WALL || bmap[y][x]==WL_WALLELEC || bmap[y][x]==WL_GRAV || (bmap[y][x]==WL_EWALL && !emap[y][x]));
-		}
+	
 	for (i=0; i<YRES/CELL; i++) //reduces pressure/velocity on the edges every frame
 	{
 		hv[i][0] = 295.15f;
@@ -121,12 +134,7 @@ void update_air(void)
 {
 	int x, y, i, j;
 	float dp, dx, dy, f, tx, ty;
-
-	for (y=0; y<YRES/CELL; y++)
-		for (x=0; x<XRES/CELL; x++)
-		{
-			bmap_blockair[y][x] = (bmap[y][x]==WL_WALL || bmap[y][x]==WL_WALLELEC || (bmap[y][x]==WL_EWALL && !emap[y][x]));
-		}
+	
 	if (airMode != 4) { //airMode 4 is no air/pressure update
 
 		for (i=0; i<YRES/CELL; i++) //reduces pressure/velocity on the edges every frame

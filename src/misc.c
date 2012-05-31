@@ -1,3 +1,20 @@
+/**
+ * Powder Toy - miscellaneous functions
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -106,6 +123,36 @@ void clean_text(char *text, int vwidth)
 	}
 }
 
+void draw_bframe()
+{
+	int i;
+	for(i=0; i<(XRES/CELL); i++)
+	{
+		bmap[0][i]=WL_WALL;
+		bmap[YRES/CELL-1][i]=WL_WALL;
+	}
+	for(i=1; i<((YRES/CELL)-1); i++)
+	{
+		bmap[i][0]=WL_WALL;
+		bmap[i][XRES/CELL-1]=WL_WALL;
+	}
+}
+
+void erase_bframe()
+{
+	int i;
+	for(i=0; i<(XRES/CELL); i++)
+	{
+		bmap[0][i]=0;
+		bmap[YRES/CELL-1][i]=0;
+	}
+	for(i=1; i<((YRES/CELL)-1); i++)
+	{
+		bmap[i][0]=0;
+		bmap[i][XRES/CELL-1]=0;
+	}
+}
+
 void save_presets(int do_update)
 {
 	char * outputdata;
@@ -157,6 +204,7 @@ void save_presets(int do_update)
 	//General settings
 	cJSON_AddStringToObject(root, "proxy", http_proxy_string);
 	cJSON_AddNumberToObject(root, "scale", sdl_scale);
+	cJSON_AddNumberToObject(root, "bframe", bframe);
 	
 	outputdata = cJSON_Print(root);
 	cJSON_Delete(root);
@@ -295,6 +343,7 @@ void load_presets(void)
 		if((tmpobj = cJSON_GetObjectItem(root, "proxy")) && tmpobj->type == cJSON_String) strncpy(http_proxy_string, tmpobj->valuestring, 255); else http_proxy_string[0] = 0;
 		//TODO: Translate old cmode value into new *_mode values
 		if(tmpobj = cJSON_GetObjectItem(root, "scale")) sdl_scale = tmpobj->valueint;
+		if(tmpobj = cJSON_GetObjectItem(root, "bframe")) bframe = tmpobj->valueint;
 		
 		cJSON_Delete(root);
 		free(prefdata);
@@ -594,6 +643,7 @@ void clipboard_push_text(char * text)
 char * clipboard_pull_text()
 {
 #ifdef MACOSX
+	printf("Not implemented: get text from clipboard\n");
 #elif defined WIN32
 	if (OpenClipboard(NULL))
 	{
@@ -611,10 +661,11 @@ char * clipboard_pull_text()
 		}
 	}
 #elif (defined(LIN32) || defined(LIN64)) && defined(SDL_VIDEO_DRIVER_X11)
+	printf("Not implemented: get text from clipboard\n");
 #else
 	printf("Not implemented: get text from clipboard\n");
-	return "";
 #endif
+	return "";
 }
 
 int register_extension()
@@ -626,6 +677,7 @@ int register_extension()
 	char *currentfilename = exe_name();
 	char *iconname = NULL;
 	char *opencommand = NULL;
+	char *protocolcommand = NULL;
 	//char AppDataPath[MAX_PATH];
 	char *AppDataPath = NULL;
 	iconname = malloc(strlen(currentfilename)+6);
@@ -644,6 +696,7 @@ int register_extension()
 	//TODO: Implement
 	
 	opencommand = malloc(strlen(currentfilename)+53+strlen(AppDataPath));
+	protocolcommand = malloc(strlen(currentfilename)+55+strlen(AppDataPath));
 	/*if((strlen(AppDataPath)+strlen(APPDATA_SUBDIR "\\Powder Toy"))<MAX_PATH)
 	{
 		strappend(AppDataPath, APPDATA_SUBDIR);
@@ -655,7 +708,57 @@ int register_extension()
 		goto finalise;
 	}*/
 	sprintf(opencommand, "\"%s\" open \"%%1\" ddir \"%s\"", currentfilename, AppDataPath);
+	sprintf(protocolcommand, "\"%s\" ddir \"%s\" ptsave \"%%1\"", currentfilename, AppDataPath);
 
+	//Create protocol entry
+	rresult = RegCreateKeyEx(HKEY_CURRENT_USER, "Software\\Classes\\ptsave", 0, 0, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &newkey, NULL);
+	if (rresult != ERROR_SUCCESS) {
+		returnval = 0;
+		goto finalise;
+	}
+	rresult = RegSetValueEx(newkey, 0, 0, REG_SZ, (LPBYTE)"Powder Toy Save", strlen("Powder Toy Save")+1);
+	if (rresult != ERROR_SUCCESS) {
+		RegCloseKey(newkey);
+		returnval = 0;
+		goto finalise;
+	}
+	rresult = RegSetValueEx(newkey, (LPBYTE)"URL Protocol", 0, REG_SZ, (LPBYTE)"", strlen("")+1);
+	if (rresult != ERROR_SUCCESS) {
+		RegCloseKey(newkey);
+		returnval = 0;
+		goto finalise;
+	}
+	RegCloseKey(newkey);
+	
+	
+	//Set Protocol DefaultIcon
+	rresult = RegCreateKeyEx(HKEY_CURRENT_USER, "Software\\Classes\\ptsave\\DefaultIcon", 0, 0, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &newkey, NULL);
+	if (rresult != ERROR_SUCCESS) {
+		returnval = 0;
+		goto finalise;
+	}
+	rresult = RegSetValueEx(newkey, 0, 0, REG_SZ, (LPBYTE)iconname, strlen(iconname)+1);
+	if (rresult != ERROR_SUCCESS) {
+		RegCloseKey(newkey);
+		returnval = 0;
+		goto finalise;
+	}
+	RegCloseKey(newkey);	
+	
+	//Set Protocol Launch command
+	rresult = RegCreateKeyEx(HKEY_CURRENT_USER, "Software\\Classes\\ptsave\\shell\\open\\command", 0, 0, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &newkey, NULL);
+	if (rresult != ERROR_SUCCESS) {
+		returnval = 0;
+		goto finalise;
+	}
+	rresult = RegSetValueEx(newkey, 0, 0, REG_SZ, (LPBYTE)protocolcommand, strlen(protocolcommand)+1);
+	if (rresult != ERROR_SUCCESS) {
+		RegCloseKey(newkey);
+		returnval = 0;
+		goto finalise;
+	}
+	RegCloseKey(newkey);
+	
 	//Create extension entry
 	rresult = RegCreateKeyEx(HKEY_CURRENT_USER, "Software\\Classes\\.cps", 0, 0, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &newkey, NULL);
 	if (rresult != ERROR_SUCCESS) {
@@ -682,7 +785,7 @@ int register_extension()
 		goto finalise;
 	}
 	RegCloseKey(newkey);
-
+	
 	//Create program entry
 	rresult = RegCreateKeyEx(HKEY_CURRENT_USER, "Software\\Classes\\PowderToySave", 0, 0, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &newkey, NULL);
 	if (rresult != ERROR_SUCCESS) {
@@ -731,6 +834,7 @@ int register_extension()
 	if(iconname) free(iconname);
 	if(opencommand) free(opencommand);
 	if(currentfilename) free(currentfilename);
+	if(protocolcommand) free(protocolcommand);
 	
 	return returnval;
 #elif defined(LIN32) || defined(LIN64)

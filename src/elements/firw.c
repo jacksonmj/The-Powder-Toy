@@ -1,3 +1,18 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <element.h>
 
 int update_FIRW(UPDATE_FUNC_ARGS) {
@@ -23,7 +38,7 @@ int update_FIRW(UPDATE_FUNC_ARGS) {
 			parts[i].tmp=2;
 		} else {
 			float newVel = parts[i].life/25;
-			parts[i].flags = parts[i].flags&0xFFFFFFFE;
+			parts[i].flags &= ~FLAG_STAGNANT;
 			/* TODO:
 			if ((pmap[(int)(ly-newVel)][(int)lx]&0xFF)==PT_NONE && ly-newVel>0) {
 				parts[i].vy = -newVel;

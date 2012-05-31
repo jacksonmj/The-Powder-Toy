@@ -1,3 +1,20 @@
+/**
+ * Powder Toy - Lua console
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <defines.h>
 #ifdef LUACONSOLE
 #include <powder.h>
@@ -79,6 +96,7 @@ void luacon_open(){
 		{"screenshot",&luatpt_screenshot},
 		{"element",&luatpt_getelement},
 		{"element_func",&luatpt_element_func},
+		{"graphics_func",&luatpt_graphics_func},
 		{NULL,NULL}
 	};
 
@@ -196,12 +214,15 @@ tpt.partsdata = nil");
 	}
 	lua_setfield(l, tptProperties, "eltransition");
 	
-	lua_el_func = calloc(PT_NUM, sizeof(int));
-	lua_el_mode = calloc(PT_NUM, sizeof(int));
+	lua_el_func = (int*)calloc(PT_NUM, sizeof(int));
+	lua_el_mode = (int*)calloc(PT_NUM, sizeof(int));
+	lua_gr_func = (int*)calloc(PT_NUM, sizeof(int));
 	for(i = 0; i < PT_NUM; i++)
 	{
 		lua_el_mode[i] = 0;
+		lua_gr_func[i] = 0;
 	}
+	lua_sethook(l, &lua_hook, LUA_MASKCOUNT, 4000000);
 }
 #ifndef FFI
 int luacon_partread(lua_State* l){
@@ -231,11 +252,11 @@ int luacon_partread(lua_State* l){
 	switch(format)
 	{
 	case 0:
-		tempinteger = *((int*)(((void*)&parts[i])+offset));
+		tempinteger = *((int*)(((char*)&parts[i])+offset));
 		lua_pushnumber(l, tempinteger);
 		break;
 	case 1:
-		tempfloat = *((float*)(((void*)&parts[i])+offset));
+		tempfloat = *((float*)(((char*)&parts[i])+offset));
 		lua_pushnumber(l, tempfloat);
 		break;
 	}
@@ -263,10 +284,10 @@ int luacon_partwrite(lua_State* l){
 	switch(format)
 	{
 	case 0:
-		*((int*)(((void*)&parts[i])+offset)) = luaL_optinteger(l, 3, 0);
+		*((int*)(((char*)&parts[i])+offset)) = luaL_optinteger(l, 3, 0);
 		break;
 	case 1:
-		*((float*)(((void*)&parts[i])+offset)) = luaL_optnumber(l, 3, 0);
+		*((float*)(((char*)&parts[i])+offset)) = luaL_optnumber(l, 3, 0);
 		break;
 	}
 	return 1;
@@ -393,11 +414,11 @@ int luacon_transitionread(lua_State* l){
 	switch(format)
 	{
 	case 0:
-		tempinteger = *((int*)(((void*)&ptransitions[i])+offset));
+		tempinteger = *((int*)(((char*)&ptransitions[i])+offset));
 		lua_pushnumber(l, tempinteger);
 		break;
 	case 1:
-		tempfloat = *((float*)(((void*)&ptransitions[i])+offset));
+		tempfloat = *((float*)(((char*)&ptransitions[i])+offset));
 		lua_pushnumber(l, tempfloat);
 		break;
 	}
@@ -427,10 +448,10 @@ int luacon_transitionwrite(lua_State* l){
 	switch(format)
 	{
 	case 0:
-		*((int*)(((void*)&ptransitions[i])+offset)) = luaL_optinteger(l, 3, 0);
+		*((int*)(((char*)&ptransitions[i])+offset)) = luaL_optinteger(l, 3, 0);
 		break;
 	case 1:
-		*((float*)(((void*)&ptransitions[i])+offset)) = luaL_optnumber(l, 3, 0);
+		*((float*)(((char*)&ptransitions[i])+offset)) = luaL_optnumber(l, 3, 0);
 		break;
 	}
 	return 0;
@@ -580,19 +601,19 @@ int luacon_elementread(lua_State* l){
 	switch(format)
 	{
 	case 0:
-		tempinteger = *((int*)(((void*)&ptypes[i])+offset));
+		tempinteger = *((int*)(((char*)&ptypes[i])+offset));
 		lua_pushnumber(l, tempinteger);
 		break;
 	case 1:
-		tempfloat = *((float*)(((void*)&ptypes[i])+offset));
+		tempfloat = *((float*)(((char*)&ptypes[i])+offset));
 		lua_pushnumber(l, tempfloat);
 		break;
 	case 2:
-		tempstring = *((char**)(((void*)&ptypes[i])+offset));
+		tempstring = *((char**)(((char*)&ptypes[i])+offset));
 		lua_pushstring(l, tempstring);
 		break;
 	case 3:
-		tempinteger = *((unsigned char*)(((void*)&ptypes[i])+offset));
+		tempinteger = *((unsigned char*)(((char*)&ptypes[i])+offset));
 		lua_pushnumber(l, tempinteger);
 		break;
 	}
@@ -624,10 +645,10 @@ int luacon_elementwrite(lua_State* l){
 	switch(format)
 	{
 	case 0:
-		*((int*)(((void*)&ptypes[i])+offset)) = luaL_optinteger(l, 3, 0);
+		*((int*)(((char*)&ptypes[i])+offset)) = luaL_optinteger(l, 3, 0);
 		break;
 	case 1:
-		*((float*)(((void*)&ptypes[i])+offset)) = luaL_optnumber(l, 3, 0);
+		*((float*)(((char*)&ptypes[i])+offset)) = luaL_optnumber(l, 3, 0);
 		break;
 	case 2:
 		tempstring = mystrdup(luaL_optstring(l, 3, ""));
@@ -650,11 +671,11 @@ int luacon_elementwrite(lua_State* l){
 				return luaL_error(l, "Name in use");
 			}
 		}
-		*((char**)(((void*)&ptypes[i])+offset)) = tempstring;
+		*((char**)(((char*)&ptypes[i])+offset)) = tempstring;
 		//Need some way of cleaning up previous values
 		break;
 	case 3:
-		*((unsigned char*)(((void*)&ptypes[i])+offset)) = luaL_optinteger(l, 3, 0);
+		*((unsigned char*)(((char*)&ptypes[i])+offset)) = luaL_optinteger(l, 3, 0);
 		break;
 	}
 	if (modified_stuff)
@@ -716,25 +737,38 @@ int luacon_step(int mx, int my, int selectl, int selectr){
 	lua_setfield(l, tptProperties, "mousey");
 	lua_setfield(l, tptProperties, "selectedl");
 	lua_setfield(l, tptProperties, "selectedr");
-	if(step_functions[0]){
-		//Set mouse globals
-		for(i = 0; i<6; i++){
-			if(step_functions[i]){
-				lua_rawgeti(l, LUA_REGISTRYINDEX, step_functions[i]);
-				callret = lua_pcall(l, 0, 0, 0);
-				if (callret)
+	for(i = 0; i<6; i++){
+		if(step_functions[i]){
+			loop_time = SDL_GetTicks();
+			lua_rawgeti(l, LUA_REGISTRYINDEX, step_functions[i]);
+			callret = lua_pcall(l, 0, 0, 0);
+			if (callret)
+			{
+				// failed, TODO: better error reporting
+				printf("%s\n",luacon_geterror());
+				if (!strcmp(luacon_geterror(),"Error: Infinite loop"))
 				{
-					// failed, TODO: better error reporting
-					printf("%s\n",luacon_geterror());
+					lua_pushcfunction(l,&luatpt_unregister_step);
+					lua_rawgeti(l, LUA_REGISTRYINDEX, step_functions[i]);
+					lua_pcall(l, 1, 0, 0);
 				}
 			}
 		}
-		return tempret;
 	}
 	return 0;
 }
 int luacon_eval(char *command){
+	loop_time = SDL_GetTicks();
 	return luaL_dostring (l, command);
+}
+void lua_hook(lua_State *L, lua_Debug *ar)
+{
+	if(ar->event == LUA_HOOKCOUNT && SDL_GetTicks()-loop_time > 3000)
+	{
+		if (confirm_ui(vid_buf,"Infinite Loop","The Lua code might have an infinite loop. Press OK to stop it","OK"))
+			luaL_error(l,"Error: Infinite loop");
+		loop_time = SDL_GetTicks();
+	}
 }
 int luacon_part_update(int t, int i, int x, int y, int surround_space, int nt)
 {
@@ -753,6 +787,29 @@ int luacon_part_update(int t, int i, int x, int y, int surround_space, int nt)
 		lua_pop(l, 1);
 	}
 	return retval;
+}
+int luacon_graphics_update(int t, int i, int *pixel_mode, int *cola, int *colr, int *colg, int *colb, int *firea, int *firer, int *fireg, int *fireb)
+{
+	int cache = 0;
+	lua_rawgeti(l, LUA_REGISTRYINDEX, lua_gr_func[t]);
+	lua_pushinteger(l, i);
+	lua_pushinteger(l, *colr);
+	lua_pushinteger(l, *colg);
+	lua_pushinteger(l, *colb);
+	lua_pcall(l, 4, 10, 0);
+
+	cache = luaL_optint(l, 2, 0);
+	*pixel_mode = luaL_optint(l, 3, *pixel_mode);
+	*cola = luaL_optint(l, 4, *cola);
+	*colr = luaL_optint(l, 5, *colr);
+	*colg = luaL_optint(l, 6, *colg);
+	*colb = luaL_optint(l, 7, *colb);
+	*firea = luaL_optint(l, 8, *firea);
+	*firer = luaL_optint(l, 9, *firer);
+	*fireg = luaL_optint(l, 10, *fireg);
+	*fireb = luaL_optint(l, 11, *fireb);
+	lua_pop(l, 10);
+	return cache;
 }
 char *luacon_geterror(){
 	char *error = lua_tostring(l, -1);
@@ -836,6 +893,29 @@ int luatpt_element_func(lua_State *l)
 			return luaL_error(l, "Invalid element");
 		}
 	}
+	return 0;
+}
+int luatpt_graphics_func(lua_State *l)
+{
+	if(lua_isfunction(l, 1))
+	{
+		int element = luaL_optint(l, 2, 0);
+		int function;
+		lua_pushvalue(l, 1);
+		function = luaL_ref(l, LUA_REGISTRYINDEX);
+		if(element > 0 && element < PT_NUM)
+		{
+			lua_gr_func[element] = function;
+			graphicscache[element].isready = 0;
+			return 0;
+		}
+		else
+		{
+			return luaL_error(l, "Invalid element");
+		}
+	}
+	else
+		return luaL_error(l, "Not a function");
 	return 0;
 }
 int luatpt_error(lua_State* l)
@@ -1058,8 +1138,13 @@ int luatpt_reset_spark(lua_State* l)
 	{
 		if (parts[i].type==PT_SPRK)
 		{
-			parts[i].type = parts[i].ctype;
-			parts[i].life = 4;
+			if (parts[i].ctype >= 0 && parts[i].ctype < PT_NUM)
+			{
+				parts[i].type = parts[i].ctype;
+				parts[i].life = 0;
+			}
+			else
+				kill_part(i);
 		}
 	}
 	return 0;
@@ -1253,7 +1338,7 @@ int luatpt_set_property(lua_State* l)
 		} else {
 			t = luaL_optint(l, 2, 0);
 		}
-		if (format == 3 && (t<0 || t>=PT_NUM))
+		if (format == 3 && (t<0 || t>=PT_NUM || !ptypes[t].enabled))
 			return luaL_error(l, "Unrecognised element number '%d'", t);
 	} else {
 		name = luaL_optstring(l, 2, "dust");
@@ -1445,9 +1530,9 @@ int luatpt_drawrect(lua_State* l)
 	if (x<0 || y<0 || x>=XRES+BARSIZE || y>=YRES+MENUSIZE)
 		return luaL_error(l, "Screen coordinates out of range (%d,%d)", x, y);
 	if(x+w > XRES+BARSIZE)
-		w = XRES-x;
+		w = XRES+BARSIZE-x;
 	if(y+h > YRES+MENUSIZE)
-		h = YRES-y;
+		h = YRES+MENUSIZE-y;
 	if (r<0) r = 0;
 	if (r>255) r = 255;
 	if (g<0) g = 0;
@@ -1479,9 +1564,9 @@ int luatpt_fillrect(lua_State* l)
 	if (x<0 || y<0 || x>=XRES+BARSIZE || y>=YRES+MENUSIZE)
 		return luaL_error(l, "Screen coordinates out of range (%d,%d)", x, y);
 	if(x+w > XRES+BARSIZE)
-		w = XRES-x;
+		w = XRES+BARSIZE-x;
 	if(y+h > YRES+MENUSIZE)
-		h = YRES-y;
+		h = YRES+MENUSIZE-y;
 	if (r<0) r = 0;
 	if (r>255) r = 255;
 	if (g<0) g = 0;
@@ -1876,6 +1961,8 @@ int luatpt_setdebug(lua_State* l)
 int luatpt_setfpscap(lua_State* l)
 {
 	int fpscap = luaL_optint(l, 1, 0);
+	if (fpscap < 2)
+		return luaL_error(l, "fps cap too small");
 	limitFPS = fpscap;
 	return 0;
 }

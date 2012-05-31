@@ -1,3 +1,18 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <element.h>
 
 int update_CO2(UPDATE_FUNC_ARGS) {
@@ -34,12 +49,13 @@ int update_CO2(UPDATE_FUNC_ARGS) {
 			int j;
 			kill_part(i);
 			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_NEUT); if (j != -1) parts[j].temp = 15000;
-			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_ELEC); if (j != -1) parts[j].temp = 15000;
+			if (!(rand()%50)) { j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_ELEC); if (j != -1) parts[j].temp = 15000; }
 			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_O2);  if (j != -1) parts[j].temp = 15000;
-			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_SING); if (j != -1) { parts[j].temp = 15000; parts[i].life = rand()%100+450; }
+			if (rand()%1000 < 1) { j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_SING); if (j != -1) { parts[j].temp = 15000; parts[i].life = 3; } }
 
 			parts[i].temp += 15000;
 			pv[y/CELL][x/CELL] += 100;
+			return 1;
 		}
 	}
 	return 0;

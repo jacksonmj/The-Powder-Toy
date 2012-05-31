@@ -1,3 +1,19 @@
+/**
+ * Powder Toy - graphics (header)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
 #include <SDL/SDL.h>
@@ -86,8 +102,6 @@ struct gcache_item
 typedef struct gcache_item gcache_item;
 
 gcache_item *graphicscache;
-
-int graphics_DEFAULT(GRAPHICS_FUNC_ARGS);
 
 void prepare_graphicscache();
 
@@ -181,6 +195,10 @@ void blend_line(pixel *vid, int x1, int y1, int x2, int y2, int r, int g, int b,
 
 void render_parts(pixel *vid);
 
+void render_before(pixel *part_vbuf);
+
+void render_after(pixel *part_vbuf, pixel *vid_buf);
+
 #ifdef OGLR
 void draw_parts_fbo();
 #endif
@@ -255,16 +273,29 @@ uniform sampler2D tfY;\
 uniform float xres;\
 uniform float yres;\
 void main () {\
-	vec4 transformX = texture2D(tfX, vec2(gl_TexCoord[0].s, -gl_TexCoord[0].t));\
-	vec4 transformY = -texture2D(tfY, vec2(gl_TexCoord[0].s, -gl_TexCoord[0].t));\
-	transformX.r /= xres;\
-	transformY.g /= yres;\
-    vec4 texColor = vec4(\
-    	texture2D(pTex, gl_TexCoord[0].st-vec2(transformX.r*0.75, transformY.g*0.75)).r,\
-    	texture2D(pTex, gl_TexCoord[0].st-vec2(transformX.r*0.875, transformY.g*0.875)).g,\
-    	texture2D(pTex, gl_TexCoord[0].st-vec2(transformX.r, transformY.g)).b,\
+	vec4 transformX = texture2D(tfX, vec2(gl_TexCoord[0].s, gl_TexCoord[0].t));\
+	vec4 transformY = texture2D(tfY, vec2(gl_TexCoord[0].s, gl_TexCoord[0].t));\
+	transformX.r /= xres/4.0;\
+	transformY.g /= yres/4.0;\
+    vec4 texColor1 = vec4(\
+    	texture2D(pTex, gl_TexCoord[0].st-vec2(transformX.r*0.90, transformY.g*0.90)).r,\
+    	texture2D(pTex, gl_TexCoord[0].st-vec2(transformX.r*0.80, transformY.g*0.80)).g,\
+    	texture2D(pTex, gl_TexCoord[0].st-vec2(transformX.r*0.70, transformY.g*0.70)).b,\
     	1.0\
     );\
+	vec4 texColor2 = vec4(\
+		texture2D(pTex, gl_TexCoord[0].st-vec2(transformX.r*0.95, transformY.g*0.95)).r,\
+		texture2D(pTex, gl_TexCoord[0].st-vec2(transformX.r*0.85, transformY.g*0.85)).g,\
+		texture2D(pTex, gl_TexCoord[0].st-vec2(transformX.r*0.75, transformY.g*0.75)).b,\
+		1.0\
+	);\
+	vec4 texColor3 = vec4(\
+		texture2D(pTex, gl_TexCoord[0].st-vec2(transformX.r*0.85, transformY.g*0.85)).r,\
+		texture2D(pTex, gl_TexCoord[0].st-vec2(transformX.r*0.75, transformY.g*0.75)).g,\
+		texture2D(pTex, gl_TexCoord[0].st-vec2(transformX.r*0.65, transformY.g*0.65)).b,\
+		1.0\
+	);\
+	vec4 texColor = texColor1*0.6 + texColor2*0.2 + texColor3*0.2;\
     gl_FragColor = texColor;\
 }";
 const char * lensVertex = "#version 120\n\
