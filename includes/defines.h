@@ -24,10 +24,9 @@
 #endif
  
 //VersionInfoStart
-#define SAVE_VERSION 79
-#define MINOR_VERSION 4
-#define BETA
-#define BUILD_NUM 169
+#define SAVE_VERSION 80
+#define MINOR_VERSION 3
+#define BUILD_NUM 178
 //VersionInfoEnd
 
 #define IDENT_VERSION "G" //Change this if you're not Simon! It should be a single letter
@@ -162,6 +161,8 @@ typedef unsigned int pixel;
 typedef unsigned char uint8;
 
 extern int saveURIOpen;
+extern char * saveDataOpen;
+extern int saveDataOpenSize;
 
 extern int amd;
 

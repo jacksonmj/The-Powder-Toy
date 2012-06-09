@@ -29,6 +29,7 @@
 int wire_placed = 0;
 
 int lighting_recreate = 0;
+int force_stacking_check = 0;//whether to force a check for excessively stacked particles
 
 playerst player;
 playerst player2;
@@ -51,6 +52,7 @@ unsigned char cb_emap[YRES/CELL][XRES/CELL];
 int pfree;
 
 unsigned pmap[YRES][XRES];
+int pmap_count[YRES][XRES];
 unsigned cb_pmap[YRES][XRES];
 unsigned photons[YRES][XRES];
 
@@ -163,6 +165,7 @@ void init_can_move()
 			can_move[PT_PHOT][t] = 2;
 	}
 	can_move[PT_ELEC][PT_LCRY] = 2;
+	can_move[PT_ELEC][PT_EXOT] = 2;
 	can_move[PT_PHOT][PT_LCRY] = 3;//varies according to LCRY life
 	
 	can_move[PT_PHOT][PT_BIZR] = 2;
@@ -230,7 +233,7 @@ int eval_move(int pt, int nx, int ny, unsigned *rr)
 			return 0;
 		if (bmap[ny/CELL][nx/CELL]==WL_EWALL && !emap[ny/CELL][nx/CELL])
 			return 0;
-		if (bmap[ny/CELL][nx/CELL]==WL_EHOLE && !emap[ny/CELL][nx/CELL])
+		if (bmap[ny/CELL][nx/CELL]==WL_EHOLE && !emap[ny/CELL][nx/CELL] && !(ptypes[pt].properties&TYPE_SOLID) && !(ptypes[r&0xFF].properties&TYPE_SOLID))
 			return 2;
 	}
 	return result;
@@ -897,216 +900,241 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 		parts[i].tmp = 0;
 		parts[i].tmp2 = 0;
 	}
-	if (t==PT_LIGH && p==-2)
-	{
-	    switch (gravityMode)
-        {
-        default:
-        case 0:
-            parts[i].tmp= 270+rand()%40-20;
-            break;
-        case 1:
-            parts[i].tmp = rand()%360;
-            break;
-        case 2:
-            parts[i].tmp = atan2(x-XCNTR, y-YCNTR)*(180.0f/M_PI)+90;
-        }
-        parts[i].tmp2 = 4;
-	}
-	if (t==PT_SOAP)
-	{
-		parts[i].tmp = -1;
-		parts[i].tmp2 = -1;
-	}
 	//now set various properties that we want at spawn.
-	if (t==PT_ACID || t==PT_CAUS)
-	{
-		parts[i].life = 75;
-	}
-	/*Testing
-	if(t==PT_WOOD){
-		parts[i].life = 150;
-	}
-	End Testing*/
-	if (t==PT_WARP) {
-		parts[i].life = rand()%95+70;
-	}
-	if (t==PT_FUSE) {
-		parts[i].life = 50;
-		parts[i].tmp = 50;
-	}
 	/*if (ptypes[t].properties&PROP_LIFE) {
 		int r;
 		for (r = 0; r<NGOL; r++)
 			if (t==goltype[r])
 				parts[i].tmp = grule[r+1][9] - 1;
 	}*/
-	if (t==PT_LIFE && v<NGOLALT)
+	switch (t)
 	{
-		parts[i].tmp = grule[v+1][9] - 1;
-		parts[i].ctype = v;
-	}
-	if (t==PT_TRON)
-	{
-		int randhue = rand()%360;
-		int randomdir = rand()%4;
-		parts[i].tmp = 1|(randomdir<<5)|(randhue<<7);//set as a head and a direction
-		parts[i].tmp2 = 4;//tail
-		parts[i].life = 5;
-	}
-	
-	if (t==PT_DEUT)
-		parts[i].life = 10;
-	if (t==PT_MERC)
-		parts[i].tmp = 10;
-	if (t==PT_BRAY)
-		parts[i].life = 30;
-	if (t==PT_PUMP || t==PT_GPMP)
-		parts[i].life= 10;
-	if (t==PT_SING)
-		parts[i].life = rand()%50+60;
-	if (t==PT_QRTZ)
-		parts[i].tmp = (rand()%11);
-	if (t==PT_PQRT)
-		parts[i].tmp = (rand()%11);
-	if (t==PT_CLST)
-		parts[i].tmp = (rand()%7);
-	if (t==PT_FSEP)
-		parts[i].life = 50;
-	if (t==PT_COAL) {
-		parts[i].life = 110;
-		parts[i].tmp = 50;
-	}
-	if (t==PT_IGNT) {
-		parts[i].life = 3;
-	}
-	if (t==PT_FRZW)
-		parts[i].life = 100;
-	if (t==PT_PIPE)
-		parts[i].life = 60;
-	if (t==PT_BCOL)
-		parts[i].life = 110;
-	if (t==PT_FIRE)
-		parts[i].life = rand()%50+120;
-	if (t==PT_PLSM)
-		parts[i].life = rand()%150+50;
-	if (t==PT_HFLM)
-		parts[i].life = rand()%150+50;
-	if (t==PT_LAVA)
-		parts[i].life = rand()%120+240;
-	if (t==PT_NBLE)
-		parts[i].life = 0;
-	if (t==PT_ICEI)
-		parts[i].ctype = PT_WATR;
-	if (t==PT_NEUT)
-	{
-		float r = (rand()%128+128)/127.0f;
-		float a = (rand()%360)*3.14159f/180.0f;
-		parts[i].life = rand()%480+480;
-		parts[i].vx = r*cosf(a);
-		parts[i].vy = r*sinf(a);
-	}
-	if (t==PT_MORT)
-	{
-		parts[i].vx = 2;
-	}
-	if (t==PT_PHOT)
-	{
-		float a = (rand()%8) * 0.78540f;
-		parts[i].life = 680;
-		parts[i].ctype = 0x3FFFFFFF;
-		parts[i].vx = 3.0f*cosf(a);
-		parts[i].vy = 3.0f*sinf(a);
-	}
-	if (t==PT_ELEC)
-	{
-		float a = (rand()%360)*3.14159f/180.0f;
-		parts[i].life = 680;
-		parts[i].vx = 2.0f*cosf(a);
-		parts[i].vy = 2.0f*sinf(a);
-	}
-	if (t==PT_STKM)
-	{
-		if (player.spwn==0)
-		{
-			parts[i].x = (float)x;
-			parts[i].y = (float)y;
-#ifdef OGLR
-			parts[i].lastX = (float)x;
-			parts[i].lastY = (float)y;
-#endif
-			parts[i].type = PT_STKM;
-			parts[i].vx = 0;
-			parts[i].vy = 0;
+		case PT_LIGH:
+			if (p==-2)
+			{
+				switch (gravityMode)
+				{
+					default:
+					case 0:
+						parts[i].tmp= 270+rand()%40-20;
+						break;
+					case 1:
+						parts[i].tmp = rand()%360;
+						break;
+					case 2:
+						parts[i].tmp = atan2(x-XCNTR, y-YCNTR)*(180.0f/M_PI)+90;
+				}
+				parts[i].tmp2 = 4;
+			}
+			break;
+		case PT_SOAP:
+			parts[i].tmp = -1;
+			parts[i].tmp2 = -1;
+			break;
+		case PT_ACID: case PT_CAUS:
+			parts[i].life = 75;
+			break;
+		/*Testing
+		  case PT_WOOD:
+		  parts[i].life = 150;
+		  break;
+		  End Testing*/
+		case PT_WARP:
+			parts[i].life = rand()%95+70;
+			break;
+		case PT_FUSE:
+			parts[i].life = 50;
+			parts[i].tmp = 50;
+			break;
+		case PT_LIFE:
+			if (v<NGOLALT)
+			{
+				parts[i].tmp = grule[v+1][9] - 1;
+				parts[i].ctype = v;
+			}
+			break;
+		case PT_DEUT:
+			parts[i].life = 10;
+			break;
+		case PT_MERC:
+			parts[i].tmp = 10;
+			break;
+		case PT_BRAY:
+			parts[i].life = 30;
+			break;
+		case PT_GPMP: case PT_PUMP:
+			parts[i].life = 10;
+			break;
+		case PT_SING:
+			parts[i].life = rand()%50+60;
+			break;
+		case PT_QRTZ:
+			parts[i].tmp = (rand()%11);
+			break;
+		case PT_PQRT:
+			parts[i].tmp = (rand()%11);
+			break;
+		case PT_CLST:
+			parts[i].tmp = (rand()%7);
+			break;
+		case PT_FSEP:
+			parts[i].life = 50;
+			break;
+		case PT_COAL:
+			parts[i].life = 110;
+			parts[i].tmp = 50;
+			break;
+		case PT_IGNT:
+			parts[i].life = 3;
+			break;
+		case PT_FRZW:
 			parts[i].life = 100;
-			parts[i].ctype = 0;
-			parts[i].temp = ptypes[t].heat;
-			STKM_init_legs(&player, i);
-			player.spwn = 1;
-		}
-		else
-		{
-			return -1;
-		}
-		create_part(-1,x,y,PT_SPAWN);
-		ISSPAWN1 = 1;
-	}
-	if (t==PT_STKM2)
-	{
-		if (player2.spwn==0)
-		{
-			parts[i].x = (float)x;
-			parts[i].y = (float)y;
+			break;
+		case PT_PIPE:
+			parts[i].life = 60;
+			break;
+		case PT_BCOL:
+			parts[i].life = 110;
+			break;
+		case PT_FIRE:
+			parts[i].life = rand()%50+120;
+			break;
+		case PT_PLSM:
+			parts[i].life = rand()%150+50;
+			break;
+		case PT_HFLM:
+			parts[i].life = rand()%150+50;
+			break;
+		case PT_LAVA:
+			parts[i].life = rand()%120+240;
+			break;
+		case PT_NBLE:
+			parts[i].life = 0;
+			break;
+		case PT_ICEI:
+			parts[i].ctype = PT_WATR;
+			break;
+		case PT_MORT:
+			parts[i].vx = 2;
+			break;
+		case PT_EXOT:
+			parts[i].life = 1000;
+			parts[i].tmp = 244;
+			break;
+		case PT_STKM:
+			if (player.spwn==0)
+			{
+				parts[i].x = (float)x;
+				parts[i].y = (float)y;
 #ifdef OGLR
-			parts[i].lastX = (float)x;
-			parts[i].lastY = (float)y;
+				parts[i].lastX = (float)x;
+				parts[i].lastY = (float)y;
 #endif
-			parts[i].type = PT_STKM2;
-			parts[i].vx = 0;
-			parts[i].vy = 0;
-			parts[i].life = 100;
-			parts[i].ctype = 0;
-			parts[i].temp = ptypes[t].heat;
-			STKM_init_legs(&player2, i);
-			player2.spwn = 1;
-		}
-		else
-		{
-			return -1;
-		}
-		create_part(-1,x,y,PT_SPAWN2);
-		ISSPAWN2 = 1;
-	}
-	if (t==PT_FIGH)
-	{
-		unsigned char fcount = 0;
-		while (fcount < 100 && fcount < (fighcount+1) && fighters[fcount].spwn==1) fcount++;
-		if (fcount < 100 && fighters[fcount].spwn==0)
-		{
-			parts[i].x = (float)x;
-			parts[i].y = (float)y;
+				parts[i].type = PT_STKM;
+				parts[i].vx = 0;
+				parts[i].vy = 0;
+				parts[i].life = 100;
+				parts[i].ctype = 0;
+				parts[i].temp = ptypes[t].heat;
+				STKM_init_legs(&player, i);
+				player.spwn = 1;
+			}
+			else
+			{
+				return -1;
+			}
+			create_part(-1,x,y,PT_SPAWN);
+			ISSPAWN1 = 1;
+			break;
+		case PT_STKM2:
+			if (player2.spwn==0)
+			{
+				parts[i].x = (float)x;
+				parts[i].y = (float)y;
 #ifdef OGLR
-			parts[i].lastX = (float)x;
-			parts[i].lastY = (float)y;
+				parts[i].lastX = (float)x;
+				parts[i].lastY = (float)y;
 #endif
-			parts[i].type = PT_FIGH;
-			parts[i].vx = 0;
-			parts[i].vy = 0;
-			parts[i].life = 100;
-			parts[i].ctype = 0;
-			parts[i].tmp = fcount;
-			parts[i].temp = ptypes[t].heat;
-			STKM_init_legs(&fighters[fcount], i);
-			fighters[fcount].spwn = 1;
-			fighters[fcount].elem = PT_DUST;
-			fighcount++;
+				parts[i].type = PT_STKM2;
+				parts[i].vx = 0;
+				parts[i].vy = 0;
+				parts[i].life = 100;
+				parts[i].ctype = 0;
+				parts[i].temp = ptypes[t].heat;
+				STKM_init_legs(&player2, i);
+				player2.spwn = 1;
+			}
+			else
+			{
+				return -1;
+			}
+			create_part(-1,x,y,PT_SPAWN2);
+			ISSPAWN2 = 1;
+			break;
+		case PT_BIZR: case PT_BIZRG: case PT_BIZRS:
+			parts[i].ctype = 0x47FFFF;
+			break;
+		default:
+			if (t==PT_FIGH)
+			{
+				unsigned char fcount = 0;
+				while (fcount < 100 && fcount < (fighcount+1) && fighters[fcount].spwn==1) fcount++;
+				if (fcount < 100 && fighters[fcount].spwn==0)
+				{
+					parts[i].x = (float)x;
+					parts[i].y = (float)y;
+#ifdef OGLR
+					parts[i].lastX = (float)x;
+					parts[i].lastY = (float)y;
+#endif
+					parts[i].type = PT_FIGH;
+					parts[i].vx = 0;
+					parts[i].vy = 0;
+					parts[i].life = 100;
+					parts[i].ctype = 0;
+					parts[i].tmp = fcount;
+					parts[i].temp = ptypes[t].heat;
+					STKM_init_legs(&fighters[fcount], i);
+					fighters[fcount].spwn = 1;
+					fighters[fcount].elem = PT_DUST;
+					fighcount++;
 
-			return i;
-		}
-		return -1;
+					return i;
+				}
+				return -1;
+			}
+			if (t==PT_PHOT)
+			{
+				float a = (rand()%8) * 0.78540f;
+				parts[i].life = 680;
+				parts[i].ctype = 0x3FFFFFFF;
+				parts[i].vx = 3.0f*cosf(a);
+				parts[i].vy = 3.0f*sinf(a);
+			}
+			if (t==PT_ELEC)
+			{
+				float a = (rand()%360)*3.14159f/180.0f;
+				parts[i].life = 680;
+				parts[i].vx = 2.0f*cosf(a);
+				parts[i].vy = 2.0f*sinf(a);
+			}
+			if (t==PT_NEUT)
+			{
+				float r = (rand()%128+128)/127.0f;
+				float a = (rand()%360)*3.14159f/180.0f;
+				parts[i].life = rand()%480+480;
+				parts[i].vx = r*cosf(a);
+				parts[i].vy = r*sinf(a);
+			}
+			if (t==PT_TRON)
+			{
+				int randhue = rand()%360;
+				int randomdir = rand()%4;
+				parts[i].tmp = 1|(randomdir<<5)|(randhue<<7);//set as a head and a direction
+				parts[i].tmp2 = 4;//tail
+				parts[i].life = 5;
+			}
 	}
-	if (t==PT_BIZR||t==PT_BIZRG||t==PT_BIZRS)
-		parts[i].ctype = 0x47FFFF;
 	//and finally set the pmap/photon maps to the newly created particle
 	if (ptypes[t].properties & TYPE_ENERGY)
 		photons[y][x] = t|(i<<8);
@@ -1441,6 +1469,7 @@ void update_particles_i(pixel *vid, int start, int inc)
 	int lighting_ok=1;
 	unsigned int elem_properties;
 	float pGravX, pGravY, pGravD;
+	int excessive_stacking_found = 0;
 
 	if (sys_pause&&lighting_recreate>0)
     {
@@ -1466,6 +1495,68 @@ void update_particles_i(pixel *vid, int start, int inc)
 	if (sys_pause&&!framerender)//do nothing if paused
 		return;
 		
+	if (force_stacking_check || (rand()%10)==0)
+	{
+		force_stacking_check = 0;
+		excessive_stacking_found = 0;
+		for (y=0; y<YRES; y++)
+		{
+			for (x=0; x<XRES; x++)
+			{
+				// Use a threshold, since some particle stacking can be normal (e.g. BIZR + FILT)
+				// Setting pmap_count[y][x] > NPART means BHOL will form in that spot
+				if (pmap_count[y][x]>5)
+				{
+					if (bmap[y/CELL][x/CELL]==WL_EHOLE)
+					{
+						// Allow more stacking in E-hole
+						if (pmap_count[y][x]>1500)
+						{
+							pmap_count[y][x] = pmap_count[y][x] + NPART;
+							excessive_stacking_found = 1;
+						}
+					}
+					// Random chance to turn into BHOL that increases with the amount of stacking, up to a threshold where it is certain to turn into BHOL
+					else if (pmap_count[y][x]>1500 || (rand()%1600)<=(pmap_count[y][x]+100))
+					{
+						pmap_count[y][x] = pmap_count[y][x] + NPART;
+						excessive_stacking_found = 1;
+					}
+				}
+			}
+		}
+		if (excessive_stacking_found)
+		{
+			for (i=0; i<=parts_lastActiveIndex; i++)
+			{
+				if (parts[i].type)
+				{
+					t = parts[i].type;
+					x = (int)(parts[i].x+0.5f);
+					y = (int)(parts[i].y+0.5f);
+					if (x>=0 && y>=0 && x<XRES && y<YRES && !(ptypes[t].properties&TYPE_ENERGY))
+					{
+						if (pmap_count[y][x]>=NPART)
+						{
+							if (pmap_count[y][x]>NPART)
+							{
+								create_part(i, x, y, PT_NBHL);
+								parts[i].temp = MAX_TEMP;
+								parts[i].tmp = pmap_count[y][x]-NPART;//strength of grav field
+								if (parts[i].tmp>51200) parts[i].tmp = 51200;
+								pmap_count[y][x] = NPART;
+							}
+							else
+							{
+								kill_part(i);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
 	if (ISGRAV==1)//crappy grav color handling, i will change this someday
 	{
 		ISGRAV = 0;
@@ -1855,16 +1946,16 @@ void update_particles_i(pixel *vid, int start, int inc)
 #endif
 			}
 
-			j = surround_space = nt = 0;//if nt is 1 after this, then there is a particle around the current particle, that is NOT the current particle's type, for water movement.
+			j = surround_space = nt = 0;//if nt is greater than 1 after this, then there is a particle around the current particle, that is NOT the current particle's type, for water movement.
 			for (nx=-1; nx<2; nx++)
 				for (ny=-1; ny<2; ny++) {
 					if (nx||ny) {
 						surround[j] = r = pmap[y+ny][x+nx];
 						j++;
 						if (!(r&0xFF))
-							surround_space = 1;//there is empty space
+							surround_space++;//there is empty space
 						if ((r&0xFF)!=t)
-							nt = 1;//there is nothing or a different particle
+							nt++;//there is nothing or a different particle
 					}
 				}
 
@@ -2729,6 +2820,7 @@ void update_particles(pixel *vid)//doesn't update the particles themselves, but 
 #endif
 
 	memset(pmap, 0, sizeof(pmap));
+	memset(pmap_count, 0, sizeof(pmap_count));
 	memset(photons, 0, sizeof(photons));
 	NUM_PARTS = 0;
 	for (i=0; i<=parts_lastActiveIndex; i++)//the particle loop that resets the pmap/photon maps every frame, to update them.
@@ -2743,7 +2835,13 @@ void update_particles(pixel *vid)//doesn't update the particles themselves, but 
 				if (ptypes[t].properties & TYPE_ENERGY)
 					photons[y][x] = t|(i<<8);
 				else
-					pmap[y][x] = t|(i<<8);
+				{
+					// Particles are sometimes allowed to go inside INVS and FILT
+					// To make particles collide correctly when inside these elements, these elements must not overwrite an existing pmap entry from particles inside them
+					if (!pmap[y][x] || (t!=PT_INVIS && t!= PT_FILT))
+						pmap[y][x] = t|(i<<8);
+					pmap_count[y][x]++;
+				}
 			}
 			lastPartUsed = i;
 			NUM_PARTS ++;
