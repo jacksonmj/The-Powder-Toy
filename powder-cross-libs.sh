@@ -30,6 +30,7 @@ MINGW_INSTALL_DIR="/usr/i686-w64-mingw32"
 export AR=${MINGW_BIN_PREFIX}ar
 export CC=${MINGW_BIN_PREFIX}gcc
 export RANLIB=${MINGW_BIN_PREFIX}ranlib
+export WINDRES=${MINGW_BIN_PREFIX}windres
 export PREFIX=${MINGW_INSTALL_DIR}
 MAKE="make -j 2"
 
@@ -189,7 +190,7 @@ sdl_compile()
 	lib="sdl"
 	pushd $1 > /dev/null
 	./configure --host=$HOST --build=`build-scripts/config.guess` --prefix=$MINGW_INSTALL_DIR && \
-	$MAKE
+	$MAKE WINDRES=$WINDRES
 	result=$?
 	popd > /dev/null
 	return $result
@@ -203,19 +204,14 @@ sdl_install()
 	return $result
 }
 
-pthread_url="ftp://sources.redhat.com/pub/pthreads-win32/pthreads-w32-2-8-0-release.tar.gz"
-pthread_md5="6d30c693233b1464ef8983fedd8ccb22"
-pthread_filename="pthreads-w32-2-8-0-release.tar.gz"
-pthread_folder="/pthreads-w32-2-8-0-release"
+pthread_url="ftp://sources.redhat.com/pub/pthreads-win32/pthreads-w32-2-9-1-release.tar.gz"
+pthread_md5="36ba827d6aa0fa9f9ae740a35626e2e3"
+pthread_filename="pthreads-w32-2-9-1-release.tar.gz"
+pthread_folder="/pthreads-w32-2-9-1-release"
 pthread_extractfolder="tpt-libs"
 pthread_compile()
 {
 	pushd $1 > /dev/null
-	echo \#define HAVE_STRUCT_TIMESPEC >> config.h
-	echo \#undef HAVE_STRUCT_TIMESPEC > pthread.h.fixed
-	echo \#define HAVE_STRUCT_TIMESPEC >> pthread.h.fixed
-	cat pthread.h >> pthread.h.fixed
-	rm pthread.h && mv pthread.h.fixed pthread.h
 	$MAKE clean && \
 	$MAKE GC CROSS=${MINGW_BIN_PREFIX} && \
 	mv -f libpthreadGC2.a libpthreadGC2.dll.a && \
