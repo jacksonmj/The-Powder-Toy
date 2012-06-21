@@ -52,16 +52,8 @@ int update_O2(UPDATE_FUNC_ARGS)
 			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_NEUT); if (j != -1) parts[j].temp = 15000;
 			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_PHOT); if (j != -1) parts[j].temp = 15000;
 			
-			if (rand()%20)
-			{
-				j = create_part(i,x,y,PT_BRMT);
-				if (j != -1) parts[j].temp = 15000;
-			}
-			else
-			{
-				j = create_part(i,x,y,PT_SING);
-				if (j != -1) { parts[j].temp = 15000; parts[i].life = rand()%25+50; }
-			}
+			j = create_part(i,x,y,PT_BRMT);
+			if (j != -1) parts[j].temp = 15000;
 			
 			for (ry=-2; ry<3; ry++)
 				for (rx=-2; rx<3; rx++)
