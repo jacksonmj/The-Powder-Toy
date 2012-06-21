@@ -52,7 +52,10 @@ int update_CO2(UPDATE_FUNC_ARGS) {
 			int j;
 			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_NEUT); if (j != -1) parts[j].temp = 15000;
 			if (!(rand()%50)) { j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_ELEC); if (j != -1) parts[j].temp = 15000; }
-			j = create_part(i,x,y,PT_O2); if (j != -1) parts[j].temp = 15000;
+			
+			if ((rand()%32)<12) j = create_part(i,x,y,PT_O2);
+			else j = create_part(i,x,y,PT_PLSM);
+			if (j != -1) parts[j].temp = 15000;
 
 			pv[y/CELL][x/CELL] += 100;
 			return 1;

@@ -52,25 +52,9 @@ int update_O2(UPDATE_FUNC_ARGS)
 			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_NEUT); if (j != -1) parts[j].temp = 15000;
 			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_PHOT); if (j != -1) parts[j].temp = 15000;
 			
-			j = create_part(i,x,y,PT_BRMT);
+			if ((rand()%558)<320) j = create_part(i,x,y,PT_BRMT);
+			else j = create_part(i,x,y,PT_PLSM);
 			if (j != -1) parts[j].temp = 15000;
-			
-			for (ry=-2; ry<3; ry++)
-				for (rx=-2; rx<3; rx++)
-					if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
-					{
-						r = pmap[y+ry][x+rx];
-						if ((r&0xFF)==PT_PLSM)
-						{
-							parts[r>>8].life = rand()%150+50;
-							parts[r>>8].temp = 15000;
-						}
-						else
-						{
-							j = create_part(-1, x+rx, y+ry, PT_PLSM);
-							if (j != -1) parts[j].temp = 15000;
-						}
-					}
 
 			pv[y/CELL][x/CELL] += 300;
 			return 1;
