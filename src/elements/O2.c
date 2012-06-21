@@ -49,15 +49,39 @@ int update_O2(UPDATE_FUNC_ARGS)
 		if (rand()%5 < 1)
 		{
 			int j;
-			part_change_type(i,x,y,PT_PLSM);
-			parts[i].life = rand()%150+50;
 			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_NEUT); if (j != -1) parts[j].temp = 15000;
 			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_PHOT); if (j != -1) parts[j].temp = 15000;
-			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_BRMT); if (j != -1) parts[j].temp = 15000;
-			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_SING); if (j != -1) { parts[j].temp = 15000; parts[i].life = rand()%25+50; }
+			
+			if (rand()%20)
+			{
+				j = create_part(i,x,y,PT_BRMT);
+				if (j != -1) parts[j].temp = 15000;
+			}
+			else
+			{
+				j = create_part(i,x,y,PT_SING);
+				if (j != -1) { parts[j].temp = 15000; parts[i].life = rand()%25+50; }
+			}
+			
+			for (ry=-2; ry<3; ry++)
+				for (rx=-2; rx<3; rx++)
+					if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+					{
+						r = pmap[y+ry][x+rx];
+						if ((r&0xFF)==PT_PLSM)
+						{
+							parts[r>>8].life = rand()%150+50;
+							parts[r>>8].temp = 15000;
+						}
+						else
+						{
+							j = create_part(-1, x+rx, y+ry, PT_PLSM);
+							if (j != -1) parts[j].temp = 15000;
+						}
+					}
 
-			parts[i].temp += 15000;
 			pv[y/CELL][x/CELL] += 300;
+			return 1;
 		}
 	}
 	return 0;
