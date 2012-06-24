@@ -465,80 +465,127 @@ int do_move(int i, int x, int y, float nxf, float nyf)
 	return result;
 }
 
-
-static unsigned direction_to_map(float dx, float dy, int t)
+static int get_nearest_direction(float dx, float dy)
 {
-	// TODO:
-	// Adding extra directions causes some inaccuracies.
-	// Not adding them causes problems with some diagonal surfaces (photons absorbed instead of reflected).
-	// For now, don't add them.
-	// Solution may involve more intelligent setting of initial i0 value in find_next_boundary?
-	// or rewriting normal/boundary finding code
-
-	return (dx >= 0) |
-	       (((dx + dy) >= 0) << 1) |     /*  567  */
-	       ((dy >= 0) << 2) |            /*  4+0  */
-	       (((dy - dx) >= 0) << 3) |     /*  321  */
-	       ((dx <= 0) << 4) |
-	       (((dx + dy) <= 0) << 5) |
-	       ((dy <= 0) << 6) |
-	       (((dy - dx) <= 0) << 7);
-	/*
-	return (dx >= -0.001) |
-	       (((dx + dy) >= -0.001) << 1) |     //  567
-	       ((dy >= -0.001) << 2) |            //  4+0
-	       (((dy - dx) >= -0.001) << 3) |     //  321
-	       ((dx <= 0.001) << 4) |
-	       (((dx + dy) <= 0.001) << 5) |
-	       ((dy <= 0.001) << 6) |
-	       (((dy - dx) <= 0.001) << 7);
-	}*/
+	/*  567  */
+	/*  4+0  */
+	/*  321  */
+	float dmax = fmaxf(fabsf(dx), fabsf(dy));
+	dx /= dmax;
+	dy /= dmax;
+	if (dx>0.4142f)
+	{
+		if (dy>0.4142f)
+			return 1;
+		else if (dy<-0.4142f)
+			return 7;
+		else
+			return 0;
+	}
+	else if (dx<-0.4142f)
+	{
+		if (dy>0.4142f)
+			return 3;
+		else if (dy<-0.4142f)
+			return 5;
+		else
+			return 4;
+	}
+	else
+	{
+		if (dy>0.0f)
+			return 2;
+		else
+			return 6;
+	}
 }
 
-static int is_blocking(int t, int x, int y)
+// if refract is 0, then eval_move is used to look for a blocking boundary
+// if looking for a refractive boundary, refract_t should be the refractive element (e.g. PT_GLAS)
+static int is_blocking(int part_t, int refract_t, int x, int y)
 {
-	if (t & REFRACT) {
+	if (refract_t) {
 		if (x<0 || y<0 || x>=XRES || y>=YRES)
 			return 0;
-		if ((pmap[y][x] & 0xFF) == PT_GLAS)
+		if ((pmap[y][x] & 0xFF) == refract_t)
 			return 1;
 		return 0;
 	}
 
-	return !eval_move(t, x, y, NULL);
+	return !eval_move(part_t, x, y, NULL);
 }
 
-static int is_boundary(int pt, int x, int y)
+static int is_boundary(int part_t, int refract_t, int x, int y)
 {
-	if (!is_blocking(pt,x,y))
+	if (!is_blocking(part_t,refract_t,x,y))
 		return 0;
-	if (is_blocking(pt,x,y-1) && is_blocking(pt,x,y+1) && is_blocking(pt,x-1,y) && is_blocking(pt,x+1,y))
+	if (is_blocking(part_t,refract_t,x,y-1) && is_blocking(part_t,refract_t,x,y+1) && is_blocking(part_t,refract_t,x-1,y) && is_blocking(part_t,refract_t,x+1,y))
 		return 0;
 	return 1;
 }
 
-static int find_next_boundary(int pt, int *x, int *y, int dm, int *em)
+static int find_next_boundary(int part_t, int refract_t, int *x, int *y, int *dir0, int dirstep)
 {
+	/*  567  */
+	/*  4+0  */
+	/*  321  */
 	static int dx[8] = {1,1,0,-1,-1,-1,0,1};
 	static int dy[8] = {0,1,1,1,0,-1,-1,-1};
-	static int de[8] = {0x83,0x07,0x0E,0x1C,0x38,0x70,0xE0,0xC1};
-	int i, ii, i0;
+
+	int direction;
 
 	if (*x <= 0 || *x >= XRES-1 || *y <= 0 || *y >= YRES-1)
 		return 0;
 
-	if (*em != -1) {
-		i0 = *em;
-		dm &= de[i0];
-	} else
-		i0 = 0;
+	direction = (*dir0 + dirstep) & 7;
+	if (is_boundary(part_t, refract_t, *x+dx[direction], *y+dy[direction]))
+	{
+		*x += dx[direction];
+		*y += dy[direction];
+		*dir0 = direction;
+		return 1;
+	}
 
-	for (ii=0; ii<8; ii++) {
-		i = (ii + i0) & 7;
-		if ((dm & (1 << i)) && is_boundary(pt, *x+dx[i], *y+dy[i])) {
-			*x += dx[i];
-			*y += dy[i];
-			*em = i;
+	direction = *dir0;
+	if (is_boundary(part_t, refract_t, *x+dx[direction], *y+dy[direction]))
+	{
+		*x += dx[direction];
+		*y += dy[direction];
+		*dir0 = direction;
+		return 1;
+	}
+
+	direction = (*dir0 - dirstep) & 7;
+	if (is_boundary(part_t, refract_t, *x+dx[direction], *y+dy[direction]))
+	{
+		*x += dx[direction];
+		*y += dy[direction];
+		*dir0 = direction;
+		return 1;
+	}
+
+	return 0;
+}
+
+static int find_initial_direction(int part_t, int refract_t, int *x, int *y, int *dir0, int dirstep)
+{
+	/*  567  */
+	/*  4+0  */
+	/*  321  */
+	static int dx[8] = {1,1,0,-1,-1,-1,0,1};
+	static int dy[8] = {0,1,1,1,0,-1,-1,-1};
+
+	int i, direction = *dir0;
+
+	if (*x <= 0 || *x >= XRES-1 || *y <= 0 || *y >= YRES-1)
+		return 0;
+
+	for (i=0; i<8; i++)
+	{
+		direction = (direction + dirstep) & 7;
+		if (is_boundary(part_t, refract_t, *x+dx[direction], *y+dy[direction]))
+		{
+			*dir0 = direction;
 			return 1;
 		}
 	}
@@ -546,9 +593,10 @@ static int find_next_boundary(int pt, int *x, int *y, int dm, int *em)
 	return 0;
 }
 
-int get_normal(int pt, int x, int y, float dx, float dy, float *nx, float *ny)
+int get_normal(int part_t, int refract_t, int x, int y, float dx, float dy, float *nx, float *ny)
 {
-	int ldm, rdm, lm, rm;
+	int l_direction, r_direction, part_direction, similar_initial_direction = 0;
+	int ldfound, rdfound;
 	int lx, ly, lv, rx, ry, rv;
 	int i, j;
 	float r, ex, ey;
@@ -556,43 +604,55 @@ int get_normal(int pt, int x, int y, float dx, float dy, float *nx, float *ny)
 	if (!dx && !dy)
 		return 0;
 
-	if (!is_boundary(pt, x, y))
+	if (!is_boundary(part_t, refract_t, x, y))
 		return 0;
 
-	ldm = direction_to_map(-dy, dx, pt);
-	rdm = direction_to_map(dy, -dx, pt);
 	lx = rx = x;
 	ly = ry = y;
 	lv = rv = 1;
-	lm = rm = -1;
+	part_direction = get_nearest_direction(dx, dy);
+	l_direction = r_direction = (part_direction + 4) & 7;
+	ldfound = find_initial_direction(part_t, refract_t, &lx, &ly, &l_direction, 1);
+	rdfound = find_initial_direction(part_t, refract_t, &rx, &ry, &r_direction, 7);
+	if (!ldfound && !rdfound)
+		return 0;
+	if (abs(l_direction-r_direction)<=1)
+		similar_initial_direction = 1;
 
 	j = 0;
 	for (i=0; i<SURF_RANGE; i++) {
 		if (lv)
-			lv = find_next_boundary(pt, &lx, &ly, ldm, &lm);
+			lv = find_next_boundary(part_t, refract_t, &lx, &ly, &l_direction, 7);
 		if (rv)
-			rv = find_next_boundary(pt, &rx, &ry, rdm, &rm);
+			rv = find_next_boundary(part_t, refract_t, &rx, &ry, &r_direction, 1);
 		j += lv + rv;
 		if (!lv && !rv)
 			break;
 	}
 
+	if (similar_initial_direction && lx == rx && ly == ry)
+	{
+		j /= 2;
+		rx = x;
+		ry = y;
+	}
+
 	if (j < NORMAL_MIN_EST)
 		return 0;
 
-	if ((lx == rx) && (ly == ry))
+	if (lx == rx && ly == ry)
 		return 0;
 
 	ex = rx - lx;
 	ey = ry - ly;
-	r = 1.0f/hypot(ex, ey);
+	r = 1.0f/sqrtf(ex*ex + ey*ey);
 	*nx =  ey * r;
 	*ny = -ex * r;
 
 	return 1;
 }
 
-int get_normal_interp(int pt, float x0, float y0, float dx, float dy, float *nx, float *ny)
+int get_normal_interp(int part_t, int refract_t, float x0, float y0, float dx, float dy, float *nx, float *ny)
 {
 	int x, y, i;
 
@@ -602,7 +662,7 @@ int get_normal_interp(int pt, float x0, float y0, float dx, float dy, float *nx,
 	for (i=0; i<NORMAL_INTERP; i++) {
 		x = (int)(x0 + 0.5f);
 		y = (int)(y0 + 0.5f);
-		if (is_boundary(pt, x, y))
+		if (is_boundary(part_t, refract_t, x, y))
 			break;
 		x0 += dx;
 		y0 += dy;
@@ -610,10 +670,10 @@ int get_normal_interp(int pt, float x0, float y0, float dx, float dy, float *nx,
 	if (i >= NORMAL_INTERP)
 		return 0;
 
-	if (pt == PT_PHOT)
+	if (part_t == PT_PHOT)
 		photoelectric_effect(x, y);
 
-	return get_normal(pt, x, y, dx, dy, nx, ny);
+	return get_normal(part_t, refract_t, x, y, dx, dy, nx, ny);
 }
 
 //For soap only
@@ -2531,9 +2591,21 @@ killed:
 					if (((rt==PT_GLAS && lt!=PT_GLAS) || (rt!=PT_GLAS && lt==PT_GLAS)) && r) {
 						float v_magnitude;
 
-						if (!get_normal_interp(REFRACT|t, parts[i].x, parts[i].y, parts[i].vx, parts[i].vy, &nrx, &nry)) {
-							kill_part(i);
-							continue;
+						if (rt==PT_GLAS && lt!=PT_GLAS)
+						{
+							if (!get_normal_interp(t, PT_GLAS, parts[i].x, parts[i].y, parts[i].vx, parts[i].vy, &nrx, &nry)) {
+								kill_part(i);
+								continue;
+							}
+						}
+						else //rt!=PT_GLAS && lt==PT_GLAS
+						{
+							if (!get_normal_interp(t, PT_GLAS, fin_x, fin_y, -parts[i].vx, -parts[i].vy, &nrx, &nry)) {
+								kill_part(i);
+								continue;
+							}
+							nrx = -nrx;
+							nry = -nry;
 						}
 
 						r = get_wavelength_bin(&parts[i].ctype);
@@ -2547,8 +2619,6 @@ killed:
 						// ct1 = cos(theta1) = cos(angle of incidence) = dot product of normalised velocity vector and normalised surface normal vector
 						// ct2 = cos(theta2) = cos(angle of refraction)
 						nn = GLASS_IOR - GLASS_DISP*(r-15)/15.0f;
-						nrx = -nrx;
-						nry = -nry;
 						if (rt==PT_GLAS && lt!=PT_GLAS)
 							nn = 1.0f/nn;
 						v_magnitude = sqrtf(powf(parts[i].vx, 2) + powf(parts[i].vy, 2));
@@ -2621,7 +2691,7 @@ killed:
 					if ((r & 0xFF) == PT_PLUT) parts[i].ctype &= 0x001FCE00;
 					if ((r & 0xFF) == PT_URAN) parts[i].ctype &= 0x003FC000;
 
-					if (get_normal_interp(t, parts[i].x, parts[i].y, parts[i].vx, parts[i].vy, &nrx, &nry)) {
+					if (get_normal_interp(t, 0, parts[i].x, parts[i].y, parts[i].vx, parts[i].vy, &nrx, &nry)) {
 						dp = nrx*parts[i].vx + nry*parts[i].vy;
 						parts[i].vx -= 2.0f*dp*nrx;
 						parts[i].vy -= 2.0f*dp*nry;
