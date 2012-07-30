@@ -27,6 +27,7 @@
 #define SAVE_VERSION 81
 #define MINOR_VERSION 3
 #define BUILD_NUM 186
+#define BETA
 //VersionInfoEnd
 
 #define IDENT_VERSION "G" //Change this if you're not Simon! It should be a single letter
@@ -62,12 +63,12 @@
 #define MENUSIZE 40
 #define BARSIZE 17
 #endif
-#define XRES	612
-#define YRES	384
+#define XRES	1048
+#define YRES	792
 #define NPART XRES*YRES
 
-#define XCNTR   306
-#define YCNTR   192
+#define XCNTR   524
+#define YCNTR   396
 
 #define MAX_DISTANCE sqrt(pow(XRES, 2)+pow(YRES, 2))
 

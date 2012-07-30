@@ -2290,7 +2290,10 @@ int main(int argc, char *argv[])
 								}
 							}
 							else
+							{
+								svf_publish = 0;
 								execute_save(vid_buf);
+							}
 							while (!sdl_poll())
 								if (!mouse_get_state(&x, &y))
 									break;

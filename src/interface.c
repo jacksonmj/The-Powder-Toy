@@ -2121,7 +2121,7 @@ finish:
 
 int save_name_ui(pixel *vid_buf)
 {
-	int x0=(XRES-420)/2,y0=(YRES-68-YRES/4)/2,b=1,bq,mx,my,ths,idtxtwidth,nd=0;
+	int x0=XRES/2-(240+XRES/3)/2,y0=YRES/2-(68+YRES/3)/2,b=1,bq,mx,my,ths,idtxtwidth,nd=0;
 	void *th;
 	pixel *old_vid=(pixel *)calloc((XRES+BARSIZE)*(YRES+MENUSIZE), PIXELSIZE);
 	ui_edit ed;
@@ -2173,7 +2173,8 @@ int save_name_ui(pixel *vid_buf)
 	cb.x = x0+10;
 	cb.y = y0+53+YRES/4;
 	cb.focus = 0;
-	cb.checked = svf_publish;
+	//cb.checked = svf_publish;
+	cb.checked = 0;
 
 	fillrect(vid_buf, -1, -1, XRES+BARSIZE, YRES+MENUSIZE, 0, 0, 0, 192);
 	draw_rgba_image(vid_buf, save_to_server_image, 0, 0, 0.7);
@@ -2185,8 +2186,8 @@ int save_name_ui(pixel *vid_buf)
 		bq = b;
 		b = mouse_get_state(&mx, &my);
 
-		drawrect(vid_buf, x0, y0, 420, 90+YRES/4, 192, 192, 192, 255);
-		clearrect(vid_buf, x0, y0, 420, 90+YRES/4);
+		drawrect(vid_buf, x0, y0, 220+XRES/3, 26+YRES/3, 192, 192, 192, 255);
+		clearrect(vid_buf, x0, y0, 220+XRES/3, 26+YRES/3);
 		drawtext(vid_buf, x0+8, y0+8, "New simulation name:", 255, 255, 255, 255);
 		drawtext(vid_buf, x0+10, y0+23, "\x82", 192, 192, 192, 255);
 		drawrect(vid_buf, x0+8, y0+20, 176, 16, 192, 192, 192, 255);
@@ -2196,11 +2197,11 @@ int save_name_ui(pixel *vid_buf)
 		ui_edit_draw(vid_buf, &ed);
 		ui_edit_draw(vid_buf, &ed2);
 
-		drawrect(vid_buf, x0+(205-XRES/3)/2-2+205, y0+30, XRES/3+3, YRES/3+3, 128, 128, 128, 255);
-		render_thumb(th, ths, 0, vid_buf, x0+(205-XRES/3)/2+205, y0+32, 3);
+		drawrect(vid_buf, x0+203, y0+10, XRES/3+3, YRES/3+3, 128, 128, 128, 255);
+		render_thumb(th, ths, 0, vid_buf, x0+205, y0+12, 3);
 
-		ui_checkbox_draw(vid_buf, &cb);
-		drawtext(vid_buf, x0+34, y0+50+YRES/4, "Publish? (Do not publish others'\nworks without permission)", 192, 192, 192, 255);
+		//ui_checkbox_draw(vid_buf, &cb);
+		drawtext(vid_buf, x0+15, y0+50+YRES/4, "(Publishing disabled)", 192, 192, 192, 255);
 
 		drawtext(vid_buf, x0+5, y0+79+YRES/4, "Save simulation", 255, 255, 255, 255);
 		drawrect(vid_buf, x0, y0+74+YRES/4, 192, 16, 192, 192, 192, 255);
