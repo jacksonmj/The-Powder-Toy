@@ -849,10 +849,10 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 		outputData[6] = 255;
 	else
 		outputData[6] = blockW;
-	if (blockW>255)
-		outputData[6] = 255;
+	if (blockH>255)
+		outputData[7] = 255;
 	else
-		outputData[6] = blockW;
+		outputData[7] = blockH;
 	outputData[8] = finalDataLen;
 	outputData[9] = finalDataLen >> 8;
 	outputData[10] = finalDataLen >> 16;
