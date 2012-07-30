@@ -2171,7 +2171,7 @@ int save_name_ui(pixel *vid_buf)
 
 
 	cb.x = x0+10;
-	cb.y = y0+53+YRES/4;
+	cb.y = y0+53+YRES/6;
 	cb.focus = 0;
 	//cb.checked = svf_publish;
 	cb.checked = 0;
@@ -2201,12 +2201,12 @@ int save_name_ui(pixel *vid_buf)
 		render_thumb(th, ths, 0, vid_buf, x0+205, y0+12, 3);
 
 		//ui_checkbox_draw(vid_buf, &cb);
-		drawtext(vid_buf, x0+15, y0+50+YRES/4, "(Publishing disabled)", 192, 192, 192, 255);
+		drawtext(vid_buf, x0+15, y0+50+YRES/6, "(Publishing disabled)", 192, 192, 192, 255);
 
-		drawtext(vid_buf, x0+5, y0+79+YRES/4, "Save simulation", 255, 255, 255, 255);
-		drawrect(vid_buf, x0, y0+74+YRES/4, 192, 16, 192, 192, 192, 255);
+		drawtext(vid_buf, x0+5, y0+YRES/3+15, "Save simulation", 255, 255, 255, 255);
+		drawrect(vid_buf, x0, y0+YRES/3+10, 192, 16, 192, 192, 192, 255);
 
-		draw_line(vid_buf, x0+192, y0, x0+192, y0+90+YRES/4, 150, 150, 150, XRES+BARSIZE);
+		draw_line(vid_buf, x0+192, y0, x0+192, y0+YRES/3+26, 150, 150, 150, XRES+BARSIZE);
 
 		if (svf_id[0])
 		{
@@ -2231,7 +2231,7 @@ int save_name_ui(pixel *vid_buf)
 		ui_checkbox_process(mx, my, b, bq, &cb);
 
 		if ((b && !bq && ((mx>=x0+9 && mx<x0+23 && my>=y0+22 && my<y0+36) ||
-		                 (mx>=x0 && mx<x0+192 && my>=y0+74+YRES/4 && my<y0+90+YRES/4)))
+		                 (mx>=x0 && mx<x0+192 && my>=y0+YRES/3+10 && my<y0+YRES/3+26)))
 			|| sdl_key==SDLK_RETURN)
 		{
 			if (th) free(th);
