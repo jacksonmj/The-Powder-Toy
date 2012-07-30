@@ -121,10 +121,6 @@ pixel *prerender_save_OPS(void *save, int size, int *width, int *height)
 	fullW = blockW*CELL;
 	fullH = blockH*CELL;
 	
-	//
-	*width = fullW;
-	*height = fullH;
-	
 	//From newer version
 	if(inputData[4] > SAVE_VERSION)
 	{
@@ -139,13 +135,6 @@ pixel *prerender_save_OPS(void *save, int size, int *width, int *height)
 		goto fail;
 	}
 		
-	//Too large/off screen
-	if(blockX+blockW > XRES/CELL || blockY+blockH > YRES/CELL)
-	{
-		fprintf(stderr, "Save too large\n");
-		goto fail;
-	}
-	
 	bsonDataLen = ((unsigned)inputData[8]);
 	bsonDataLen |= ((unsigned)inputData[9]) << 8;
 	bsonDataLen |= ((unsigned)inputData[10]) << 16;
@@ -205,7 +194,42 @@ pixel *prerender_save_OPS(void *save, int size, int *width, int *height)
 				fprintf(stderr, "Invalid datatype of wall data: %d[%d] %d[%d] %d[%d]\n", bson_iterator_type(&iter), bson_iterator_type(&iter)==BSON_BINDATA, (unsigned char)bson_iterator_bin_type(&iter), ((unsigned char)bson_iterator_bin_type(&iter))==BSON_BIN_USER, bson_iterator_bin_len(&iter), bson_iterator_bin_len(&iter)>0);
 			}
 		}
+		else if(strcmp(bson_iterator_key(&iter), "blockW")==0)
+		{
+			if(bson_iterator_type(&iter)==BSON_INT)
+			{
+				blockW = bson_iterator_int(&iter);
+				fullW = blockW*CELL;
+			}
+			else
+			{
+				fprintf(stderr, "Wrong type for %s\n", bson_iterator_key(&iter));
+			}
+		}
+		else if(strcmp(bson_iterator_key(&iter), "blockH")==0)
+		{
+			if(bson_iterator_type(&iter)==BSON_INT)
+			{
+				blockH = bson_iterator_int(&iter);
+				fullH = blockH*CELL;
+			}
+			else
+			{
+				fprintf(stderr, "Wrong type for %s\n", bson_iterator_key(&iter));
+			}
+		}
+		
 	}
+	
+	//Too large/off screen
+	if(blockX+blockW > XRES/CELL || blockY+blockH > YRES/CELL)
+	{
+		fprintf(stderr, "Save too large\n");
+		goto fail;
+	}
+	
+	*width = fullW;
+	*height = fullH;
 	
 	vidBuf = calloc(fullW*fullH, PIXELSIZE);
 	
@@ -766,6 +790,9 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 	bson_append_int(&b, "gravityMode", gravityMode);
 	bson_append_int(&b, "airMode", airMode);
 	
+	bson_append_int(&b, "blockW", blockW);
+	bson_append_int(&b, "blockH", blockH);
+	
 	//bson_append_int(&b, "leftSelectedElement", sl);
 	//bson_append_int(&b, "rightSelectedElement", sr);
 	bson_append_int(&b, "activeMenu", active_menu);
@@ -818,8 +845,14 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 	outputData[3] = '1';
 	outputData[4] = SAVE_VERSION;
 	outputData[5] = CELL;
-	outputData[6] = blockW;
-	outputData[7] = blockH;
+	if (blockW>255)
+		outputData[6] = 255;
+	else
+		outputData[6] = blockW;
+	if (blockW>255)
+		outputData[6] = 255;
+	else
+		outputData[6] = blockW;
 	outputData[8] = finalDataLen;
 	outputData[9] = finalDataLen >> 8;
 	outputData[10] = finalDataLen >> 16;
@@ -894,13 +927,6 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 		return 1;
 	}
 		
-	//Too large/off screen
-	if(blockX+blockW > XRES/CELL || blockY+blockH > YRES/CELL)
-	{
-		fprintf(stderr, "Save too large\n");
-		return 1;
-	}
-	
 	bsonDataLen = ((unsigned)inputData[8]);
 	bsonDataLen |= ((unsigned)inputData[9]) << 8;
 	bsonDataLen |= ((unsigned)inputData[10]) << 16;
@@ -1123,6 +1149,30 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 				fprintf(stderr, "Wrong type for %s\n", bson_iterator_key(&iter));
 			}
 		}
+		else if(strcmp(bson_iterator_key(&iter), "blockW")==0)
+		{
+			if(bson_iterator_type(&iter)==BSON_INT)
+			{
+				blockW = bson_iterator_int(&iter);
+				fullW = blockW*CELL;
+			}
+			else
+			{
+				fprintf(stderr, "Wrong type for %s\n", bson_iterator_key(&iter));
+			}
+		}
+		else if(strcmp(bson_iterator_key(&iter), "blockH")==0)
+		{
+			if(bson_iterator_type(&iter)==BSON_INT)
+			{
+				blockH = bson_iterator_int(&iter);
+				fullH = blockH*CELL;
+			}
+			else
+			{
+				fprintf(stderr, "Wrong type for %s\n", bson_iterator_key(&iter));
+			}
+		}
 		/*else if((strcmp(bson_iterator_key(&iter), "leftSelectedElement")==0 || strcmp(bson_iterator_key(&iter), "rightSelectedElement")) && replace)
 		{
 			if(bson_iterator_type(&iter)==BSON_INT && bson_iterator_int(&iter) > 0 && bson_iterator_int(&iter) < PT_NUM)
@@ -1152,6 +1202,13 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 				fprintf(stderr, "Wrong value for %s\n", bson_iterator_key(&iter));
 			}
 		}
+	}
+	
+	//Too large/off screen
+	if(blockX+blockW > XRES/CELL || blockY+blockH > YRES/CELL)
+	{
+		fprintf(stderr, "Save too large\n");
+		return 1;
 	}
 	
 	//Read wall and fan data
