@@ -4060,7 +4060,7 @@ int sdl_open(void)
 	if(!sdl_opened)
 		info = *SDL_GetVideoInfo(); 
 
-	if (info.current_w<((XRES+BARSIZE)*sdl_scale) || info.current_h<((YRES+MENUSIZE)*sdl_scale))
+	if (sdl_opened && (info.current_w<((XRES+BARSIZE)*sdl_scale) || info.current_h<((YRES+MENUSIZE)*sdl_scale)))
 	{
 		sdl_scale = 1;
 		screen_err = 1;
