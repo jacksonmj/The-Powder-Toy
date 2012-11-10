@@ -33,8 +33,8 @@
 #include <fstream>
 #include <cstdlib>
 
-#ifdef WIN32
-
+#ifdef WIN
+#include <direct.h>
 #else
 #include <sys/stat.h>
 #include <sys/types.h>
