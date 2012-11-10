@@ -29,3 +29,4 @@ src/python/stdlib/*
 *.manifest
 *.manifest.res
 *.pdb
+utility/convert-elements
