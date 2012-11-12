@@ -196,7 +196,7 @@ public:
 	std::string HighTemperatureTransitionThreshold;
 	std::string HighTemperatureTransitionElement;
 
-	std::string latent;
+	std::string Latent;
 };
 
 int main()
@@ -360,7 +360,7 @@ int main()
 				}
 				if (elementId >= elementData.size())
 					elementData.resize(elementId);
-				elementData[elementId].latent = dataRow[0];
+				elementData[elementId].Latent = dataRow[0];
 				elementId++;
 			}
 		}
@@ -382,7 +382,7 @@ int main()
 		}
 		outputLicenseHeader(elementFile);
 
-		elementFile << "#include \"simulation/Elements.h\"" << std::endl << std::endl;
+		elementFile << "#include \"simulation/ElementsCommon.h\"" << std::endl << std::endl;
 
 		elementFile << "void " << elementData[elementId].CodeName << "_init_element(ELEMENT_INIT_FUNC_ARGS)" << std::endl;
 		elementFile << "{" << std::endl;
@@ -414,6 +414,7 @@ int main()
 		elementFile << std::endl;
 		elementFile << initPropertyPrefix << "CreationTemperature = " << elementData[elementId].CreationTemperature << ";" << std::endl;
 		elementFile << initPropertyPrefix << "HeatConduct = " << elementData[elementId].HeatConduct << ";" << std::endl;
+		elementFile << initPropertyPrefix << "Latent = " << elementData[elementId].Latent << ";" << std::endl;
 		elementFile << initPropertyPrefix << "Description = " << elementData[elementId].Description << ";" << std::endl;
 		elementFile << std::endl;
 		elementFile << initPropertyPrefix << "State = " << elementData[elementId].State << ";" << std::endl;
