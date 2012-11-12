@@ -1,0 +1,65 @@
+
+To compile on Linux:
+	mkdir -p build
+	cd build
+	cmake ..
+	make
+Executable name is powder
+
+To cross compile for Windows using MinGW on Linux:
+	mkdir -p build
+	cd build
+	cmake .. -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchain-cross-mingw-linux.cmake
+	make
+Executable name is powder.exe
+
+
+If compiling on Windows using MinGW or MSYS, you may need to change 
+the cmake generator type. Run cmake --help for a list of available 
+generator types
+
+For example:
+	cmake .. -G "MSYS Makefiles"
+
+
+So far, compiling with cmake has only been tested on Linux (both 
+native compiling and cross compiling for Windows), and MinGW+MSYS 
+running in Wine. 
+
+
+
+Several options are available:
+
+Cmake option name              Default
+-----------------------------------------
+GravityFFT                       ON                                                                                                          
+LuaConsole                       ON                                                                                                          
+PreferStatic                     ON 
+NoWarnings                       ON                                                                                                          
+Debug                            ON                                                                                                          
+Optimisations                    ON                                                                                                          
+
+To change an option, add -DOptionName=value to the end of the cmake 
+command. For example, disable optimisations by adding 
+-DOptimisations=OFF
+
+
+GravityFFT and LuaConsole are optional, and Powder Toy will function 
+fine if they are disabled. However, enabling them is recommended, since 
+GravityFFT allows part of the game (the Newtonian gravity 
+calculations) to run a lot faster, and LuaConsole adds useful extra 
+functionality. 
+
+GravityFFT requires the single precision version of the FFTW3 library 
+(fftw3f), and LuaConsole requires Lua 5.1.
+
+Most libraries are linked statically where available, to avoid having 
+to mess around with DLLs for Windows, and to try to avoid issues due to 
+differences in libbz2 naming conventions between Linux distros. Change 
+this with -DPreferStatic=OFF
+
+The Debug option enables or disables the "-g" compiler option for 
+gcc/g++. If it's turned off, you may also want to strip the binaries 
+after compiling them to further reduce the executable size, as this 
+isn't done automatically.
+
