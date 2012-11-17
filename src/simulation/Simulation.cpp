@@ -43,7 +43,7 @@ void Simulation::Compat_CopyElementProperties()
 	for (int t=0; t<PT_NUM; t++)
 	{
 		ptypes[t].name = mystrdup(elements[t].Name);
-		ptypes[t].pcolors = elements[t].Colour;
+		ptypes[t].pcolors = PIXRGB(COLR(elements[t].Colour), COLG(elements[t].Colour), COLB(elements[t].Colour));
 		ptypes[t].menu = elements[t].MenuVisible;
 		ptypes[t].menusection = elements[t].MenuSection;
 		ptypes[t].enabled = elements[t].Enabled;

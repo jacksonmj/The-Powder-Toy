@@ -15,6 +15,8 @@
 
 #include "simulation/Element.h"
 
+#include "powder.h"
+
 Element::Element() :
 	Identifier(""),
 	Name(""),
@@ -23,41 +25,35 @@ Element::Element() :
 	MenuSection(0),
 	Enabled(0),
 	Advection(0.0f),
-	AirDrag(0.0f) /*;
-	float AirLoss;
-	float Loss;
-	float Collision;
-	float Gravity;
-	float Diffusion;
-	float PressureAdd_NoAmbHeat;
-	int Falldown;
-
-	int Flammable;
-	int Explosive;
-	int Meltable;
-	int Hardness;
-
-	int Weight;
-
-	float CreationTemperature;
-	unsigned char HeatConduct;
-	unsigned int Latent;
-	char *Description;
-
-	char State;
-	unsigned int Properties;
-
-	float LowPressureTransitionThreshold;
-	int LowPressureTransitionElement;
-	float HighPressureTransitionThreshold;
-	int HighPressureTransitionElement;
-	float LowTemperatureTransitionThreshold;
-	int LowTemperatureTransitionElement;
-	float HighTemperatureTransitionThreshold;
-	int HighTemperatureTransitionElement;
-
-	int (*Update) (UPDATE_FUNC_ARGS);
-	int (*Graphics) (GRAPHICS_FUNC_ARGS);*/
+	AirDrag(0.0f),
+	AirLoss(1.00f),
+	Loss(0.00f),
+	Collision(0.0f),
+	Gravity(0.0f),
+	Diffusion(0.00f),
+	PressureAdd_NoAmbHeat(0.00f),
+	Falldown(0),
+	Flammable(0),
+	Explosive(0),
+	Meltable(0),
+	Hardness(0),
+	Weight(100),
+	CreationTemperature(R_TEMP + 273.15f),
+	HeatConduct(255),
+	Latent(0),
+	Description(""),
+	State(ST_NONE),
+	Properties(0),
+	LowPressureTransitionThreshold(IPL),
+	LowPressureTransitionElement(NT),
+	HighPressureTransitionThreshold(IPH),
+	HighPressureTransitionElement(NT),
+	LowTemperatureTransitionThreshold(ITL),
+	LowTemperatureTransitionElement(NT),
+	HighTemperatureTransitionThreshold(ITH),
+	HighTemperatureTransitionElement(NT),
+	Update(NULL),
+	Graphics(NULL)
 {
 	;
 }

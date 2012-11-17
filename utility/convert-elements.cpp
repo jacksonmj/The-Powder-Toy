@@ -390,7 +390,14 @@ int main()
 
 		elementFile << initPropertyPrefix << "Identifier = \"DEFAULT_PT_" << elementData[elementId].CodeName << "\";" << std::endl;
 		elementFile << initPropertyPrefix << "Name = " << elementData[elementId].Name << ";" << std::endl;
-		elementFile << initPropertyPrefix << "Colour = " << elementData[elementId].Colour << ";" << std::endl;
+		if (elementData[elementId].Colour.compare(0, 8, "PIXPACK(")==0)
+		{
+			elementFile << initPropertyPrefix << "Colour = COL" << elementData[elementId].Colour.substr(std::string("PIX").length(), std::string::npos) << ";" << std::endl;
+		}
+		else
+		{
+			elementFile << initPropertyPrefix << "Colour = " << elementData[elementId].Colour << ";" << std::endl;
+		}
 		elementFile << initPropertyPrefix << "MenuVisible = " << elementData[elementId].MenuVisible << ";" << std::endl;
 		elementFile << initPropertyPrefix << "MenuSection = " << elementData[elementId].MenuSection << ";" << std::endl;
 		elementFile << initPropertyPrefix << "Enabled = " << elementData[elementId].Enabled << ";" << std::endl;

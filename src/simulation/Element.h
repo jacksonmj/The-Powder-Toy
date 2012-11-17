@@ -16,7 +16,7 @@
 #ifndef ELEMENT_H
 #define ELEMENT_H
 
-#include "graphics.h"
+#include "graphics/ARGBColour.h"
 
 // TODO: remove these undefs, once the defines have been removed from powder.h
 #undef UPDATE_FUNC_ARGS
@@ -35,7 +35,7 @@ class Element
 public:
 	char *Identifier;
 	char *Name;
-	pixel Colour;
+	ARGBColour Colour;
 	int MenuVisible;
 	int MenuSection;
 	int Enabled;

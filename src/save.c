@@ -358,7 +358,7 @@ pixel *prerender_save_OPS(void *save, int size, int *width, int *height)
 						fprintf(stderr, "Out of range [%d]: %d %d, [%d, %d], [%d, %d]\n", i, x, y, (unsigned)partsData[i+1], (unsigned)partsData[i+2], (unsigned)partsData[i+3], (unsigned)partsData[i+4]);
 						goto fail;
 					}
-					if(partsData[i] >= PT_NUM)
+					if(partsData[i] >= PT_NUM || !ptypes[partsData[i]].enabled)
 						partsData[i] = PT_DMND;	//Replace all invalid elements with diamond
 					
 					//Draw type
