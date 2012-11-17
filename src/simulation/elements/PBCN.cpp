@@ -19,7 +19,7 @@ void PBCN_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_PBCN";
 	elem->Name = "PBCN";
-	elem->Colour = PIXPACK(0x3B1D0A);
+	elem->Colour = COLPACK(0x3B1D0A);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWERED;
 	elem->Enabled = 1;

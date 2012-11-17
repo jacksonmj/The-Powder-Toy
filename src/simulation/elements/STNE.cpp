@@ -19,7 +19,7 @@ void STNE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_STNE";
 	elem->Name = "STNE";
-	elem->Colour = PIXPACK(0xA0A0A0);
+	elem->Colour = COLPACK(0xA0A0A0);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;

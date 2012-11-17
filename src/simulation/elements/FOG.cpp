@@ -19,7 +19,7 @@ void FOG_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_FOG";
 	elem->Name = "FOG";
-	elem->Colour = PIXPACK(0xAAAAAA);
+	elem->Colour = COLPACK(0xAAAAAA);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_CRACKER2;
 	elem->Enabled = 1;

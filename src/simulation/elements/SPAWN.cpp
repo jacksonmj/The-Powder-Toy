@@ -19,7 +19,7 @@ void SPAWN_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_SPAWN";
 	elem->Name = "SPWN";
-	elem->Colour = PIXPACK(0xAAAAAA);
+	elem->Colour = COLPACK(0xAAAAAA);
 	elem->MenuVisible = 0;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

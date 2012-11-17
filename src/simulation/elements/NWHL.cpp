@@ -19,7 +19,7 @@ void NWHL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_NWHL";
 	elem->Name = "WHOL";
-	elem->Colour = PIXPACK(0xFFFFFF);
+	elem->Colour = COLPACK(0xFFFFFF);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SPECIAL;
 	elem->Enabled = 1;

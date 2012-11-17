@@ -19,7 +19,7 @@ void PIPE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_PIPE";
 	elem->Name = "PIPE";
-	elem->Colour = PIXPACK(0x444444);
+	elem->Colour = COLPACK(0x444444);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

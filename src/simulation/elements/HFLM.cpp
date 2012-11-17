@@ -19,7 +19,7 @@ void HFLM_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_HFLM";
 	elem->Name = "CFLM";
-	elem->Colour = PIXPACK(0x8080FF);
+	elem->Colour = COLPACK(0x8080FF);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;

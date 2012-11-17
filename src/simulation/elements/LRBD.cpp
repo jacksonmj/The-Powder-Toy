@@ -19,7 +19,7 @@ void LRBD_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_LRBD";
 	elem->Name = "LRBD";
-	elem->Colour = PIXPACK(0xAAAAAA);
+	elem->Colour = COLPACK(0xAAAAAA);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;

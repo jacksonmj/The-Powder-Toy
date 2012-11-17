@@ -19,7 +19,7 @@ void NITR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_NITR";
 	elem->Name = "NITR";
-	elem->Colour = PIXPACK(0x20E010);
+	elem->Colour = COLPACK(0x20E010);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;

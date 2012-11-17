@@ -19,7 +19,7 @@ void SWCH_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_SWCH";
 	elem->Name = "SWCH";
-	elem->Colour = PIXPACK(0x103B11);
+	elem->Colour = COLPACK(0x103B11);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_ELEC;
 	elem->Enabled = 1;

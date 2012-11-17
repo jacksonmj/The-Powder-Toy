@@ -19,7 +19,7 @@ void OIL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_OIL";
 	elem->Name = "OIL";
-	elem->Colour = PIXPACK(0x404010);
+	elem->Colour = COLPACK(0x404010);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;

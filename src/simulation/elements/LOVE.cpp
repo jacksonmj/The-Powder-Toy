@@ -19,7 +19,7 @@ void LOVE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_LOVE";
 	elem->Name = "LOVE";
-	elem->Colour = PIXPACK(0xFF30FF);
+	elem->Colour = COLPACK(0xFF30FF);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_CRACKER2;
 	elem->Enabled = 1;

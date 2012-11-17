@@ -19,7 +19,7 @@ void EMBR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_EMBR";
 	elem->Name = "EMBR";
-	elem->Colour = PIXPACK(0xFFF288);
+	elem->Colour = COLPACK(0xFFF288);
 	elem->MenuVisible = 0;
 	elem->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;

@@ -19,7 +19,7 @@ void BVBR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_BVBR";
 	elem->Name = "BVBR";
-	elem->Colour = PIXPACK(0x002900);
+	elem->Colour = COLPACK(0x002900);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;

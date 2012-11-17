@@ -19,7 +19,7 @@ void SING_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_SING";
 	elem->Name = "SING";
-	elem->Colour = PIXPACK(0x242424);
+	elem->Colour = COLPACK(0x242424);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;

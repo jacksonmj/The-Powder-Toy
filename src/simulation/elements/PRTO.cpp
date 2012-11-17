@@ -19,7 +19,7 @@ void PRTO_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_PRTO";
 	elem->Name = "PRTO";
-	elem->Colour = PIXPACK(0x0020EB);
+	elem->Colour = COLPACK(0x0020EB);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SPECIAL;
 	elem->Enabled = 1;

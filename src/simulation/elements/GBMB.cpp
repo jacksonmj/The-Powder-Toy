@@ -19,7 +19,7 @@ void GBMB_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_GBMB";
 	elem->Name = "GBMB";
-	elem->Colour = PIXPACK(0x1144BB);
+	elem->Colour = COLPACK(0x1144BB);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;

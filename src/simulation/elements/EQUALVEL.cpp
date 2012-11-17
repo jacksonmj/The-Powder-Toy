@@ -19,7 +19,7 @@ void EQUALVEL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_EQUALVEL";
 	elem->Name = "EQVE";
-	elem->Colour = PIXPACK(0xFFE0A0);
+	elem->Colour = COLPACK(0xFFE0A0);
 	elem->MenuVisible = 0;
 	elem->MenuSection = SC_CRACKER2;
 	elem->Enabled = 1;

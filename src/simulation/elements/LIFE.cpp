@@ -19,7 +19,7 @@ void LIFE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_LIFE";
 	elem->Name = "LIFE";
-	elem->Colour = PIXPACK(0x0CAC00);
+	elem->Colour = COLPACK(0x0CAC00);
 	elem->MenuVisible = 0;
 	elem->MenuSection = SC_LIFE;
 	elem->Enabled = 1;

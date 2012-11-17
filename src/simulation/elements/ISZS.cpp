@@ -19,7 +19,7 @@ void ISZS_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_ISZS";
 	elem->Name = "ISZS";
-	elem->Colour = PIXPACK(0x662089);
+	elem->Colour = COLPACK(0x662089);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;

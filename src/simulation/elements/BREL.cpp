@@ -19,7 +19,7 @@ void BREL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_BREL";
 	elem->Name = "BREL";
-	elem->Colour = PIXPACK(0x707060);
+	elem->Colour = COLPACK(0x707060);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;

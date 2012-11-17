@@ -19,7 +19,7 @@ void WTRV_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_WTRV";
 	elem->Name = "WTRV";
-	elem->Colour = PIXPACK(0xA0A0FF);
+	elem->Colour = COLPACK(0xA0A0FF);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_GAS;
 	elem->Enabled = 1;

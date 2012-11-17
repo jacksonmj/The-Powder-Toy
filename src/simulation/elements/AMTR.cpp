@@ -19,7 +19,7 @@ void AMTR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_AMTR";
 	elem->Name = "AMTR";
-	elem->Colour = PIXPACK(0x808080);
+	elem->Colour = COLPACK(0x808080);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;

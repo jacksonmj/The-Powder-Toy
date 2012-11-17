@@ -19,7 +19,7 @@ void BRAY_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_BRAY";
 	elem->Name = "BRAY";
-	elem->Colour = PIXPACK(0xFFFFFF);
+	elem->Colour = COLPACK(0xFFFFFF);
 	elem->MenuVisible = 0;
 	elem->MenuSection = SC_ELEC;
 	elem->Enabled = 1;

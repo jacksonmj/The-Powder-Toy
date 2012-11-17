@@ -19,7 +19,7 @@ void C5_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_C5";
 	elem->Name = "C-5";
-	elem->Colour = PIXPACK(0x2050E0);
+	elem->Colour = COLPACK(0x2050E0);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;

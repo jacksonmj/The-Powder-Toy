@@ -19,7 +19,7 @@ void SHLD1_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_SHLD1";
 	elem->Name = "SHLD";
-	elem->Colour = PIXPACK(0xAAAAAA);
+	elem->Colour = COLPACK(0xAAAAAA);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

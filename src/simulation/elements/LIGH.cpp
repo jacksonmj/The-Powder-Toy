@@ -19,7 +19,7 @@ void LIGH_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_LIGH";
 	elem->Name = "LIGH";
-	elem->Colour = PIXPACK(0xFFFFC0);
+	elem->Colour = COLPACK(0xFFFFC0);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_ELEC;
 	elem->Enabled = 1;

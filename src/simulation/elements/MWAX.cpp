@@ -19,7 +19,7 @@ void MWAX_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_MWAX";
 	elem->Name = "MWAX";
-	elem->Colour = PIXPACK(0xE0E0AA);
+	elem->Colour = COLPACK(0xE0E0AA);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;

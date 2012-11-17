@@ -19,7 +19,7 @@ void GAS_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_GAS";
 	elem->Name = "GAS";
-	elem->Colour = PIXPACK(0xE0FF20);
+	elem->Colour = COLPACK(0xE0FF20);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_GAS;
 	elem->Enabled = 1;

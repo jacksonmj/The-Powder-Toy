@@ -19,7 +19,7 @@ void BIZRG_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_BIZRG";
 	elem->Name = "BIZG";
-	elem->Colour = PIXPACK(0x00FFBB);
+	elem->Colour = COLPACK(0x00FFBB);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_CRACKER2;
 	elem->Enabled = 1;

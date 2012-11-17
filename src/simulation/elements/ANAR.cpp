@@ -19,7 +19,7 @@ void ANAR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_ANAR";
 	elem->Name = "ANAR";
-	elem->Colour = PIXPACK(0xFFFFEE);
+	elem->Colour = COLPACK(0xFFFFEE);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;

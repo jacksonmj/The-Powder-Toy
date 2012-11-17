@@ -19,7 +19,7 @@ void VINE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_VINE";
 	elem->Name = "VINE";
-	elem->Colour = PIXPACK(0x079A00);
+	elem->Colour = COLPACK(0x079A00);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

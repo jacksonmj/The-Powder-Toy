@@ -19,7 +19,7 @@ void THDR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_THDR";
 	elem->Name = "THDR";
-	elem->Colour = PIXPACK(0xFFFFA0);
+	elem->Colour = COLPACK(0xFFFFA0);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;

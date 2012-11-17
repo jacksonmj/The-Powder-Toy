@@ -19,7 +19,7 @@ void INWR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_INWR";
 	elem->Name = "INWR";
-	elem->Colour = PIXPACK(0x544141);
+	elem->Colour = COLPACK(0x544141);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_ELEC;
 	elem->Enabled = 1;

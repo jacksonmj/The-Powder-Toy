@@ -19,7 +19,7 @@ void WOOD_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_WOOD";
 	elem->Name = "WOOD";
-	elem->Colour = PIXPACK(0xC0A040);
+	elem->Colour = COLPACK(0xC0A040);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

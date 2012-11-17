@@ -19,7 +19,7 @@ void NEUT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_NEUT";
 	elem->Name = "NEUT";
-	elem->Colour = PIXPACK(0x20E0FF);
+	elem->Colour = COLPACK(0x20E0FF);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;

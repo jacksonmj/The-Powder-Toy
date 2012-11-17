@@ -19,7 +19,7 @@ void BRMT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_BRMT";
 	elem->Name = "BRMT";
-	elem->Colour = PIXPACK(0x705060);
+	elem->Colour = COLPACK(0x705060);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;

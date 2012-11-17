@@ -19,7 +19,7 @@ void PUMP_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_PUMP";
 	elem->Name = "PUMP";
-	elem->Colour = PIXPACK(0x0A0A3B);
+	elem->Colour = COLPACK(0x0A0A3B);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWERED;
 	elem->Enabled = 1;

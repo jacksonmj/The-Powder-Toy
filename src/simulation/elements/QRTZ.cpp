@@ -19,7 +19,7 @@ void QRTZ_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_QRTZ";
 	elem->Name = "QRTZ";
-	elem->Colour = PIXPACK(0xAADDDD);
+	elem->Colour = COLPACK(0xAADDDD);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

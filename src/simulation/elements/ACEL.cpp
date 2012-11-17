@@ -19,7 +19,7 @@ void ACEL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_ACEL";
 	elem->Name = "ACEL";
-	elem->Colour = PIXPACK(0x0099CC);
+	elem->Colour = COLPACK(0x0099CC);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_FORCE;
 	elem->Enabled = 1;

@@ -19,7 +19,7 @@ void BGLA_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_BGLA";
 	elem->Name = "BGLA";
-	elem->Colour = PIXPACK(0x606060);
+	elem->Colour = COLPACK(0x606060);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;

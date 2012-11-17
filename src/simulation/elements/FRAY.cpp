@@ -19,7 +19,7 @@ void FRAY_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_FRAY";
 	elem->Name = "FRAY";
-	elem->Colour = PIXPACK(0x00BBFF);
+	elem->Colour = COLPACK(0x00BBFF);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_FORCE;
 	elem->Enabled = 1;

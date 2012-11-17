@@ -19,7 +19,7 @@ void WIFI_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_WIFI";
 	elem->Name = "WIFI";
-	elem->Colour = PIXPACK(0x40A060);
+	elem->Colour = COLPACK(0x40A060);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_ELEC;
 	elem->Enabled = 1;

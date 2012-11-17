@@ -19,7 +19,7 @@ void H2_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_H2";
 	elem->Name = "HYGN";
-	elem->Colour = PIXPACK(0x5070FF);
+	elem->Colour = COLPACK(0x5070FF);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_GAS;
 	elem->Enabled = 1;

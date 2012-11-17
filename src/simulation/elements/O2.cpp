@@ -19,7 +19,7 @@ void O2_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_O2";
 	elem->Name = "OXYG";
-	elem->Colour = PIXPACK(0x80A0FF);
+	elem->Colour = COLPACK(0x80A0FF);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_GAS;
 	elem->Enabled = 1;

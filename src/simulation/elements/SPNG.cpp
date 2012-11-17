@@ -19,7 +19,7 @@ void SPNG_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_SPNG";
 	elem->Name = "SPNG";
-	elem->Colour = PIXPACK(0xFFBE30);
+	elem->Colour = COLPACK(0xFFBE30);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

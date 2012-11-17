@@ -19,7 +19,7 @@ void PSCN_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_PSCN";
 	elem->Name = "PSCN";
-	elem->Colour = PIXPACK(0x805050);
+	elem->Colour = COLPACK(0x805050);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_ELEC;
 	elem->Enabled = 1;

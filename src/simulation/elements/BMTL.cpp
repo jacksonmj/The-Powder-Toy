@@ -19,7 +19,7 @@ void BMTL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_BMTL";
 	elem->Name = "BMTL";
-	elem->Colour = PIXPACK(0x505070);
+	elem->Colour = COLPACK(0x505070);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

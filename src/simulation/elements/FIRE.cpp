@@ -19,7 +19,7 @@ void FIRE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_FIRE";
 	elem->Name = "FIRE";
-	elem->Colour = PIXPACK(0xFF1000);
+	elem->Colour = COLPACK(0xFF1000);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;

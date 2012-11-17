@@ -19,7 +19,7 @@ void ETRD_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_ETRD";
 	elem->Name = "ETRD";
-	elem->Colour = PIXPACK(0x404040);
+	elem->Colour = COLPACK(0x404040);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_ELEC;
 	elem->Enabled = 1;

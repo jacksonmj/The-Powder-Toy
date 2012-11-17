@@ -19,7 +19,7 @@ void SLTW_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_SLTW";
 	elem->Name = "SLTW";
-	elem->Colour = PIXPACK(0x4050F0);
+	elem->Colour = COLPACK(0x4050F0);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;

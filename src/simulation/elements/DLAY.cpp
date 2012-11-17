@@ -19,7 +19,7 @@ void DLAY_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_DLAY";
 	elem->Name = "DLAY";
-	elem->Colour = PIXPACK(0x753590);
+	elem->Colour = COLPACK(0x753590);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWERED;
 	elem->Enabled = 1;

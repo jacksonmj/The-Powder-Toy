@@ -19,7 +19,7 @@ void SAND_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_SAND";
 	elem->Name = "SAND";
-	elem->Colour = PIXPACK(0xFFD090);
+	elem->Colour = COLPACK(0xFFD090);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;

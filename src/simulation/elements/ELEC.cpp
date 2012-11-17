@@ -19,7 +19,7 @@ void ELEC_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_ELEC";
 	elem->Name = "ELEC";
-	elem->Colour = PIXPACK(0xDFEFFF);
+	elem->Colour = COLPACK(0xDFEFFF);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;

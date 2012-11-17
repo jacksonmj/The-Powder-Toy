@@ -19,7 +19,7 @@ void IGNT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_IGNT";
 	elem->Name = "IGNC";
-	elem->Colour = PIXPACK(0xC0B050);
+	elem->Colour = COLPACK(0xC0B050);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;

@@ -19,7 +19,7 @@ void PLEX_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_PLEX";
 	elem->Name = "C-4";
-	elem->Colour = PIXPACK(0xD080E0);
+	elem->Colour = COLPACK(0xD080E0);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;

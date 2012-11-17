@@ -19,7 +19,7 @@ void HSWC_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_HSWC";
 	elem->Name = "HSWC";
-	elem->Colour = PIXPACK(0x3B0A0A);
+	elem->Colour = COLPACK(0x3B0A0A);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWERED;
 	elem->Enabled = 1;

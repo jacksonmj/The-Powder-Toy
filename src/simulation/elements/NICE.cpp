@@ -19,7 +19,7 @@ void NICE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_NICE";
 	elem->Name = "NICE";
-	elem->Colour = PIXPACK(0xC0E0FF);
+	elem->Colour = COLPACK(0xC0E0FF);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

@@ -19,7 +19,7 @@ void COAL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_COAL";
 	elem->Name = "COAL";
-	elem->Colour = PIXPACK(0x222222);
+	elem->Colour = COLPACK(0x222222);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

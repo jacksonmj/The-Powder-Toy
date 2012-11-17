@@ -19,7 +19,7 @@ void MERC_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_MERC";
 	elem->Name = "MERC";
-	elem->Colour = PIXPACK(0x736B6D);
+	elem->Colour = COLPACK(0x736B6D);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_ELEC;
 	elem->Enabled = 1;

@@ -19,7 +19,7 @@ void BCOL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_BCOL";
 	elem->Name = "BCOL";
-	elem->Colour = PIXPACK(0x333333);
+	elem->Colour = COLPACK(0x333333);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;

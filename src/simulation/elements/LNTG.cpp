@@ -19,7 +19,7 @@ void LNTG_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_LNTG";
 	elem->Name = "LN2";
-	elem->Colour = PIXPACK(0x80A0DF);
+	elem->Colour = COLPACK(0x80A0DF);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;

@@ -19,7 +19,7 @@ void SPRK_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_SPRK";
 	elem->Name = "SPRK";
-	elem->Colour = PIXPACK(0xFFFF80);
+	elem->Colour = COLPACK(0xFFFF80);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_ELEC;
 	elem->Enabled = 1;

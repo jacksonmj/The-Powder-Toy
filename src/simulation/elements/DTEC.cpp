@@ -19,7 +19,7 @@ void DTEC_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_DTEC";
 	elem->Name = "DTEC";
-	elem->Colour = PIXPACK(0xFD9D18);
+	elem->Colour = COLPACK(0xFD9D18);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SENSOR;
 	elem->Enabled = 1;

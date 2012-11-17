@@ -19,7 +19,7 @@ void DMND_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_DMND";
 	elem->Name = "DMND";
-	elem->Colour = PIXPACK(0xCCFFFF);
+	elem->Colour = COLPACK(0xCCFFFF);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

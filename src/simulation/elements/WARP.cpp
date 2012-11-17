@@ -19,7 +19,7 @@ void WARP_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_WARP";
 	elem->Name = "WARP";
-	elem->Colour = PIXPACK(0x101010);
+	elem->Colour = COLPACK(0x101010);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;

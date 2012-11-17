@@ -19,7 +19,7 @@ void URAN_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_URAN";
 	elem->Name = "URAN";
-	elem->Colour = PIXPACK(0x707020);
+	elem->Colour = COLPACK(0x707020);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;

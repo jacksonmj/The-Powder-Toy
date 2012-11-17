@@ -19,7 +19,7 @@ void CNCT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_CNCT";
 	elem->Name = "CNCT";
-	elem->Colour = PIXPACK(0xC0C0C0);
+	elem->Colour = COLPACK(0xC0C0C0);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;

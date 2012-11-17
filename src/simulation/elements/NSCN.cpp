@@ -19,7 +19,7 @@ void NSCN_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_NSCN";
 	elem->Name = "NSCN";
-	elem->Colour = PIXPACK(0x505080);
+	elem->Colour = COLPACK(0x505080);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_ELEC;
 	elem->Enabled = 1;

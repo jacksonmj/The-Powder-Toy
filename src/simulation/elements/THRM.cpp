@@ -19,7 +19,7 @@ void THRM_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_THRM";
 	elem->Name = "THRM";
-	elem->Colour = PIXPACK(0xA08090);
+	elem->Colour = COLPACK(0xA08090);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;

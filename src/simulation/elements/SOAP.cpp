@@ -19,7 +19,7 @@ void SOAP_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_SOAP";
 	elem->Name = "SOAP";
-	elem->Colour = PIXPACK(0xF5F5DC);
+	elem->Colour = COLPACK(0xF5F5DC);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;

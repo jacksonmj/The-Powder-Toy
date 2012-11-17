@@ -19,7 +19,7 @@ void DSTW_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_DSTW";
 	elem->Name = "DSTW";
-	elem->Colour = PIXPACK(0x1020C0);
+	elem->Colour = COLPACK(0x1020C0);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;

@@ -19,7 +19,7 @@ void LAVA_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_LAVA";
 	elem->Name = "LAVA";
-	elem->Colour = PIXPACK(0xE05010);
+	elem->Colour = COLPACK(0xE05010);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;

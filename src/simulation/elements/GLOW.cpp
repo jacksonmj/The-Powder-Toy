@@ -19,7 +19,7 @@ void GLOW_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_GLOW";
 	elem->Name = "GLOW";
-	elem->Colour = PIXPACK(0x445464);
+	elem->Colour = COLPACK(0x445464);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;

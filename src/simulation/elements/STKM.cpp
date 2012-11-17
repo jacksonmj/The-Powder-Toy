@@ -19,7 +19,7 @@ void STKM_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_STKM";
 	elem->Name = "STKM";
-	elem->Colour = PIXPACK(0xFFE0A0);
+	elem->Colour = COLPACK(0xFFE0A0);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SPECIAL;
 	elem->Enabled = 1;

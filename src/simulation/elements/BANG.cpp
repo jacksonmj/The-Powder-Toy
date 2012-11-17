@@ -19,7 +19,7 @@ void BANG_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_BANG";
 	elem->Name = "TNT";
-	elem->Colour = PIXPACK(0xC05050);
+	elem->Colour = COLPACK(0xC05050);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;

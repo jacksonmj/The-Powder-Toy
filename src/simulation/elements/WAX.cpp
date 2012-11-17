@@ -19,7 +19,7 @@ void WAX_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_WAX";
 	elem->Name = "WAX";
-	elem->Colour = PIXPACK(0xF0F0BB);
+	elem->Colour = COLPACK(0xF0F0BB);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

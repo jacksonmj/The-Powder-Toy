@@ -19,7 +19,7 @@ void PSTE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_PSTE";
 	elem->Name = "PSTE";
-	elem->Colour = PIXPACK(0xAA99AA);
+	elem->Colour = COLPACK(0xAA99AA);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;

@@ -19,7 +19,7 @@ void CAUS_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_CAUS";
 	elem->Name = "CAUS";
-	elem->Colour = PIXPACK(0x80FFA0);
+	elem->Colour = COLPACK(0x80FFA0);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_GAS;
 	elem->Enabled = 1;

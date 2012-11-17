@@ -19,7 +19,7 @@ void DEUT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_DEUT";
 	elem->Name = "DEUT";
-	elem->Colour = PIXPACK(0x00153F);
+	elem->Colour = COLPACK(0x00153F);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;

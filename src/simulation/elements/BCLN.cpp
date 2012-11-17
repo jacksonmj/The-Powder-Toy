@@ -19,7 +19,7 @@ void BCLN_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_BCLN";
 	elem->Name = "BCLN";
-	elem->Colour = PIXPACK(0xFFD040);
+	elem->Colour = COLPACK(0xFFD040);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SPECIAL;
 	elem->Enabled = 1;

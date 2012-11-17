@@ -19,7 +19,7 @@ void SHLD3_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_SHLD3";
 	elem->Name = "SHD3";
-	elem->Colour = PIXPACK(0x444444);
+	elem->Colour = COLPACK(0x444444);
 	elem->MenuVisible = 0;
 	elem->MenuSection = SC_CRACKER2;
 	elem->Enabled = 1;

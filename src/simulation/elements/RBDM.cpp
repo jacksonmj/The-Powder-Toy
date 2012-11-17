@@ -19,7 +19,7 @@ void RBDM_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_RBDM";
 	elem->Name = "RBDM";
-	elem->Colour = PIXPACK(0xCCCCCC);
+	elem->Colour = COLPACK(0xCCCCCC);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;

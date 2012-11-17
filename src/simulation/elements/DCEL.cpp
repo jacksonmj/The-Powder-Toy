@@ -19,7 +19,7 @@ void DCEL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_DCEL";
 	elem->Name = "DCEL";
-	elem->Colour = PIXPACK(0x99CC00);
+	elem->Colour = COLPACK(0x99CC00);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_FORCE;
 	elem->Enabled = 1;

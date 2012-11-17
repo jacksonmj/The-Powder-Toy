@@ -19,7 +19,7 @@ void NBLE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_NBLE";
 	elem->Name = "NBLE";
-	elem->Colour = PIXPACK(0xEB4917);
+	elem->Colour = COLPACK(0xEB4917);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_GAS;
 	elem->Enabled = 1;

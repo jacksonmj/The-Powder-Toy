@@ -19,7 +19,7 @@ void INSL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_INSL";
 	elem->Name = "INSL";
-	elem->Colour = PIXPACK(0x9EA3B6);
+	elem->Colour = COLPACK(0x9EA3B6);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SPECIAL;
 	elem->Enabled = 1;

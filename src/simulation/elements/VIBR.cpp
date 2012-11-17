@@ -19,7 +19,7 @@ void VIBR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_VIBR";
 	elem->Name = "VIBR";
-	elem->Colour = PIXPACK(0x002900);
+	elem->Colour = COLPACK(0x002900);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

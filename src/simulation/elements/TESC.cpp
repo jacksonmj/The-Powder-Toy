@@ -19,7 +19,7 @@ void TESC_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_TESC";
 	elem->Name = "TESC";
-	elem->Colour = PIXPACK(0x707040);
+	elem->Colour = COLPACK(0x707040);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_ELEC;
 	elem->Enabled = 1;

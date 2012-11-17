@@ -19,7 +19,7 @@ void DEST_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_DEST";
 	elem->Name = "DEST";
-	elem->Colour = PIXPACK(0xFF3311);
+	elem->Colour = COLPACK(0xFF3311);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;

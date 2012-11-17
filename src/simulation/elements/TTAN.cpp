@@ -19,7 +19,7 @@ void TTAN_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_TTAN";
 	elem->Name = "TTAN";
-	elem->Colour = PIXPACK(0x909090);
+	elem->Colour = COLPACK(0x909090);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

@@ -19,7 +19,7 @@ void PSTS_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_PSTS";
 	elem->Name = "PSTS";
-	elem->Colour = PIXPACK(0x776677);
+	elem->Colour = COLPACK(0x776677);
 	elem->MenuVisible = 0;
 	elem->MenuSection = SC_CRACKER;
 	elem->Enabled = 1;

@@ -19,7 +19,7 @@ void BOMB_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_BOMB";
 	elem->Name = "BOMB";
-	elem->Colour = PIXPACK(0xFFF288);
+	elem->Colour = COLPACK(0xFFF288);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;

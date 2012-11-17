@@ -19,7 +19,7 @@ void FUSE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_FUSE";
 	elem->Name = "FUSE";
-	elem->Colour = PIXPACK(0x0A5706);
+	elem->Colour = COLPACK(0x0A5706);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

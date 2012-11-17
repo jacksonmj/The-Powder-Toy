@@ -19,7 +19,7 @@ void VOID_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_VOID";
 	elem->Name = "VOID";
-	elem->Colour = PIXPACK(0x790B0B);
+	elem->Colour = COLPACK(0x790B0B);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SPECIAL;
 	elem->Enabled = 1;

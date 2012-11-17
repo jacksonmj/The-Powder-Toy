@@ -19,7 +19,7 @@ void PQRT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_PQRT";
 	elem->Name = "PQRT";
-	elem->Colour = PIXPACK(0x88BBBB);
+	elem->Colour = COLPACK(0x88BBBB);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;

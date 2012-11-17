@@ -19,7 +19,7 @@ void LCRY_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_LCRY";
 	elem->Name = "LCRY";
-	elem->Colour = PIXPACK(0x505050);
+	elem->Colour = COLPACK(0x505050);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWERED;
 	elem->Enabled = 1;

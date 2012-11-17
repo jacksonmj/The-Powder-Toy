@@ -19,7 +19,7 @@ void FSEP_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_FSEP";
 	elem->Name = "FSEP";
-	elem->Colour = PIXPACK(0x63AD5F);
+	elem->Colour = COLPACK(0x63AD5F);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;

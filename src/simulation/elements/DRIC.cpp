@@ -19,7 +19,7 @@ void DRIC_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_DRIC";
 	elem->Name = "DRIC";
-	elem->Colour = PIXPACK(0xE0E0E0);
+	elem->Colour = COLPACK(0xE0E0E0);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

@@ -19,7 +19,7 @@ void IRON_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_IRON";
 	elem->Name = "IRON";
-	elem->Colour = PIXPACK(0x707070);
+	elem->Colour = COLPACK(0x707070);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

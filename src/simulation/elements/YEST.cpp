@@ -19,7 +19,7 @@ void YEST_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_YEST";
 	elem->Name = "YEST";
-	elem->Colour = PIXPACK(0xEEE0C0);
+	elem->Colour = COLPACK(0xEEE0C0);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;

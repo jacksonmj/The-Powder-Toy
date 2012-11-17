@@ -19,7 +19,7 @@ void ICEI_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_ICEI";
 	elem->Name = "ICE";
-	elem->Colour = PIXPACK(0xA0C0FF);
+	elem->Colour = COLPACK(0xA0C0FF);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

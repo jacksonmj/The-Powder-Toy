@@ -19,7 +19,7 @@ void PPIP_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_PPIP";
 	elem->Name = "PPIP";
-	elem->Colour = PIXPACK(0x444466);
+	elem->Colour = COLPACK(0x444466);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWERED;
 	elem->Enabled = 1;

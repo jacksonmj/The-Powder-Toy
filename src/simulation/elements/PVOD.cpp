@@ -19,7 +19,7 @@ void PVOD_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_PVOD";
 	elem->Name = "PVOD";
-	elem->Colour = PIXPACK(0x792020);
+	elem->Colour = COLPACK(0x792020);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWERED;
 	elem->Enabled = 1;

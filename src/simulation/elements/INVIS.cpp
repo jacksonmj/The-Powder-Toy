@@ -19,7 +19,7 @@ void INVIS_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_INVIS";
 	elem->Name = "INVS";
-	elem->Colour = PIXPACK(0x00CCCC);
+	elem->Colour = COLPACK(0x00CCCC);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

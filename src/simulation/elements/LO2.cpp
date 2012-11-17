@@ -19,7 +19,7 @@ void LO2_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_LO2";
 	elem->Name = "LOXY";
-	elem->Colour = PIXPACK(0x80A0EF);
+	elem->Colour = COLPACK(0x80A0EF);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;

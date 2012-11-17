@@ -19,7 +19,7 @@ void PLNT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_PLNT";
 	elem->Name = "PLNT";
-	elem->Colour = PIXPACK(0x0CAC00);
+	elem->Colour = COLPACK(0x0CAC00);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

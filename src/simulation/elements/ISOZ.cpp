@@ -19,7 +19,7 @@ void ISOZ_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_ISOZ";
 	elem->Name = "ISOZ";
-	elem->Colour = PIXPACK(0xAA30D0);
+	elem->Colour = COLPACK(0xAA30D0);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;

@@ -19,7 +19,7 @@ void FIRW_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_FIRW";
 	elem->Name = "FIRW";
-	elem->Colour = PIXPACK(0xFFA040);
+	elem->Colour = COLPACK(0xFFA040);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;

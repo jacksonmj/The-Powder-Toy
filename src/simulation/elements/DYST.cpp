@@ -19,7 +19,7 @@ void DYST_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_DYST";
 	elem->Name = "DYST";
-	elem->Colour = PIXPACK(0xBBB0A0);
+	elem->Colour = COLPACK(0xBBB0A0);
 	elem->MenuVisible = 0;
 	elem->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;

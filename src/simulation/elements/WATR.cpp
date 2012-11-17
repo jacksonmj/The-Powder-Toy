@@ -19,7 +19,7 @@ void WATR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_WATR";
 	elem->Name = "WATR";
-	elem->Colour = PIXPACK(0x2030D0);
+	elem->Colour = COLPACK(0x2030D0);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;

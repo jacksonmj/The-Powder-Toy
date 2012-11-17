@@ -19,7 +19,7 @@ void STOR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_STOR";
 	elem->Name = "STOR";
-	elem->Colour = PIXPACK(0x50DFDF);
+	elem->Colour = COLPACK(0x50DFDF);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWERED;
 	elem->Enabled = 1;

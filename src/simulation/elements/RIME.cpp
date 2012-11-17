@@ -19,7 +19,7 @@ void RIME_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_RIME";
 	elem->Name = "RIME";
-	elem->Colour = PIXPACK(0xCCCCCC);
+	elem->Colour = COLPACK(0xCCCCCC);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_CRACKER2;
 	elem->Enabled = 1;

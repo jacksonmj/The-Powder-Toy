@@ -19,7 +19,7 @@ void SMKE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_SMKE";
 	elem->Name = "SMKE";
-	elem->Colour = PIXPACK(0x222222);
+	elem->Colour = COLPACK(0x222222);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_GAS;
 	elem->Enabled = 1;

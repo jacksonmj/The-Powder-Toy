@@ -19,7 +19,7 @@ void INST_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_INST";
 	elem->Name = "INST";
-	elem->Colour = PIXPACK(0x404039);
+	elem->Colour = COLPACK(0x404039);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_ELEC;
 	elem->Enabled = 1;

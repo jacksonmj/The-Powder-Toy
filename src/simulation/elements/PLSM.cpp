@@ -19,7 +19,7 @@ void PLSM_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_PLSM";
 	elem->Name = "PLSM";
-	elem->Colour = PIXPACK(0xBB99FF);
+	elem->Colour = COLPACK(0xBB99FF);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_GAS;
 	elem->Enabled = 1;

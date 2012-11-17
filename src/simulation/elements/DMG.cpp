@@ -19,7 +19,7 @@ void DMG_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_DMG";
 	elem->Name = "DMG";
-	elem->Colour = PIXPACK(0x88FF88);
+	elem->Colour = COLPACK(0x88FF88);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_FORCE;
 	elem->Enabled = 1;

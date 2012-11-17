@@ -19,7 +19,7 @@ void FILT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_FILT";
 	elem->Name = "FILT";
-	elem->Colour = PIXPACK(0x000056);
+	elem->Colour = COLPACK(0x000056);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;

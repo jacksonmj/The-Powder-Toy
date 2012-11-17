@@ -19,7 +19,7 @@ void SNOW_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_SNOW";
 	elem->Name = "SNOW";
-	elem->Colour = PIXPACK(0xC0E0FF);
+	elem->Colour = COLPACK(0xC0E0FF);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;

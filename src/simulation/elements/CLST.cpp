@@ -19,7 +19,7 @@ void CLST_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_CLST";
 	elem->Name = "CLST";
-	elem->Colour = PIXPACK(0xE4A4A4);
+	elem->Colour = COLPACK(0xE4A4A4);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;

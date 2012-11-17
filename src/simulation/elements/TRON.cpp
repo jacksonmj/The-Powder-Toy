@@ -19,7 +19,7 @@ void TRON_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_TRON";
 	elem->Name = "TRON";
-	elem->Colour = PIXPACK(0xA9FF00);
+	elem->Colour = COLPACK(0xA9FF00);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SPECIAL;
 	elem->Enabled = 1;

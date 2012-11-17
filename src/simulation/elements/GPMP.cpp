@@ -19,7 +19,7 @@ void GPMP_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_GPMP";
 	elem->Name = "GPMP";
-	elem->Colour = PIXPACK(0x0A3B3B);
+	elem->Colour = COLPACK(0x0A3B3B);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_POWERED;
 	elem->Enabled = 1;

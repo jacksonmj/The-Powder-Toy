@@ -19,7 +19,7 @@ void NBHL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_NBHL";
 	elem->Name = "BHOL";
-	elem->Colour = PIXPACK(0x202020);
+	elem->Colour = COLPACK(0x202020);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SPECIAL;
 	elem->Enabled = 1;
