@@ -15,6 +15,15 @@
 
 #include "simulation/ElementsCommon.h"
 
+int PLUT_update(UPDATE_FUNC_ARGS)
+{
+	if (1>rand()%100 && ((int)(5.0f*pv[y/CELL][x/CELL]))>(rand()%1000))
+	{
+		create_part(i, x, y, PT_NEUT);
+	}
+	return 0;
+}
+
 void PLUT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_PLUT";
@@ -58,7 +67,7 @@ void PLUT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = &update_PLUT;
+	elem->Update = &PLUT_update;
 	elem->Graphics = NULL;
 }
 

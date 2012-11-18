@@ -15,6 +15,17 @@
 
 #include "simulation/ElementsCommon.h"
 
+int GLAS_update(UPDATE_FUNC_ARGS)
+{
+	parts[i].pavg[0] = parts[i].pavg[1];
+	parts[i].pavg[1] = pv[y/CELL][x/CELL];
+	if (parts[i].pavg[1]-parts[i].pavg[0] > 0.25f || parts[i].pavg[1]-parts[i].pavg[0] < -0.25f)
+	{
+		part_change_type(i,x,y,PT_BGLA);
+	}
+	return 0;
+}
+
 void GLAS_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_GLAS";
@@ -58,7 +69,7 @@ void GLAS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = 1973.0f;
 	elem->HighTemperatureTransitionElement = PT_LAVA;
 
-	elem->Update = &update_GLAS;
+	elem->Update = &GLAS_update;
 	elem->Graphics = NULL;
 }
 

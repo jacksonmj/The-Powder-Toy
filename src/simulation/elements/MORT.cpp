@@ -15,6 +15,12 @@
 
 #include "simulation/ElementsCommon.h"
 
+int MORT_update(UPDATE_FUNC_ARGS)
+{
+	create_part(-1, x, y-1, PT_SMKE);
+	return 0;
+}
+
 void MORT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_MORT";
@@ -58,7 +64,7 @@ void MORT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = &update_MORT;
+	elem->Update = &MORT_update;
 	elem->Graphics = NULL;
 }
 

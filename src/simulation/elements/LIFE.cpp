@@ -15,6 +15,60 @@
 
 #include "simulation/ElementsCommon.h"
 
+int LIFE_graphics(GRAPHICS_FUNC_ARGS)
+{
+	pixel pc;
+	if (cpart->ctype==NGT_LOTE)//colors for life states
+	{
+		if (cpart->tmp==2)
+			pc = PIXRGB(255, 128, 0);
+		else if (cpart->tmp==1)
+			pc = PIXRGB(255, 255, 0);
+		else
+			pc = PIXRGB(255, 0, 0);
+	}
+	else if (cpart->ctype==NGT_FRG2)//colors for life states
+	{
+		if (cpart->tmp==2)
+			pc = PIXRGB(0, 100, 50);
+		else
+			pc = PIXRGB(0, 255, 90);
+	}
+	else if (cpart->ctype==NGT_STAR)//colors for life states
+	{
+		if (cpart->tmp==4)
+			pc = PIXRGB(0, 0, 128);
+		else if (cpart->tmp==3)
+			pc = PIXRGB(0, 0, 150);
+		else if (cpart->tmp==2)
+			pc = PIXRGB(0, 0, 190);
+		else if (cpart->tmp==1)
+			pc = PIXRGB(0, 0, 230);
+		else
+			pc = PIXRGB(0, 0, 70);
+	}
+	else if (cpart->ctype==NGT_FROG)//colors for life states
+	{
+		if (cpart->tmp==2)
+			pc = PIXRGB(0, 100, 0);
+		else
+			pc = PIXRGB(0, 255, 0);
+	}
+	else if (cpart->ctype==NGT_BRAN)//colors for life states
+	{
+		if (cpart->tmp==1)
+			pc = PIXRGB(150, 150, 0);
+		else
+			pc = PIXRGB(255, 255, 0);
+	} else {
+		pc = gmenu[cpart->ctype].colour;
+	}
+	*colr = PIXR(pc);
+	*colg = PIXG(pc);
+	*colb = PIXB(pc);
+	return 0;
+}
+
 void LIFE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_LIFE";
@@ -59,6 +113,6 @@ void LIFE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionElement = NT;
 
 	elem->Update = NULL;
-	elem->Graphics = &graphics_LIFE;
+	elem->Graphics = &LIFE_graphics;
 }
 

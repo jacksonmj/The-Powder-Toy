@@ -15,6 +15,97 @@
 
 #include "simulation/ElementsCommon.h"
 
+int STKM_graphics(GRAPHICS_FUNC_ARGS);
+
+int FIGH_update(UPDATE_FUNC_ARGS)
+{
+	playerst* figh = &fighters[(unsigned char)parts[i].tmp];
+
+	unsigned int tarx, tary;
+
+	parts[i].tmp2 = 0; //0 - stay in place, 1 - seek a stick man
+
+	//Set target coords
+	if (player.spwn && player2.spwn)
+	{
+			if ((pow(player.legs[2]-x, 2) + pow(player.legs[3]-y, 2))<=
+					(pow(player2.legs[2]-x, 2) + pow(player2.legs[3]-y, 2)))
+			{
+				tarx = (unsigned int)player.legs[2];
+				tary = (unsigned int)player.legs[3];
+			}
+			else
+			{
+				tarx = (unsigned int)player2.legs[2];
+				tary = (unsigned int)player2.legs[3];
+			}
+			parts[i].tmp2 = 1;
+	}
+	else
+	{
+		if (player.spwn)
+		{
+			tarx = (unsigned int)player.legs[2];
+			tary = (unsigned int)player.legs[3];
+			parts[i].tmp2 = 1;
+		}
+		if (player2.spwn)
+		{
+			tarx = (unsigned int)player2.legs[2];
+			tary = (unsigned int)player2.legs[3];
+			parts[i].tmp2 = 1;
+		}
+	}
+
+	switch (parts[i].tmp2)
+	{
+		case 1:
+			if ((pow(tarx-x, 2) + pow(tary-y, 2))<600)
+			{
+				if (figh->elem == PT_LIGH || figh->elem == PT_NEUT 
+						|| ptypes[figh->elem].properties&(PROP_DEADLY|PROP_RADIOACTIVE) 
+						|| ptypes[figh->elem].heat>=323 || ptypes[figh->elem].heat<=243)
+					figh->comm = (int)figh->comm | 0x08;
+			}
+			else
+				if (tarx<x)
+				{
+					if(!(eval_move(PT_FIGH, figh->legs[4]-10, figh->legs[5]+6, NULL) 
+					  && eval_move(PT_FIGH, figh->legs[4]-10, figh->legs[5]+3, NULL)))
+						figh->comm = 0x01;
+					else
+						figh->comm = 0x02;
+
+					if (!eval_move(PT_FIGH, figh->legs[4]-4, figh->legs[5]-1, NULL) 
+							|| !eval_move(PT_FIGH, figh->legs[12]-4, figh->legs[13]-1, NULL)
+							|| eval_move(PT_FIGH, 2*figh->legs[4]-figh->legs[6], figh->legs[5]+5, NULL))
+						figh->comm = (int)figh->comm | 0x04;
+				}
+				else
+				{ 
+					if (!(eval_move(PT_FIGH, figh->legs[12]+10, figh->legs[13]+6, NULL)
+					   && eval_move(PT_FIGH, figh->legs[12]+10, figh->legs[13]+3, NULL)))
+						figh->comm = 0x02;
+					else
+						figh->comm = 0x01;
+
+					if (!eval_move(PT_FIGH, figh->legs[4]+4, figh->legs[5]-1, NULL) 
+							|| !eval_move(PT_FIGH, figh->legs[4]+4, figh->legs[5]-1, NULL)
+							|| eval_move(PT_FIGH, 2*figh->legs[12]-figh->legs[14], figh->legs[13]+5, NULL))
+						figh->comm = (int)figh->comm | 0x04;
+				}
+			break;
+		default:
+			figh->comm = 0;
+			break;
+	}
+
+	figh->pcomm = figh->comm;
+
+	run_stickman(figh, UPDATE_FUNC_SUBCALL_ARGS);
+	return 0;
+}
+
 void FIGH_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_FIGH";
@@ -58,7 +149,7 @@ void FIGH_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = 620.0f;
 	elem->HighTemperatureTransitionElement = PT_FIRE;
 
-	elem->Update = &update_FIGH;
-	elem->Graphics = &graphics_STKM;
+	elem->Update = &FIGH_update;
+	elem->Graphics = &STKM_graphics;
 }
 

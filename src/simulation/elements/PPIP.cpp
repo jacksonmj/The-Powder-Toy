@@ -15,6 +15,9 @@
 
 #include "simulation/ElementsCommon.h"
 
+int PIPE_update(UPDATE_FUNC_ARGS);
+int PIPE_graphics(GRAPHICS_FUNC_ARGS);
+
 void PPIP_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_PPIP";
@@ -58,7 +61,7 @@ void PPIP_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = &update_PIPE;
-	elem->Graphics = &graphics_PIPE;
+	elem->Update = &PIPE_update;
+	elem->Graphics = &PIPE_graphics;
 }
 

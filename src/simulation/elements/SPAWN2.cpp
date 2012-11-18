@@ -15,6 +15,13 @@
 
 #include "simulation/ElementsCommon.h"
 
+int SPAWN2_update(UPDATE_FUNC_ARGS)
+{
+	if (!player2.spwn)
+		create_part(-1, x, y, PT_STKM2);
+	return 0;
+}
+
 void SPAWN2_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_SPAWN2";
@@ -58,7 +65,7 @@ void SPAWN2_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = &update_SPAWN2;
+	elem->Update = &SPAWN2_update;
 	elem->Graphics = NULL;
 }
 

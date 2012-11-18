@@ -15,6 +15,70 @@
 
 #include "simulation/ElementsCommon.h"
 
+int DMG_update(UPDATE_FUNC_ARGS)
+{
+	int r, rr, rx, ry, nb, nxi, nxj, t, dist;
+	int rad = 25;
+	float angle, fx, fy;
+	
+	for (rx=-2; rx<3; rx++)
+		for (ry=-2; ry<3; ry++)
+			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+			{
+				r = pmap[y+ry][x+rx];
+				if (!r)
+					continue;
+				if ((r&0xFF)!=PT_DMG && (r&0xFF)!=PT_EMBR && (r&0xFF)!=PT_DMND && (r&0xFF)!=PT_CLNE && (r&0xFF)!=PT_PCLN && (r&0xFF)!=PT_BCLN)
+				{
+					kill_part(i);
+					for (nxj=-rad; nxj<=rad; nxj++)
+						for (nxi=-rad; nxi<=rad; nxi++)
+							if (x+nxi>=0 && y+nxj>=0 && x+nxi<XRES && y+nxj<YRES && (nxi || nxj))
+							{
+								dist = sqrtf(powf(nxi, 2)+powf(nxj, 2));//;(pow((float)nxi,2))/(pow((float)rad,2))+(pow((float)nxj,2))/(pow((float)rad,2));
+								if (!dist || (dist <= rad))
+								{
+									rr = pmap[y+nxj][x+nxi]; 
+									if (rr)
+									{
+										angle = atan2f(nxj, nxi);
+										fx = cosf(angle) * 7.0f;
+										fy = sinf(angle) * 7.0f;
+
+										parts[rr>>8].vx += fx;
+										parts[rr>>8].vy += fy;
+										
+										vx[(y+nxj)/CELL][(x+nxi)/CELL] += fx;
+										vy[(y+nxj)/CELL][(x+nxi)/CELL] += fy;
+
+										pv[(y+nxj)/CELL][(x+nxi)/CELL] += 1.0f;
+										
+										t = parts[rr>>8].type;
+										if(t && ptransitions[t].pht>-1 && ptransitions[t].pht<PT_NUM)
+											part_change_type(rr>>8, x+nxi, y+nxj, ptransitions[t].pht);
+										else if(t == PT_BMTL)
+											part_change_type(rr>>8, x+nxi, y+nxj, PT_BRMT);
+										else if(t == PT_GLAS)
+											part_change_type(rr>>8, x+nxi, y+nxj, PT_BGLA);
+										else if(t == PT_COAL)
+											part_change_type(rr>>8, x+nxi, y+nxj, PT_BCOL);
+										else if(t == PT_QRTZ)
+											part_change_type(rr>>8, x+nxi, y+nxj, PT_PQRT);
+									}
+								}
+							}
+					return 1;
+				}
+			}
+	return 0;
+}
+
+int DMG_graphics(GRAPHICS_FUNC_ARGS)
+{
+	*pixel_mode |= PMODE_FLARE;
+	return 1;
+}
+
 void DMG_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_DMG";
@@ -58,7 +122,7 @@ void DMG_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = &update_DMG;
-	elem->Graphics = &graphics_DMG;
+	elem->Update = &DMG_update;
+	elem->Graphics = &DMG_graphics;
 }
 

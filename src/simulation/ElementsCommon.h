@@ -18,11 +18,14 @@
 #ifndef ELEMENTS_COMMON_H
 #define ELEMENTS_COMMON_H
 
+#include <cmath>
 #include "simulation/ElementNumbers.h"
 #include "simulation/Element.h"
 
 
 
 #include "powder.h"
+#include "gravity.h"
+#include "powdergraphics.h"
 
 #endif

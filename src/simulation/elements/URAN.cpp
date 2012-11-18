@@ -15,6 +15,16 @@
 
 #include "simulation/ElementsCommon.h"
 
+int URAN_update(UPDATE_FUNC_ARGS)
+{
+	if (!legacy_enable && pv[y/CELL][x/CELL]>0.0f)
+	{
+		float atemp =  parts[i].temp + (-MIN_TEMP);
+		parts[i].temp = restrict_flt((atemp*(1+(pv[y/CELL][x/CELL]/2000)))+MIN_TEMP, MIN_TEMP, MAX_TEMP);
+	}
+	return 0;
+}
+
 void URAN_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_URAN";
@@ -58,7 +68,7 @@ void URAN_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = &update_URAN;
+	elem->Update = &URAN_update;
 	elem->Graphics = NULL;
 }
 

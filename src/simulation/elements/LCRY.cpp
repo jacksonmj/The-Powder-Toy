@@ -15,6 +15,105 @@
 
 #include "simulation/ElementsCommon.h"
 
+int LCRY_update(UPDATE_FUNC_ARGS)
+{
+	int r, rx, ry;
+	if(parts[i].tmp==1 || parts[i].tmp==0)
+	{
+		if(parts[i].tmp==1)
+		{
+			if(parts[i].life<=0)
+				parts[i].tmp = 0;
+			else
+			{
+				parts[i].life-=2;
+				if(parts[i].life < 0)
+					parts[i].life = 0;
+				parts[i].tmp2 = parts[i].life;
+			}	
+		}
+		for (rx=-1; rx<2; rx++)
+			for (ry=-1; ry<2; ry++)
+				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+				{
+					r = pmap[y+ry][x+rx];
+					if (!r)
+						continue;
+					if ((r&0xFF)==PT_LCRY && parts[r>>8].tmp == 3)
+					{
+						parts[r>>8].tmp = 1;
+					}
+				}
+	}
+	else if(parts[i].tmp==2 || parts[i].tmp==3)
+	{
+		if(parts[i].tmp==2)
+		{
+			if(parts[i].life>=10)
+				parts[i].tmp = 3;
+			else
+			{
+				parts[i].life+=2;
+				if(parts[i].life > 10)
+					parts[i].life = 10;
+				parts[i].tmp2 = parts[i].life;
+			}
+		}
+		for (rx=-1; rx<2; rx++)
+			for (ry=-1; ry<2; ry++)
+				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+				{
+					r = pmap[y+ry][x+rx];
+					if (!r)
+						continue;
+					if ((r&0xFF)==PT_LCRY && parts[r>>8].tmp == 0)
+					{
+						parts[r>>8].tmp = 2;
+					}
+				}
+	}
+	return 0;
+}
+
+int LCRY_graphics(GRAPHICS_FUNC_ARGS)
+{
+	if(decorations_enable && cpart->dcolour && cpart->dcolour&0xFF000000)
+	{
+		*colr = (cpart->dcolour>>16)&0xFF;
+		*colg = (cpart->dcolour>>8)&0xFF;
+		*colb = (cpart->dcolour)&0xFF;
+
+		if(cpart->tmp2<10){
+			*colr /= 10-cpart->tmp2;
+			*colg /= 10-cpart->tmp2;
+			*colb /= 10-cpart->tmp2;
+		}
+		
+	}
+	else
+	{
+		*colr = *colg = *colb = 0x50+((cpart->tmp2>10?10:cpart->tmp2)*10);
+	}
+	*pixel_mode |= NO_DECO;
+	return 0;
+					
+	/*int lifemod = ((cpart->tmp2>10?10:cpart->tmp2)*10);
+	*colr += lifemod; 
+	*colg += lifemod; 
+	*colb += lifemod; 
+	if(decorations_enable && cpart->dcolour && cpart->dcolour&0xFF000000)
+	{
+		lifemod *= 2.5f;
+		if(lifemod < 40)
+			lifemod = 40;
+		*colr = (lifemod*((cpart->dcolour>>16)&0xFF) + (255-lifemod)**colr) >> 8;
+		*colg = (lifemod*((cpart->dcolour>>8)&0xFF) + (255-lifemod)**colg) >> 8;
+		*colb = (lifemod*((cpart->dcolour)&0xFF) + (255-lifemod)**colb) >> 8;
+	}
+	*pixel_mode |= NO_DECO;
+	return 0;*/
+}
+
 void LCRY_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_LCRY";
@@ -58,7 +157,7 @@ void LCRY_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = 1273.0f;
 	elem->HighTemperatureTransitionElement = PT_BGLA;
 
-	elem->Update = &update_LCRY;
-	elem->Graphics = &graphics_LCRY;
+	elem->Update = &LCRY_update;
+	elem->Graphics = &LCRY_graphics;
 }
 

@@ -15,6 +15,24 @@
 
 #include "simulation/ElementsCommon.h"
 
+int LAVA_graphics(GRAPHICS_FUNC_ARGS)
+{
+	*colr = cpart->life * 2 + 0xE0;
+	*colg = cpart->life * 1 + 0x50;
+	*colb = cpart->life / 2 + 0x10;
+	if (*colr>255) *colr = 255;
+	if (*colg>192) *colg = 192;
+	if (*colb>128) *colb = 128;
+	*firea = 40;
+	*firer = *colr;
+	*fireg = *colg;
+	*fireb = *colb;
+	*pixel_mode |= FIRE_ADD;
+	*pixel_mode |= PMODE_BLUR;
+	//Returning 0 means dynamic, do not cache
+	return 0;
+}
+
 void LAVA_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_LAVA";
@@ -59,6 +77,6 @@ void LAVA_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionElement = NT;
 
 	elem->Update = &update_PYRO;
-	elem->Graphics = &graphics_LAVA;
+	elem->Graphics = &LAVA_graphics;
 }
 

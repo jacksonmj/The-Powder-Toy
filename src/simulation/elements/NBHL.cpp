@@ -15,6 +15,15 @@
 
 #include "simulation/ElementsCommon.h"
 
+int NBHL_update(UPDATE_FUNC_ARGS)
+{
+	if (parts[i].tmp)
+		gravmap[(y/CELL)*(XRES/CELL)+(x/CELL)] += restrict_flt(0.001f*parts[i].tmp, 0.1f, 51.2f);
+	else
+		gravmap[(y/CELL)*(XRES/CELL)+(x/CELL)] += 0.1f;
+	return 0;
+}
+
 void NBHL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_NBHL";
@@ -58,7 +67,7 @@ void NBHL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = &update_NBHL;
+	elem->Update = &NBHL_update;
 	elem->Graphics = NULL;
 }
 

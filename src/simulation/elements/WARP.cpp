@@ -15,6 +15,51 @@
 
 #include "simulation/ElementsCommon.h"
 
+int WARP_update(UPDATE_FUNC_ARGS)
+{
+	int trade, r, rx, ry;
+
+	if (parts[i].tmp2>2000)
+	{
+		parts[i].temp = 10000;
+		pv[y/CELL][x/CELL] += (parts[i].tmp2/5000) * CFDS;
+		if (2>rand()%100)
+			create_part(-3, x, y, PT_ELEC);
+	}
+	for ( trade = 0; trade<5; trade ++)
+	{
+		rx = rand()%3-1;
+		ry = rand()%3-1;
+		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+		{
+			r = pmap[y+ry][x+rx];
+			if (!r)
+				continue;
+			if ((r&0xFF)!=PT_WARP&&(r&0xFF)!=PT_STKM&&(r&0xFF)!=PT_STKM2&&(r&0xFF)!=PT_DMND&&(r&0xFF)!=PT_CLNE&&(r&0xFF)!=PT_BCLN&&(r&0xFF)!=PT_PCLN)
+			{
+				parts[i].x = parts[r>>8].x;
+				parts[i].y = parts[r>>8].y;
+				parts[r>>8].x = x;
+				parts[r>>8].y = y;
+				parts[r>>8].vx = (rand()%4)-1.5;
+		 		parts[r>>8].vy = (rand()%4)-2;
+				parts[i].life += 4;
+				pmap[y][x] = r;
+				pmap[y+ry][x+rx] = (i<<8)|parts[i].type;
+				trade = 5;
+			}
+		}
+	}
+	return 0;
+}
+
+int WARP_graphics(GRAPHICS_FUNC_ARGS)
+{
+	*colr = *colg = *colb = *cola = 0;
+	*pixel_mode &= ~PMODE;
+	return 0;
+}
+
 void WARP_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_WARP";
@@ -58,7 +103,7 @@ void WARP_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = &update_WARP;
-	elem->Graphics = &graphics_WARP;
+	elem->Update = &WARP_update;
+	elem->Graphics = &WARP_graphics;
 }
 

@@ -15,6 +15,19 @@
 
 #include "simulation/ElementsCommon.h"
 
+int GOO_update(UPDATE_FUNC_ARGS)
+{
+	if (!parts[i].life && pv[y/CELL][x/CELL]>1.0f)
+		parts[i].life = rand()%80+300;
+	if (parts[i].life)
+	{
+		float advection = 0.1f;
+		parts[i].vx += advection*vx[y/CELL][x/CELL];
+		parts[i].vy += advection*vy[y/CELL][x/CELL];
+	}
+	return 0;
+}
+
 void GOO_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_GOO";
@@ -58,7 +71,7 @@ void GOO_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = &update_GOO;
+	elem->Update = &GOO_update;
 	elem->Graphics = NULL;
 }
 

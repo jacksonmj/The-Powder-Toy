@@ -14,6 +14,25 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "hmap.h"
+
+int HFLM_graphics(GRAPHICS_FUNC_ARGS)
+{
+	int caddress = restrict_flt(restrict_flt((float)((int)(cpart->life/2)), 0.0f, 200.0f)*3, 0.0f, (200.0f*3)-3);
+	*colr = (unsigned char)hflm_data[caddress];
+	*colg = (unsigned char)hflm_data[caddress+1];
+	*colb = (unsigned char)hflm_data[caddress+2];
+	
+	*firea = 255;
+	*firer = *colr;
+	*fireg = *colg;
+	*fireb = *colb;
+	
+	*pixel_mode = PMODE_NONE; //Clear default, don't draw pixel
+	*pixel_mode |= FIRE_ADD;
+	//Returning 0 means dynamic, do not cache
+	return 0;
+}
 
 void HFLM_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
@@ -59,6 +78,6 @@ void HFLM_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionElement = NT;
 
 	elem->Update = NULL;
-	elem->Graphics = &graphics_HFLM;
+	elem->Graphics = &HFLM_graphics;
 }
 

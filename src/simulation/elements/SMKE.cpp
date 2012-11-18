@@ -15,6 +15,23 @@
 
 #include "simulation/ElementsCommon.h"
 
+int SMKE_graphics(GRAPHICS_FUNC_ARGS)
+{
+	*colr = 55;
+	*colg = 55;
+	*colb = 55;
+	
+	*firea = 75;
+	*firer = 55;
+	*fireg = 55;
+	*fireb = 55;
+	
+	*pixel_mode = PMODE_NONE; //Clear default, don't draw pixel
+	*pixel_mode |= FIRE_BLEND;
+	//Returning 1 means static, cache as we please
+	return 1;
+}
+
 void SMKE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_SMKE";
@@ -59,6 +76,6 @@ void SMKE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionElement = PT_FIRE;
 
 	elem->Update = NULL;
-	elem->Graphics = &graphics_SMKE;
+	elem->Graphics = &SMKE_graphics;
 }
 

@@ -15,6 +15,9 @@
 
 #include "simulation/ElementsCommon.h"
 
+int VIBR_update(UPDATE_FUNC_ARGS);
+int VIBR_graphics(GRAPHICS_FUNC_ARGS);
+
 void BVBR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_BVBR";
@@ -58,7 +61,7 @@ void BVBR_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = &update_VIBR;
-	elem->Graphics = &graphics_VIBR;
+	elem->Update = &VIBR_update;
+	elem->Graphics = &VIBR_graphics;
 }
 

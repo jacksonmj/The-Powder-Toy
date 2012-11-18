@@ -15,6 +15,21 @@
 
 #include "simulation/ElementsCommon.h"
 
+int BRCK_graphics(GRAPHICS_FUNC_ARGS)
+{
+	if (cpart->tmp == 1)
+	{
+        *pixel_mode |= FIRE_ADD;
+        *colb += 100;
+
+        *firea = 40;
+        *firer = *colr;
+        *fireg = *colg;
+        *fireb = *colb;
+	}
+	return 0;
+}
+
 void BRCK_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_BRCK";
@@ -59,6 +74,6 @@ void BRCK_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionElement = PT_LAVA;
 
 	elem->Update = NULL;
-	elem->Graphics = &graphics_BRCK;
+	elem->Graphics = &BRCK_graphics;
 }
 

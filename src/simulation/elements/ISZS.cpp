@@ -15,6 +15,20 @@
 
 #include "simulation/ElementsCommon.h"
 
+int ISZ_update(UPDATE_FUNC_ARGS) // for both ISZS and ISOZ
+{
+	float rr, rrr;
+	if (1>rand()%200 && ((int)(-4.0f*(pv[y/CELL][x/CELL])))>(rand()%1000))
+	{
+		create_part(i, x, y, PT_PHOT);
+		rr = (rand()%228+128)/127.0f;
+		rrr = (rand()%360)*3.14159f/180.0f;
+		parts[i].vx = rr*cosf(rrr);
+		parts[i].vy = rr*sinf(rrr);
+	}
+	return 0;
+}
+
 void ISZS_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_ISZS";
@@ -58,7 +72,7 @@ void ISZS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = 300.0f;
 	elem->HighTemperatureTransitionElement = PT_ISOZ;
 
-	elem->Update = &update_ISZ;
+	elem->Update = &ISZ_update;
 	elem->Graphics = NULL;
 }
 

@@ -15,6 +15,65 @@
 
 #include "simulation/ElementsCommon.h"
 
+int isRedBRAY(UPDATE_FUNC_ARGS, int xc, int yc)
+{
+       return (pmap[yc][xc]&0xFF) == PT_BRAY && parts[pmap[yc][xc]>>8].tmp == 2;
+}
+
+int SWCH_update(UPDATE_FUNC_ARGS)
+{
+	int r, rt, rx, ry;
+	if (parts[i].life>0 && parts[i].life!=10)
+		parts[i].life--;
+	for (rx=-2; rx<3; rx++)
+		for (ry=-2; ry<3; ry++)
+			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+			{
+				r = pmap[y+ry][x+rx];
+				if (!r)
+					continue;
+				if (parts_avg(i,r>>8,PT_INSL)!=PT_INSL) {
+					rt = r&0xFF;
+					if (rt==PT_SWCH)
+					{
+						if (parts[i].life>=10&&parts[r>>8].life<10&&parts[r>>8].life>0)
+							parts[i].life = 9;
+						else if (parts[i].life==0&&parts[r>>8].life>=10)
+						{
+							//Set to other particle's life instead of 10, otherwise spark loops form when SWCH is sparked while turning on
+							parts[i].life = parts[r>>8].life;
+						}
+					}
+					else if (rt==PT_SPRK&&parts[i].life==10&&parts[r>>8].ctype!=PT_PSCN&&parts[r>>8].ctype!=PT_NSCN) {
+						part_change_type(i,x,y,PT_SPRK);
+						parts[i].ctype = PT_SWCH;
+						parts[i].life = 4;
+					}
+				}
+			}
+	//turn SWCH on/off from two red BRAYS. There must be one either above or below, and one either left or right to work, and it can't come from the side, it must be a diagonal beam
+	if (!(pmap[y-1][x-1]&0xFF) && !(pmap[y-1][x+1]&0xFF) && (isRedBRAY(UPDATE_FUNC_SUBCALL_ARGS, x, y-1) || isRedBRAY(UPDATE_FUNC_SUBCALL_ARGS, x, y+1)) && (isRedBRAY(UPDATE_FUNC_SUBCALL_ARGS, x+1, y) || isRedBRAY(UPDATE_FUNC_SUBCALL_ARGS, x-1, y)))
+	{
+		if (parts[i].life == 10)
+			parts[i].life = 9;
+		else if (parts[i].life <= 5)
+			parts[i].life = 14;
+	}
+	return 0;
+}
+
+int SWCH_graphics(GRAPHICS_FUNC_ARGS)
+{
+	if(cpart->life >= 10)
+	{
+		*colr = 17;
+		*colg = 217;
+		*colb = 24;
+		*pixel_mode |= PMODE_GLOW;
+	}
+	return 0;
+}
+
 void SWCH_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_SWCH";
@@ -58,7 +117,7 @@ void SWCH_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = &update_SWCH;
-	elem->Graphics = &graphics_SWCH;
+	elem->Update = &SWCH_update;
+	elem->Graphics = &SWCH_graphics;
 }
 

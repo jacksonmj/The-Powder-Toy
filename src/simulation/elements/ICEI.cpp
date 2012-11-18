@@ -15,6 +15,31 @@
 
 #include "simulation/ElementsCommon.h"
 
+int ICE_update(UPDATE_FUNC_ARGS) //currently used for snow as well
+{
+	int r, rx, ry;
+	if (parts[i].ctype==PT_FRZW)//get colder if it is from FRZW
+	{
+		parts[i].temp = restrict_flt(parts[i].temp-1.0f, MIN_TEMP, MAX_TEMP);
+	}
+	for (rx=-2; rx<3; rx++)
+		for (ry=-2; ry<3; ry++)
+			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+			{
+				r = pmap[y+ry][x+rx];
+				if (!r)
+					continue;
+				if (((r&0xFF)==PT_SALT || (r&0xFF)==PT_SLTW) && parts[i].temp > ptransitions[PT_SLTW].tlv && 1>(rand()%1000))
+				{
+					part_change_type(i,x,y,PT_SLTW);
+					part_change_type(r>>8,x+rx,y+ry,PT_SLTW);
+				}
+				if (((r&0xFF)==PT_FRZZ) && (parts[i].ctype=PT_FRZW) && 1>(rand()%1000))
+					part_change_type(r>>8,x+rx,y+ry,PT_ICEI);
+			}
+	return 0;
+}
+
 void ICEI_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_ICEI";
@@ -58,7 +83,7 @@ void ICEI_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = 252.05f;
 	elem->HighTemperatureTransitionElement = ST;
 
-	elem->Update = &update_ICEI;
+	elem->Update = &ICE_update;
 	elem->Graphics = NULL;
 }
 

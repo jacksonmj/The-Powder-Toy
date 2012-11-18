@@ -15,6 +15,13 @@
 
 #include "simulation/ElementsCommon.h"
 
+int NPTCT_update(UPDATE_FUNC_ARGS)
+{
+	if (parts[i].temp>295.0f)
+		parts[i].temp -= 2.5f;
+	return 0;
+}
+
 void NTCT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_NTCT";
@@ -58,7 +65,7 @@ void NTCT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = 1687.0f;
 	elem->HighTemperatureTransitionElement = PT_LAVA;
 
-	elem->Update = &update_NPTCT;
+	elem->Update = &NPTCT_update;
 	elem->Graphics = NULL;
 }
 

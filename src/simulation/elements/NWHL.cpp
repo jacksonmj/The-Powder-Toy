@@ -15,6 +15,12 @@
 
 #include "simulation/ElementsCommon.h"
 
+int NWHL_update(UPDATE_FUNC_ARGS)
+{
+	gravmap[(y/CELL)*(XRES/CELL)+(x/CELL)] -= 0.1f;
+	return 0;
+}
+
 void NWHL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_NWHL";
@@ -58,7 +64,7 @@ void NWHL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = &update_NWHL;
+	elem->Update = &NWHL_update;
 	elem->Graphics = NULL;
 }
 

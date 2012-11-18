@@ -15,6 +15,9 @@
 
 #include "simulation/ElementsCommon.h"
 
+int BIZR_update(UPDATE_FUNC_ARGS);
+int BIZR_graphics(GRAPHICS_FUNC_ARGS);
+
 void BIZRS_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_BIZRS";
@@ -58,7 +61,7 @@ void BIZRS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = &update_BIZR;
-	elem->Graphics = &graphics_BIZR;
+	elem->Update = &BIZR_update;
+	elem->Graphics = &BIZR_graphics;
 }
 

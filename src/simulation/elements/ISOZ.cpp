@@ -15,6 +15,8 @@
 
 #include "simulation/ElementsCommon.h"
 
+int ISZ_update(UPDATE_FUNC_ARGS);
+
 void ISOZ_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_ISOZ";
@@ -58,7 +60,7 @@ void ISOZ_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = &update_ISZ;
+	elem->Update = &ISZ_update;
 	elem->Graphics = NULL;
 }
 
