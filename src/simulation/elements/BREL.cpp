@@ -31,7 +31,7 @@ int BREL_update(UPDATE_FUNC_ARGS)
 
 void BREL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
-	elem->Identifier = "DEFAULT_PT_BREL";
+	elem->Identifier = "DEFAULT_PT_BREC";
 	elem->Name = "BREL";
 	elem->Colour = COLPACK(0x707060);
 	elem->MenuVisible = 1;
