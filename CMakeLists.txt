@@ -32,6 +32,10 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	add_definitions(-DWINDOWS)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	add_definitions(-DMACOSX)
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
 
 option(PreferStatic "Prefer linking to static libraries in most cases" ON)
 set(CMAKE_FIND_LIBRARY_SUFFIXES_ORIG ${CMAKE_FIND_LIBRARY_SUFFIXES})
