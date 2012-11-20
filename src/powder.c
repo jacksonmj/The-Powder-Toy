@@ -26,6 +26,12 @@
 #include <luaconsole.h>
 #endif
 
+#include "simulation/Simulation.h"
+
+part_type ptypes[PT_NUM];
+part_transition ptransitions[PT_NUM];
+unsigned int platent[PT_NUM];
+
 int wire_placed = 0;
 
 int lighting_recreate = 0;
@@ -2459,7 +2465,7 @@ void update_particles_i(pixel *vid, int start, int inc)
 			if (ptypes[t].update_func)
 #endif
 			{
-				if ((*(ptypes[t].update_func))(i,x,y,surround_space,nt))
+				if ((*(ptypes[t].update_func))(globalSim, i,x,y,surround_space,nt))
 					continue;
 				else if (t==PT_WARP)
 				{
@@ -2479,7 +2485,7 @@ void update_particles_i(pixel *vid, int start, int inc)
 			}
 #endif
 			if (legacy_enable)//if heat sim is off
-				update_legacy_all(i,x,y,surround_space,nt);
+				update_legacy_all(globalSim, i,x,y,surround_space,nt);
 
 killed:
 			if (parts[i].type == PT_NONE)//if its dead, skip to next particle

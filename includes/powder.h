@@ -72,175 +72,8 @@
 #define WL_GRAV		142
 #define WL_ALLOWENERGY 145
 
-
-#define PT_NONE 0
-#define PT_DUST 1
-#define PT_WATR 2
-#define PT_OIL 3
-#define PT_FIRE 4
-#define PT_STNE 5
-#define PT_LAVA 6
-#define PT_GUNP 7
-#define PT_NITR 8
-#define PT_CLNE 9
-#define PT_GAS 10
-#define PT_PLEX 11
-#define PT_GOO 12
-#define PT_ICEI 13
-#define PT_METL 14
-#define PT_SPRK 15
-#define PT_SNOW 16
-#define PT_WOOD 17
-#define PT_NEUT 18
-#define PT_PLUT 19
-#define PT_PLNT 20
-#define PT_ACID 21
-#define PT_VOID 22
-#define PT_WTRV 23
-#define PT_CNCT 24
-#define PT_DSTW 25
-#define PT_SALT 26
-#define PT_SLTW 27
-#define PT_DMND 28
-#define PT_BMTL 29
-#define PT_BRMT 30
-#define PT_PHOT 31
-#define PT_URAN 32
-#define PT_WAX  33
-#define PT_MWAX 34
-#define PT_PSCN 35
-#define PT_NSCN 36
-#define PT_LNTG 37
-#define PT_INSL 38
-#define PT_BHOL 39
-#define PT_WHOL 40
-#define PT_RBDM 41
-#define PT_LRBD 42
-#define PT_NTCT 43
-#define PT_SAND 44
-#define PT_GLAS 45
-#define PT_PTCT 46
-#define PT_BGLA 47
-#define PT_THDR 48
-#define PT_PLSM 49
-#define PT_ETRD 50
-#define PT_NICE 51
-#define PT_NBLE 52
-#define PT_BTRY 53
-#define PT_LCRY 54
-#define PT_STKM 55
-#define PT_SWCH 56
-#define PT_SMKE 57
-#define PT_DESL 58
-#define PT_COAL 59
-#define PT_LO2  60
-#define PT_O2   61
-#define PT_INWR 62
-#define PT_YEST 63
-#define PT_DYST 64
-#define PT_THRM 65
-#define PT_GLOW 66
-#define PT_BRCK 67
-#define PT_HFLM 68
-#define PT_FIRW 69
-#define PT_FUSE 70
-#define PT_FSEP 71
-#define PT_AMTR 72
-#define PT_BCOL 73
-#define PT_PCLN 74
-#define PT_HSWC 75
-#define PT_IRON 76
-#define PT_MORT 77
-#define PT_LIFE 78
-#define PT_DLAY 79
-#define PT_CO2	80
-#define PT_DRIC	81
-#define PT_CBNW 82
-#define PT_STOR 83
-#define PT_PVOD 84
-#define PT_CONV 85
-#define PT_CAUS 86
-#define PT_LIGH 87
-#define PT_TESC 88
-#define PT_DEST 89
-#define PT_SPNG 90
-#define PT_RIME 91
-#define PT_FOG 92
-#define PT_BCLN 93
-#define PT_LOVE 94
-#define PT_DEUT 95
-#define PT_WARP 96
-#define PT_PUMP 97
-#define PT_FWRK 98
-#define PT_PIPE 99
-#define PT_FRZZ 100
-#define PT_FRZW 101
-#define PT_GRAV 102
-#define PT_BIZR 103
-#define PT_BIZRG 104
-#define PT_BIZRS 105
-#define PT_INST 106
-#define PT_ISOZ 107
-#define PT_ISZS 108
-#define PT_PRTI 109
-#define PT_PRTO 110
-#define PT_PSTE 111
-#define PT_PSTS 112
-#define PT_ANAR 113
-#define PT_VINE 114
-#define PT_INVIS 115
-#define PT_EQUALVEL 116 //all particles equal their velocities
-#define PT_SPAWN2 117
-#define PT_SPAWN 118
-#define PT_SHLD1 119
-#define PT_SHLD2 120
-#define PT_SHLD3 121
-#define PT_SHLD4 122
-#define PT_LOLZ 123
-#define PT_WIFI 124
-#define PT_FILT 125
-#define PT_ARAY 126
-#define PT_BRAY 127
-#define PT_STKM2 128
-#define PT_BOMB 129
-#define PT_C5 130
-#define PT_SING 131
-#define PT_QRTZ 132
-#define PT_PQRT 133
-#define PT_EMP 134
-#define PT_BREL 135
-#define PT_ELEC 136
-#define PT_ACEL 137
-#define PT_DCEL 138
-#define PT_BANG	139
-#define PT_IGNT 140
-#define PT_BOYL 141
-#define PT_GEL 142
-#define PT_TRON 143
-#define PT_TTAN	144
-#define PT_EXOT	145
-
+#include "simulation/ElementNumbers.h"
 #define OLD_PT_WIND 147
-#define PT_EMBR 147
-#define PT_H2   148
-#define PT_SOAP 149
-#define PT_NBHL 150
-#define PT_NWHL 151
-#define PT_MERC 152
-#define PT_PBCN 153
-#define PT_GPMP 154
-#define PT_CLST 155
-#define PT_WIRE 156
-#define PT_GBMB 157
-#define PT_FIGH 158
-#define PT_FRAY 159
-#define PT_REPL 160
-#define PT_PPIP 161
-#define PT_DTEC 162
-#define PT_DMG  163
-#define PT_TSNS 164
-#define PT_VIBR 165
-#define PT_BVBR 166
 #define PT_NUM  167
 
 #define R_TEMP 22
@@ -280,9 +113,11 @@
 #define FLAG_SKIPMOVE	0x2 // skip movement for one frame, only implemented for PHOT
 #define FLAG_MOVABLE	0x4 // if can move
 
-#define GRAPHICS_FUNC_ARGS particle *cpart, int nx, int ny, int *pixel_mode, int* cola, int *colr, int *colg, int *colb, int *firea, int *firer, int *fireg, int *fireb
-#define GRAPHICS_FUNC_SUBCALL_ARGS cpart, nx, ny, pixel_mode, cola, colr, colg, colb, firea, firer, fireg, fireb
-
+class Simulation;
+#define UPDATE_FUNC_ARGS Simulation *sim, int i, int x, int y, int surround_space, int nt
+#define UPDATE_FUNC_SUBCALL_ARGS sim, i, x, y, surround_space, nt
+#define GRAPHICS_FUNC_ARGS Simulation *sim, particle *cpart, int nx, int ny, int *pixel_mode, int* cola, int *colr, int *colg, int *colb, int *firea, int *firer, int *fireg, int *fireb
+#define GRAPHICS_FUNC_SUBCALL_ARGS sim, cpart, nx, ny, pixel_mode, cola, colr, colg, colb, firea, firer, fireg, fireb
 
 struct particle
 {
@@ -302,72 +137,8 @@ struct particle
 typedef struct particle particle;
 
 int graphics_DEFAULT(GRAPHICS_FUNC_ARGS);
-int graphics_FIRE(GRAPHICS_FUNC_ARGS);
-int graphics_SMKE(GRAPHICS_FUNC_ARGS);
-int graphics_PLSM(GRAPHICS_FUNC_ARGS);
-int graphics_DEUT(GRAPHICS_FUNC_ARGS);
-int graphics_PHOT(GRAPHICS_FUNC_ARGS);
-int graphics_NEUT(GRAPHICS_FUNC_ARGS);
-int graphics_LAVA(GRAPHICS_FUNC_ARGS);
-int graphics_SPRK(GRAPHICS_FUNC_ARGS);
-int graphics_QRTZ(GRAPHICS_FUNC_ARGS);
-int graphics_CLST(GRAPHICS_FUNC_ARGS);
-int graphics_CBNW(GRAPHICS_FUNC_ARGS);
-int graphics_SPNG(GRAPHICS_FUNC_ARGS);
-int graphics_LIFE(GRAPHICS_FUNC_ARGS);
-int graphics_GRAV(GRAPHICS_FUNC_ARGS);
-int graphics_WIFI(GRAPHICS_FUNC_ARGS);
-int graphics_PRTI(GRAPHICS_FUNC_ARGS);
-int graphics_PRTO(GRAPHICS_FUNC_ARGS);
-int graphics_BIZR(GRAPHICS_FUNC_ARGS);
-int graphics_PIPE(GRAPHICS_FUNC_ARGS);
-int graphics_INVS(GRAPHICS_FUNC_ARGS);
-int graphics_ACID(GRAPHICS_FUNC_ARGS);
-int graphics_FILT(GRAPHICS_FUNC_ARGS);
-int graphics_BRAY(GRAPHICS_FUNC_ARGS);
-int graphics_SWCH(GRAPHICS_FUNC_ARGS);
-int graphics_THDR(GRAPHICS_FUNC_ARGS);
-int graphics_GLOW(GRAPHICS_FUNC_ARGS);
-int graphics_LCRY(GRAPHICS_FUNC_ARGS);
-int graphics_PCLN(GRAPHICS_FUNC_ARGS);
-int graphics_PBCN(GRAPHICS_FUNC_ARGS);
-int graphics_DLAY(GRAPHICS_FUNC_ARGS);
-int graphics_HSWC(GRAPHICS_FUNC_ARGS);
-int graphics_PVOD(GRAPHICS_FUNC_ARGS);
-int graphics_STOR(GRAPHICS_FUNC_ARGS);
-int graphics_PUMP(GRAPHICS_FUNC_ARGS);
-int graphics_GPMP(GRAPHICS_FUNC_ARGS);
-int graphics_HFLM(GRAPHICS_FUNC_ARGS);
-int graphics_FIRW(GRAPHICS_FUNC_ARGS);
-int graphics_BOMB(GRAPHICS_FUNC_ARGS);
-int graphics_GBMB(GRAPHICS_FUNC_ARGS);
-int graphics_COAL(GRAPHICS_FUNC_ARGS);
-int graphics_STKM(GRAPHICS_FUNC_ARGS);
-int graphics_DEST(GRAPHICS_FUNC_ARGS);
-int graphics_EMP(GRAPHICS_FUNC_ARGS);
-int graphics_LIGH(GRAPHICS_FUNC_ARGS);
-int graphics_ELEC(GRAPHICS_FUNC_ARGS);
-int graphics_WIRE(GRAPHICS_FUNC_ARGS);
-int graphics_ACEL(GRAPHICS_FUNC_ARGS);
-int graphics_DCEL(GRAPHICS_FUNC_ARGS);
-int graphics_GEL(GRAPHICS_FUNC_ARGS);
-int graphics_TRON(GRAPHICS_FUNC_ARGS);
-int graphics_SOAP(GRAPHICS_FUNC_ARGS);
-int graphics_EXOT(GRAPHICS_FUNC_ARGS);
-int graphics_WARP(GRAPHICS_FUNC_ARGS);
-int graphics_EMBR(GRAPHICS_FUNC_ARGS);
-int graphics_BRCK(GRAPHICS_FUNC_ARGS);
-int graphics_WOOD(GRAPHICS_FUNC_ARGS);
-int graphics_PLNT(GRAPHICS_FUNC_ARGS);
-int graphics_DMG(GRAPHICS_FUNC_ARGS);
-int graphics_VIBR(GRAPHICS_FUNC_ARGS);
-
 
 void TRON_init_graphics();
-
-#define UPDATE_FUNC_ARGS int i, int x, int y, int surround_space, int nt
-// to call another update function with same arguments:
-#define UPDATE_FUNC_SUBCALL_ARGS i, x, y, surround_space, nt
 
 struct playerst
 {
@@ -381,115 +152,7 @@ struct playerst
 };
 typedef struct playerst playerst;
 
-int update_ACID(UPDATE_FUNC_ARGS);
-int update_ANAR(UPDATE_FUNC_ARGS);
-int update_AMTR(UPDATE_FUNC_ARGS);
-int update_ARAY(UPDATE_FUNC_ARGS);
-int update_BCLN(UPDATE_FUNC_ARGS);
-int update_BCOL(UPDATE_FUNC_ARGS);
-int update_BMTL(UPDATE_FUNC_ARGS);
-int update_BRMT(UPDATE_FUNC_ARGS);
-int update_BOMB(UPDATE_FUNC_ARGS);
-int update_BOYL(UPDATE_FUNC_ARGS);
-int update_BTRY(UPDATE_FUNC_ARGS);
-int update_C5(UPDATE_FUNC_ARGS);
-int update_CLNE(UPDATE_FUNC_ARGS);
-int update_COAL(UPDATE_FUNC_ARGS);
-int update_DEUT(UPDATE_FUNC_ARGS);
-int update_DMG(UPDATE_FUNC_ARGS);
-int update_DSTW(UPDATE_FUNC_ARGS);
-int update_DTEC(UPDATE_FUNC_ARGS);
-int update_EMBR(UPDATE_FUNC_ARGS);
-int update_FOG(UPDATE_FUNC_ARGS);
-int update_FRZW(UPDATE_FUNC_ARGS);
-int update_FRZZ(UPDATE_FUNC_ARGS);
-int update_FSEP(UPDATE_FUNC_ARGS);
-int update_FUSE(UPDATE_FUNC_ARGS);
-int update_FIRW(UPDATE_FUNC_ARGS);
-int update_FWRK(UPDATE_FUNC_ARGS);
-int update_GEL(UPDATE_FUNC_ARGS);
-int update_GLAS(UPDATE_FUNC_ARGS);
-int update_GLOW(UPDATE_FUNC_ARGS);
-int update_GOO(UPDATE_FUNC_ARGS);
-int update_HSWC(UPDATE_FUNC_ARGS);
-int update_IRON(UPDATE_FUNC_ARGS);
-int update_ICEI(UPDATE_FUNC_ARGS);
-int update_ISZ(UPDATE_FUNC_ARGS);
-int update_LCRY(UPDATE_FUNC_ARGS);
-int update_MORT(UPDATE_FUNC_ARGS);
-int update_NBLE(UPDATE_FUNC_ARGS);
-int update_NEUT(UPDATE_FUNC_ARGS);
-int update_NPTCT(UPDATE_FUNC_ARGS);
-int update_PCLN(UPDATE_FUNC_ARGS);
-int update_PHOT(UPDATE_FUNC_ARGS);
-int update_PIPE(UPDATE_FUNC_ARGS);
-int update_PLNT(UPDATE_FUNC_ARGS);
-int update_PLUT(UPDATE_FUNC_ARGS);
-int update_PRTI(UPDATE_FUNC_ARGS);
-int update_PRTO(UPDATE_FUNC_ARGS);
 int update_PYRO(UPDATE_FUNC_ARGS);
-int update_PUMP(UPDATE_FUNC_ARGS);
-int update_QRTZ(UPDATE_FUNC_ARGS);
-int update_RIME(UPDATE_FUNC_ARGS);
-int update_SHLD1(UPDATE_FUNC_ARGS);
-int update_SHLD2(UPDATE_FUNC_ARGS);
-int update_SHLD3(UPDATE_FUNC_ARGS);
-int update_SHLD4(UPDATE_FUNC_ARGS);
-int update_SING(UPDATE_FUNC_ARGS);
-int update_SLTW(UPDATE_FUNC_ARGS);
-int update_SPAWN(UPDATE_FUNC_ARGS);
-int update_SPAWN2(UPDATE_FUNC_ARGS);
-int update_SPNG(UPDATE_FUNC_ARGS);
-int update_SPRK(UPDATE_FUNC_ARGS);
-int update_STKM(UPDATE_FUNC_ARGS);
-int update_STKM2(UPDATE_FUNC_ARGS);
-int update_SWCH(UPDATE_FUNC_ARGS);
-int update_THDR(UPDATE_FUNC_ARGS);
-int update_THRM(UPDATE_FUNC_ARGS);
-int update_TSNS(UPDATE_FUNC_ARGS);
-int update_URAN(UPDATE_FUNC_ARGS);
-int update_VINE(UPDATE_FUNC_ARGS);
-int update_WARP(UPDATE_FUNC_ARGS);
-int update_WATR(UPDATE_FUNC_ARGS);
-int update_WIFI(UPDATE_FUNC_ARGS);
-int update_WOOD(UPDATE_FUNC_ARGS);
-int update_WTRV(UPDATE_FUNC_ARGS);
-int update_YEST(UPDATE_FUNC_ARGS);
-int update_SOAP(UPDATE_FUNC_ARGS);
-int update_O2(UPDATE_FUNC_ARGS);
-int update_H2(UPDATE_FUNC_ARGS);
-int update_NBHL(UPDATE_FUNC_ARGS);
-int update_NWHL(UPDATE_FUNC_ARGS);
-int update_MERC(UPDATE_FUNC_ARGS);
-int update_PBCN(UPDATE_FUNC_ARGS);
-int update_GPMP(UPDATE_FUNC_ARGS);
-int update_CLST(UPDATE_FUNC_ARGS);
-int update_DLAY(UPDATE_FUNC_ARGS);
-int update_WIRE(UPDATE_FUNC_ARGS);
-int update_GBMB(UPDATE_FUNC_ARGS);
-int update_CO2(UPDATE_FUNC_ARGS);
-int update_CBNW(UPDATE_FUNC_ARGS);
-int update_STOR(UPDATE_FUNC_ARGS);
-int update_BIZR(UPDATE_FUNC_ARGS);
-int update_PVOD(UPDATE_FUNC_ARGS);
-int update_CONV(UPDATE_FUNC_ARGS);
-int update_CAUS(UPDATE_FUNC_ARGS);
-int update_DEST(UPDATE_FUNC_ARGS);
-int update_EMP(UPDATE_FUNC_ARGS);
-int update_LIGH(UPDATE_FUNC_ARGS);
-int update_FIGH(UPDATE_FUNC_ARGS);
-int update_ELEC(UPDATE_FUNC_ARGS);
-int update_ACEL(UPDATE_FUNC_ARGS);
-int update_DCEL(UPDATE_FUNC_ARGS);
-int update_BANG(UPDATE_FUNC_ARGS);
-int update_IGNT(UPDATE_FUNC_ARGS);
-int update_FRAY(UPDATE_FUNC_ARGS);
-int update_REPL(UPDATE_FUNC_ARGS);
-int update_TRON(UPDATE_FUNC_ARGS);
-int update_TTAN(UPDATE_FUNC_ARGS);
-int update_BREL(UPDATE_FUNC_ARGS);
-int update_EXOT(UPDATE_FUNC_ARGS);
-int update_VIBR(UPDATE_FUNC_ARGS);
 
 int update_MISC(UPDATE_FUNC_ARGS);
 int update_legacy_PYRO(UPDATE_FUNC_ARGS);
@@ -770,8 +433,8 @@ static wall_type wtypes[] =
 extern particle portalp[CHANNELS][8][80];
 extern const particle emptyparticle;
 extern int wireless[CHANNELS][2];
-extern int portal_rx[8];
-extern int portal_ry[8];
+extern const int portal_rx[8];
+extern const int portal_ry[8];
 
 extern int wire_placed;
 extern int force_stacking_check;
