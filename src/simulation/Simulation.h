@@ -33,11 +33,34 @@
 class Simulation
 {
 public:
+	particle parts[NPART];
 	Element elements[PT_NUM];
+	
+	int pfree;
+	
+
 
 	Simulation();
 	void InitElements();
-	void Compat_CopyElementProperties();
+	
+	int part_alloc()
+	{
+		if (pfree == -1)
+			return -1;
+		int i = pfree;
+		pfree = parts[i].life;
+		return i;
+	}
+	void part_free(int i)
+	{
+		parts[i].life = pfree;
+		pfree = i;
+	}
+	
 };
+
+void Simulation_Compat_CopyData(Simulation *sim);
+
+extern Simulation *globalSim; // TODO: remove this
 
 #endif

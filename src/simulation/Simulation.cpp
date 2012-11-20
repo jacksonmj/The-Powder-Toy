@@ -24,7 +24,10 @@
 #include "simulation/ElementNumbers.h"
 
 
-Simulation::Simulation()
+Simulation *globalSim = NULL; // TODO: remove this global variable
+
+Simulation::Simulation() :
+	pfree(-1)
 {
 }
 
@@ -34,50 +37,56 @@ void Simulation::InitElements()
 	#define ElementNumbers_Include_Call
 	#include "simulation/ElementNumbers.h"
 
-	Compat_CopyElementProperties();
+	Simulation_Compat_CopyData(this);
 }
 
-void Simulation::Compat_CopyElementProperties()
+
+
+
+void Simulation_Compat_CopyData(Simulation* sim)
 {
-	// TODO: this can be removed once all the code uses Simulation::elements instead of ptypes
+	// TODO: this can be removed once all the code uses Simulation instead of global variables
+	parts = sim->parts;
+
+
 	for (int t=0; t<PT_NUM; t++)
 	{
-		ptypes[t].name = mystrdup(elements[t].Name);
-		ptypes[t].pcolors = PIXRGB(COLR(elements[t].Colour), COLG(elements[t].Colour), COLB(elements[t].Colour));
-		ptypes[t].menu = elements[t].MenuVisible;
-		ptypes[t].menusection = elements[t].MenuSection;
-		ptypes[t].enabled = elements[t].Enabled;
-		ptypes[t].advection = elements[t].Advection;
-		ptypes[t].airdrag = elements[t].AirDrag;
-		ptypes[t].airloss = elements[t].AirLoss;
-		ptypes[t].loss = elements[t].Loss;
-		ptypes[t].collision = elements[t].Collision;
-		ptypes[t].gravity = elements[t].Gravity;
-		ptypes[t].diffusion = elements[t].Diffusion;
-		ptypes[t].hotair = elements[t].PressureAdd_NoAmbHeat;
-		ptypes[t].falldown = elements[t].Falldown;
-		ptypes[t].flammable = elements[t].Flammable;
-		ptypes[t].explosive = elements[t].Explosive;
-		ptypes[t].meltable = elements[t].Meltable;
-		ptypes[t].hardness = elements[t].Hardness;
-		ptypes[t].weight = elements[t].Weight;
-		ptypes[t].heat = elements[t].CreationTemperature;
-		ptypes[t].hconduct = elements[t].HeatConduct;
-		ptypes[t].descs = mystrdup(elements[t].Description);
-		ptypes[t].state = elements[t].State;
-		ptypes[t].properties = elements[t].Properties;
-		ptypes[t].update_func = elements[t].Update;
-		ptypes[t].graphics_func = elements[t].Graphics;
+		ptypes[t].name = mystrdup(sim->elements[t].Name);
+		ptypes[t].pcolors = PIXRGB(COLR(sim->elements[t].Colour), COLG(sim->elements[t].Colour), COLB(sim->elements[t].Colour));
+		ptypes[t].menu = sim->elements[t].MenuVisible;
+		ptypes[t].menusection = sim->elements[t].MenuSection;
+		ptypes[t].enabled = sim->elements[t].Enabled;
+		ptypes[t].advection = sim->elements[t].Advection;
+		ptypes[t].airdrag = sim->elements[t].AirDrag;
+		ptypes[t].airloss = sim->elements[t].AirLoss;
+		ptypes[t].loss = sim->elements[t].Loss;
+		ptypes[t].collision = sim->elements[t].Collision;
+		ptypes[t].gravity = sim->elements[t].Gravity;
+		ptypes[t].diffusion = sim->elements[t].Diffusion;
+		ptypes[t].hotair = sim->elements[t].PressureAdd_NoAmbHeat;
+		ptypes[t].falldown = sim->elements[t].Falldown;
+		ptypes[t].flammable = sim->elements[t].Flammable;
+		ptypes[t].explosive = sim->elements[t].Explosive;
+		ptypes[t].meltable = sim->elements[t].Meltable;
+		ptypes[t].hardness = sim->elements[t].Hardness;
+		ptypes[t].weight = sim->elements[t].Weight;
+		ptypes[t].heat = sim->elements[t].CreationTemperature;
+		ptypes[t].hconduct = sim->elements[t].HeatConduct;
+		ptypes[t].descs = mystrdup(sim->elements[t].Description);
+		ptypes[t].state = sim->elements[t].State;
+		ptypes[t].properties = sim->elements[t].Properties;
+		ptypes[t].update_func = sim->elements[t].Update;
+		ptypes[t].graphics_func = sim->elements[t].Graphics;
 
-		ptransitions[t].plt = elements[t].LowPressureTransitionElement;
-		ptransitions[t].plv = elements[t].LowPressureTransitionThreshold;
-		ptransitions[t].pht = elements[t].HighPressureTransitionElement;
-		ptransitions[t].phv = elements[t].HighPressureTransitionThreshold;
-		ptransitions[t].tlt = elements[t].LowTemperatureTransitionElement;
-		ptransitions[t].tlv = elements[t].LowTemperatureTransitionThreshold;
-		ptransitions[t].tht = elements[t].HighTemperatureTransitionElement;
-		ptransitions[t].thv = elements[t].HighTemperatureTransitionThreshold;
+		ptransitions[t].plt = sim->elements[t].LowPressureTransitionElement;
+		ptransitions[t].plv = sim->elements[t].LowPressureTransitionThreshold;
+		ptransitions[t].pht = sim->elements[t].HighPressureTransitionElement;
+		ptransitions[t].phv = sim->elements[t].HighPressureTransitionThreshold;
+		ptransitions[t].tlt = sim->elements[t].LowTemperatureTransitionElement;
+		ptransitions[t].tlv = sim->elements[t].LowTemperatureTransitionThreshold;
+		ptransitions[t].tht = sim->elements[t].HighTemperatureTransitionElement;
+		ptransitions[t].thv = sim->elements[t].HighTemperatureTransitionThreshold;
 
-		platent[t] = elements[t].Latent;
+		platent[t] = sim->elements[t].Latent;
 	}
 }

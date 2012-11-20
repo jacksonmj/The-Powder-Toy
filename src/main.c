@@ -766,6 +766,7 @@ int main(int argc, char *argv[])
 {
 	Simulation *mainSim = new Simulation();
 	mainSim->InitElements();
+	globalSim = mainSim;
 
 	pixel *part_vbuf; //Extra video buffer
 	pixel *part_vbuf_store;
@@ -820,7 +821,6 @@ int main(int argc, char *argv[])
 #endif
 //TODO: Move out version stuff
 	menu_count();
-	parts = (particle*)calloc(sizeof(particle), NPART);
 	cb_parts = (particle*)calloc(sizeof(particle), NPART);
 	init_can_move();
 	

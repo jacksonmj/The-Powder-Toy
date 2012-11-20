@@ -113,9 +113,11 @@
 #define FLAG_SKIPMOVE	0x2 // skip movement for one frame, only implemented for PHOT
 #define FLAG_MOVABLE	0x4 // if can move
 
-#define GRAPHICS_FUNC_ARGS particle *cpart, int nx, int ny, int *pixel_mode, int* cola, int *colr, int *colg, int *colb, int *firea, int *firer, int *fireg, int *fireb
-#define GRAPHICS_FUNC_SUBCALL_ARGS cpart, nx, ny, pixel_mode, cola, colr, colg, colb, firea, firer, fireg, fireb
-
+class Simulation;
+#define UPDATE_FUNC_ARGS Simulation *sim, int i, int x, int y, int surround_space, int nt
+#define UPDATE_FUNC_SUBCALL_ARGS sim, i, x, y, surround_space, nt
+#define GRAPHICS_FUNC_ARGS Simulation *sim, particle *cpart, int nx, int ny, int *pixel_mode, int* cola, int *colr, int *colg, int *colb, int *firea, int *firer, int *fireg, int *fireb
+#define GRAPHICS_FUNC_SUBCALL_ARGS sim, cpart, nx, ny, pixel_mode, cola, colr, colg, colb, firea, firer, fireg, fireb
 
 struct particle
 {
@@ -137,10 +139,6 @@ typedef struct particle particle;
 int graphics_DEFAULT(GRAPHICS_FUNC_ARGS);
 
 void TRON_init_graphics();
-
-#define UPDATE_FUNC_ARGS int i, int x, int y, int surround_space, int nt
-// to call another update function with same arguments:
-#define UPDATE_FUNC_SUBCALL_ARGS i, x, y, surround_space, nt
 
 struct playerst
 {

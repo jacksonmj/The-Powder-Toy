@@ -55,6 +55,9 @@
 #include "images.h"
 #endif
 
+#include "simulation/Simulation.h"
+
+
 //unsigned cmode = CM_FIRE;
 unsigned int *render_modes;
 unsigned int render_mode;
@@ -1872,6 +1875,7 @@ GLfloat ablurLineC[(((YRES*XRES)*2)*4)];
 #endif
 void render_parts(pixel *vid)
 {
+	Simulation *sim = globalSim;
 	int deca, decr, decg, decb, cola, colr, colg, colb, firea, firer, fireg, fireb, pixel_mode, q, i, t, nx, ny, x, y, caddress;
 	int orbd[4] = {0, 0, 0, 0}, orbl[4] = {0, 0, 0, 0};
 	float gradv, flicker, fnx, fny, flx, fly;
@@ -1994,7 +1998,7 @@ void render_parts(pixel *vid)
 					if (ptypes[t].graphics_func)
 					{
 #endif
-						if ((*(ptypes[t].graphics_func))(&(parts[i]), nx, ny, &pixel_mode, &cola, &colr, &colg, &colb, &firea, &firer, &fireg, &fireb)) //That's a lot of args, a struct might be better
+						if ((*(ptypes[t].graphics_func))(sim, &(parts[i]), nx, ny, &pixel_mode, &cola, &colr, &colg, &colb, &firea, &firer, &fireg, &fireb)) //That's a lot of args, a struct might be better
 						{
 							graphicscache[t].isready = 1;
 							graphicscache[t].pixel_mode = pixel_mode;
@@ -2010,7 +2014,7 @@ void render_parts(pixel *vid)
 					}
 					else
 					{
-						if(graphics_DEFAULT(&(parts[i]), nx, ny, &pixel_mode, &cola, &colr, &colg, &colb, &firea, &firer, &fireg, &fireb))
+						if(graphics_DEFAULT(sim, &(parts[i]), nx, ny, &pixel_mode, &cola, &colr, &colg, &colb, &firea, &firer, &fireg, &fireb))
 						{
 							graphicscache[t].isready = 1;
 							graphicscache[t].pixel_mode = pixel_mode;
