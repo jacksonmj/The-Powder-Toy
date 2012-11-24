@@ -605,6 +605,8 @@ void PIPE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
+	elem->DefaultProperties.life = 60;
+
 	elem->Update = &PIPE_update;
 	elem->Graphics = &PIPE_graphics;
 }

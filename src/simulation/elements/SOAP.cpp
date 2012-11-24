@@ -289,6 +289,9 @@ void SOAP_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITL;
 	elem->HighTemperatureTransitionElement = NT;
 
+	elem->DefaultProperties.tmp = -1;
+	elem->DefaultProperties.tmp2 = -1;
+
 	elem->Update = &SOAP_update;
 	elem->Graphics = NULL;
 }

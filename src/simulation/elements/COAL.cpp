@@ -156,6 +156,9 @@ void COAL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
+	elem->DefaultProperties.life = 110;
+	elem->DefaultProperties.tmp = 50;
+
 	elem->Update = &COAL_update;
 	elem->Graphics = &COAL_graphics;
 }

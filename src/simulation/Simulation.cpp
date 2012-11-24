@@ -17,6 +17,7 @@
 #include "misc.h"
 #include "simulation/Element.h"
 #include "simulation/Simulation.h"
+#include <cmath>
 
 // Declare the element initialisation functions
 #define ElementNumbers_Include_Decl
@@ -40,8 +41,151 @@ void Simulation::InitElements()
 	Simulation_Compat_CopyData(this);
 }
 
+// the function for creating a particle
+// p=-1 for normal creation (checks whether the particle is allowed to be in that location first)
+// p=-3 to create without checking whether the particle is allowed to be in that location
+// or p = a particle number, to replace a particle
+int Simulation::part_create(int p, int x, int y, int t)
+{
+	// This function is only for actually creating particles.
+	// Not for tools, or changing things into spark, or special brush things like setting clone ctype.
 
+	int i;
+	if (x<0 || y<0 || x>=XRES || y>=YRES || t<=0 || t>=PT_NUM || !elements[t].Enabled)
+	{
+		return -1;
+	}
+	// If the element has a Func_Create_Override, use that instead of the rest of this function
+	if (elements[t].Func_Create_Override)
+	{
+		int ret = (*(elements[t].Func_Create_Override))(this, p, x, y, t);
 
+		// returning -4 means continue with part_create as though there was no override function
+		// Useful if creation should be blocked in some conditions, but otherwise no changes to this function (e.g. SPWN)
+		if (ret!=-4)
+			return ret;
+	}
+
+	if (p==-1)
+	{
+		// Check whether the particle can be created here
+
+		// If there is a particle, only allow creation if the new particle can occupy the same space as the existing particle
+		// If there isn't a particle but there is a wall, check whether the new particle is allowed to be in it
+		//   (not "!=2" for wall check because eval_move returns 1 for moving into empty space)
+		// If there's no particle and no wall, assume creation is allowed
+		if (pmap[y][x] ? (eval_move(t, x, y, NULL)!=2) : (bmap[y/CELL][x/CELL] && eval_move(t, x, y, NULL)==0))
+		{
+			return -1;
+		}
+		i = part_alloc();
+	}
+	else if (p==-3) // skip pmap checks, e.g. for sing explosion
+	{
+		i = part_alloc();
+	}
+	else if (p>=0) // Replace existing particle
+	{
+		int oldX = (int)(parts[p].x+0.5f);
+		int oldY = (int)(parts[p].y+0.5f);
+		pmap_remove(p, oldX, oldY);
+		i = p;
+	}
+	else // Dunno, act like it was p=-3
+	{
+		i = part_alloc();
+	}
+
+	// Check whether a particle was successfully allocated
+	if (i<0)
+		return -1;
+
+	// set the pmap/photon maps to the newly created particle
+	pmap_add(i, x, y, t);// TODO: ? only set pmap if (t!=PT_STKM && t!=PT_STKM2 && t!=PT_FIGH)
+
+	// Set some properties
+	parts[i] = elements[t].DefaultProperties;
+	parts[i].type = t;
+	parts[i].x = (float)x;
+	parts[i].y = (float)y;
+#ifdef OGLR
+	parts[i].lastX = (float)x;
+	parts[i].lastY = (float)y;
+#endif
+	// TODO: deprecate CreationTemperature in favour of DefaultProperties?
+	parts[i].temp = elements[t].CreationTemperature;
+
+	// Set non-static properties (such as randomly generated ones)
+	if (elements[t].Func_Create)
+	{
+		(*(elements[t].Func_Create))(this, i, x, y);
+	}
+
+	// Fancy dust effects for powder types
+	if((elements[t].Properties & TYPE_PART) && pretty_powder)
+	{
+		int colr, colg, colb, randa;
+		randa = (rand()%30)-15;
+		colr = (COLR(elements[t].Colour)+sandcolour_r+(rand()%20)-10+randa);
+		colg = (COLG(elements[t].Colour)+sandcolour_g+(rand()%20)-10+randa);
+		colb = (COLB(elements[t].Colour)+sandcolour_b+(rand()%20)-10+randa);
+		colr = colr>255 ? 255 : (colr<0 ? 0 : colr);
+		colg = colg>255 ? 255 : (colg<0 ? 0 : colg);
+		colb = colb>255 ? 255 : (colb<0 ? 0 : colb);
+		parts[i].dcolour = COLRGB(colr, colg, colb);
+	}
+
+	elementCount[t]++;
+	return i;
+}
+
+void Simulation::part_kill(int i)//kills particle number i
+{
+	int x, y;
+
+	// Remove from pmap even if type==0, otherwise infinite recursion occurs when flood fill deleting
+	// a particle which sets type to 0 without calling kill_part (such as LIFE)
+	x = (int)(parts[i].x+0.5f);
+	y = (int)(parts[i].y+0.5f);
+	pmap_remove(i, x, y);
+
+	if (parts[i].type == PT_NONE) // TODO: remove this? (//This shouldn't happen anymore, but it's here just in case)
+		return;
+
+	if (parts[i].type)
+	{
+		elementCount[parts[i].type]--;
+	}
+
+	// TODO: move these into element functions?
+	if (parts[i].type == PT_STKM)
+	{
+		player.spwn = 0;
+	}
+	if (parts[i].type == PT_STKM2)
+	{
+		player2.spwn = 0;
+	}
+	if (parts[i].type == PT_FIGH)
+	{
+		fighters[(unsigned char)parts[i].tmp].spwn = 0;
+		fighcount--;
+	}
+	if (parts[i].type == PT_SPAWN)
+	{
+		ISSPAWN1 = 0;
+	}
+	if (parts[i].type == PT_SPAWN2)
+	{
+		ISSPAWN2 = 0;
+	}
+	if (parts[i].type == PT_SOAP)
+	{
+		detach(i);
+	}
+
+	part_free(i);
+}
 
 void Simulation_Compat_CopyData(Simulation* sim)
 {

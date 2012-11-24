@@ -101,6 +101,8 @@ void TSNS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
+	elem->DefaultProperties.tmp2 = 1;
+
 	elem->Update = &TSNS_update;
 	elem->Graphics = NULL;
 }

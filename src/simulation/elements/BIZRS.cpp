@@ -61,6 +61,8 @@ void BIZRS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
+	elem->DefaultProperties.ctype = 0x47FFFF;
+
 	elem->Update = &BIZR_update;
 	elem->Graphics = &BIZR_graphics;
 }

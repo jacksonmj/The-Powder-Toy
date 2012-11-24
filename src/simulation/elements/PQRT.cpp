@@ -18,6 +18,11 @@
 int QRTZ_update(UPDATE_FUNC_ARGS);
 int QRTZ_graphics(GRAPHICS_FUNC_ARGS);
 
+void PQRT_create(ELEMENT_CREATE_FUNC_ARGS)
+{
+	sim->parts[i].tmp = (rand()%11);
+}
+
 void PQRT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_PQRT";
@@ -63,5 +68,6 @@ void PQRT_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = &QRTZ_update;
 	elem->Graphics = &QRTZ_graphics;
+	elem->Func_Create = &PQRT_create;
 }
 

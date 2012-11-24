@@ -33,6 +33,11 @@ int LAVA_graphics(GRAPHICS_FUNC_ARGS)
 	return 0;
 }
 
+void LAVA_create(ELEMENT_CREATE_FUNC_ARGS)
+{
+	sim->parts[i].life = rand()%120+240;
+}
+
 void LAVA_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_LAVA";
@@ -78,5 +83,6 @@ void LAVA_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = &update_PYRO;
 	elem->Graphics = &LAVA_graphics;
+	elem->Func_Create = &LAVA_create;
 }
 

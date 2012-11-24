@@ -33,6 +33,11 @@ int FIRE_graphics(GRAPHICS_FUNC_ARGS)
 	return 0;
 }
 
+void FIRE_create(ELEMENT_CREATE_FUNC_ARGS)
+{
+	sim->parts[i].life = rand()%50+120;
+}
+
 void FIRE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_FIRE";
@@ -78,5 +83,6 @@ void FIRE_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = &update_PYRO;
 	elem->Graphics = &FIRE_graphics;
+	elem->Func_Create = &FIRE_create;
 }
 

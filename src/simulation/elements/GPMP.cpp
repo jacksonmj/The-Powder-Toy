@@ -98,6 +98,8 @@ void GPMP_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
+	elem->DefaultProperties.life = 10;
+
 	elem->Update = &GPMP_update;
 	elem->Graphics = &GPMP_graphics;
 }

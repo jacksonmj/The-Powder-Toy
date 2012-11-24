@@ -88,6 +88,8 @@ void FRZW_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = 53.0f;
 	elem->HighTemperatureTransitionElement = PT_ICEI;
 
+	elem->DefaultProperties.life = 100;
+
 	elem->Update = &FRZW_update;
 	elem->Graphics = NULL;
 }

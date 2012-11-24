@@ -56,8 +56,6 @@ unsigned char emap[YRES/CELL][XRES/CELL];
 unsigned char cb_bmap[YRES/CELL][XRES/CELL];
 unsigned char cb_emap[YRES/CELL][XRES/CELL];
 
-int pfree;
-
 unsigned pmap[YRES][XRES];
 int pmap_count[YRES][XRES];
 unsigned cb_pmap[YRES][XRES];
@@ -750,9 +748,7 @@ void kill_part(int i)//kills particle number i
 		detach(i);
 	}
 
-	parts[i].type = PT_NONE;
-	parts[i].life = pfree;
-	pfree = i;
+	globalSim->part_free(i);
 }
 
 TPT_INLINE void part_change_type(int i, int x, int y, int t)//changes the type of particle number i, to t.  This also changes pmap at the same time.
@@ -789,7 +785,7 @@ TPT_INLINE void part_change_type(int i, int x, int y, int t)//changes the type o
 	}
 }
 
-TPT_INLINE int create_part(int p, int x, int y, int tv)//the function for creating a particle, use p=-1 for creating a new particle, -2 is from a brush, or a particle number to replace a particle.
+int create_part(int p, int x, int y, int tv)//the function for creating a particle, use p=-1 for creating a new particle, -2 is from a brush, or a particle number to replace a particle.
 {
 	int i;
 
@@ -882,32 +878,7 @@ TPT_INLINE int create_part(int p, int x, int y, int tv)//the function for creati
 		pmap[y][x] = (pmap[y][x]&~0xFF) | PT_SPRK;
 		return pmap[y][x]>>8;
 	}
-	if (t==PT_SPAWN&&ISSPAWN1)
-		return -1;
-	if (t==PT_SPAWN2&&ISSPAWN2)
-		return -1;
-	if (p==-1)//creating from anything but brush
-	{
-		// If there is a particle, only allow creation if the new particle can occupy the same space as the existing particle
-		// If there isn't a particle but there is a wall, check whether the new particle is allowed to be in it
-		//   (not "!=2" for wall check because eval_move returns 1 for moving into empty space)
-		// If there's no particle and no wall, assume creation is allowed
-		if (pmap[y][x] ? (eval_move(t, x, y, NULL)!=2) : (bmap[y/CELL][x/CELL] && eval_move(t, x, y, NULL)==0))
-		{
-			if ((pmap[y][x]&0xFF)!=PT_SPAWN&&(pmap[y][x]&0xFF)!=PT_SPAWN2)
-			{
-				if (t!=PT_STKM&&t!=PT_STKM2&&t!=PT_FIGH)
-				{
-					return -1;
-				}
-			}
-		}
-		if (pfree == -1)
-			return -1;
-		i = pfree;
-		pfree = parts[i].life;
-	}
-	else if (p==-2)//creating from brush
+	if (p==-2)//creating from brush
 	{
 		if (pmap[y][x])
 		{
@@ -938,330 +909,16 @@ TPT_INLINE int create_part(int p, int x, int y, int tv)//the function for creati
 		}
 		if (photons[y][x] && (ptypes[t].properties & TYPE_ENERGY))
 			return -1;
-		if (pfree == -1)
-			return -1;
-		i = pfree;
-		pfree = parts[i].life;
 	}
-	else if (p==-3)//skip pmap checks, e.g. for sing explosion
+	i = globalSim->part_create(p, x, y, t);
+	if (t==PT_LIFE && i>=0)
 	{
-		if (pfree == -1)
-			return -1;
-		i = pfree;
-		pfree = parts[i].life;
+		if (v<NGOLALT)
+		{
+			parts[i].tmp = grule[v+1][9] - 1;
+			parts[i].ctype = v;
+		}
 	}
-	else
-	{
-		int oldX = (int)(parts[p].x+0.5f);
-		int oldY = (int)(parts[p].y+0.5f);
-		if ((pmap[oldY][oldX]>>8)==p)
-			pmap[oldY][oldX] = 0;
-		if ((photons[oldY][oldX]>>8)==p)
-			photons[oldY][oldX] = 0;
-		i = p;
-	}
-
-	if (i>parts_lastActiveIndex) parts_lastActiveIndex = i;
-
-	parts[i].dcolour = 0;
-	parts[i].flags = 0;
-	if (t==PT_GLAS)
-	{
-		parts[i].pavg[1] = pv[y/CELL][x/CELL];
-	}
-	else if (t==PT_QRTZ)
-	{
-		parts[i].pavg[1] = pv[y/CELL][x/CELL];
-	}
-	else
-	{
-		parts[i].pavg[0] = 0.0f;
-		parts[i].pavg[1] = 0.0f;
-	}
-	if (t!=PT_STKM&&t!=PT_STKM2&&t!=PT_FIGH)//set everything to default values first, except for stickman.
-	{
-		parts[i].x = (float)x;
-		parts[i].y = (float)y;
-#ifdef OGLR
-		parts[i].lastX = (float)x;
-		parts[i].lastY = (float)y;
-#endif
-		parts[i].type = t;
-		parts[i].vx = 0;
-		parts[i].vy = 0;
-		parts[i].life = 0;
-		parts[i].ctype = 0;
-		parts[i].temp = ptypes[t].heat;
-		parts[i].tmp = 0;
-		parts[i].tmp2 = 0;
-	}
-	//now set various properties that we want at spawn.
-	/*if (ptypes[t].properties&PROP_LIFE) {
-		int r;
-		for (r = 0; r<NGOL; r++)
-			if (t==goltype[r])
-				parts[i].tmp = grule[r+1][9] - 1;
-	}*/
-	switch (t)
-	{
-		case PT_SOAP:
-			parts[i].tmp = -1;
-			parts[i].tmp2 = -1;
-			break;
-		case PT_ACID: case PT_CAUS:
-			parts[i].life = 75;
-			break;
-		/*Testing
-		  case PT_WOOD:
-		  parts[i].life = 150;
-		  break;
-		  End Testing*/
-		case PT_WARP:
-			parts[i].life = rand()%95+70;
-			break;
-		case PT_FUSE:
-			parts[i].life = 50;
-			parts[i].tmp = 50;
-			break;
-		case PT_LIFE:
-			if (v<NGOLALT)
-			{
-				parts[i].tmp = grule[v+1][9] - 1;
-				parts[i].ctype = v;
-			}
-			break;
-		case PT_DEUT:
-			parts[i].life = 10;
-			break;
-		case PT_MERC:
-			parts[i].tmp = 10;
-			break;
-		case PT_BRAY:
-			parts[i].life = 30;
-			break;
-		case PT_GPMP: case PT_PUMP:
-			parts[i].life = 10;
-			break;
-		case PT_SING:
-			parts[i].life = rand()%50+60;
-			break;
-		case PT_QRTZ:
-			parts[i].tmp = (rand()%11);
-			break;
-		case PT_PQRT:
-			parts[i].tmp = (rand()%11);
-			break;
-		case PT_CLST:
-			parts[i].tmp = (rand()%7);
-			break;
-		case PT_FSEP:
-			parts[i].life = 50;
-			break;
-		case PT_COAL:
-			parts[i].life = 110;
-			parts[i].tmp = 50;
-			break;
-		case PT_IGNT:
-			parts[i].life = 3;
-			break;
-		case PT_FRZW:
-			parts[i].life = 100;
-			break;
-		case PT_PIPE:
-		case PT_PPIP:
-			parts[i].life = 60;
-			break;
-		case PT_BCOL:
-			parts[i].life = 110;
-			break;
-		case PT_FIRE:
-			parts[i].life = rand()%50+120;
-			break;
-		case PT_PLSM:
-			parts[i].life = rand()%150+50;
-			break;
-		case PT_HFLM:
-			parts[i].life = rand()%150+50;
-			break;
-		case PT_LAVA:
-			parts[i].life = rand()%120+240;
-			break;
-		case PT_NBLE:
-			parts[i].life = 0;
-			break;
-		case PT_ICEI:
-			parts[i].ctype = PT_WATR;
-			break;
-		case PT_MORT:
-			parts[i].vx = 2;
-			break;
-		case PT_EXOT:
-			parts[i].life = 1000;
-			parts[i].tmp = 244;
-			break;
-		case PT_EMBR:
-			parts[i].life = 50;
-			break;
-		case PT_STKM:
-			if (player.spwn==0)
-			{
-				parts[i].x = (float)x;
-				parts[i].y = (float)y;
-#ifdef OGLR
-				parts[i].lastX = (float)x;
-				parts[i].lastY = (float)y;
-#endif
-				parts[i].type = PT_STKM;
-				parts[i].vx = 0;
-				parts[i].vy = 0;
-				parts[i].life = 100;
-				parts[i].ctype = 0;
-				parts[i].temp = ptypes[t].heat;
-				STKM_init_legs(&player, i);
-				player.spwn = 1;
-			}
-			else
-			{
-				return -1;
-			}
-			create_part(-3,x,y,PT_SPAWN);
-			ISSPAWN1 = 1;
-			break;
-		case PT_STKM2:
-			if (player2.spwn==0)
-			{
-				parts[i].x = (float)x;
-				parts[i].y = (float)y;
-#ifdef OGLR
-				parts[i].lastX = (float)x;
-				parts[i].lastY = (float)y;
-#endif
-				parts[i].type = PT_STKM2;
-				parts[i].vx = 0;
-				parts[i].vy = 0;
-				parts[i].life = 100;
-				parts[i].ctype = 0;
-				parts[i].temp = ptypes[t].heat;
-				STKM_init_legs(&player2, i);
-				player2.spwn = 1;
-			}
-			else
-			{
-				return -1;
-			}
-			create_part(-3,x,y,PT_SPAWN2);
-			ISSPAWN2 = 1;
-			break;
-		case PT_BIZR: case PT_BIZRG: case PT_BIZRS:
-			parts[i].ctype = 0x47FFFF;
-			break;
-		case PT_DTEC:
-			parts[i].tmp2 = 2;
-			break;
-		case PT_TSNS:
-			parts[i].tmp2 = 1;
-		default:
-			if (t==PT_FIGH)
-			{
-				unsigned char fcount = 0;
-				while (fcount < 100 && fcount < (fighcount+1) && fighters[fcount].spwn==1) fcount++;
-				if (fcount < 100 && fighters[fcount].spwn==0)
-				{
-					parts[i].x = (float)x;
-					parts[i].y = (float)y;
-#ifdef OGLR
-					parts[i].lastX = (float)x;
-					parts[i].lastY = (float)y;
-#endif
-					parts[i].type = PT_FIGH;
-					parts[i].vx = 0;
-					parts[i].vy = 0;
-					parts[i].life = 100;
-					parts[i].ctype = 0;
-					parts[i].tmp = fcount;
-					parts[i].temp = ptypes[t].heat;
-					STKM_init_legs(&fighters[fcount], i);
-					fighters[fcount].spwn = 1;
-					fighters[fcount].elem = PT_DUST;
-					fighcount++;
-
-					return i;
-				}
-				return -1;
-			}
-			if (t==PT_PHOT)
-			{
-				float a = (rand()%8) * 0.78540f;
-				parts[i].life = 680;
-				parts[i].ctype = 0x3FFFFFFF;
-				parts[i].vx = 3.0f*cosf(a);
-				parts[i].vy = 3.0f*sinf(a);
-			}
-			if (t==PT_ELEC)
-			{
-				float a = (rand()%360)*3.14159f/180.0f;
-				parts[i].life = 680;
-				parts[i].vx = 2.0f*cosf(a);
-				parts[i].vy = 2.0f*sinf(a);
-			}
-			if (t==PT_NEUT)
-			{
-				float r = (rand()%128+128)/127.0f;
-				float a = (rand()%360)*3.14159f/180.0f;
-				parts[i].life = rand()%480+480;
-				parts[i].vx = r*cosf(a);
-				parts[i].vy = r*sinf(a);
-			}
-			if (t==PT_TRON)
-			{
-				int randhue = rand()%360;
-				int randomdir = rand()%4;
-				parts[i].tmp = 1|(randomdir<<5)|(randhue<<7);//set as a head and a direction
-				parts[i].tmp2 = 4;//tail
-				parts[i].life = 5;
-			}
-			if (t==PT_LIGH)
-			{
-				float gx, gy, gsize;
-				if (p!=-2)
-				{
-					parts[i].life=30;
-					parts[i].temp=parts[i].life*150.0f; // temperature of the lighting shows the power of the lighting
-				}
-				get_gravity_field(x, y, 1.0f, 1.0f, &gx, &gy);
-				gsize = gx*gx+gy*gy;
-				if (gsize<0.0016f)
-				{
-					float angle = (rand()%6284)*0.001f;//(in radians, between 0 and 2*pi)
-					gsize = sqrtf(gsize);
-					// randomness in weak gravity fields (more randomness with weaker fields)
-					gx += cosf(angle)*(0.04f-gsize);
-					gy += sinf(angle)*(0.04f-gsize);
-				}
-				parts[i].tmp = (((int)(atan2f(-gy, gx)*(180.0f/M_PI)))+rand()%40-20+360)%360;
-				parts[i].tmp2 = 4;
-			}
-	}
-	//and finally set the pmap/photon maps to the newly created particle
-	if (ptypes[t].properties & TYPE_ENERGY)
-		photons[y][x] = t|(i<<8);
-	else if (t!=PT_STKM && t!=PT_STKM2 && t!=PT_FIGH)
-		pmap[y][x] = t|(i<<8);
-		
-	//Fancy dust effects for powder types
-	if((ptypes[t].properties & TYPE_PART) && pretty_powder)
-	{
-		int colr, colg, colb, randa;
-		randa = (rand()%30)-15;
-		colr = (PIXR(ptypes[t].pcolors)+sandcolour_r+(rand()%20)-10+randa);
-		colg = (PIXG(ptypes[t].pcolors)+sandcolour_g+(rand()%20)-10+randa);
-		colb = (PIXB(ptypes[t].pcolors)+sandcolour_b+(rand()%20)-10+randa);
-		colr = colr>255 ? 255 : (colr<0 ? 0 : colr);
-		colg = colg>255 ? 255 : (colg<0 ? 0 : colg);
-		colb = colb>255 ? 255 : (colb<0 ? 0 : colb);
-		parts[i].dcolour = 0xFF000000 | (colr<<16) | (colg<<8) | colb;
-	}
-	
 	return i;
 }
 
@@ -1269,10 +926,6 @@ static void create_gain_photon(int pp)//photons from PHOT going through GLOW
 {
 	float xx, yy;
 	int i, lr, temp_bin, nx, ny;
-
-	if (pfree == -1)
-		return;
-	i = pfree;
 
 	lr = rand() % 2;
 
@@ -1293,19 +946,16 @@ static void create_gain_photon(int pp)//photons from PHOT going through GLOW
 	if ((pmap[ny][nx] & 0xFF) != PT_GLOW)
 		return;
 
-	pfree = parts[i].life;
-	if (i>parts_lastActiveIndex) parts_lastActiveIndex = i;
+	i = globalSim->part_create(-1, nx, ny, PT_PHOT);
+	if (i<0)
+		return;
 
-	parts[i].type = PT_PHOT;
 	parts[i].life = 680;
 	parts[i].x = xx;
 	parts[i].y = yy;
 	parts[i].vx = parts[pp].vx;
 	parts[i].vy = parts[pp].vy;
 	parts[i].temp = parts[pmap[ny][nx] >> 8].temp;
-	parts[i].tmp = 0;
-	parts[i].pavg[0] = parts[i].pavg[1] = 0.0f;
-	photons[ny][nx] = PT_PHOT|(i<<8);
 
 	temp_bin = (int)((parts[i].temp-273.0f)*0.25f);
 	if (temp_bin < 0) temp_bin = 0;
@@ -1318,10 +968,6 @@ static void create_cherenkov_photon(int pp)//photons from NEUT going through GLA
 	int i, lr, nx, ny;
 	float r, eff_ior;
 
-	if (pfree == -1)
-		return;
-	i = pfree;
-
 	nx = (int)(parts[pp].x + 0.5f);
 	ny = (int)(parts[pp].y + 0.5f);
 	if ((pmap[ny][nx] & 0xFF) != PT_GLAS)
@@ -1330,20 +976,18 @@ static void create_cherenkov_photon(int pp)//photons from NEUT going through GLA
 	if (hypotf(parts[pp].vx, parts[pp].vy) < 1.44f)
 		return;
 
-	pfree = parts[i].life;
-	if (i>parts_lastActiveIndex) parts_lastActiveIndex = i;
+	i = globalSim->part_create(-1, nx, ny, PT_PHOT);
+	if (i<0)
+		return;
 
 	lr = rand() % 2;
 
-	parts[i].type = PT_PHOT;
 	parts[i].ctype = 0x00000F80;
 	parts[i].life = 680;
 	parts[i].x = parts[pp].x;
 	parts[i].y = parts[pp].y;
 	parts[i].temp = parts[pmap[ny][nx] >> 8].temp;
-	parts[i].tmp = 0;
 	parts[i].pavg[0] = parts[i].pavg[1] = 0.0f;
-	photons[ny][nx] = PT_PHOT|(i<<8);
 
 	if (lr) {
 		parts[i].vx = parts[pp].vx - 2.5f*parts[pp].vy;
@@ -2962,6 +2606,7 @@ void update_particles(pixel *vid)//doesn't update the particles themselves, but 
 	int i, x, y, t;
 	int lastPartUsed = 0;
 	int lastPartUnused = -1;
+	int pfree = globalSim->pfree;
 #ifdef MT
 	int pt = 0, pc = 0;
 	pthread_t *InterThreads;
@@ -3014,6 +2659,7 @@ void update_particles(pixel *vid)//doesn't update the particles themselves, but 
 		if (parts_lastActiveIndex>=NPART-1) parts[lastPartUnused].life = -1;
 		else parts[lastPartUnused].life = parts_lastActiveIndex+1;
 	}
+	globalSim->pfree = pfree;
 	parts_lastActiveIndex = lastPartUsed;
 	if (!sys_pause||framerender)
 	{

@@ -115,6 +115,8 @@ void BRAY_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
+	elem->DefaultProperties.life = 30;
+
 	elem->Update = NULL;
 	elem->Graphics = &BRAY_graphics;
 }

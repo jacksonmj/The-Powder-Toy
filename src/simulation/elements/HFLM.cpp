@@ -34,6 +34,11 @@ int HFLM_graphics(GRAPHICS_FUNC_ARGS)
 	return 0;
 }
 
+void HFLM_create(ELEMENT_CREATE_FUNC_ARGS)
+{
+	sim->parts[i].life = rand()%150+50;
+}
+
 void HFLM_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_HFLM";
@@ -79,5 +84,6 @@ void HFLM_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = NULL;
 	elem->Graphics = &HFLM_graphics;
+	elem->Func_Create = &HFLM_create;
 }
 

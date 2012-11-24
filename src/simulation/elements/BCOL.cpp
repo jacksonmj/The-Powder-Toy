@@ -128,6 +128,8 @@ void BCOL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
+	elem->DefaultProperties.life = 110;
+
 	elem->Update = &BCOL_update;
 	elem->Graphics = &COAL_graphics;
 }

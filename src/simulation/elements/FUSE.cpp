@@ -99,6 +99,9 @@ void FUSE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
+	elem->DefaultProperties.life = 50;
+	elem->DefaultProperties.tmp = 50;
+
 	elem->Update = &FUSE_update;
 	elem->Graphics = NULL;
 }

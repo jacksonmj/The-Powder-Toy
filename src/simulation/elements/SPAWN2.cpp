@@ -22,6 +22,19 @@ int SPAWN2_update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
+int SPAWN2_create_override(ELEMENT_CREATE_OVERRIDE_FUNC_ARGS)
+{
+	if (ISSPAWN2)
+		return -1; // Prevent creation
+	else
+		return -4; // Continue creating particle
+}
+
+void SPAWN2_create(ELEMENT_CREATE_FUNC_ARGS)
+{
+	ISSPAWN2 = 1;
+}
+
 void SPAWN2_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_SPAWN2";
@@ -67,5 +80,7 @@ void SPAWN2_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = &SPAWN2_update;
 	elem->Graphics = NULL;
+	elem->Func_Create = &SPAWN2_create;
+	elem->Func_Create_Override = &SPAWN2_create_override;
 }
 

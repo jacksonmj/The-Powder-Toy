@@ -101,6 +101,13 @@ int PHOT_graphics(GRAPHICS_FUNC_ARGS)
 	return 0;
 }
 
+void PHOT_create(ELEMENT_CREATE_FUNC_ARGS)
+{
+	float a = (rand()%8) * 0.78540f;
+	sim->parts[i].vx = 3.0f*cosf(a);
+	sim->parts[i].vy = 3.0f*sinf(a);
+}
+
 void PHOT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_PHOT";
@@ -144,7 +151,11 @@ void PHOT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
+	elem->DefaultProperties.life = 680;
+	elem->DefaultProperties.ctype = 0x3FFFFFFF;
+
 	elem->Update = &PHOT_update;
 	elem->Graphics = &PHOT_graphics;
+	elem->Func_Create = &PHOT_create;
 }
 

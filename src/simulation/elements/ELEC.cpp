@@ -120,6 +120,14 @@ int ELEC_graphics(GRAPHICS_FUNC_ARGS)
 	return 0;
 }
 
+void ELEC_create(ELEMENT_CREATE_FUNC_ARGS)
+{
+	float a = (rand()%360)*3.14159f/180.0f;
+	sim->parts[i].life = 680;
+	sim->parts[i].vx = 2.0f*cosf(a);
+	sim->parts[i].vy = 2.0f*sinf(a);
+}
+
 void ELEC_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_ELEC";
@@ -165,5 +173,6 @@ void ELEC_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = &ELEC_update;
 	elem->Graphics = &ELEC_graphics;
+	elem->Func_Create = &ELEC_create;
 }
 

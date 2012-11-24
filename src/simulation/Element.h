@@ -17,6 +17,7 @@
 #define ELEMENT_H
 
 #include "graphics/ARGBColour.h"
+#include "simulation/Particle.h"
 
 // TODO: remove these undefs, once the defines have been removed from powder.h
 #undef UPDATE_FUNC_ARGS
@@ -25,12 +26,14 @@
 #undef GRAPHICS_FUNC_SUBCALL_ARGS
 
 class Simulation;
-struct particle;
 
 #define UPDATE_FUNC_ARGS Simulation *sim, int i, int x, int y, int surround_space, int nt
 #define UPDATE_FUNC_SUBCALL_ARGS sim, i, x, y, surround_space, nt
 #define GRAPHICS_FUNC_ARGS Simulation *sim, particle *cpart, int nx, int ny, int *pixel_mode, int* cola, int *colr, int *colg, int *colb, int *firea, int *firer, int *fireg, int *fireb
 #define GRAPHICS_FUNC_SUBCALL_ARGS sim, cpart, nx, ny, pixel_mode, cola, colr, colg, colb, firea, firer, fireg, fireb
+#define ELEMENT_CREATE_FUNC_ARGS Simulation *sim, int i, int x, int y
+#define ELEMENT_CREATE_OVERRIDE_FUNC_ARGS Simulation *sim, int p, int x, int y, int t
+
 
 class Element
 {
@@ -86,6 +89,17 @@ public:
 
 	int (*Update) (UPDATE_FUNC_ARGS);
 	int (*Graphics) (GRAPHICS_FUNC_ARGS);
+	// Func_Create can be used to set initial properties that are not constant (e.g. a random life value)
+	// It cannot be used to block creation, to do that use Func_Create_Override and return -1 to block or -4 to allow
+	// Particle type should not be changed in this function
+	void (*Func_Create)(ELEMENT_CREATE_FUNC_ARGS);
+
+	// Func_Create_Override can be used to completely override part_create
+	// Coordinates and particle type are checked before calling this.
+	// The meaning of the return value is identical to part_create, except that returning -4 means continue with part_create as though there was no override function
+	int (*Func_Create_Override)(ELEMENT_CREATE_OVERRIDE_FUNC_ARGS);
+
+	particle DefaultProperties;
 
 	Element();
 	virtual ~Element() {}

@@ -62,6 +62,11 @@ int CLST_graphics(GRAPHICS_FUNC_ARGS)
 	return 0;
 }
 
+void CLST_create(ELEMENT_CREATE_FUNC_ARGS)
+{
+	sim->parts[i].tmp = (rand()%7);
+}
+
 void CLST_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_CLST";
@@ -107,5 +112,6 @@ void CLST_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = &CLST_update;
 	elem->Graphics = &CLST_graphics;
+	elem->Func_Create = &CLST_create;
 }
 

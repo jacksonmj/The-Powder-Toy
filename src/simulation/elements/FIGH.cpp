@@ -16,6 +16,7 @@
 #include "simulation/ElementsCommon.h"
 
 int STKM_graphics(GRAPHICS_FUNC_ARGS);
+void STKM_init_legs(playerst* playerp, int i);
 
 int FIGH_update(UPDATE_FUNC_ARGS)
 {
@@ -106,6 +107,64 @@ int FIGH_update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
+int FIGH_create_override(ELEMENT_CREATE_OVERRIDE_FUNC_ARGS)
+{
+	int fcount = 0;
+	// Look for a free spot in the fighters[] array
+	while (fcount < 100 && fighters[fcount].spwn==1) fcount++;
+	if (fcount < 100 && fighters[fcount].spwn==0)
+	{
+		// If one was found, check whether a fighter can be created here
+		int i;
+		if (p==-1)
+		{
+			if (pmap[y][x] ? (eval_move(t, x, y, NULL)!=2) : (bmap[y/CELL][x/CELL] && eval_move(t, x, y, NULL)==0))
+			{
+				if ((pmap[y][x]&0xFF)!=PT_SPAWN&&(pmap[y][x]&0xFF)!=PT_SPAWN2)
+				{
+					return -1;
+				}
+			}
+			i = sim->part_alloc();
+		}
+		else if (p<0)
+		{
+			i = sim->part_alloc();
+		}
+		else
+		{
+			int oldX = (int)(parts[p].x+0.5f);
+			int oldY = (int)(parts[p].y+0.5f);
+			sim->pmap_remove(p, oldX, oldY);
+			i = p;
+		}
+
+		if (i<0)
+			return -1;
+
+		// Now create the fighter
+		sim->parts[i] = sim->elements[t].DefaultProperties;
+		sim->parts[i].type = t;
+		sim->parts[i].x = (float)x;
+		sim->parts[i].y = (float)y;
+#ifdef OGLR
+		sim->parts[i].lastX = (float)x;
+		sim->parts[i].lastY = (float)y;
+#endif
+		sim->parts[i].tmp = fcount;
+		sim->parts[i].temp = sim->elements[t].CreationTemperature;
+		STKM_init_legs(&fighters[fcount], i);
+		fighters[fcount].spwn = 1;
+		fighters[fcount].elem = PT_DUST;
+
+		sim->elementCount[t]++;
+		sim->pmap_add(i, x, y, t);
+
+		return i;
+	}
+	return -1;
+}
+
 void FIGH_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_FIGH";
@@ -149,7 +208,10 @@ void FIGH_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = 620.0f;
 	elem->HighTemperatureTransitionElement = PT_FIRE;
 
+	elem->DefaultProperties.life = 100;
+
 	elem->Update = &FIGH_update;
 	elem->Graphics = &STKM_graphics;
+	elem->Func_Create_Override = &FIGH_create_override;
 }
 

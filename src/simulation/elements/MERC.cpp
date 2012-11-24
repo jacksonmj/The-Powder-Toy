@@ -128,6 +128,8 @@ void MERC_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
+	elem->DefaultProperties.tmp = 10;
+
 	elem->Update = &MERC_update;
 	elem->Graphics = NULL;
 }

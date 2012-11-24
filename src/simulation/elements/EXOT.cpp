@@ -217,6 +217,9 @@ void EXOT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
+	elem->DefaultProperties.life = 1000;
+	elem->DefaultProperties.tmp = 244;
+
 	elem->Update = &EXOT_update;
 	elem->Graphics = &EXOT_graphics;
 }

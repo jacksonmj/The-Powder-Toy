@@ -13,20 +13,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// This header is included in every single element file
+#ifndef Particle_h
+#define Particle_h
 
-#ifndef ELEMENTS_COMMON_H
-#define ELEMENTS_COMMON_H
-
-#include <cmath>
-#include "simulation/ElementNumbers.h"
-#include "simulation/Element.h"
-#include "simulation/Simulation.h"
-
-
-
-#include "powder.h"
-#include "gravity.h"
-#include "powdergraphics.h"
+struct particle
+{
+	int type;
+	int life, ctype;
+	float x, y, vx, vy;
+#ifdef OGLR
+	float lastX, lastY;
+#endif
+	float temp;
+	float pavg[2];
+	int flags;
+	int tmp;
+	int tmp2;
+	unsigned int dcolour;
+};
+typedef struct particle particle;
 
 #endif

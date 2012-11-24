@@ -119,22 +119,7 @@ class Simulation;
 #define GRAPHICS_FUNC_ARGS Simulation *sim, particle *cpart, int nx, int ny, int *pixel_mode, int* cola, int *colr, int *colg, int *colb, int *firea, int *firer, int *fireg, int *fireb
 #define GRAPHICS_FUNC_SUBCALL_ARGS sim, cpart, nx, ny, pixel_mode, cola, colr, colg, colb, firea, firer, fireg, fireb
 
-struct particle
-{
-	int type;
-	int life, ctype;
-	float x, y, vx, vy;
-#ifdef OGLR
-	float lastX, lastY;
-#endif
-	float temp;
-	float pavg[2];
-	int flags;
-	int tmp;
-	int tmp2;
-	unsigned int dcolour;
-};
-typedef struct particle particle;
+#include "simulation/Particle.h"
 
 int graphics_DEFAULT(GRAPHICS_FUNC_ARGS);
 
@@ -457,8 +442,6 @@ extern unsigned char emap[YRES/CELL][XRES/CELL];
 
 extern unsigned char cb_bmap[YRES/CELL][XRES/CELL];
 extern unsigned char cb_emap[YRES/CELL][XRES/CELL];
-
-extern int pfree;
 
 extern unsigned pmap[YRES][XRES];
 extern unsigned cb_pmap[YRES][XRES];

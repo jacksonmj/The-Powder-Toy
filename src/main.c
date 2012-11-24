@@ -331,7 +331,7 @@ void clear_sim(void)
 	for (i=0; i<NPART-1; i++)
 		parts[i].life = i+1;
 	parts[NPART-1].life = -1;
-	pfree = 0;
+	globalSim->pfree = 0;
 	parts_lastActiveIndex = 0;
 	memset(pmap, 0, sizeof(pmap));
 	memset(pv, 0, sizeof(pv));
@@ -682,7 +682,7 @@ int main(int argc, char *argv[])
 	for (i=0; i<NPART-1; i++)
 		parts[i].life = i+1;
 	parts[NPART-1].life = -1;
-	pfree = 0;
+	globalSim->pfree = 0;
 
 	pers_bg = (pixel*)calloc((XRES+BARSIZE)*YRES, PIXELSIZE);
 	
@@ -2309,7 +2309,7 @@ int main(int argc, char *argv[])
 						for (i=0; i<NPART-1; i++)
 							parts[i].life = i+1;
 						parts[NPART-1].life = -1;
-						pfree = 0;
+						globalSim->pfree = 0;
 
 						legacy_enable = 0;
 						svf_filename[0] = 0;

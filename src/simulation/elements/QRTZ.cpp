@@ -129,6 +129,12 @@ int QRTZ_graphics(GRAPHICS_FUNC_ARGS) //QRTZ and PQRT
 	return 0;
 }
 
+void QRTZ_create(ELEMENT_CREATE_FUNC_ARGS)
+{
+	sim->parts[i].tmp = (rand()%11);
+	sim->parts[i].pavg[1] = pv[y/CELL][x/CELL];
+}
+
 void QRTZ_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_QRTZ";
@@ -174,5 +180,6 @@ void QRTZ_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = &QRTZ_update;
 	elem->Graphics = &QRTZ_graphics;
+	elem->Func_Create = &QRTZ_create;
 }
 

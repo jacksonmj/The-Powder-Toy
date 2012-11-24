@@ -315,6 +315,25 @@ int LIGH_graphics(GRAPHICS_FUNC_ARGS)
 	return 1;
 }
 
+void LIGH_create(ELEMENT_CREATE_FUNC_ARGS)
+{
+	float gx, gy, gsize;
+	sim->parts[i].life = 30;
+	sim->parts[i].temp = sim->parts[i].life*150.0f; // temperature of the lightning shows the power of the lightning
+	get_gravity_field(x, y, 1.0f, 1.0f, &gx, &gy);
+	gsize = gx*gx+gy*gy;
+	if (gsize<0.0016f)
+	{
+		float angle = (rand()%6284)*0.001f;//(in radians, between 0 and 2*pi)
+		gsize = sqrtf(gsize);
+		// randomness in weak gravity fields (more randomness with weaker fields)
+		gx += cosf(angle)*(0.04f-gsize);
+		gy += sinf(angle)*(0.04f-gsize);
+	}
+	sim->parts[i].tmp = (((int)(atan2f(-gy, gx)*(180.0f/M_PI)))+rand()%40-20+360)%360;
+	sim->parts[i].tmp2 = 4;
+}
+
 void LIGH_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_LIGH";
@@ -360,5 +379,6 @@ void LIGH_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = &LIGH_update;
 	elem->Graphics = &LIGH_graphics;
+	elem->Func_Create = &LIGH_create;
 }
 

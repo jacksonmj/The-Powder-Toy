@@ -83,6 +83,8 @@ void ICEI_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = 252.05f;
 	elem->HighTemperatureTransitionElement = ST;
 
+	elem->DefaultProperties.ctype = PT_WATR;
+
 	elem->Update = &ICE_update;
 	elem->Graphics = NULL;
 }

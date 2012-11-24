@@ -213,6 +213,15 @@ void TRON_init_graphics()
 	}
 }
 
+void TRON_create(ELEMENT_CREATE_FUNC_ARGS)
+{
+	int randhue = rand()%360;
+	int randomdir = rand()%4;
+	sim->parts[i].tmp = 1|(randomdir<<5)|(randhue<<7);//set as a head and a direction
+	sim->parts[i].tmp2 = 4;//tail
+	sim->parts[i].life = 5;
+}
+
 void TRON_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_TRON";
@@ -258,5 +267,6 @@ void TRON_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = &TRON_update;
 	elem->Graphics = &TRON_graphics;
+	elem->Func_Create = &TRON_create;
 }
 

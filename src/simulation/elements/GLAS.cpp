@@ -26,6 +26,11 @@ int GLAS_update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
+void GLAS_create(ELEMENT_CREATE_FUNC_ARGS)
+{
+	sim->parts[i].pavg[1] = pv[y/CELL][x/CELL];
+}
+
 void GLAS_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_GLAS";
@@ -71,5 +76,6 @@ void GLAS_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = &GLAS_update;
 	elem->Graphics = NULL;
+	elem->Func_Create = &GLAS_create;
 }
 

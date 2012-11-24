@@ -33,6 +33,11 @@ int PLSM_graphics(GRAPHICS_FUNC_ARGS)
 	return 0;
 }
 
+void PLSM_create(ELEMENT_CREATE_FUNC_ARGS)
+{
+	sim->parts[i].life = rand()%150+50;
+}
+
 void PLSM_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_PLSM";
@@ -78,5 +83,6 @@ void PLSM_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = &update_PYRO;
 	elem->Graphics = &PLSM_graphics;
+	elem->Func_Create = &PLSM_create;
 }
 

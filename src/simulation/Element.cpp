@@ -53,7 +53,10 @@ Element::Element() :
 	HighTemperatureTransitionThreshold(ITH),
 	HighTemperatureTransitionElement(NT),
 	Update(NULL),
-	Graphics(NULL)
+	Graphics(NULL),
+	Func_Create(NULL),
+	Func_Create_Override(NULL),
+	DefaultProperties({})
 {
-	;
+
 }

@@ -102,6 +102,8 @@ void IGNT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = 673.0f;
 	elem->HighTemperatureTransitionElement = PT_FIRE;
 
+	elem->DefaultProperties.life = 3;
+
 	elem->Update = &IGNT_update;
 	elem->Graphics = NULL;
 }

@@ -148,6 +148,8 @@ void ACID_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
+	elem->DefaultProperties.life = 75;
+
 	elem->Update = &ACID_update;
 	elem->Graphics = &ACID_graphics;
 }

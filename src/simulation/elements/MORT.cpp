@@ -64,6 +64,8 @@ void MORT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
+	elem->DefaultProperties.vx = 2.0f;
+
 	elem->Update = &MORT_update;
 	elem->Graphics = NULL;
 }

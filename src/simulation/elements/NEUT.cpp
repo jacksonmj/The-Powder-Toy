@@ -15,7 +15,7 @@
 
 #include "simulation/ElementsCommon.h"
 
-int create_n_parts(int n, int x, int y, float vx, float vy, float temp, int t)//testing a new deut create part
+int create_n_parts(Simulation *sim, int n, int x, int y, float vx, float vy, float temp, int t)//testing a new deut create part
 {
 	int i, c;
 	n = (n/50);
@@ -31,11 +31,9 @@ int create_n_parts(int n, int x, int y, float vx, float vy, float temp, int t)//
 	for (c=0; c<n; c++) {
 		float r = (rand()%128+128)/127.0f;
 		float a = (rand()%360)*M_PI/180.0f;
-		if (pfree == -1)
+		i = sim->part_alloc();
+		if (i<0)
 			return -1;
-		i = pfree;
-		pfree = parts[i].life;
-		if (i>parts_lastActiveIndex) parts_lastActiveIndex = i;
 
 		parts[i].x = (float)x;
 		parts[i].y = (float)y;
@@ -99,7 +97,7 @@ int NEUT_update(UPDATE_FUNC_ARGS)
 #ifdef SDEUT
 				else if ((r&0xFF)==PT_DEUT && (pressureFactor+1+(parts[r>>8].life/100))>(rand()%1000))
 				{
-					create_n_parts(parts[r>>8].life, x+rx, y+ry, parts[i].vx, parts[i].vy, restrict_flt(parts[r>>8].temp + parts[r>>8].life*500, MIN_TEMP, MAX_TEMP), PT_NEUT);
+					create_n_parts(sim, parts[r>>8].life, x+rx, y+ry, parts[i].vx, parts[i].vy, restrict_flt(parts[r>>8].temp + parts[r>>8].life*500, MIN_TEMP, MAX_TEMP), PT_NEUT);
 					kill_part(r>>8);
 				}
 #else
@@ -171,6 +169,15 @@ int NEUT_graphics(GRAPHICS_FUNC_ARGS)
 	return 1;
 }
 
+void NEUT_create(ELEMENT_CREATE_FUNC_ARGS)
+{
+	float r = (rand()%128+128)/127.0f;
+	float a = (rand()%360)*3.14159f/180.0f;
+	sim->parts[i].life = rand()%480+480;
+	sim->parts[i].vx = r*cosf(a);
+	sim->parts[i].vy = r*sinf(a);
+}
+
 void NEUT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_NEUT";
@@ -216,5 +223,6 @@ void NEUT_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = &NEUT_update;
 	elem->Graphics = &NEUT_graphics;
+	elem->Func_Create = &NEUT_create;
 }
 

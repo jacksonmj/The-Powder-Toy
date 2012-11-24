@@ -104,6 +104,8 @@ void DTEC_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
+	elem->DefaultProperties.tmp2 = 2;
+
 	elem->Update = &DTEC_update;
 	elem->Graphics = NULL;
 }

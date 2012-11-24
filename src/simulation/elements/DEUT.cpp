@@ -152,6 +152,8 @@ void DEUT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
+	elem->DefaultProperties.life = 10;
+
 	elem->Update = &DEUT_update;
 	elem->Graphics = &DEUT_graphics;
 }

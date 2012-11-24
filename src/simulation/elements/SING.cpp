@@ -75,7 +75,7 @@ int SING_update(UPDATE_FUNC_ARGS) {
 				parts[nb].vx = v*cosf(angle);
 				parts[nb].vy = v*sinf(angle);
 			}
-			else if (pfree==-1)
+			else if (sim->pfree==-1)
 				break;//if we've run out of particles, stop trying to create them - saves a lot of lag on "sing bomb" saves
 		}
 		kill_part(i);
@@ -116,6 +116,11 @@ int SING_update(UPDATE_FUNC_ARGS) {
 				}
 			}
 	return 0;
+}
+
+void SING_create(ELEMENT_CREATE_FUNC_ARGS)
+{
+	sim->parts[i].life = rand()%50+60;
 }
 
 void SING_init_element(ELEMENT_INIT_FUNC_ARGS)
@@ -163,5 +168,6 @@ void SING_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = &SING_update;
 	elem->Graphics = NULL;
+	elem->Func_Create = &SING_create;
 }
 

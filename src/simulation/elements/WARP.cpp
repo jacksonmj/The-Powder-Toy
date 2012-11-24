@@ -60,6 +60,11 @@ int WARP_graphics(GRAPHICS_FUNC_ARGS)
 	return 0;
 }
 
+void WARP_create(ELEMENT_CREATE_FUNC_ARGS)
+{
+	sim->parts[i].life = rand()%95+70;
+}
+
 void WARP_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_WARP";
@@ -105,5 +110,6 @@ void WARP_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = &WARP_update;
 	elem->Graphics = &WARP_graphics;
+	elem->Func_Create = &WARP_create;
 }
 
