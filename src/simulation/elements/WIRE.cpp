@@ -50,7 +50,7 @@ int WIRE_update(UPDATE_FUNC_ARGS)
 						parts[i].ctype=1;
 						return 0;
 				}
-				else if((r&0xFF)==PT_NSCN && parts[i].tmp==1){create_part(-1, x+rx, y+ry, PT_SPRK);}
+				else if((r&0xFF)==PT_NSCN && parts[i].tmp==1){create_part(-1, x+rx, y+ry, PT_SPRK);}// TODO: change this create_part
                 else if((r&0xFF)==PT_WIRE && parts[r>>8].tmp==1 && !parts[i].tmp){count++;}
             }
         }

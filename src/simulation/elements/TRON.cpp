@@ -43,9 +43,9 @@ const int tron_rx[4] = {-1, 0, 1, 0};
 const int tron_ry[4] = { 0,-1, 0, 1};
 unsigned int tron_colours[32];
 
-int new_tronhead(int x, int y, int i, int direction)
+int new_tronhead(Simulation *sim, int x, int y, int i, int direction)
 {
-	int np = create_part(-1, x , y ,PT_TRON);
+	int np = sim->part_create(-1, x , y ,PT_TRON);
 	if (np==-1)
 		return -1;
 	if (parts[i].life >= 100) // increase tail length
@@ -156,7 +156,7 @@ int TRON_update(UPDATE_FUNC_ARGS)
 		if (lastdircheck > seconddircheck && lastdircheck > firstdircheck)
 			direction = lastdir;
 		//now try making new head, even if it fails
-		if (new_tronhead(x + tron_rx[direction],y + tron_ry[direction],i,direction) == -1)
+		if (new_tronhead(sim, x + tron_rx[direction],y + tron_ry[direction],i,direction) == -1)
 		{
 			//ohgod crash
 			parts[i].tmp |= TRON_DEATH;

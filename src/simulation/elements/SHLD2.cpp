@@ -24,7 +24,7 @@ int SHLD2_update(UPDATE_FUNC_ARGS)
 			{
 				r = pmap[y+ry][x+rx];
 				if (!r && parts[i].life>0)
-					create_part(-1,x+rx,y+ry,PT_SHLD1);
+					sim->part_create(-1,x+rx,y+ry,PT_SHLD1);
 				if (!r)
 					continue;
 				else if ((r&0xFF)==PT_SPRK&&parts[i].life==0)
@@ -39,7 +39,7 @@ int SHLD2_update(UPDATE_FUNC_ARGS)
 						{
 							if (!pmap[y+ry+nny][x+rx+nnx])
 							{
-								np = create_part(-1,x+rx+nnx,y+ry+nny,PT_SHLD1);
+								np = sim->part_create(-1,x+rx+nnx,y+ry+nny,PT_SHLD1);
 								if (np<0) continue;
 								parts[np].life=7;
 							}

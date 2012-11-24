@@ -54,7 +54,7 @@ int DEUT_update(UPDATE_FUNC_ARGS)
 						continue;
 					if ((!r)&&parts[i].life>=1)//if nothing then create deut
 					{
-						np = create_part(-1,x+rx,y+ry,PT_DEUT);
+						np = sim->part_create(-1,x+rx,y+ry,PT_DEUT);
 						if (np<0) continue;
 						parts[i].life--;
 						parts[np].temp = parts[i].temp;

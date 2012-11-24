@@ -41,7 +41,7 @@ int IGNT_update(UPDATE_FUNC_ARGS)
 	{
 		if(rand()%3)
 		{
-			int nb = create_part(-1, x+rand()%3-1, y+rand()%3-1, PT_EMBR);
+			int nb = sim->part_create(-1, x+rand()%3-1, y+rand()%3-1, PT_EMBR);
 			if (nb!=-1) {
 				parts[nb].tmp = 0;
 				parts[nb].life = 30;
@@ -52,7 +52,7 @@ int IGNT_update(UPDATE_FUNC_ARGS)
 		}
 		else
 		{
-			create_part(-1, x+rand()%3-1, y+rand()%3-1, PT_FIRE);
+			sim->part_create(-1, x+rand()%3-1, y+rand()%3-1, PT_FIRE);
 		}
 		parts[i].life--;
 	}

@@ -55,7 +55,7 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 				r = pmap[y+ry][x+rx];
 				if (!r && parts[i].ctype!=0)
 				{
-					np = create_part(-1,x+rx,y+ry,PT_QRTZ);
+					np = sim->part_create(-1,x+rx,y+ry,PT_QRTZ);
 					if (np>-1)
 					{
 						parts[np].tmp = parts[i].tmp;

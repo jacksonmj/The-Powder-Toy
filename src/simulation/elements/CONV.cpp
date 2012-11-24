@@ -52,8 +52,9 @@ int CONV_update(UPDATE_FUNC_ARGS)
 						continue;
 					if((r&0xFF)!=PT_CONV && (r&0xFF)!=PT_DMND && (r&0xFF)!=parts[i].ctype)
 					{
+						// TODO: change this create_part
 						if (parts[i].ctype==PT_LIFE) create_part(r>>8, x+rx, y+ry, parts[i].ctype|(parts[i].tmp<<8));
-						else create_part(r>>8, x+rx, y+ry, parts[i].ctype);
+						else sim->part_create(r>>8, x+rx, y+ry, parts[i].ctype);
 					}
 				}
 	}

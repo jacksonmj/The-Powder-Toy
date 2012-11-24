@@ -80,7 +80,7 @@ int PBCN_update(UPDATE_FUNC_ARGS)
 				{
 					if (rx || ry)
 					{
-						int r = create_part(-1, x+rx, y+ry, parts[i].ctype);
+						int r = sim->part_create(-1, x+rx, y+ry, parts[i].ctype);
 						if (r!=-1)
 						{
 							parts[r].vx = rx*3;
@@ -98,13 +98,14 @@ int PBCN_update(UPDATE_FUNC_ARGS)
 		else if (parts[i].ctype==PT_LIFE) {//create life a different way
 			for (rx=-1; rx<2; rx++) {
 				for (ry=-1; ry<2; ry++) {
+					// TODO: change this create_part
 					create_part(-1, x+rx, y+ry, parts[i].ctype|(parts[i].tmp<<8));
 				}
 			}
 		}
 		else if (parts[i].ctype!=PT_LIGH || (rand()%30)==0)
 		{
-			int np = create_part(-1, x+rand()%3-1, y+rand()%3-1, parts[i].ctype);
+			int np = sim->part_create(-1, x+rand()%3-1, y+rand()%3-1, parts[i].ctype);
 			if (np>=0)
 			{
 				if (parts[i].ctype==PT_LAVA && parts[i].tmp>0 && parts[i].tmp<PT_NUM && ptransitions[parts[i].tmp].tht==PT_LAVA)

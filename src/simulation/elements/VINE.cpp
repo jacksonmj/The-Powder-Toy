@@ -25,7 +25,7 @@ int VINE_update(UPDATE_FUNC_ARGS)
 			part_change_type(i,x,y,PT_PLNT);
 		else if (!r)
 		{
-			np = create_part(-1,x+rx,y+ry,PT_VINE);
+			np = sim->part_create(-1,x+rx,y+ry,PT_VINE);
 			if (np<0) return 0;
 			parts[np].temp = parts[i].temp;
 			parts[i].tmp = 1;

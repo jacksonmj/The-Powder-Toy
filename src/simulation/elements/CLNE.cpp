@@ -41,10 +41,11 @@ int CLNE_update(UPDATE_FUNC_ARGS)
 				}
 	}
 	else {
+		// TODO: change this create_part
 		if (parts[i].ctype==PT_LIFE) create_part(-1, x+rand()%3-1, y+rand()%3-1, parts[i].ctype|(parts[i].tmp<<8));
 		else if (parts[i].ctype!=PT_LIGH || (rand()%30)==0)
 		{
-			int np = create_part(-1, x+rand()%3-1, y+rand()%3-1, parts[i].ctype);
+			int np = sim->part_create(-1, x+rand()%3-1, y+rand()%3-1, parts[i].ctype);
 			if (np>=0)
 			{
 				if (parts[i].ctype==PT_LAVA && parts[i].tmp>0 && parts[i].tmp<PT_NUM && ptransitions[parts[i].tmp].tht==PT_LAVA)

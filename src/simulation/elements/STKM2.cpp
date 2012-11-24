@@ -69,7 +69,7 @@ int STKM2_create_override(ELEMENT_CREATE_OVERRIDE_FUNC_ARGS)
 	STKM_init_legs(&player2, i);
 	player2.spwn = 1;
 
-	create_part(-3, x, y, PT_SPAWN2);
+	sim->part_create(-3, x, y, PT_SPAWN2);
 
 	sim->elementCount[t]++;
 	sim->pmap_add(i, x, y, t);

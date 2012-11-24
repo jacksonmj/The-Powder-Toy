@@ -41,7 +41,7 @@ int GEL_update(UPDATE_FUNC_ARGS)
 				if (((r&0xFF)==PT_PSTE) && parts[i].tmp<100 && 20>rand()%absorbChanceDenom)
 				{
 					parts[i].tmp++;
-					create_part(r>>8, x+rx, y+ry, PT_CLST);
+					sim->part_create(r>>8, x+rx, y+ry, PT_CLST);
 				}
 				if (((r&0xFF)==PT_SLTW) && parts[i].tmp<100 && 50>rand()%absorbChanceDenom)
 				{

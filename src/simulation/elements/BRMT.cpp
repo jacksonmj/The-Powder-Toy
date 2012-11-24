@@ -35,10 +35,10 @@ int BRMT_update(UPDATE_FUNC_ARGS)
 					{
 						if(rand()%2)
 						{
-							create_part(r>>8, x+rx, y+ry, PT_THRM);
+							sim->part_create(r>>8, x+rx, y+ry, PT_THRM);
 						}
 						else
-						{	create_part(i, x, y, PT_THRM);
+						{	sim->part_create(i, x, y, PT_THRM);
 						}
 						return 1;
 						//part_change_type(r>>8,x+rx,y+ry,PT_BMTL);

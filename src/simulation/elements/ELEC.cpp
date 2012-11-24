@@ -40,7 +40,7 @@ int ELEC_update(UPDATE_FUNC_ARGS)
 						for (rry=-1; rry<=1; rry++)
 						{
 							if (x+rx+rrx>=0 && y+ry+rry>=0 && x+rx+rrx<XRES && y+ry+rry<YRES) {
-								nb = create_part(-1, x+rx+rrx, y+ry+rry, PT_EMBR);
+								nb = sim->part_create(-1, x+rx+rrx, y+ry+rry, PT_EMBR);
 								if (nb!=-1) {
 									parts[nb].tmp = 0;
 									parts[nb].life = 50;
@@ -55,7 +55,7 @@ int ELEC_update(UPDATE_FUNC_ARGS)
 					fire_g[y/CELL][x/CELL] += rand()%200;
 					fire_b[y/CELL][x/CELL] += rand()%200;
 					/* possible alternative, but doesn't work well at the moment because FIRE_ADD divides firea by 8, so the glow isn't strong enough
-					create_part(i, x, y, PT_EMBR);
+					sim->part_create(i, x, y, PT_EMBR);
 					parts[i].tmp = 2;
 					parts[i].life = 2;
 					parts[i].ctype = ((rand()%200)<<16) | ((rand()%200)<<8) | (rand()%200);
@@ -71,11 +71,11 @@ int ELEC_update(UPDATE_FUNC_ARGS)
 				{
 					if(rand()<RAND_MAX/3)
 					{
-						create_part(r>>8, x+rx, y+ry, PT_O2);
+						sim->part_create(r>>8, x+rx, y+ry, PT_O2);
 					}
 					else
 					{
-						create_part(r>>8, x+rx, y+ry, PT_H2);
+						sim->part_create(r>>8, x+rx, y+ry, PT_H2);
 					}
 					kill_part(i);
 					return 1;
@@ -101,6 +101,7 @@ int ELEC_update(UPDATE_FUNC_ARGS)
 				}
 				if (ptypes[r&0xFF].properties & PROP_CONDUCTS && ((r&0xFF)!=PT_NBLE||parts[i].temp<2273.15))
 				{
+					// TODO: change this create_part
 					create_part(-1, x+rx, y+ry, PT_SPRK);
 					kill_part(i);
 					return 1;

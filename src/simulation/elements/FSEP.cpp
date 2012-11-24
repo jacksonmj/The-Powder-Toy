@@ -19,14 +19,14 @@ int FSEP_update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry;
 	if (parts[i].life<=0) {
-		r = create_part(i, x, y, PT_PLSM);
+		r = sim->part_create(i, x, y, PT_PLSM);
 		if (r!=-1)
 			parts[r].life = 50;
 		return 1;
 	} else if (parts[i].life < 40) {
 		parts[i].life--;
 		if ((rand()%10)==0) {
-			r = create_part(-1, (rx=x+rand()%3-1), (ry=y+rand()%3-1), PT_PLSM);
+			r = sim->part_create(-1, (rx=x+rand()%3-1), (ry=y+rand()%3-1), PT_PLSM);
 			if (r!=-1)
 				parts[r].life = 50;
 		}

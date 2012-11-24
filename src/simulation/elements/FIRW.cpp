@@ -61,7 +61,7 @@ int FIRW_update(UPDATE_FUNC_ARGS)
 		unsigned col = (((unsigned char)(firw_data[caddress]))<<16) | (((unsigned char)(firw_data[caddress+1]))<<8) | ((unsigned char)(firw_data[caddress+2]));
 		for (n=0; n<40; n++)
 		{
-			np = create_part(-3, x, y, PT_EMBR);
+			np = sim->part_create(-3, x, y, PT_EMBR);
 			if (np>-1)
 			{
 				magnitude = ((rand()%60)+40)*0.05f;

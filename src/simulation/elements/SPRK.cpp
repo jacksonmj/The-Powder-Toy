@@ -83,7 +83,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 						continue;
 					if (parts[i].tmp>4 && rand()%(parts[i].tmp*parts[i].tmp/20+6)==0)
 					{
-						int p=create_part(-1, x+rx*2, y+ry*2, PT_LIGH);
+						int p=sim->part_create(-1, x+rx*2, y+ry*2, PT_LIGH);
 						if (p!=-1)
 						{
 							parts[p].life=rand()%(2+parts[i].tmp/15)+parts[i].tmp/7;

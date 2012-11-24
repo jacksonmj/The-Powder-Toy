@@ -37,7 +37,7 @@ int PHOT_update(UPDATE_FUNC_ARGS)
 				{
 					parts[i].vx *= 0.90;
 					parts[i].vy *= 0.90;
-					create_part(r>>8, x+rx, y+ry, PT_PHOT);
+					sim->part_create(r>>8, x+rx, y+ry, PT_PHOT);
 					rrr = (rand()%360)*3.14159f/180.0f;
 					rr = (rand()%128+128)/127.0f;
 					parts[r>>8].vx = rr*cosf(rrr);
@@ -48,7 +48,7 @@ int PHOT_update(UPDATE_FUNC_ARGS)
 				{
 					parts[i].vx *= 0.90;
 					parts[i].vy *= 0.90;
-					create_part(r>>8, x+rx, y+ry, PT_PHOT);
+					sim->part_create(r>>8, x+rx, y+ry, PT_PHOT);
 					rr = (rand()%228+128)/127.0f;
 					rrr = (rand()%360)*3.14159f/180.0f;
 					parts[r>>8].vx = rr*cosf(rrr);

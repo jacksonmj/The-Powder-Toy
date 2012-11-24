@@ -36,7 +36,7 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 							}
 							r = pmap[y+nyi+nyy][x+nxi+nxx];
 							if (!r) {
-								int nr = create_part(-1, x+nxi+nxx, y+nyi+nyy, PT_BRAY);
+								int nr = sim->part_create(-1, x+nxi+nxx, y+nyi+nyy, PT_BRAY);
 								if (nr!=-1) {
 									if (destroy) {//if it came from PSCN
 										parts[nr].tmp = 2;
@@ -62,6 +62,7 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 									//this if prevents BRAY from stopping on certain materials
 								} else if ((r&0xFF)!=PT_STOR && (r&0xFF)!=PT_INWR && ((r&0xFF)!=PT_SPRK || parts[r>>8].ctype!=PT_INWR) && (r&0xFF)!=PT_ARAY && (r&0xFF)!=PT_WIFI && !((r&0xFF)==PT_SWCH && parts[r>>8].life>=10)) {
 									if (nyy!=0 || nxx!=0) {
+										// TODO: change this create_part
 										create_part(-1, x+nxi+nxx, y+nyi+nyy, PT_SPRK);
 									}
 									if (!(nostop && parts[r>>8].type==PT_SPRK && parts[r>>8].ctype >= 0 && parts[r>>8].ctype < PT_NUM && (ptypes[parts[r>>8].ctype].properties&PROP_CONDUCTS))) {
@@ -75,7 +76,7 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 										//Cause STOR to release
 										for(ry1 = 1; ry1 >= -1; ry1--){
 											for(rx1 = 0; rx1 >= -1 && rx1 <= 1; rx1 = -rx1-rx1+1){
-												int np = create_part(-1, x+nxi+nxx+rx1, y+nyi+nyy+ry1, parts[r>>8].tmp);
+												int np = sim->part_create(-1, x+nxi+nxx+rx1, y+nyi+nyy+ry1, parts[r>>8].tmp);
 												if (np!=-1)
 												{
 													parts[np].temp = parts[r>>8].temp;

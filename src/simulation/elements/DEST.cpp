@@ -39,7 +39,7 @@ int DEST_update(UPDATE_FUNC_ARGS)
 		if (rand()%2==0)
 		{
 			float orig_temp = parts[r>>8].temp;
-			create_part(r>>8, x+rx, y+ry, PT_NEUT);
+			sim->part_create(r>>8, x+rx, y+ry, PT_NEUT);
 			parts[r>>8].temp = restrict_flt(orig_temp+40000.0f, MIN_TEMP, MAX_TEMP);
 			pv[y/CELL][x/CELL] += 10.0f;
 			parts[i].life-=4;
@@ -47,7 +47,7 @@ int DEST_update(UPDATE_FUNC_ARGS)
 	}
 	else if ((r&0xFF)==PT_INSL)
 	{
-		create_part(r>>8, x+rx, y+ry, PT_PLSM);
+		sim->part_create(r>>8, x+rx, y+ry, PT_PLSM);
 	}
 	else if (rand()%3==0)
 	{

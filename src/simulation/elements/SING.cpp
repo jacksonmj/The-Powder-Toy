@@ -58,13 +58,13 @@ int SING_update(UPDATE_FUNC_ARGS) {
 			switch(rand()%3)
 			{
 				case 0:
-					nb = create_part(-3, x, y, PT_PHOT);
+					nb = sim->part_create(-3, x, y, PT_PHOT);
 					break;
 				case 1:
-					nb = create_part(-3, x, y, PT_NEUT);
+					nb = sim->part_create(-3, x, y, PT_NEUT);
 					break;
 				case 2:
-					nb = create_part(-3, x, y, PT_ELEC);
+					nb = sim->part_create(-3, x, y, PT_ELEC);
 					break;
 			}
 			if (nb!=-1) {
@@ -103,7 +103,7 @@ int SING_update(UPDATE_FUNC_ARGS) {
 							if (parts[r>>8].type!=PT_SING && 1>rand()%100)
 							{
 								int np;
-								np = create_part(r>>8,x+rx,y+ry,PT_SING);
+								np = sim->part_create(r>>8,x+rx,y+ry,PT_SING);
 								parts[np].life = rand()%50+60;
 							}
 							continue;

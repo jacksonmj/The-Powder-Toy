@@ -31,7 +31,7 @@ int YEST_update(UPDATE_FUNC_ARGS)
 				}
 			}
 	if (parts[i].temp>303&&parts[i].temp<317) {
-		create_part(-1, x+rand()%3-1, y+rand()%3-1, PT_YEST);
+		sim->part_create(-1, x+rand()%3-1, y+rand()%3-1, PT_YEST);
 	}
 	return 0;
 }

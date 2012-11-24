@@ -50,7 +50,7 @@ int MERC_update(UPDATE_FUNC_ARGS)
 						continue;
 					if ((!r)&&parts[i].tmp>=1)//if nothing then create deut
 					{
-						np = create_part(-1,x+rx,y+ry,PT_MERC);
+						np = sim->part_create(-1,x+rx,y+ry,PT_MERC);
 						if (np<0) continue;
 						parts[i].tmp--;
 						parts[np].temp = parts[i].temp;

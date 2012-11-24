@@ -34,7 +34,7 @@ int AMTR_update(UPDATE_FUNC_ARGS)
 						return 1;
 					}
 					if (10>(rand()/(RAND_MAX/100)))
-						create_part(r>>8, x+rx, y+ry, PT_PHOT);
+						sim->part_create(r>>8, x+rx, y+ry, PT_PHOT);
 					else
 						kill_part(r>>8);
 					pv[y/CELL][x/CELL] -= 2.0f;

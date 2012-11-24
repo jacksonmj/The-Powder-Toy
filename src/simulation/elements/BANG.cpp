@@ -64,12 +64,12 @@ int BANG_update(UPDATE_FUNC_ARGS)
 		{
 			if(!(rand()%2))
 			{
-				create_part(i, x, y, PT_FIRE);
+				sim->part_create(i, x, y, PT_FIRE);
 				parts[i].temp = restrict_flt((MAX_TEMP/4)+otemp, MIN_TEMP, MAX_TEMP);
 			}
 			else
 			{
-				create_part(i, x, y, PT_SMKE);
+				sim->part_create(i, x, y, PT_SMKE);
 				parts[i].temp = restrict_flt((MAX_TEMP/4)+otemp, MIN_TEMP, MAX_TEMP);
 			}
 		}
@@ -77,7 +77,7 @@ int BANG_update(UPDATE_FUNC_ARGS)
 		{
 			if(!(rand()%15))
 			{
-				create_part(i, x, y, PT_EMBR);
+				sim->part_create(i, x, y, PT_EMBR);
 				parts[i].tmp = 0;
 				parts[i].life = 50;
 				parts[i].temp = restrict_flt((MAX_TEMP/3)+otemp, MIN_TEMP, MAX_TEMP);

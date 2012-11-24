@@ -23,13 +23,13 @@ int NBLE_update(UPDATE_FUNC_ARGS)
 		{
 			int j;
 			float temp = parts[i].temp;
-			create_part(i,x,y,PT_CO2);
+			sim->part_create(i,x,y,PT_CO2);
 
-			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_NEUT); if (j != -1) parts[j].temp = temp;
-			if (!(rand()%25)) { j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_ELEC); if (j != -1) parts[j].temp = temp; }
-			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_PHOT); if (j != -1) { parts[j].ctype = 0xFF0000; parts[j].temp = temp; }
+			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_NEUT); if (j != -1) parts[j].temp = temp;
+			if (!(rand()%25)) { j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_ELEC); if (j != -1) parts[j].temp = temp; }
+			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_PHOT); if (j != -1) { parts[j].ctype = 0xFF0000; parts[j].temp = temp; }
 
-			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_PLSM); if (j != -1) parts[j].temp = temp;
+			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_PLSM); if (j != -1) parts[j].temp = temp;
 
 			parts[i].temp = temp+1750+rand()%500;
 			pv[y/CELL][x/CELL] += 50;

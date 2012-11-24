@@ -97,7 +97,7 @@ int EMP_update(UPDATE_FUNC_ARGS)
 							}
 							if ((n&0xFF)==PT_WIFI && rand()%16==0)
 							{
-								create_part(n>>8, rx+nx, ry+ny, PT_BREL);
+								sim->part_create(n>>8, rx+nx, ry+ny, PT_BREL);
 								parts[n>>8].temp = restrict_flt(parts[n>>8].temp+1000.0f, MIN_TEMP, MAX_TEMP);
 							}
 						}
@@ -111,7 +111,7 @@ int EMP_update(UPDATE_FUNC_ARGS)
 						}
 						if ((n&0xFF)==PT_ARAY && rand()%60==0)
 						{
-							create_part(n>>8, rx+nx, ry+ny, PT_BREL);
+							sim->part_create(n>>8, rx+nx, ry+ny, PT_BREL);
 							parts[n>>8].temp = restrict_flt(parts[n>>8].temp+1000.0f, MIN_TEMP, MAX_TEMP);
 						}
 						if (t==PT_DLAY && rand()%70==0)

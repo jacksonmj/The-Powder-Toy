@@ -18,7 +18,7 @@
 int SPAWN2_update(UPDATE_FUNC_ARGS)
 {
 	if (!player2.spwn)
-		create_part(-1, x, y, PT_STKM2);
+		sim->part_create(-1, x, y, PT_STKM2);
 	return 0;
 }
 

@@ -54,10 +54,10 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 	{
 		for (r=-2; r<=1; r++)
 		{
-			create_part(-1, x+r, y-2, playerp->elem);
-			create_part(-1, x+r+1, y+2, playerp->elem);
-			create_part(-1, x-2, y+r+1, playerp->elem);
-			create_part(-1, x+2, y+r, playerp->elem);
+			sim->part_create(-1, x+r, y-2, playerp->elem);
+			sim->part_create(-1, x+r+1, y+2, playerp->elem);
+			sim->part_create(-1, x-2, y+r+1, playerp->elem);
+			sim->part_create(-1, x+2, y+r, playerp->elem);
 		}
 		kill_part(i);  //Kill him
 		return 1;
@@ -257,6 +257,7 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 		r = pmap[ry][rx];
 		if (ptypes[r&0xFF].state == ST_SOLID)
 		{
+			// TODO: change this create_part
 			create_part(-1, rx, ry, PT_SPRK);
 			playerp->frames = 0;
 		}
@@ -268,7 +269,7 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 			else if (playerp->elem==PT_LIGH && playerp->frames<30)//limit lightning creation rate
 				np = -1;
 			else
-				np = create_part(-1, rx, ry, playerp->elem);
+				np = sim->part_create(-1, rx, ry, playerp->elem);
 			if ( (np < NPART) && np>=0)
 			{
 				if (playerp->elem == PT_PHOT)
@@ -554,7 +555,7 @@ int STKM_create_override(ELEMENT_CREATE_OVERRIDE_FUNC_ARGS)
 	STKM_init_legs(&player, i);
 	player.spwn = 1;
 
-	create_part(-3, x, y, PT_SPAWN);
+	sim->part_create(-3, x, y, PT_SPAWN);
 
 	sim->elementCount[t]++;
 	sim->pmap_add(i, x, y, t);

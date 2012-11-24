@@ -37,7 +37,7 @@ int BOMB_update(UPDATE_FUNC_ARGS)
 								if ((pmap[y+nxj][x+nxi]&0xFF)!=PT_DMND && (pmap[y+nxj][x+nxi]&0xFF)!=PT_CLNE && (pmap[y+nxj][x+nxi]&0xFF)!=PT_PCLN && (pmap[y+nxj][x+nxi]&0xFF)!=PT_BCLN && (pmap[y+nxj][x+nxi]&0xFF)!=PT_VIBR) {
 									delete_part(x+nxi, y+nxj, 0);
 									pv[(y+nxj)/CELL][(x+nxi)/CELL] += 0.1f;
-									nb = create_part(-3, x+nxi, y+nxj, PT_EMBR);
+									nb = sim->part_create(-3, x+nxi, y+nxj, PT_EMBR);
 									if (nb!=-1) {
 										parts[nb].tmp = 2;
 										parts[nb].life = 2;
@@ -47,7 +47,7 @@ int BOMB_update(UPDATE_FUNC_ARGS)
 					for (nxj=-(rad+1); nxj<=(rad+1); nxj++)
 						for (nxi=-(rad+1); nxi<=(rad+1); nxi++)
 							if ((pow(nxi,2))/(pow((rad+1),2))+(pow(nxj,2))/(pow((rad+1),2))<=1 && !(pmap[y+nxj][x+nxi]&0xFF)) {
-								nb = create_part(-3, x+nxi, y+nxj, PT_EMBR);
+								nb = sim->part_create(-3, x+nxi, y+nxj, PT_EMBR);
 								if (nb!=-1) {
 									parts[nb].tmp = 0;
 									parts[nb].life = 50;

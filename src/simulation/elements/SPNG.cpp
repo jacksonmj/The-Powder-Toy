@@ -50,7 +50,7 @@ int SPNG_update(UPDATE_FUNC_ARGS)
 					if ((r&0xFF)==PT_PSTE && parts[i].life<limit && 20>rand()%absorbChanceDenom)
 					{
 						parts[i].life++;
-						create_part(r>>8, x+rx, y+ry, PT_CLST);
+						sim->part_create(r>>8, x+rx, y+ry, PT_CLST);
 					}
 				}
 	}
@@ -62,7 +62,7 @@ int SPNG_update(UPDATE_FUNC_ARGS)
 					r = pmap[y+ry][x+rx];
 					if ((!r)&&parts[i].life>=1)//if nothing then create water
 					{
-						np = create_part(-1,x+rx,y+ry,PT_WATR);
+						np = sim->part_create(-1,x+rx,y+ry,PT_WATR);
 						if (np>-1) parts[i].life--;
 					}
 				}
@@ -125,7 +125,7 @@ int SPNG_update(UPDATE_FUNC_ARGS)
 					r = pmap[y+ry][x+rx];
 					if ((!r)&&parts[i].life>=1)//if nothing then create steam
 					{
-						np = create_part(-1,x+rx,y+ry,PT_WTRV);
+						np = sim->part_create(-1,x+rx,y+ry,PT_WTRV);
 						if (np>-1)
 						{
 							parts[np].temp = parts[i].temp;

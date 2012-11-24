@@ -33,8 +33,8 @@ int CLST_update(UPDATE_FUNC_ARGS)
 				}
 				if ((r&0xFF)==PT_NITR)
 				{
-					create_part(i, x, y, PT_BANG);
-					create_part(r>>8, x+rx, y+ry, PT_BANG);
+					sim->part_create(i, x, y, PT_BANG);
+					sim->part_create(r>>8, x+rx, y+ry, PT_BANG);
 				}
 				if ((r&0xFF)==PT_CLST)
 				{

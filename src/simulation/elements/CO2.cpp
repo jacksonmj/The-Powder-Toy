@@ -25,7 +25,7 @@ int CO2_update(UPDATE_FUNC_ARGS)
 				r = pmap[y+ry][x+rx];
                 if (parts[i].ctype==5 && 20>(rand()%40000))
 				{
-					if (create_part(-1, x+rx, y+ry, PT_WATR)>=0)
+					if (sim->part_create(-1, x+rx, y+ry, PT_WATR)>=0)
 						parts[i].ctype = 0;
 				}
 				if ((r>>8)>=NPART || !r)
@@ -41,7 +41,7 @@ int CO2_update(UPDATE_FUNC_ARGS)
 				{
 					part_change_type(r>>8, x+rx, y+ry, PT_CBNW);
 					if (parts[i].ctype==5) //conserve number of water particles - ctype=5 means this CO2 hasn't released the water particle from BUBW yet
-						create_part(i, x, y, PT_WATR);
+						sim->part_create(i, x, y, PT_WATR);
 					else
 						kill_part(i);
 				}
@@ -51,10 +51,10 @@ int CO2_update(UPDATE_FUNC_ARGS)
 		if (rand()%5 < 1)
 		{
 			int j;
-			create_part(i,x,y,PT_O2);
+			sim->part_create(i,x,y,PT_O2);
 
-			j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_NEUT); if (j != -1) parts[j].temp = 15000;
-			if (!(rand()%50)) { j = create_part(-3,x+rand()%3-1,y+rand()%3-1,PT_ELEC); if (j != -1) parts[j].temp = 15000; }
+			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_NEUT); if (j != -1) parts[j].temp = 15000;
+			if (!(rand()%50)) { j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_ELEC); if (j != -1) parts[j].temp = 15000; }
 
 			parts[i].temp = 15000;
 			pv[y/CELL][x/CELL] += 100;

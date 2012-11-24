@@ -52,7 +52,7 @@ int EXOT_update(UPDATE_FUNC_ARGS)
 				if ((parts[i].tmp>245) && (parts[i].life>1000))
 					if ((r&0xFF)!=PT_EXOT && (r&0xFF)!=PT_BREL && (r&0xFF)!=PT_DMND && (r&0xFF)!=PT_CLNE && (r&0xFF)!=PT_PRTI && (r&0xFF)!=PT_PRTO && (r&0xFF)!=PT_PCLN && (r&0xFF)!=PT_PHOT && (r&0xFF)!=PT_VOID && (r&0xFF)!=PT_NBHL && (r&0xFF)!=PT_WARP && (r&0xFF)!=PT_NEUT)
 					{
-						create_part(i, x, y, parts[r>>8].type);
+						sim->part_create(i, x, y, parts[r>>8].type);
 						return 0;
 					}
 			}

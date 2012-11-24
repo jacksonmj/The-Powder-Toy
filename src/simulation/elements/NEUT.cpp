@@ -78,7 +78,7 @@ int NEUT_update(UPDATE_FUNC_ARGS)
 				{
 					if (33>rand()%100)
 					{
-						create_part(r>>8, x+rx, y+ry, rand()%3 ? PT_LAVA : PT_URAN);
+						sim->part_create(r>>8, x+rx, y+ry, rand()%3 ? PT_LAVA : PT_URAN);
 						parts[r>>8].temp = MAX_TEMP;
 						if (parts[r>>8].type==PT_LAVA) {
 							parts[r>>8].tmp = 100;
@@ -87,7 +87,7 @@ int NEUT_update(UPDATE_FUNC_ARGS)
 					}
 					else
 					{
-						create_part(r>>8, x+rx, y+ry, PT_NEUT);
+						sim->part_create(r>>8, x+rx, y+ry, PT_NEUT);
 						parts[r>>8].vx = 0.25f*parts[r>>8].vx + parts[i].vx;
 						parts[r>>8].vy = 0.25f*parts[r>>8].vy + parts[i].vy;
 					}
@@ -103,7 +103,7 @@ int NEUT_update(UPDATE_FUNC_ARGS)
 #else
 				else if ((r&0xFF)==PT_DEUT && (pressureFactor+1)>(rand()%1000))
 				{
-					create_part(r>>8, x+rx, y+ry, PT_NEUT);
+					sim->part_create(r>>8, x+rx, y+ry, PT_NEUT);
 					parts[r>>8].vx = 0.25f*parts[r>>8].vx + parts[i].vx;
 					parts[r>>8].vy = 0.25f*parts[r>>8].vy + parts[i].vy;
 					if (parts[r>>8].life>0)
@@ -129,17 +129,17 @@ int NEUT_update(UPDATE_FUNC_ARGS)
 				else if ((r&0xFF)==PT_NITR && 15>(rand()%1000))
 					part_change_type(r>>8,x+rx,y+ry,PT_DESL);
 				else if ((r&0xFF)==PT_PLNT && 5>(rand()%100))
-					create_part(r>>8, x+rx, y+ry, PT_WOOD);
+					sim->part_create(r>>8, x+rx, y+ry, PT_WOOD);
 				else if ((r&0xFF)==PT_DESL && 15>(rand()%1000))
 					part_change_type(r>>8,x+rx,y+ry,PT_GAS);
 				else if ((r&0xFF)==PT_COAL && 5>(rand()%100))
-					create_part(r>>8, x+rx, y+ry, PT_WOOD);
+					sim->part_create(r>>8, x+rx, y+ry, PT_WOOD);
 				else if ((r&0xFF)==PT_DUST && 5>(rand()%100))
 					part_change_type(r>>8, x+rx, y+ry, PT_FWRK);
 				else if ((r&0xFF)==PT_FWRK && 5>(rand()%100))
 					parts[r>>8].ctype = PT_DUST;
 				else if ((r&0xFF)==PT_ACID && 5>(rand()%100))
-					create_part(r>>8, x+rx, y+ry, PT_ISOZ);
+					sim->part_create(r>>8, x+rx, y+ry, PT_ISOZ);
 				else if ((r&0xFF)==PT_TTAN && 5>(rand()%100))
 				{
 					kill_part(i);

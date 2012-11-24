@@ -165,7 +165,7 @@ void PIPE_transfer_pipe_to_pipe(particle *src, particle *dest)
 	src->tmp &= ~0xFF;
 }
 
-void pushParticle(int i, int count, int original)
+void pushParticle(Simulation *sim, int i, int count, int original)
 {
 	int rndstore, rnd, rx, ry, r, x, y, np, q, notctype=(((parts[i].ctype)%3)+2);
 	if ((parts[i].tmp&0xFF) == 0 || count >= 2)//don't push if there is nothing there, max speed of 2 per frame
@@ -195,7 +195,7 @@ void pushParticle(int i, int count, int original)
 					if (r>>8 > original)
 						parts[r>>8].flags |= PFLAG_NORMALSPEED;//skip particle push, normalizes speed
 					count++;
-					pushParticle(r>>8,count,original);
+					pushParticle(sim, r>>8,count,original);
 				}
 				else if ((r&0xFF) == PT_PRTI) //Pass particles into PRTI for a pipe speed increase
 				{
@@ -221,7 +221,7 @@ void pushParticle(int i, int count, int original)
 			if (r>>8 > original)
 				parts[r>>8].flags |= PFLAG_NORMALSPEED;//skip particle push, normalizes speed
 			count++;
-			pushParticle(r>>8,count,original);
+			pushParticle(sim, r>>8,count,original);
 		}
 		else if ((r&0xFF) == PT_PRTI) //Pass particles into PRTI for a pipe speed increase
 		{
@@ -238,7 +238,7 @@ void pushParticle(int i, int count, int original)
 		{
 			rx = pos_1_rx[coords];
 			ry = pos_1_ry[coords];
-			np = create_part(-1,x+rx,y+ry,parts[i].tmp&0xFF);
+			np = sim->part_create(-1,x+rx,y+ry,parts[i].tmp&0xFF);
 			if (np!=-1)
 			{
 				PIPE_transfer_pipe_to_part(parts+i, parts+np);
@@ -354,7 +354,7 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 			}
 			else
 			{
-				pushParticle(i,0,i);
+				pushParticle(sim, i,0,i);
 			}
 
 			if (nt)//there is something besides PIPE around current particle
@@ -371,7 +371,7 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 						r = photons[y+ry][x+rx];
 					if (surround_space && !r && (parts[i].tmp&0xFF)!=0)  //creating at end
 					{
-						np = create_part(-1,x+rx,y+ry,parts[i].tmp&0xFF);
+						np = sim->part_create(-1,x+rx,y+ry,parts[i].tmp&0xFF);
 						if (np!=-1)
 						{
 							PIPE_transfer_pipe_to_part(parts+i, parts+np);
@@ -425,7 +425,7 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 						r = pmap[y+ry][x+rx];
 						if (!r)
 						{
-							int index = create_part(-1,x+rx,y+ry,PT_BRCK);//BRCK border, people didn't like DMND
+							int index = sim->part_create(-1,x+rx,y+ry,PT_BRCK);//BRCK border, people didn't like DMND
 							if (parts[i].type == PT_PPIP && index != -1)
 								parts[index].tmp = 1;
 						}

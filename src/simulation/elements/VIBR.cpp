@@ -90,15 +90,15 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 		if (parts[i].life == 1)
 		{
 			int random = rand(), index;
-			create_part(i, x, y, PT_EXOT);
+			sim->part_create(i, x, y, PT_EXOT);
 			parts[i].tmp2 = rand()%1000;
-			index = create_part(-3,x+((random>>4)&3)-1,y+((random>>6)&3)-1,PT_ELEC);
+			index = sim->part_create(-3,x+((random>>4)&3)-1,y+((random>>6)&3)-1,PT_ELEC);
 			if (index != -1)
 				parts[index].temp = 7000;
-			index = create_part(-3,x+((random>>8)&3)-1,y+((random>>10)&3)-1,PT_PHOT);
+			index = sim->part_create(-3,x+((random>>8)&3)-1,y+((random>>10)&3)-1,PT_PHOT);
 			if (index != -1)
 				parts[index].temp = 7000;
-			index = create_part(-1,x+((random>>12)&3)-1,y+rand()%3-1,PT_BREL);
+			index = sim->part_create(-1,x+((random>>12)&3)-1,y+rand()%3-1,PT_BREL);
 			if (index != -1)
 				parts[index].temp = 7000;
 			parts[i].temp=9000;
@@ -120,7 +120,7 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 				//Melts into EXOT
 				if ((r&0xFF) == PT_EXOT && !(rand()%250))
 				{
-					create_part(i, x, y, PT_EXOT);
+					sim->part_create(i, x, y, PT_EXOT);
 				}
 				else if ((r&0xFF) == PT_ANAR)
 				{
