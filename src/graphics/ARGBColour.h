@@ -29,8 +29,8 @@
 typedef uint32_t ARGBColour;
 
 #define COLPACK(x) (0xFF000000|(x))
-#define COLARGB(a,r,g,b) (((a)<<24)|((b)<<16)|((g)<<8)|(r))
-#define COLRGB(r,g,b) (0xFF000000|((b)<<16)|((g)<<8)|(r))
+#define COLARGB(a,r,g,b) (((a)<<24)|((r)<<16)|((g)<<8)|(b))
+#define COLRGB(r,g,b) (0xFF000000|((r)<<16)|((g)<<8)|(b))
 #define COLA(x) (((x)>>24)&0xFF)
 #define COLR(x) (((x)>>16)&0xFF)
 #define COLG(x) (((x)>>8)&0xFF)
