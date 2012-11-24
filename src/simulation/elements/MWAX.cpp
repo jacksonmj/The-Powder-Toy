@@ -41,7 +41,7 @@ void MWAX_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Weight = 25;
 
-	elem->CreationTemperature = R_TEMP+28.0f+273.15f;
+	elem->DefaultProperties.temp = R_TEMP+28.0f+273.15f;
 	elem->HeatConduct = 44;
 	elem->Latent = 0;
 	elem->Description = "Liquid Wax.";

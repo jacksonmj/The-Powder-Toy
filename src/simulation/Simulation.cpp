@@ -112,8 +112,6 @@ int Simulation::part_create(int p, int x, int y, int t)
 	parts[i].lastX = (float)x;
 	parts[i].lastY = (float)y;
 #endif
-	// TODO: deprecate CreationTemperature in favour of DefaultProperties?
-	parts[i].temp = elements[t].CreationTemperature;
 
 	// Set non-static properties (such as randomly generated ones)
 	if (elements[t].Func_Create)
@@ -214,7 +212,7 @@ void Simulation_Compat_CopyData(Simulation* sim)
 		ptypes[t].meltable = sim->elements[t].Meltable;
 		ptypes[t].hardness = sim->elements[t].Hardness;
 		ptypes[t].weight = sim->elements[t].Weight;
-		ptypes[t].heat = sim->elements[t].CreationTemperature;
+		ptypes[t].heat = sim->elements[t].DefaultProperties.temp;
 		ptypes[t].hconduct = sim->elements[t].HeatConduct;
 		ptypes[t].descs = mystrdup(sim->elements[t].Description);
 		ptypes[t].state = sim->elements[t].State;

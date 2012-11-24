@@ -55,7 +55,7 @@ void ISZS_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Weight = 100;
 
-	elem->CreationTemperature = 140.00f;
+	elem->DefaultProperties.temp = 140.00f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
 	elem->Description = "Solid form of ISOZ, slowly decays.";

@@ -74,7 +74,7 @@ void HSWC_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Weight = 100;
 
-	elem->CreationTemperature = R_TEMP+0.0f	+273.15f;
+	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
 	elem->Description = "Heat switch. Conducts Heat only when activated";

@@ -69,7 +69,6 @@ public:
 	 */
 	int Weight;
 
-	float CreationTemperature;
 	unsigned char HeatConduct;
 	// Latent value is in TPT imaginary units - 750/226*enthalpy value of the material
 	unsigned int Latent;

@@ -64,7 +64,7 @@ void FIRE_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Weight = 2;
 
-	elem->CreationTemperature = R_TEMP+400.0f+273.15f;
+	elem->DefaultProperties.temp = R_TEMP+400.0f+273.15f;
 	elem->HeatConduct = 88;
 	elem->Latent = 0;
 	elem->Description = "Ignites flammable materials. Heats air.";

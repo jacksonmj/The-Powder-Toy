@@ -419,7 +419,7 @@ int main()
 		elementFile << std::endl;
 		elementFile << initPropertyPrefix << "Weight = " << elementData[elementId].Weight << ";" << std::endl;
 		elementFile << std::endl;
-		elementFile << initPropertyPrefix << "CreationTemperature = " << elementData[elementId].CreationTemperature << ";" << std::endl;
+		elementFile << initPropertyPrefix << "DefaultProperties.temp = " << elementData[elementId].CreationTemperature << ";" << std::endl;
 		elementFile << initPropertyPrefix << "HeatConduct = " << elementData[elementId].HeatConduct << ";" << std::endl;
 		elementFile << initPropertyPrefix << "Latent = " << elementData[elementId].Latent << ";" << std::endl;
 		elementFile << initPropertyPrefix << "Description = " << elementData[elementId].Description << ";" << std::endl;

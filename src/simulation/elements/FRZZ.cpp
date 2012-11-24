@@ -66,7 +66,7 @@ void FRZZ_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Weight = 50;
 
-	elem->CreationTemperature = 253.15f;
+	elem->DefaultProperties.temp = 253.15f;
 	elem->HeatConduct = 46;
 	elem->Latent = 0;
 	elem->Description = "Freeze powder. When melted, forms ice that always cools. Spreads with regular water.";

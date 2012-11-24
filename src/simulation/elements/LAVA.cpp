@@ -64,7 +64,7 @@ void LAVA_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Weight = 45;
 
-	elem->CreationTemperature = R_TEMP+1500.0f+273.15f;
+	elem->DefaultProperties.temp = R_TEMP+1500.0f+273.15f;
 	elem->HeatConduct = 60;
 	elem->Latent = 0;
 	elem->Description = "Heavy liquid. Ignites flammable materials. Solidifies when cold.";

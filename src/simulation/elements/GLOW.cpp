@@ -83,7 +83,7 @@ void GLOW_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Weight = 40;
 
-	elem->CreationTemperature = R_TEMP+20.0f+273.15f;
+	elem->DefaultProperties.temp = R_TEMP+20.0f+273.15f;
 	elem->HeatConduct = 44;
 	elem->Latent = 0;
 	elem->Description = "Glow, Glows under pressure";

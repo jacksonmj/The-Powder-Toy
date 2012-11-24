@@ -95,7 +95,7 @@ void LIFE_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Weight = 100;
 
-	elem->CreationTemperature = 9000.0f;
+	elem->DefaultProperties.temp = 9000.0f;
 	elem->HeatConduct = 40;
 	elem->Latent = 0;
 	elem->Description = "Game Of Life! B3/S23";

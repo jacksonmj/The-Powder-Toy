@@ -121,7 +121,7 @@ void EMBR_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Weight = 30;
 
-	elem->CreationTemperature = 500.0f	+273.15f;
+	elem->DefaultProperties.temp = 500.0f	+273.15f;
 	elem->HeatConduct = 29;
 	elem->Latent = 0;
 	elem->Description = "Sparks. Formed by explosions.";

@@ -95,7 +95,7 @@ void BOMB_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Weight = 30;
 
-	elem->CreationTemperature = R_TEMP-2.0f	+273.15f;
+	elem->DefaultProperties.temp = R_TEMP-2.0f	+273.15f;
 	elem->HeatConduct = 29;
 	elem->Latent = 0;
 	elem->Description = "Bomb.";

@@ -65,7 +65,7 @@ void HFLM_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Weight = 2;
 
-	elem->CreationTemperature = 0.0f;
+	elem->DefaultProperties.temp = 0.0f;
 	elem->HeatConduct = 88;
 	elem->Latent = 0;
 	elem->Description = "Sub-zero flame.";

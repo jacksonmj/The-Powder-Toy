@@ -66,7 +66,6 @@ int STKM2_create_override(ELEMENT_CREATE_OVERRIDE_FUNC_ARGS)
 	sim->parts[i].lastY = (float)y;
 #endif
 	parts[i].life = 100;
-	parts[i].temp = sim->elements[t].CreationTemperature;
 	STKM_init_legs(&player2, i);
 	player2.spwn = 1;
 
@@ -103,7 +102,7 @@ void STKM2_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Weight = 50;
 
-	elem->CreationTemperature = R_TEMP+14.6f+273.15f;
+	elem->DefaultProperties.temp = R_TEMP+14.6f+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
 	elem->Description = "Second Stickman. Don't kill him!";

@@ -47,7 +47,7 @@ void MORT_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Weight = -1;
 
-	elem->CreationTemperature = R_TEMP+4.0f	+273.15f;
+	elem->DefaultProperties.temp = R_TEMP+4.0f	+273.15f;
 	elem->HeatConduct = 60;
 	elem->Latent = 0;
 	elem->Description = "Steam Train.";

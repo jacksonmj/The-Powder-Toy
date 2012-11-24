@@ -91,7 +91,7 @@ void WARP_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Weight = 1;
 
-	elem->CreationTemperature = R_TEMP +273.15f;
+	elem->DefaultProperties.temp = R_TEMP +273.15f;
 	elem->HeatConduct = 100;
 	elem->Latent = 0;
 	elem->Description = "Displaces other elements.";

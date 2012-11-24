@@ -248,7 +248,7 @@ void TRON_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Weight = 100;
 
-	elem->CreationTemperature = 0.0f;
+	elem->DefaultProperties.temp = 0.0f;
 	elem->HeatConduct = 40;
 	elem->Latent = 0;
 	elem->Description = "Smart particles, Travels in straight lines and avoids obstacles. Grows with time.";

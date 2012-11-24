@@ -64,7 +64,7 @@ void PLSM_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Weight = 1;
 
-	elem->CreationTemperature = 10000.0f	+273.15f;
+	elem->DefaultProperties.temp = 10000.0f	+273.15f;
 	elem->HeatConduct = 5;
 	elem->Latent = 0;
 	elem->Description = "Plasma, extremely hot.";

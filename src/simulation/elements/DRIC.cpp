@@ -41,7 +41,7 @@ void DRIC_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Weight = 100;
 
-	elem->CreationTemperature = 172.65f;
+	elem->DefaultProperties.temp = 172.65f;
 	elem->HeatConduct = 2;
 	elem->Latent = 0;
 	elem->Description = "Dry Ice.";

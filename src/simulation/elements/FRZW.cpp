@@ -71,7 +71,7 @@ void FRZW_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Weight = 30;
 
-	elem->CreationTemperature = 120.0f;
+	elem->DefaultProperties.temp = 120.0f;
 	elem->HeatConduct = 29;
 	elem->Latent = 0;
 	elem->Description = "Freeze water. Hybrid liquid formed when Freeze powder melts.";
