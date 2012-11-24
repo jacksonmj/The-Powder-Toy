@@ -65,6 +65,21 @@ void benchmark_run()
 			{
 				printf("Save speed test:\n");
 
+				printf("Update particles+air: ");
+				BENCHMARK_INIT(benchmark_repeat_count, 200)
+				{
+					parse_save(file_data, size, 1, 0, 0, bmap, fvx, fvy, vx, vy, pv, signs, parts, pmap);
+					sys_pause = framerender = 0;
+					BENCHMARK_RUN()
+					{
+						update_air();
+						if(aheat_enable)
+							update_airh();
+						update_particles(vid_buf);
+					}
+				}
+				BENCHMARK_END()
+
 				printf("Load save: ");
 				BENCHMARK_INIT(benchmark_repeat_count, 100)
 				{
