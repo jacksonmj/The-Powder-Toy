@@ -38,10 +38,20 @@
 #define TRON_WAIT 4 //it was just created, so WAIT a frame
 #define TRON_NODIE 8
 #define TRON_DEATH 16 //Crashed, now dying
+#define TRON_NORANDOM 65536
 
 const int tron_rx[4] = {-1, 0, 1, 0};
 const int tron_ry[4] = { 0,-1, 0, 1};
 unsigned int tron_colours[32];
+
+bool canmovetron(Simulation * sim, int r, int len)
+{
+	if (!r || ((r&0xFF) == PT_SWCH && parts[r>>8].life >= 10) || ((r&0xFF) == PT_INVIS && parts[r>>8].tmp == 1))
+		return true;
+	if (((sim->elements[r&0xFF].Properties & PROP_LIFE_KILL_DEC) || ((sim->elements[r&0xFF].Properties & PROP_LIFE_KILL) && (sim->elements[r&0xFF].Properties & PROP_LIFE_DEC))) && parts[r>>8].life < len)
+		return true;
+	return false;
+}
 
 int new_tronhead(Simulation *sim, int x, int y, int i, int direction)
 {
@@ -55,7 +65,7 @@ int new_tronhead(Simulation *sim, int x, int y, int i, int direction)
 		parts[i].life = 5;
 	}
 	//give new head our properties
-	parts[np].tmp = 1 | direction<<5 | parts[i].tmp&(TRON_NOGROW|TRON_NODIE) | (parts[i].tmp&0xF800);
+	parts[np].tmp = 1 | (direction<<5) | (parts[i].tmp&(TRON_NOGROW|TRON_NODIE|TRON_NORANDOM)) | (parts[i].tmp&0xF800);
 	if (np > i)
 		parts[np].tmp |= TRON_WAIT;
 	
@@ -65,7 +75,7 @@ int new_tronhead(Simulation *sim, int x, int y, int i, int direction)
 	return 1;
 }
 
-int trymovetron(int x, int y, int dir, int i, int len)
+int trymovetron(Simulation *sim, int x, int y, int dir, int i, int len)
 {
 	int k,j,r,rx,ry,tx,ty,count;
 	count = 0;
@@ -76,13 +86,13 @@ int trymovetron(int x, int y, int dir, int i, int len)
 		rx += tron_rx[dir];
 		ry += tron_ry[dir];
 		r = pmap[ry][rx];
-		if (!r && !bmap[(ry)/CELL][(rx)/CELL] && ry > CELL && rx > CELL && ry < YRES-CELL && rx < XRES-CELL)
+		if (canmovetron(sim, r, k-1) && !bmap[(ry)/CELL][(rx)/CELL] && ry > CELL && rx > CELL && ry < YRES-CELL && rx < XRES-CELL)
 		{
 			count++;
 			for (tx = rx - tron_ry[dir] , ty = ry - tron_rx[dir], j=1; abs(tx-rx) < (len-k) && abs(ty-ry) < (len-k); tx-=tron_ry[dir],ty-=tron_rx[dir],j++)
 			{
 				r = pmap[ty][tx];
-				if (!r && !bmap[(ty)/CELL][(tx)/CELL] && ty > CELL && tx > CELL && ty < YRES-CELL && tx < XRES-CELL)
+				if (canmovetron(sim, r, j+k-1) && !bmap[(ty)/CELL][(tx)/CELL] && ty > CELL && tx > CELL && ty < YRES-CELL && tx < XRES-CELL)
 				{
 					if (j == (len-k))//there is a safe path, so we can break out
 						return len+1;
@@ -94,7 +104,7 @@ int trymovetron(int x, int y, int dir, int i, int len)
 			for (tx = rx + tron_ry[dir] , ty = ry + tron_rx[dir], j=1; abs(tx-rx) < (len-k) && abs(ty-ry) < (len-k); tx+=tron_ry[dir],ty+=tron_rx[dir],j++)
 			{
 				r = pmap[ty][tx];
-				if (!r && !bmap[(ty)/CELL][(tx)/CELL] && ty > CELL && tx > CELL && ty < YRES-CELL && tx < XRES-CELL)
+				if (canmovetron(sim, r, j+k-1) && !bmap[(ty)/CELL][(tx)/CELL] && ty > CELL && tx > CELL && ty < YRES-CELL && tx < XRES-CELL)
 				{
 					if (j == (len-k))
 						return len+1;
@@ -126,7 +136,7 @@ int TRON_update(UPDATE_FUNC_ARGS)
 
 		//random turn
 		int random = rand()%340;
-		if (random==1 || random==3)
+		if ((random==1 || random==3) && !(parts[i].tmp & TRON_NORANDOM))
 		{
 			//randomly turn left(3) or right(1)
 			direction = (direction + random)%4;
@@ -134,10 +144,15 @@ int TRON_update(UPDATE_FUNC_ARGS)
 		
 		//check infront
 		//do sight check
-		firstdircheck = trymovetron(x,y,direction,i,parts[i].tmp2);
+		firstdircheck = trymovetron(sim, x,y,direction,i,parts[i].tmp2);
 		if (firstdircheck < parts[i].tmp2)
 		{
-			if (originaldir != direction) //if we just tried a random turn, don't pick random again
+			if (parts[i].tmp & TRON_NORANDOM)
+			{
+				seconddir = (direction + 1)%4;
+				lastdir = (direction + 3)%4;
+			}
+			else if (originaldir != direction) //if we just tried a random turn, don't pick random again
 			{
 				seconddir = originaldir;
 				lastdir = (direction + 2)%4;
@@ -147,8 +162,8 @@ int TRON_update(UPDATE_FUNC_ARGS)
 				seconddir = (direction + ((rand()%2)*2)+1)% 4;
 				lastdir = (seconddir + 2)%4;
 			}
-			seconddircheck = trymovetron(x,y,seconddir,i,parts[i].tmp2);
-			lastdircheck = trymovetron(x,y,lastdir,i,parts[i].tmp2);
+			seconddircheck = trymovetron(sim, x,y,seconddir,i,parts[i].tmp2);
+			lastdircheck = trymovetron(sim, x,y,lastdir,i,parts[i].tmp2);
 		}
 		//find the best move
 		if (seconddircheck > firstdircheck)
@@ -167,7 +182,7 @@ int TRON_update(UPDATE_FUNC_ARGS)
 		parts[i].life = parts[i].tmp2;
 		parts[i].tmp &= parts[i].tmp&0xF818;
 	}
-	else // fade tail deco, or prevent tail from dieing
+	else // fade tail deco, or prevent tail from dying
 	{
 		if (parts[i].tmp&TRON_NODIE)
 			parts[i].life++;
