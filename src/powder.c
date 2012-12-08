@@ -860,23 +860,28 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 
 	if (t==PT_SPRK)
 	{
-		if((pmap[y][x]&0xFF)==PT_WIRE){
-			parts[pmap[y][x]>>8].ctype=PT_DUST;
+		int type = pmap[y][x]&0xFF;
+		int index = pmap[y][x]>>8;
+		if (type == PT_WIRE)
+		{
+			parts[index].ctype = PT_DUST;
 		}
-		if (!((pmap[y][x]&0xFF)==PT_INST||(ptypes[pmap[y][x]&0xFF].properties&PROP_CONDUCTS)))
+		if (!(type == PT_INST || (ptypes[type].properties&PROP_CONDUCTS)))
 			return -1;
-		if (parts[pmap[y][x]>>8].life!=0)
+		if (parts[index].life!=0)
 			return -1;
-		if (p==-2 && (pmap[y][x]&0xFF)==PT_INST)
+		if (p == -2 && type == PT_INST)
 		{
 			flood_INST(x, y, PT_SPRK, PT_INST);
-			return pmap[y][x]>>8;
+			return index;
 		}
-		parts[pmap[y][x]>>8].type = PT_SPRK;
-		parts[pmap[y][x]>>8].life = 4;
-		parts[pmap[y][x]>>8].ctype = pmap[y][x]&0xFF;
+		parts[index].type = PT_SPRK;
+		parts[index].life = 4;
+		parts[index].ctype = type;
 		pmap[y][x] = (pmap[y][x]&~0xFF) | PT_SPRK;
-		return pmap[y][x]>>8;
+		if (parts[index].temp+10.0f < 673.0f && !legacy_enable && (type==PT_METL || type == PT_BMTL || type == PT_BRMT || type == PT_PSCN || type == PT_NSCN || type == PT_ETRD || type == PT_NBLE || type == PT_IRON))
+			parts[index].temp = parts[index].temp+10.0f;
+		return index;
 	}
 	if (p==-2)//creating from brush
 	{
