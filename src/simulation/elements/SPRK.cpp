@@ -275,6 +275,7 @@ void SPRK_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Explosive = 0;
 	elem->Meltable = 0;
 	elem->Hardness = 1;
+	elem->PhotonReflectWavelengths = 0x00000000;
 
 	elem->Weight = 100;
 

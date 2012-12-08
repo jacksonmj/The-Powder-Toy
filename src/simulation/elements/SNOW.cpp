@@ -40,6 +40,7 @@ void SNOW_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Explosive = 0;
 	elem->Meltable = 0;
 	elem->Hardness = 20;
+	elem->PhotonReflectWavelengths = 0x03FFFFFF;
 
 	elem->Weight = 50;
 

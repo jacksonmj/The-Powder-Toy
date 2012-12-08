@@ -38,6 +38,7 @@ void PLEX_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Explosive = 2;
 	elem->Meltable = 50;
 	elem->Hardness = 1;
+	elem->PhotonReflectWavelengths = 0x1F00003E;
 
 	elem->Weight = 100;
 

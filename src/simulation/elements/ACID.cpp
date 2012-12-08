@@ -128,6 +128,7 @@ void ACID_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Explosive = 0;
 	elem->Meltable = 0;
 	elem->Hardness = 1;
+	elem->PhotonReflectWavelengths = 0x1FE001FE;
 
 	elem->Weight = 10;
 

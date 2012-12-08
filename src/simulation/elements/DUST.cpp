@@ -38,6 +38,7 @@ void DUST_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Explosive = 0;
 	elem->Meltable = 0;
 	elem->Hardness = 30;
+	elem->PhotonReflectWavelengths = 0x3FFFFFC0;
 
 	elem->Weight = 85;
 

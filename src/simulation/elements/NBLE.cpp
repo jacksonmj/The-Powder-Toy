@@ -61,6 +61,7 @@ void NBLE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Explosive = 0;
 	elem->Meltable = 0;
 	elem->Hardness = 1;
+	elem->PhotonReflectWavelengths = 0x3FFF8000;
 
 	elem->Weight = 1;
 

@@ -51,6 +51,7 @@ void GOO_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Explosive = 0;
 	elem->Meltable = 0;
 	elem->Hardness = 12;
+	elem->PhotonReflectWavelengths = 0x3FFAAA00;
 
 	elem->Weight = 100;
 

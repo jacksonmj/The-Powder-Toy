@@ -38,6 +38,7 @@ void NITR_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Explosive = 2;
 	elem->Meltable = 0;
 	elem->Hardness = 3;
+	elem->PhotonReflectWavelengths = 0x0007C000;
 
 	elem->Weight = 23;
 

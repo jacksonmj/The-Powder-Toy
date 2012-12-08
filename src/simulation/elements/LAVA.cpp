@@ -61,6 +61,7 @@ void LAVA_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Explosive = 0;
 	elem->Meltable = 0;
 	elem->Hardness = 2;
+	elem->PhotonReflectWavelengths = 0x3FF00000;
 
 	elem->Weight = 45;
 
