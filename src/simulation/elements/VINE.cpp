@@ -32,6 +32,27 @@ int VINE_update(UPDATE_FUNC_ARGS)
 			part_change_type(i,x,y,PT_PLNT);
 		}
 	}
+	if (parts[i].temp > 350 && parts[i].temp > parts[i].tmp2)
+		parts[i].tmp2 = (int)parts[i].temp;
+	return 0;
+}
+
+int VINE_graphics(GRAPHICS_FUNC_ARGS)
+{
+	float maxtemp = cpart->temp;
+	if (maxtemp < cpart->tmp2)
+		maxtemp = cpart->tmp2;
+	if (maxtemp > 300)
+	{
+		*colr += (int)restrict_flt((maxtemp-300)/5,0,58);
+		*colg -= (int)restrict_flt((maxtemp-300)/2,0,102);
+		*colb += (int)restrict_flt((maxtemp-300)/5,0,70);
+	}
+	if (maxtemp < 273)
+	{
+		*colg += (int)restrict_flt((273-maxtemp)/4,0,255);
+		*colb += (int)restrict_flt((273-maxtemp)/1.5,0,255);
+	}
 	return 0;
 }
 
@@ -79,6 +100,6 @@ void VINE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionElement = PT_FIRE;
 
 	elem->Update = &VINE_update;
-	elem->Graphics = NULL;
+	elem->Graphics = &VINE_graphics;
 }
 

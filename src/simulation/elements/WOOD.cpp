@@ -17,7 +17,7 @@
 
 int WOOD_update(UPDATE_FUNC_ARGS)
 {
-	if (parts[i].temp > 550 && parts[i].temp > parts[i].tmp)
+	if (parts[i].temp > 450 && parts[i].temp > parts[i].tmp)
 		parts[i].tmp = (int)parts[i].temp;
 	return 0;
 }
