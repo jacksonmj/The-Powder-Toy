@@ -32,12 +32,12 @@ Several options are available:
 
 Cmake option name              Default
 -----------------------------------------
-GravityFFT                       ON                                                                                                          
-LuaConsole                       ON                                                                                                          
-PreferStatic                     ON 
-NoWarnings                       ON                                                                                                          
-Debug                            ON                                                                                                          
-Optimisations                    ON                                                                                                          
+GravityFFT                       ON
+LuaConsole                       ON
+PreferStatic                     ON
+NoWarnings                       ON
+Debug                            ON
+Optimisations                    ON
 
 To change an option, add -DOptionName=value to the end of the cmake 
 command. For example, disable optimisations by adding 
