@@ -20,15 +20,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#ifdef LUA_R_INCL
+
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
-#else
-#include <lua5.1/lua.h>
-#include <lua5.1/lauxlib.h>
-#include <lua5.1/lualib.h>
-#endif
+
 #ifdef __cplusplus
 }
 #endif

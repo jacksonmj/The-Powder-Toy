@@ -135,6 +135,10 @@ target_link_libraries(powder ${BZIP2_LIBRARIES})
 option(LuaConsole "Enable Lua console" ON)
 if (LuaConsole)
 	if(PreferStatic)
+		IF(UNIX AND NOT APPLE)
+			# For Linux, find maths library first, because otherwise find_package(Lua51) will fail to find the static Lua library if there isn't a static libm
+			find_library(LUA_MATH_LIBRARY m)
+		ENDIF(UNIX AND NOT APPLE)
 		set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_ONLY_STATIC})
 		find_package(Lua51)
 		set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_ORIG})
@@ -151,7 +155,11 @@ if (LuaConsole)
 	endif (LUA51_FOUND)
 endif (LuaConsole)
 
-# lrt
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	find_package(ClockGettime REQUIRED)
+	include_directories(${CLOCK_GETTIME_INCLUDE_DIR})
+	target_link_libraries(powder ${CLOCK_GETTIME_LIBRARIES})
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	find_package(X11 REQUIRED)
