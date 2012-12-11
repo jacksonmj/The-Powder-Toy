@@ -13,6 +13,12 @@ INCLUDE (CheckIncludeFiles)
 INCLUDE (CheckLibraryExists)
 SET(Threads_FOUND FALSE)
 
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+  find_package(Winsock)
+  set(CMAKE_REQUIRED_LIBRARIES ${WINSOCK_LIBRARIES})
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+
 # Do we have sproc?
 IF(CMAKE_SYSTEM MATCHES IRIX)
   CHECK_INCLUDE_FILES("sys/types.h;sys/prctl.h"  CMAKE_HAVE_SPROC_H)
@@ -35,11 +41,13 @@ ELSE(CMAKE_HAVE_SPROC_H)
       if (CMAKE_THREAD_LIB)
         CHECK_LIBRARY_EXISTS(${CMAKE_THREAD_LIB} pthread_create "" CMAKE_HAVE_PTHREADS_CREATE)
 		if(CMAKE_HAVE_PTHREADS_CREATE)
-			set(CMAKE_REQUIRED_DEFINITIONS PTW32_STATIC_LIB)
+			message(STATUS "Checking whether pthreads is static pthreads-win32")
+			set(CMAKE_REQUIRED_DEFINITIONS -DPTW32_STATIC_LIB)
 			set(CMAKE_PTHREADS_W32_STATIC)
 			CHECK_LIBRARY_EXISTS(${CMAKE_THREAD_LIB} pthread_create "" CMAKE_PTHREADS_W32_STATIC)
 			SET(CMAKE_REQUIRED_DEFINITIONS "")
 			if(CMAKE_PTHREADS_W32_STATIC)
+				message(STATUS "Static pthreads-win32 found")
 				ADD_DEFINITIONS("-DPTW32_STATIC_LIB")
 			endif()
 			SET(CMAKE_THREAD_LIBS_INIT ${CMAKE_THREAD_LIB})
@@ -47,6 +55,7 @@ ELSE(CMAKE_HAVE_SPROC_H)
 			SET(Threads_FOUND TRUE)
 		endif(CMAKE_HAVE_PTHREADS_CREATE)
       endif(CMAKE_THREAD_LIB)
+
       if(NOT CMAKE_HAVE_PTHREADS_CREATE)
         # Original behaviour
         # Do we have -lpthreads
