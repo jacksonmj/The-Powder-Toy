@@ -18,8 +18,8 @@ if(NOT CLOCK_GETTIME_FOUND)
 				${LIBRT_PREFIX}/include/
 		)
 
-		find_file(
-			CLOCK_GETTIME_LIBRARIES librt.a
+		find_library(
+			CLOCK_GETTIME_LIBRARIES rt
 			PATHS
 				${LIBRT_PREFIX}/lib/
 				/usr/local/lib64/
@@ -29,20 +29,6 @@ if(NOT CLOCK_GETTIME_FOUND)
 				/usr/lib64/
 				/usr/lib/
 		)
-
-		if (NOT CLOCK_GETTIME_LIBRARIES)
-			find_library(
-				CLOCK_GETTIME_LIBRARIES rt
-				PATHS
-					${LIBRT_PREFIX}/lib/
-					/usr/local/lib64/
-					/usr/local/lib/
-					/usr/lib/i386-linux-gnu/
-					/usr/lib/x86_64-linux-gnu/
-					/usr/lib64/
-					/usr/lib/
-			)
-		endif (NOT CLOCK_GETTIME_LIBRARIES)
 
         find_package_handle_standard_args (clock_gettime DEFAULT_MSG CLOCK_GETTIME_LIBRARIES CLOCK_GETTIME_INCLUDE_DIR)
 
