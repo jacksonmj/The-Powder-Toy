@@ -30,6 +30,7 @@
 // special transition - lava ctypes etc need extra code, which is only found and run if ST is given
 #define ST PT_NUM
 
+class ElementDataContainer;
 
 class Simulation
 {
@@ -37,13 +38,15 @@ public:
 	particle parts[NPART];
 	int elementCount[PT_NUM];
 	Element elements[PT_NUM];
-	
+	ElementDataContainer *elementData[PT_NUM];
 	int pfree;
 	
 
 
 	Simulation();
+	~Simulation();
 	void InitElements();
+	void Clear();
 	int part_create(int p, int x, int y, int t);
 	void part_change_type(int i, int x, int y, int t);
 	void part_kill(int i);

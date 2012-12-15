@@ -14,9 +14,46 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/ElementDataContainer.h"
 
-// TODO: global variable, should be in Simulation
-int wireless[CHANNELS][2];
+class WIFI_ElementDataContainer : public ElementDataContainer
+{
+public:
+	int wireless[CHANNELS][2];
+	bool wifi_lastframe;
+	WIFI_ElementDataContainer()
+	{
+		memset(wireless, 0, sizeof(wireless));
+		wifi_lastframe = false;
+	}
+	virtual void Simulation_Cleared(Simulation *sim)
+	{
+		memset(wireless, 0, sizeof(wireless));
+		wifi_lastframe = false;
+	}
+	virtual void Simulation_BeforeUpdate(Simulation *sim)
+	{
+		if (!sim->elementCount[PT_WIFI] && !wifi_lastframe)
+		{
+			return;
+		}
+		if (sim->elementCount[PT_WIFI])
+		{
+			wifi_lastframe = true;
+		}
+		else
+		{
+			wifi_lastframe = false;
+		}
+
+		int q;
+		for ( q = 0; q<(int)(MAX_TEMP-73.15f)/100+2; q++)
+		{
+			wireless[q][0] = wireless[q][1];
+			wireless[q][1] = 0;
+		}
+	}
+};
 
 int WIFI_update(UPDATE_FUNC_ARGS)
 {
@@ -24,6 +61,7 @@ int WIFI_update(UPDATE_FUNC_ARGS)
 	parts[i].tmp = (int)((parts[i].temp-73.15f)/100+1);
 	if (parts[i].tmp>=CHANNELS) parts[i].tmp = CHANNELS-1;
 	else if (parts[i].tmp<0) parts[i].tmp = 0;
+	int (*channel) = ((WIFI_ElementDataContainer*)sim->elementData[PT_WIFI])->wireless[parts[i].tmp];
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
@@ -31,11 +69,11 @@ int WIFI_update(UPDATE_FUNC_ARGS)
 				r = pmap[y+ry][x+rx];
 				if (!r)
 					continue;
-				// wireless[][0] - whether channel is active on this frame
-				// wireless[][1] - whether channel should be active on next frame
-				if (wireless[parts[i].tmp][0])
+				// channel[0] - whether channel is active on this frame
+				// channel[1] - whether channel should be active on next frame
+				if (channel[0])
 				{
-					if (((r&0xFF)==PT_NSCN||(r&0xFF)==PT_PSCN||(r&0xFF)==PT_INWR)&&parts[r>>8].life==0 && wireless[parts[i].tmp][0])
+					if (((r&0xFF)==PT_NSCN||(r&0xFF)==PT_PSCN||(r&0xFF)==PT_INWR)&&parts[r>>8].life==0)
 					{
 						parts[r>>8].ctype = r&0xFF;
 						part_change_type(r>>8,x+rx,y+ry,PT_SPRK);
@@ -46,8 +84,7 @@ int WIFI_update(UPDATE_FUNC_ARGS)
 				{
 					if ((r&0xFF)==PT_SPRK && parts[r>>8].ctype!=PT_NSCN && parts[r>>8].life>=3)
 					{
-						wireless[parts[i].tmp][1] = 1;
-						ISWIRE = 2;
+						channel[1] = 1;
 					}
 				}
 			}
@@ -110,5 +147,11 @@ void WIFI_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = &WIFI_update;
 	elem->Graphics = &WIFI_graphics;
+
+	if (sim->elementData[t])
+	{
+		delete sim->elementData[t];
+	}
+	sim->elementData[t] = new WIFI_ElementDataContainer;
 }
 

@@ -27,6 +27,7 @@
 #endif
 
 #include "simulation/Simulation.h"
+#include "simulation/ElementDataContainer.h"
 
 part_type ptypes[PT_NUM];
 part_transition ptransitions[PT_NUM];
@@ -1573,14 +1574,12 @@ void update_particles_i(pixel *vid, int start, int inc)
 			GENERATION ++;
 		//memset(gol2, 0, sizeof(gol2));
 	}
-	if (ISWIRE>0)//wifi channel reseting
+	for (t=1; t<PT_NUM; t++)
 	{
-		for ( q = 0; q<(int)(MAX_TEMP-73.15f)/100+2; q++)
+		if (globalSim->elementData[t])
 		{
-			wireless[q][0] = wireless[q][1];
-			wireless[q][1] = 0;
+			globalSim->elementData[t]->Simulation_BeforeUpdate(globalSim);
 		}
-		ISWIRE--;
 	}
 	for (i=0; i<=parts_lastActiveIndex; i++)
 		if (parts[i].type)

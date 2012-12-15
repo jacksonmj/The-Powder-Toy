@@ -16,6 +16,7 @@
 #include "powder.h"
 #include "misc.h"
 #include "simulation/Element.h"
+#include "simulation/ElementDataContainer.h"
 #include "simulation/Simulation.h"
 #include <cmath>
 
@@ -30,15 +31,44 @@ Simulation *globalSim = NULL; // TODO: remove this global variable
 Simulation::Simulation() :
 	pfree(-1)
 {
+	memset(elementData, 0, sizeof(elementData));
+	Clear();
+}
+
+Simulation::~Simulation()
+{
+	int t;
+	for (t=0; t<PT_NUM; t++)
+	{
+		if (elementData[t])
+		{
+			delete elementData[t];
+			elementData[t] = NULL;
+		}
+	}
 }
 
 void Simulation::InitElements()
 {
-	#define DEFINE_ELEMENT(name, id) if (id>=0 && id<PT_NUM) { name ## _init_element(&elements[id], id); };
+	#define DEFINE_ELEMENT(name, id) if (id>=0 && id<PT_NUM) { name ## _init_element(this, &elements[id], id); };
 	#define ElementNumbers_Include_Call
 	#include "simulation/ElementNumbers.h"
 
 	Simulation_Compat_CopyData(this);
+}
+
+void Simulation::Clear()
+{
+	int t;
+	for (t=0; t<PT_NUM; t++)
+	{
+		if (elementData[t])
+		{
+			elementData[t]->Simulation_Cleared(this);
+		}
+	}
+	memset(elementCount, 0, sizeof(elementCount));
+	pfree = 0;
 }
 
 // the function for creating a particle
