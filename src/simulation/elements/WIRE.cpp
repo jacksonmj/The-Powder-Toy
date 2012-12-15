@@ -89,7 +89,7 @@ int WIRE_graphics(GRAPHICS_FUNC_ARGS)
 void WIRE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_WIRE";
-	elem->Name = "WIRE";
+	elem->Name = "WWLD";
 	elem->Colour = COLPACK(0xFFCC00);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_ELEC;
@@ -115,7 +115,7 @@ void WIRE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f +273.15f;
 	elem->HeatConduct = 250;
 	elem->Latent = 0;
-	elem->Description = "WireWorld wires.";
+	elem->Description = "WireWorld wires, probably not what you want. For normal wires, use METL";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;
