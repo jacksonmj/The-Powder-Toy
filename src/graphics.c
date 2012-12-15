@@ -1876,7 +1876,7 @@ GLfloat ablurLineC[(((YRES*XRES)*2)*4)];
 void render_parts(pixel *vid)
 {
 	Simulation *sim = globalSim;
-	int deca, decr, decg, decb, cola, colr, colg, colb, firea, firer, fireg, fireb, pixel_mode, q, i, t, nx, ny, x, y, caddress;
+	int deca, decr, decg, decb, cola, colr, colg, colb, firea, firer=0, fireg=0, fireb=0, pixel_mode, q, i, t, nx, ny, x, y, caddress;
 	int orbd[4] = {0, 0, 0, 0}, orbl[4] = {0, 0, 0, 0};
 	float gradv, flicker, fnx, fny, flx, fly;
 #ifdef OGLR
