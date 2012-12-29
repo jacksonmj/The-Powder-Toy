@@ -1363,7 +1363,7 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 					else
 					{
 						//1 Byte room temp offset
-						tempTemp = (char)partsData[i++];
+						tempTemp = (signed char)partsData[i++];
 						partsptr[newIndex].temp = tempTemp+294.15f;
 					}
 					
