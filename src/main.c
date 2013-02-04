@@ -1323,8 +1323,7 @@ int main(int argc, char *argv[])
 			sdl_rkey = 0;
 	}
 #endif
-	// TODO: change console so that this isn't needed
-	globalSim->pmap_reset();
+
 		if (sys_shortcuts==1)//all shortcuts can be disabled by python scripts
 		{
 			stickmen_keys();
@@ -1889,8 +1888,6 @@ int main(int argc, char *argv[])
 		
 		luacon_step(x, y,sl,sr,bsx,bsy);
 #endif
-		// TODO: change console so that this isn't needed
-		globalSim->pmap_reset();
 
 		sdl_wheel = 0;
 		quickoptions_menu(vid_buf, b, bq, x, y);
