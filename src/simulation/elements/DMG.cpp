@@ -17,7 +17,9 @@
 
 int DMG_update(UPDATE_FUNC_ARGS)
 {
-	int r, rr, rx, ry, nb, nxi, nxj, t, dist;
+	int rt, rx, ry, nb, nxi, nxj, t, dist;
+	int rcount, ri, rnext;
+	int rrcount, rri, rrnext;
 	int rad = 25;
 	float angle, fx, fy;
 	
@@ -25,49 +27,51 @@ int DMG_update(UPDATE_FUNC_ARGS)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if ((r&0xFF)!=PT_DMG && (r&0xFF)!=PT_EMBR && (r&0xFF)!=PT_DMND && (r&0xFF)!=PT_CLNE && (r&0xFF)!=PT_PCLN && (r&0xFF)!=PT_BCLN)
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					kill_part(i);
-					for (nxj=-rad; nxj<=rad; nxj++)
-						for (nxi=-rad; nxi<=rad; nxi++)
-							if (x+nxi>=0 && y+nxj>=0 && x+nxi<XRES && y+nxj<YRES && (nxi || nxj))
-							{
-								dist = sqrtf(powf(nxi, 2)+powf(nxj, 2));//;(pow((float)nxi,2))/(pow((float)rad,2))+(pow((float)nxj,2))/(pow((float)rad,2));
-								if (!dist || (dist <= rad))
+					rt = parts[ri].type;
+					if (sim->elements[rt].Properties&TYPE_ENERGY)
+						continue;
+					if (rt!=PT_DMG && rt!=PT_EMBR && rt!=PT_DMND && rt!=PT_CLNE && rt!=PT_PCLN && rt!=PT_BCLN)
+					{
+						kill_part(i);
+						for (nxj=-rad; nxj<=rad; nxj++)
+							for (nxi=-rad; nxi<=rad; nxi++)
+								if (x+nxi>=0 && y+nxj>=0 && x+nxi<XRES && y+nxj<YRES && (nxi || nxj))
 								{
-									rr = pmap[y+nxj][x+nxi]; 
-									if (rr)
+									dist = sqrtf(powf(nxi, 2)+powf(nxj, 2));//;(pow((float)nxi,2))/(pow((float)rad,2))+(pow((float)nxj,2))/(pow((float)rad,2));
+									if (!dist || (dist <= rad))
 									{
-										angle = atan2f(nxj, nxi);
-										fx = cosf(angle) * 7.0f;
-										fy = sinf(angle) * 7.0f;
+										FOR_PMAP_POSITION(sim, x+nxi, y+nxj, rrcount, rri, rrnext)// TODO: not energy parts
+										{
+											angle = atan2f(nxj, nxi);
+											fx = cosf(angle) * 7.0f;
+											fy = sinf(angle) * 7.0f;
 
-										parts[rr>>8].vx += fx;
-										parts[rr>>8].vy += fy;
-										
-										vx[(y+nxj)/CELL][(x+nxi)/CELL] += fx;
-										vy[(y+nxj)/CELL][(x+nxi)/CELL] += fy;
+											parts[rri].vx += fx;
+											parts[rri].vy += fy;
+											
+											vx[(y+nxj)/CELL][(x+nxi)/CELL] += fx;
+											vy[(y+nxj)/CELL][(x+nxi)/CELL] += fy;
 
-										pv[(y+nxj)/CELL][(x+nxi)/CELL] += 1.0f;
-										
-										t = parts[rr>>8].type;
-										if(t && ptransitions[t].pht>-1 && ptransitions[t].pht<PT_NUM)
-											part_change_type(rr>>8, x+nxi, y+nxj, ptransitions[t].pht);
-										else if(t == PT_BMTL)
-											part_change_type(rr>>8, x+nxi, y+nxj, PT_BRMT);
-										else if(t == PT_GLAS)
-											part_change_type(rr>>8, x+nxi, y+nxj, PT_BGLA);
-										else if(t == PT_COAL)
-											part_change_type(rr>>8, x+nxi, y+nxj, PT_BCOL);
-										else if(t == PT_QRTZ)
-											part_change_type(rr>>8, x+nxi, y+nxj, PT_PQRT);
+											pv[(y+nxj)/CELL][(x+nxi)/CELL] += 1.0f;
+											
+											t = parts[rri].type;
+											if(t && ptransitions[t].pht>-1 && ptransitions[t].pht<PT_NUM)
+												part_change_type(rri, x+nxi, y+nxj, ptransitions[t].pht);
+											else if(t == PT_BMTL)
+												part_change_type(rri, x+nxi, y+nxj, PT_BRMT);
+											else if(t == PT_GLAS)
+												part_change_type(rri, x+nxi, y+nxj, PT_BGLA);
+											else if(t == PT_COAL)
+												part_change_type(rri, x+nxi, y+nxj, PT_BCOL);
+											else if(t == PT_QRTZ)
+												part_change_type(rri, x+nxi, y+nxj, PT_PQRT);
+										}
 									}
 								}
-							}
-					return 1;
+						return 1;
+					}
 				}
 			}
 	return 0;

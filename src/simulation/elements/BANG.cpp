@@ -17,7 +17,8 @@
 
 int BANG_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry, nb;
+	int rx, ry, nb;
+	int rcount, ri, rnext;
 	if(parts[i].tmp==0)
 	{
 		if(parts[i].temp>=673.0f)
@@ -27,27 +28,25 @@ int BANG_update(UPDATE_FUNC_ARGS)
 				for (ry=-1; ry<2; ry++)
 					if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 					{
-						r = pmap[y+ry][x+rx];
-						if (!r)
-							continue;
-						if ((r&0xFF)==PT_FIRE || (r&0xFF)==PT_PLSM)
+						FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 						{
-							parts[i].tmp = 1;
-						}
-						else if ((r&0xFF)==PT_SPRK || (r&0xFF)==PT_LIGH)
-						{
-							parts[i].tmp = 1;
+							int rt = parts[ri].type;
+							if (rt==PT_FIRE || rt==PT_PLSM)
+							{
+								parts[i].tmp = 1;
+							}
+							else if (rt==PT_SPRK || rt==PT_LIGH)
+							{
+								parts[i].tmp = 1;
+							}
 						}
 					}
 	
 	}
 	else if(parts[i].tmp==1)
 	{
-		if ((pmap[y][x]>>8 == i))
-		{
-			int tempvalue = 2;
-			flood_prop(x, y, offsetof(particle, tmp), &tempvalue, 0);
-		}
+		int tempvalue = 2;
+		flood_prop(x, y, offsetof(particle, tmp), &tempvalue, 0);
 		parts[i].tmp = 2;
 	}
 	else if(parts[i].tmp==2)

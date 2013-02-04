@@ -17,29 +17,29 @@
 
 int ANAR_update(UPDATE_FUNC_ARGS)
 {
-        int r, rx, ry;
-       
-        //if (parts[i].temp >= 0.23)
-               // parts[i].temp --;
-        for (rx=-2; rx<3; rx++)
-                for (ry=-2; ry<3; ry++)
-                        if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
-                        {
-                                r = pmap[y+ry][x+rx];
-                                if (!r)
-                                        continue;
-                                if ((r&0xFF)==PT_HFLM)
-                                {
-                                        if (1>rand()%22)
-                                        {
-                                                part_change_type(i,x,y,PT_HFLM);
-                                                parts[i].life = rand()%150+50;
-                                                parts[r>>8].temp = parts[i].temp = 0;
-                                                pv[y/CELL][x/CELL] -= 0.5;
-                                        }
-                                }
-                        }
-        return 0;
+	int rx, ry;
+	int rcount, ri, rnext;
+	//if (parts[i].temp >= 0.23)
+	// parts[i].temp --;
+	for (rx=-2; rx<3; rx++)
+		for (ry=-2; ry<3; ry++)
+			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+			{
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				{
+					if (parts[ri].type==PT_HFLM)
+					{
+						if (1>rand()%22)
+						{
+							part_change_type(i,x,y,PT_HFLM);
+							parts[i].life = rand()%150+50;
+							parts[ri].temp = parts[i].temp = 0;
+							pv[y/CELL][x/CELL] -= 0.5;
+						}
+					}
+				}
+			}
+	return 0;
 }
 
 void ANAR_init_element(ELEMENT_INIT_FUNC_ARGS)

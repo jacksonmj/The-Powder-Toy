@@ -17,44 +17,48 @@
 
 int EXOT_update(UPDATE_FUNC_ARGS)
 {
-	int r, rt, rx, ry, nb, rrx, rry, trade, tym, t;
+	int rt, rx, ry, nb, rrx, rry, trade, tym, t;
+	int rcount, ri, rnext;
 	t = parts[i].type;
 	for (rx=-2; rx<=2; rx++)
 		for (ry=-2; ry<=2; ry++)
 			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES) {
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if ((r&0xFF)==PT_WARP)
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					if (parts[r>>8].tmp2>2000)
-						if (1>rand()%100)
+					rt = parts[ri].type;
+					if (rt==PT_WARP)
+					{
+						if (parts[ri].tmp2>2000)
+							if (1>rand()%100)
+							{
+								parts[i].tmp2 += 100;
+							}
+					}
+					else if (rt == PT_EXOT && parts[ri].life == 1500 && 1>rand()%1000)
+						parts[i].life = 1500;
+					else if (rt == PT_LAVA)
+					{
+						if (parts[ri].ctype == PT_TTAN && 1>rand()%10)
 						{
-							parts[i].tmp2 += 100;
+							parts[ri].ctype = PT_VIBR;
+							kill_part(i);
+							return 1;
 						}
-				}
-				else if ((r&0xFF) == PT_EXOT && parts[r>>8].life == 1500 && 1>rand()%1000)
-					parts[i].life = 1500;
-				else if ((r&0xFF) == PT_LAVA)
-				{
-					if (parts[r>>8].ctype == PT_TTAN && 1>rand()%10)
-					{
-						parts[r>>8].ctype = PT_VIBR;
-						kill_part(i);
-						return 1;
+						/*else if (parts[r>>8].ctype == PT_VIBR && 1>rand()%1000)
+						{
+							kill_part(i);
+							return 1;
+						}*/
 					}
-					/*else if (parts[r>>8].ctype == PT_VIBR && 1>rand()%1000)
+					if ((parts[i].tmp>245) && (parts[i].life>1000))
 					{
-						kill_part(i);
-						return 1;
-					}*/
-				}
-				if ((parts[i].tmp>245) && (parts[i].life>1000))
-					if ((r&0xFF)!=PT_EXOT && (r&0xFF)!=PT_BREL && (r&0xFF)!=PT_DMND && (r&0xFF)!=PT_CLNE && (r&0xFF)!=PT_PRTI && (r&0xFF)!=PT_PRTO && (r&0xFF)!=PT_PCLN && (r&0xFF)!=PT_PHOT && (r&0xFF)!=PT_VOID && (r&0xFF)!=PT_NBHL && (r&0xFF)!=PT_WARP && (r&0xFF)!=PT_NEUT)
-					{
-						sim->part_create(i, x, y, parts[r>>8].type);
-						return 0;
+						if (rt!=PT_EXOT && rt!=PT_BREL && rt!=PT_DMND && rt!=PT_CLNE && rt!=PT_PRTI && rt!=PT_PRTO && rt!=PT_PCLN && rt!=PT_PHOT && rt!=PT_VOID && rt!=PT_NBHL && rt!=PT_WARP && rt!=PT_NEUT)
+						{
+							sim->part_create(i, x, y, parts[ri].type);
+							return 0;
+						}
 					}
+				}
 			}
 	parts[i].tmp--;	
 	parts[i].tmp2--;	
@@ -87,23 +91,23 @@ int EXOT_update(UPDATE_FUNC_ARGS)
 			ry = rand()%5-2;
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if ((r&0xFF)==t && (parts[i].tmp2>parts[r>>8].tmp2) && parts[r>>8].tmp2>=0 )//diffusion
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					tym = parts[i].tmp2 - parts[r>>8].tmp2;
-					if (tym ==1)
+					if (parts[ri].type==t && (parts[i].tmp2>parts[ri].tmp2) && parts[ri].tmp2>=0 )//diffusion
 					{
-						parts[r>>8].tmp2 ++;
-						parts[i].tmp2 --;
-						break;
-					}
-					if (tym>0)
-					{
-						parts[r>>8].tmp2 += tym/2;
-						parts[i].tmp2 -= tym/2;
-						break;
+						tym = parts[i].tmp2 - parts[ri].tmp2;
+						if (tym ==1)
+						{
+							parts[ri].tmp2 ++;
+							parts[i].tmp2 --;
+							break;
+						}
+						if (tym>0)
+						{
+							parts[ri].tmp2 += tym/2;
+							parts[i].tmp2 -= tym/2;
+							break;
+						}
 					}
 				}
 			}

@@ -24,6 +24,8 @@
 #include "BSON.h"
 #include "hmap.h"
 
+#include "simulation/Simulation.h"
+
 int change_wallpp(int wt)
 {
 	if (wt == 1)
@@ -86,6 +88,7 @@ void *build_save(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h, un
 int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char bmap[YRES/CELL][XRES/CELL], float vx[YRES/CELL][XRES/CELL], float vy[YRES/CELL][XRES/CELL], float pv[YRES/CELL][XRES/CELL], float fvx[YRES/CELL][XRES/CELL], float fvy[YRES/CELL][XRES/CELL], sign signs[MAXSIGNS], void* partsptr, unsigned pmap[YRES][XRES])
 {
 	unsigned char * saveData = (unsigned char*)save;
+	int result = 1;
 	if (size<16)
 	{
 		return 1;
@@ -94,13 +97,14 @@ int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char 
 	ppip_changed = 1;
 	if(saveData[0] == 'O' && saveData[1] == 'P' && saveData[2] == 'S')
 	{
-		return parse_save_OPS(save, size, replace, x0, y0, bmap, vx, vy, pv, fvx, fvy, signs, partsptr, pmap);
+		result = parse_save_OPS(save, size, replace, x0, y0, bmap, vx, vy, pv, fvx, fvy, signs, partsptr, pmap);
 	}
 	else if((saveData[0]==0x66 && saveData[1]==0x75 && saveData[2]==0x43) || (saveData[0]==0x50 && saveData[1]==0x53 && saveData[2]==0x76))
 	{
-		return parse_save_PSv(save, size, replace, x0, y0, bmap, fvx, fvy, signs, partsptr, pmap);
+		result = parse_save_PSv(save, size, replace, x0, y0, bmap, fvx, fvy, signs, partsptr, pmap);
 	}
-	return 1;
+	globalSim->pmap_reset();
+	return result;
 }
 
 int change_wall(int wt)

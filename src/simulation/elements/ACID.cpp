@@ -17,49 +17,51 @@
 
 int ACID_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry, trade, np;
+	int rx, ry, trade, np;
+	int rcount, ri, rnext;
 	for (rx=-2; rx<3; rx++)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if ((r&0xFF)!=PT_ACID && (r&0xFF)!=PT_CAUS)
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					if ((r&0xFF)==PT_PLEX || (r&0xFF)==PT_NITR || (r&0xFF)==PT_GUNP || (r&0xFF)==PT_RBDM || (r&0xFF)==PT_LRBD)
+					int rt = parts[ri].type;
+					if (rt!=PT_ACID && rt!=PT_CAUS)
 					{
-						part_change_type(i,x,y,PT_FIRE);
-						part_change_type(r>>8,x+rx,y+ry,PT_FIRE);
-						parts[i].life = 4;
-						parts[r>>8].life = 4;
-					}
-					else if ((r&0xFF)==PT_WTRV)
-					{
-						if(!(rand()%250))
+						if (rt==PT_PLEX || rt==PT_NITR || rt==PT_GUNP || rt==PT_RBDM || rt==PT_LRBD)
 						{
-							part_change_type(i, x, y, PT_CAUS);
-							parts[i].life = (rand()%50)+25;
-							kill_part(r>>8);
+							part_change_type(i,x,y,PT_FIRE);
+							part_change_type(ri,x+rx,y+ry,PT_FIRE);
+							parts[i].life = 4;
+							parts[ri].life = 4;
 						}
-					}
-					else if (((r&0xFF)!=PT_CLNE && (r&0xFF)!=PT_PCLN && ptypes[r&0xFF].hardness>(rand()%1000))&&parts[i].life>=50)
-					{
-						if (parts_avg(i, r>>8,PT_GLAS)!= PT_GLAS)//GLAS protects stuff from acid
+						else if (rt==PT_WTRV)
 						{
-							float newtemp = ((60.0f-(float)ptypes[r&0xFF].hardness))*7.0f;
-							if(newtemp < 0){
-								newtemp = 0;
+							if(!(rand()%250))
+							{
+								part_change_type(i, x, y, PT_CAUS);
+								parts[i].life = (rand()%50)+25;
+								kill_part(ri);
 							}
-							parts[i].temp += newtemp;
-							parts[i].life--;
-							kill_part(r>>8);
 						}
-					}
-					else if (parts[i].life<=50)
-					{
-						kill_part(i);
-						return 1;
+						else if ((rt!=PT_CLNE && rt!=PT_PCLN && ptypes[rt].hardness>(rand()%1000))&&parts[i].life>=50)
+						{
+							if (parts_avg(i, ri, PT_GLAS) != PT_GLAS)//GLAS protects stuff from acid
+							{
+								float newtemp = ((60.0f-(float)ptypes[ri].hardness))*7.0f;
+								if(newtemp < 0){
+									newtemp = 0;
+								}
+								parts[i].temp += newtemp;
+								parts[i].life--;
+								kill_part(ri);
+							}
+						}
+						else if (parts[i].life<=50)
+						{
+							kill_part(i);
+							return 1;
+						}
 					}
 				}
 			}
@@ -69,21 +71,21 @@ int ACID_update(UPDATE_FUNC_ARGS)
 		ry = rand()%5-2;
 		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 		{
-			r = pmap[y+ry][x+rx];
-			if ((r>>8)>=NPART || !r)
-				continue;
-			if ((r&0xFF)==PT_ACID&&(parts[i].life>parts[r>>8].life)&&parts[i].life>0)//diffusion
+			FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 			{
-				int temp = parts[i].life - parts[r>>8].life;
-				if (temp ==1)
+				if (parts[ri].type==PT_ACID&&(parts[i].life>parts[ri].life)&&parts[i].life>0)//diffusion
 				{
-					parts[r>>8].life ++;
-					parts[i].life --;
-				}
-				else if (temp>0)
-				{
-					parts[r>>8].life += temp/2;
-					parts[i].life -= temp/2;
+					int temp = parts[i].life - parts[ri].life;
+					if (temp ==1)
+					{
+						parts[ri].life ++;
+						parts[i].life --;
+					}
+					else if (temp>0)
+					{
+						parts[ri].life += temp/2;
+						parts[i].life -= temp/2;
+					}
 				}
 			}
 		}

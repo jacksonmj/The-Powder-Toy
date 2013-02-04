@@ -17,22 +17,26 @@
 
 int C5_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry;
+	int rx, ry;
+	int rcount, ri, rnext;
 	for (rx=-2; rx<3; rx++)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if (((r&0xFF)!=PT_C5 && parts[r>>8].temp<100 && ptypes[r&0xFF].hconduct && ((r&0xFF)!=PT_HSWC||parts[r>>8].life==10)) || (r&0xFF)==PT_HFLM)
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					if (1>rand()%6)
+					int rt = parts[ri].type;
+					if (sim->elements[rt].Properties&TYPE_ENERGY)
+						continue;
+					if ((rt!=PT_C5 && parts[ri].temp<100 && ptypes[rt].hconduct && (rt!=PT_HSWC||parts[ri].life==10)) || rt==PT_HFLM)
 					{
-						part_change_type(i,x,y,PT_HFLM);
-						parts[r>>8].temp = parts[i].temp = 0;
-						parts[i].life = rand()%150+50;
-						pv[y/CELL][x/CELL] += 1.5;
+						if (1>rand()%6)
+						{
+							part_change_type(i,x,y,PT_HFLM);
+							parts[ri].temp = parts[i].temp = 0;
+							parts[i].life = rand()%150+50;
+							pv[y/CELL][x/CELL] += 1.5;
+						}
 					}
 				}
 			}

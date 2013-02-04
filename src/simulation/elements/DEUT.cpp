@@ -17,7 +17,8 @@
 
 int DEUT_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry, trade, np;
+	int rx, ry, trade, np;
+	int rcount, ri, rnext;
 	float gravtot = fabs(gravy[(y/CELL)*(XRES/CELL)+(x/CELL)])+fabs(gravx[(y/CELL)*(XRES/CELL)+(x/CELL)]);
 	int maxlife = ((10000/(parts[i].temp + 1))-1);
 	if ((10000%((int)parts[i].temp+1))>rand()%((int)parts[i].temp+1))
@@ -31,15 +32,17 @@ int DEUT_update(UPDATE_FUNC_ARGS)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					r = pmap[y+ry][x+rx];
-					if (!r || (parts[i].life >=maxlife))
-						continue;
-					if ((r&0xFF)==PT_DEUT&&33>=rand()/(RAND_MAX/100)+1)
+					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 					{
-						if ((parts[i].life + parts[r>>8].life + 1) <= maxlife)
+						if (parts[i].life >=maxlife)
+							continue;
+						if (parts[ri].type==PT_DEUT&&33>=rand()/(RAND_MAX/100)+1)
 						{
-							parts[i].life += parts[r>>8].life + 1;
-							kill_part(r>>8);
+							if ((parts[i].life + parts[ri].life + 1) <= maxlife)
+							{
+								parts[i].life += parts[ri].life + 1;
+								kill_part(ri);
+							}
 						}
 					}
 				}
@@ -49,10 +52,9 @@ int DEUT_update(UPDATE_FUNC_ARGS)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					r = pmap[y+ry][x+rx];
 					if (parts[i].life<=maxlife)
 						continue;
-					if ((!r)&&parts[i].life>=1)//if nothing then create deut
+					if (parts[i].life>=1)//if nothing then create deut
 					{
 						np = sim->part_create(-1,x+rx,y+ry,PT_DEUT);
 						if (np<0) continue;
@@ -67,21 +69,21 @@ int DEUT_update(UPDATE_FUNC_ARGS)
 		ry = rand()%5-2;
 		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 		{
-			r = pmap[y+ry][x+rx];
-			if (!r)
-				continue;
-			if ((r&0xFF)==PT_DEUT&&(parts[i].life>parts[r>>8].life)&&parts[i].life>0)//diffusion
+			FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 			{
-				int temp = parts[i].life - parts[r>>8].life;
-				if (temp ==1)
+				if (parts[ri].type==PT_DEUT&&(parts[i].life>parts[ri].life)&&parts[i].life>0)//diffusion
 				{
-					parts[r>>8].life ++;
-					parts[i].life --;
-				}
-				else if (temp>0)
-				{
-					parts[r>>8].life += temp/2;
-					parts[i].life -= temp/2;
+					int temp = parts[i].life - parts[ri].life;
+					if (temp ==1)
+					{
+						parts[ri].life ++;
+						parts[i].life --;
+					}
+					else if (temp>0)
+					{
+						parts[ri].life += temp/2;
+						parts[i].life -= temp/2;
+					}
 				}
 			}
 		}

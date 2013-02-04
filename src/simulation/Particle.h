@@ -30,6 +30,8 @@ struct particle
 	int tmp;
 	int tmp2;
 	unsigned int dcolour;
+	int pmap_prev;
+	int pmap_next;
 };
 typedef struct particle particle;
 

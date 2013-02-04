@@ -19,7 +19,8 @@ int COAL_graphics(GRAPHICS_FUNC_ARGS);
 
 int BCOL_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry, trade, temp;
+	int rx, ry, trade, temp;
+	int rcount, ri, rnext;
 	if (parts[i].life<=0) {
 		sim->part_create(i, x, y, PT_FIRE);
 		return 1;
@@ -32,21 +33,22 @@ int BCOL_update(UPDATE_FUNC_ARGS)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if (((r&0xFF)==PT_FIRE || (r&0xFF)==PT_PLSM) && 1>(rand()%500))
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					if (parts[i].life>100) {
-						parts[i].life = 99;
+					int rt = parts[ri].type;
+					if ((rt==PT_FIRE || rt==PT_PLSM) && 1>(rand()%500))
+					{
+						if (parts[i].life>100) {
+							parts[i].life = 99;
+						}
 					}
-				}
-				if ((r&0xFF)==PT_LAVA && 1>(rand()%500))
-				{
-					if (parts[r>>8].ctype == PT_IRON) {
-						parts[r>>8].ctype = PT_METL;
-						kill_part(i);
-                                                return 1;
+					else if (rt==PT_LAVA && 1>(rand()%500))
+					{
+						if (parts[ri].ctype == PT_IRON) {
+							parts[ri].ctype = PT_METL;
+							kill_part(i);
+							return 1;
+						}
 					}
 				}
 			}

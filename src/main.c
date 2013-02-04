@@ -1009,6 +1009,8 @@ int main(int argc, char *argv[])
 #ifdef LUACONSOLE
 	luacon_eval("dofile(\"autorun.lua\")"); //Autorun lua script
 #endif
+	// TODO: change console so that this isn't needed
+	globalSim->pmap_reset();
 
 	if (benchmark_enable)
 	{
@@ -1321,6 +1323,8 @@ int main(int argc, char *argv[])
 			sdl_rkey = 0;
 	}
 #endif
+	// TODO: change console so that this isn't needed
+	globalSim->pmap_reset();
 		if (sys_shortcuts==1)//all shortcuts can be disabled by python scripts
 		{
 			stickmen_keys();
@@ -1760,10 +1764,6 @@ int main(int argc, char *argv[])
 						parts[cbi] = cb_parts[cbi];
 					parts_lastActiveIndex = NPART-1;
 
-					for (cby = 0; cby<YRES; cby++)
-						for (cbx = 0; cbx<XRES; cbx++)
-							pmap[cby][cbx] = cb_pmap[cby][cbx];
-
 					for (cby = 0; cby<(YRES/CELL); cby++)
 						for (cbx = 0; cbx<(XRES/CELL); cbx++)
 						{
@@ -1775,6 +1775,7 @@ int main(int argc, char *argv[])
 							emap[cby][cbx] = cb_emap[cby][cbx];
 						}
 
+					globalSim->pmap_reset();
 					force_stacking_check = 1;//check for excessive stacking of particles next time update_particles is run
 				}
 				else
@@ -1888,6 +1889,9 @@ int main(int argc, char *argv[])
 		
 		luacon_step(x, y,sl,sr,bsx,bsy);
 #endif
+		// TODO: change console so that this isn't needed
+		globalSim->pmap_reset();
+
 		sdl_wheel = 0;
 		quickoptions_menu(vid_buf, b, bq, x, y);
 
@@ -1907,34 +1911,31 @@ int main(int argc, char *argv[])
 		mouse_coords_window_to_sim(&x, &y, x, y);//change mouse position while it is in a zoom window
 		if (y>=0 && y<YRES && x>=0 && x<XRES)
 		{
-			int cr; //cr is particle under mouse, for drawing HUD information
+			int cri, crt; //cr is particle under mouse, for drawing HUD information
 			char nametext[50];
-			if (photons[y][x]) {
-				cr = photons[y][x];
-			} else {
-				cr = pmap[y][x];
-			}
-			if (cr)
+			if (globalSim->pmap[y][x].count)
 			{
-				if ((cr&0xFF)==PT_LIFE && parts[cr>>8].ctype>=0 && parts[cr>>8].ctype<NGOLALT)
+				cri = globalSim->pmap[y][x].first;
+				crt = parts[cri].type;
+				if (crt==PT_LIFE && parts[cri].ctype>=0 && parts[cri].ctype<NGOLALT)
 				{
-					sprintf(nametext, "%s (%s)", ptypes[cr&0xFF].name, gmenu[parts[cr>>8].ctype].name);
+					sprintf(nametext, "%s (%s)", ptypes[crt].name, gmenu[parts[cri].ctype].name);
 				}
-				else if ((cr&0xFF)==PT_LAVA && parts[cr>>8].ctype > 0 && parts[cr>>8].ctype < PT_NUM )
+				else if (crt==PT_LAVA && parts[cri].ctype > 0 && parts[cri].ctype < PT_NUM )
 				{
 					char lowername[6];
 					int ix;
-					strcpy(lowername, ptypes[parts[cr>>8].ctype].name);
+					strcpy(lowername, ptypes[parts[cri].ctype].name);
 					for (ix = 0; lowername[ix]; ix++)
 						lowername[ix] = tolower(lowername[ix]);
 
 					sprintf(nametext, "Molten %s", lowername);
 				}
-				else if (((cr&0xFF)==PT_PIPE || (cr&0xFF) == PT_PPIP) && (parts[cr>>8].tmp&0xFF) > 0 && (parts[cr>>8].tmp&0xFF) < PT_NUM )
+				else if ((crt==PT_PIPE || crt == PT_PPIP) && (parts[cri].tmp&0xFF) > 0 && (parts[cri].tmp&0xFF) < PT_NUM )
 				{
 					char lowername[6];
 					int ix;
-					strcpy(lowername, ptypes[parts[cr>>8].tmp&0xFF].name);
+					strcpy(lowername, ptypes[parts[cri].tmp&0xFF].name);
 					for (ix = 0; lowername[ix]; ix++)
 						lowername[ix] = tolower(lowername[ix]);
 
@@ -1942,33 +1943,33 @@ int main(int argc, char *argv[])
 				}
 				else if (DEBUG_MODE)
 				{
-					int tctype = parts[cr>>8].ctype;
-					if ((cr&0xFF)==PT_PIPE || (cr&0xFF) == PT_PPIP)
+					int tctype = parts[cri].ctype;
+					if (crt==PT_PIPE || crt == PT_PPIP)
 					{
-						tctype = parts[cr>>8].tmp&0xFF;
+						tctype = parts[cri].tmp&0xFF;
 					}
-					if (tctype>=PT_NUM || tctype<0 || (cr&0xFF)==PT_PHOT)
+					if (tctype>=PT_NUM || tctype<0 || crt==PT_PHOT)
 						tctype = 0;
-					sprintf(nametext, "%s (%s)", ptypes[cr&0xFF].name, ptypes[tctype].name);
+					sprintf(nametext, "%s (%s)", ptypes[crt].name, ptypes[tctype].name);
 				}
 				else
 				{
-					strcpy(nametext, ptypes[cr&0xFF].name);
+					strcpy(nametext, ptypes[crt].name);
 				}
 				if (DEBUG_MODE)
 				{
-					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d, Tmp:%d", nametext, pv[y/CELL][x/CELL], parts[cr>>8].temp-273.15f, parts[cr>>8].life, parts[cr>>8].tmp);
-					sprintf(coordtext, "#%d, X:%d Y:%d", cr>>8, x, y);
+					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d, Tmp:%d", nametext, pv[y/CELL][x/CELL], parts[cri].temp-273.15f, parts[cri].life, parts[cri].tmp);
+					sprintf(coordtext, "#%d, X:%d Y:%d", cri, x, y);
 				}
 				else
 				{
 #ifdef BETA
-					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d, Tmp:%d", nametext, pv[y/CELL][x/CELL], parts[cr>>8].temp-273.15f, parts[cr>>8].life, parts[cr>>8].tmp);
+					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d, Tmp:%d", nametext, pv[y/CELL][x/CELL], parts[cri].temp-273.15f, parts[cri].life, parts[cri].tmp);
 #else
-					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C", nametext, pv[y/CELL][x/CELL], parts[cr>>8].temp-273.15f);
+					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C", nametext, pv[y/CELL][x/CELL], parts[cri].temp-273.15f);
 #endif
 				}
-				if ((cr&0xFF)==PT_PHOT) wavelength_gfx = parts[cr>>8].ctype;
+				if (crt==PT_PHOT) wavelength_gfx = parts[cri].ctype;
 			}
 			else
 			{
@@ -2550,15 +2551,12 @@ int main(int argc, char *argv[])
 					{
 						if (y>=0 && y<YRES && x>=0 && x<XRES)
 						{
-							int cr;
-							cr = pmap[y][x];
-							if (!cr)
-								cr = photons[y][x];
-							if (cr)
+							if (globalSim->pmap[y][x].count)
 							{
-								c = sl = cr&0xFF;
+								int cri = globalSim->pmap[y][x].first;
+								c = sl = parts[cri].type;
 								if (c==PT_LIFE)
-									c = sl = (parts[cr>>8].ctype << 8) | c;
+									c = sl = (parts[cri].ctype << 8) | c;
 							}
 							else
 							{
@@ -2577,10 +2575,6 @@ int main(int argc, char *argv[])
 
 						for (cbi=0; cbi<NPART; cbi++)
 							cb_parts[cbi] = parts[cbi];
-
-						for (cby = 0; cby<YRES; cby++)
-							for (cbx = 0; cbx<XRES; cbx++)
-								cb_pmap[cby][cbx] = pmap[cby][cbx];
 
 						for (cby = 0; cby<(YRES/CELL); cby++)
 							for (cbx = 0; cbx<(XRES/CELL); cbx++)
@@ -2889,6 +2883,8 @@ int main(int argc, char *argv[])
 			}
 			free(console);
 #endif
+			// TODO: change console so that this isn't needed
+			globalSim->pmap_reset();
 		}
 
 		sdl_blit(0, 0, XRES+BARSIZE, YRES+MENUSIZE, vid_buf, XRES+BARSIZE);

@@ -17,22 +17,21 @@
 
 int ACEL_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry;
+	int rx, ry;
+	int rcount, ri, rnext;
 	parts[i].tmp = 0;
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry) && !(rx && ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if(!r)
-					r = photons[y+ry][x+rx];
-				if ((r>>8)>=NPART || !r)
-					continue;
-				if(ptypes[r&0xFF].properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY))
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					parts[r>>8].vx *= 1.1f;
-					parts[r>>8].vy *= 1.1f;
-					parts[i].tmp = 1;
+					if(ptypes[parts[ri].type].properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY))
+					{
+						parts[ri].vx *= 1.1f;
+						parts[ri].vy *= 1.1f;
+						parts[i].tmp = 1;
+					}
 				}
 			}
 	return 0;

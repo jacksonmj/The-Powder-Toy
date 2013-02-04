@@ -68,7 +68,156 @@ void Simulation::Clear()
 		}
 	}
 	memset(elementCount, 0, sizeof(elementCount));
+
+	int i;
+	pmap_entry *pmap_flat = (pmap_entry*)pmap;
+	for (i=0; i<XRES*YRES; i++)
+		pmap_flat[i].count = 0;
+
 	pfree = 0;
+}
+
+
+// Completely recalculates the entire pmap.
+// Avoid this as much as possible.
+void Simulation::pmap_reset()
+{
+	int i;
+	pmap_entry *pmap_flat = (pmap_entry*)pmap;
+	for (i=0; i<XRES*YRES; i++)
+		pmap_flat[i].count = 0;
+	/*for (i=0; i<NPART; i++)
+		partsFree[i] = true;*/
+	for (i=0; i<NPART; i++)
+	{
+		if (parts[i].type)
+		{
+			pmap_add(i, (int)(parts[i].x+0.5f), (int)(parts[i].y+0.5f), parts[i].type);
+			//partsFree[i] = false;
+		}
+	}
+}
+
+// Looks for errors in the simulation data, such as pmap linked lists
+// Only to help with development and fixing bugs, it shouldn't be needed during normal use
+bool Simulation::Check()
+{
+	bool isGood = true;
+	int i, x, y;
+	for (y=0; y<YRES; y++)
+	{
+		for (x=0; x<XRES; x++)
+		{
+			if (!pmap[y][x].count)
+				continue;
+			int count = 0;
+			for (i=pmap[y][x].first; i>=0; i=parts[i].pmap_next)
+			{
+				if (count>NPART)
+				{
+					printf("Infinite loop detected for pmap list %d,%d\n", x, y);
+					isGood = false;
+					break;
+				}
+				if (i>=NPART)
+				{
+					printf("Invalid particle index %d in pmap list for %d,%d\n", i, x, y);
+					isGood = false;
+					break;
+				}
+				count++;
+				if (x!=(int)(parts[i].x+0.5f) || y!=(int)(parts[i].y+0.5f))
+				{
+					printf("coordinates do not match: particle %d at %d,%d is in pmap list for %d,%d\n", i, x, y, (int)(parts[i].x+0.5f), (int)(parts[i].y+0.5f));
+					isGood = false;
+				}
+				if (i==pmap[y][x].first)
+				{
+					if (parts[i].pmap_prev >= 0)
+					{
+						printf("First particle (%d) in pmap list for %d,%d does not have pmap_prev<0\n", i, x, y);
+						isGood = false;
+					}
+				}
+				else
+				{
+					if (parts[i].pmap_next>=0 && parts[i].pmap_next<NPART && parts[parts[i].pmap_next].pmap_prev != i)
+					{
+						printf("pmap_prev (%d) for next particle (%d) in the pmap list for %d,%d is not the current particle (%d)\n", parts[parts[i].pmap_next].pmap_prev, parts[i].pmap_next, x, y, i);
+						isGood = false;
+					}
+				}
+			}
+			if (count!=pmap[y][x].count)
+			{
+				printf("Stored length of pmap list for %d,%d does not match the actual length\n", x, y);
+				isGood = false;
+			}
+		}
+	}
+	for (i=0; i<NPART; i++)
+	{
+		if (parts[i].type)
+		{
+			if (i>parts_lastActiveIndex)
+			{
+				printf("Particle %d is in use, but the ID is greater than parts_lastActiveIndex = %d\n", i, parts_lastActiveIndex);
+				isGood = false;
+			}
+			// check whether the particle is in the correct pmap list
+			x = (int)(parts[i].x+0.5f);
+			y = (int)(parts[i].y+0.5f);
+			int pmap_i, count = 0;
+			bool foundPart = false;
+			if (pmap[y][x].count)
+			{
+				for (pmap_i=pmap[y][x].first; pmap_i>=0; pmap_i=parts[pmap_i].pmap_next)
+				{
+					if (count>NPART || pmap_i>=NPART)
+					{
+						break;
+					}
+					count++;
+					if (pmap_i==i)
+					{
+						foundPart = true;
+						break;
+					}
+				}
+			}
+			if (!foundPart)
+			{
+				printf("Particle %d at %d,%d does not appear in the pmap list for that location\n", i, x, y);
+				isGood = false;
+			}
+		}
+	}
+
+	// Check the linked list of free particles for loops
+	// (usually indicates that a particle was killed twice, or that a particle's properties were modified after killing it)
+	bool *partSeen = new bool[NPART];
+	for (i=0; i<NPART; i++)
+		partSeen[i] = false;
+	i = pfree;
+	while (i>=0)
+	{
+		if (partSeen[i])
+		{
+			printf("Particle %d appears twice in the list of free particles\n", i);
+			isGood = false;
+			break;
+		}
+		partSeen[i] = true;
+		i = parts[i].life;
+	}
+	delete[] partSeen;
+
+	if (!isGood)
+	{
+		// This is mainly here to give a line to break on in a debugger
+		printf("Problems found in simulation data\n");
+	}
+	return isGood;
 }
 
 // the function for creating a particle
@@ -102,9 +251,8 @@ int Simulation::part_create(int p, int x, int y, int t)
 
 		// If there is a particle, only allow creation if the new particle can occupy the same space as the existing particle
 		// If there isn't a particle but there is a wall, check whether the new particle is allowed to be in it
-		//   (not "!=2" for wall check because eval_move returns 1 for moving into empty space)
 		// If there's no particle and no wall, assume creation is allowed
-		if (pmap[y][x] ? (eval_move(t, x, y, NULL)!=2) : (bmap[y/CELL][x/CELL] && eval_move(t, x, y, NULL)==0))
+		if (pmap[y][x].count ? (eval_move(t, x, y, NULL)!=2) : (bmap[y/CELL][x/CELL] && eval_move(t, x, y, NULL)!=2))
 		{
 			return -1;
 		}
@@ -129,9 +277,6 @@ int Simulation::part_create(int p, int x, int y, int t)
 	// Check whether a particle was successfully allocated
 	if (i<0)
 		return -1;
-
-	// set the pmap/photon maps to the newly created particle
-	pmap_add(i, x, y, t);// TODO: ? only set pmap if (t!=PT_STKM && t!=PT_STKM2 && t!=PT_FIGH)
 
 	// Set some properties
 	parts[i] = elements[t].DefaultProperties;
@@ -162,6 +307,8 @@ int Simulation::part_create(int p, int x, int y, int t)
 		colb = colb>255 ? 255 : (colb<0 ? 0 : colb);
 		parts[i].dcolour = COLRGB(colr, colg, colb);
 	}
+
+	pmap_add(i, x, y, t);
 
 	elementCount[t]++;
 	return i;

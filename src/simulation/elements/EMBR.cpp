@@ -24,18 +24,19 @@
  */
 int EMBR_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry, nb;
+	int rx, ry;
+	int rcount, ri, rnext;
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if ((ptypes[r&0xFF].properties & (TYPE_SOLID | TYPE_PART | TYPE_LIQUID)) && !(ptypes[r&0xFF].properties & PROP_SPARKSETTLE))
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					kill_part(i);
-					return 1;
+					if ((ptypes[parts[ri].type].properties & (TYPE_SOLID | TYPE_PART | TYPE_LIQUID)) && !(ptypes[parts[ri].type].properties & PROP_SPARKSETTLE))
+					{
+						kill_part(i);
+						return 1;
+					}
 				}
 			}
 	return 0;

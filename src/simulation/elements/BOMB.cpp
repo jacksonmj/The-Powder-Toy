@@ -17,47 +17,63 @@
 
 int BOMB_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry, nb;
+	int rx, ry, nb;
+	int rcount, ri, rnext;
 	for (rx=-2; rx<3; rx++)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if ((r&0xFF)!=PT_BOMB && (r&0xFF)!=PT_EMBR && (r&0xFF)!=PT_DMND && (r&0xFF)!=PT_CLNE && (r&0xFF)!=PT_PCLN && (r&0xFF)!=PT_BCLN && (r&0xFF)!=PT_VIBR)
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					int rad = 8;
-					int nxi;
-					int nxj;
-					pmap[y][x] = 0;
-					for (nxj=-rad; nxj<=rad; nxj++)
-						for (nxi=-rad; nxi<=rad; nxi++)
-							if ((pow(nxi,2))/(pow(rad,2))+(pow(nxj,2))/(pow(rad,2))<=1)
-								if ((pmap[y+nxj][x+nxi]&0xFF)!=PT_DMND && (pmap[y+nxj][x+nxi]&0xFF)!=PT_CLNE && (pmap[y+nxj][x+nxi]&0xFF)!=PT_PCLN && (pmap[y+nxj][x+nxi]&0xFF)!=PT_BCLN && (pmap[y+nxj][x+nxi]&0xFF)!=PT_VIBR) {
-									delete_part(x+nxi, y+nxj, 0);
-									pv[(y+nxj)/CELL][(x+nxi)/CELL] += 0.1f;
-									nb = sim->part_create(-3, x+nxi, y+nxj, PT_EMBR);
-									if (nb!=-1) {
-										parts[nb].tmp = 2;
-										parts[nb].life = 2;
-										parts[nb].temp = MAX_TEMP;
+					int rt = parts[ri].type;
+					if (sim->elements[rt].Properties&TYPE_ENERGY)
+						continue;
+					if (rt!=PT_BOMB && rt!=PT_EMBR && rt!=PT_DMND && rt!=PT_CLNE && rt!=PT_PCLN && rt!=PT_BCLN && rt!=PT_VIBR)
+					{
+						int rad = 8;
+						int nxi;
+						int nxj;
+						int nrcount, nri;
+						for (nxj=-rad; nxj<=rad; nxj++)
+							for (nxi=-rad; nxi<=rad; nxi++)
+								if ((pow(nxi,2))/(pow(rad,2))+(pow(nxj,2))/(pow(rad,2))<=1)
+								{
+									bool posExplode = false;
+									FOR_PMAP_POSITION(sim, x+nxi, y+nxj, nrcount, nri, rnext)
+									{
+										int nrt = parts[nri].type;
+										if (nri!=i && nrt!=PT_DMND && nrt!=PT_CLNE && nrt!=PT_PCLN && nrt!=PT_BCLN && nrt!=PT_VIBR)
+										{
+											kill_part(nri);
+											posExplode = true;
+										}
+									}
+									if (posExplode)
+									{
+										pv[(y+nxj)/CELL][(x+nxi)/CELL] += 0.1f;
+										nb = sim->part_create(-3, x+nxi, y+nxj, PT_EMBR);
+										if (nb!=-1) {
+											parts[nb].tmp = 2;
+											parts[nb].life = 2;
+											parts[nb].temp = MAX_TEMP;
+										}
 									}
 								}
-					for (nxj=-(rad+1); nxj<=(rad+1); nxj++)
-						for (nxi=-(rad+1); nxi<=(rad+1); nxi++)
-							if ((pow(nxi,2))/(pow((rad+1),2))+(pow(nxj,2))/(pow((rad+1),2))<=1 && !(pmap[y+nxj][x+nxi]&0xFF)) {
-								nb = sim->part_create(-3, x+nxi, y+nxj, PT_EMBR);
-								if (nb!=-1) {
-									parts[nb].tmp = 0;
-									parts[nb].life = 50;
-									parts[nb].temp = MAX_TEMP;
-									parts[nb].vx = rand()%40-20;
-									parts[nb].vy = rand()%40-20;
+						for (nxj=-(rad+1); nxj<=(rad+1); nxj++)
+							for (nxi=-(rad+1); nxi<=(rad+1); nxi++)
+								if ((pow(nxi,2))/(pow((rad+1),2))+(pow(nxj,2))/(pow((rad+1),2))<=1 && !(pmap[y+nxj][x+nxi]&0xFF)) {
+									nb = sim->part_create(-3, x+nxi, y+nxj, PT_EMBR);
+									if (nb!=-1) {
+										parts[nb].tmp = 0;
+										parts[nb].life = 50;
+										parts[nb].temp = MAX_TEMP;
+										parts[nb].vx = rand()%40-20;
+										parts[nb].vy = rand()%40-20;
+									}
 								}
-							}
-					kill_part(i);
-					return 1;
+						kill_part(i);
+						return 1;
+					}
 				}
 			}
 	return 0;

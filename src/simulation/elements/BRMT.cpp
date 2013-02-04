@@ -17,32 +17,33 @@
 
 int BRMT_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry, rt, tempFactor;
+	int rx, ry, rt, tempFactor;
+	int rcount, ri, rnext;
 	if (parts[i].temp > (250.0f+273.15f))
 	{
+		tempFactor = 1000 - (((250.0f+273.15f)-parts[i].temp)*2);
+		if(tempFactor < 2)
+			tempFactor = 2;
 		for (rx=-1; rx<2; rx++)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					r = pmap[y+ry][x+rx];
-					if (!r)
-						continue;
-					rt = parts[r>>8].type;
-					tempFactor = 1000 - (((250.0f+273.15f)-parts[i].temp)*2);
-					if(tempFactor < 2)
-						tempFactor = 2;
-					if ((rt==PT_BREL) && 1 > (rand()%tempFactor))
+					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 					{
-						if(rand()%2)
+						rt = parts[ri].type;
+						if ((rt==PT_BREL) && 1 > (rand()%tempFactor))
 						{
-							sim->part_create(r>>8, x+rx, y+ry, PT_THRM);
+							if(rand()%2)
+							{
+								sim->part_create(ri, x+rx, y+ry, PT_THRM);
+							}
+							else
+							{	sim->part_create(i, x, y, PT_THRM);
+							}
+							return 1;
+							//part_change_type(r>>8,x+rx,y+ry,PT_BMTL);
+							//parts[r>>8].tmp=(parts[i].tmp<=7)?parts[i].tmp=1:parts[i].tmp-(rand()%5);//rand()/(RAND_MAX/300)+100;
 						}
-						else
-						{	sim->part_create(i, x, y, PT_THRM);
-						}
-						return 1;
-						//part_change_type(r>>8,x+rx,y+ry,PT_BMTL);
-						//parts[r>>8].tmp=(parts[i].tmp<=7)?parts[i].tmp=1:parts[i].tmp-(rand()%5);//rand()/(RAND_MAX/300)+100;
 					}
 				}
 	}

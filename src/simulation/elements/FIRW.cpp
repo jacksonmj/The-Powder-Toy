@@ -19,31 +19,32 @@
 int FIRW_update(UPDATE_FUNC_ARGS)
 {
 	int r, rx, ry, rt, np;
+	int rcount, ri, rnext;
 	if (parts[i].tmp<=0) {
 		for (rx=-1; rx<2; rx++)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					r = pmap[y+ry][x+rx];
-					if (!r)
-						continue;
-					rt = parts[r>>8].type;
-					if (rt==PT_FIRE||rt==PT_PLSM||rt==PT_THDR)
+					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
-						float gx, gy, multiplier;
-						get_gravity_field(x, y, ptypes[PT_FIRW].gravity, 1.0f, &gx, &gy);
-						if (gx*gx+gy*gy < 0.001f)
+						rt = parts[ri].type;
+						if (rt==PT_FIRE||rt==PT_PLSM||rt==PT_THDR)
 						{
-							float angle = (rand()%6284)*0.001f;//(in radians, between 0 and 2*pi)
-							gx += sinf(angle)*ptypes[PT_FIRW].gravity*0.5f;
-							gy += cosf(angle)*ptypes[PT_FIRW].gravity*0.5f;
+							float gx, gy, multiplier;
+							get_gravity_field(x, y, ptypes[PT_FIRW].gravity, 1.0f, &gx, &gy);
+							if (gx*gx+gy*gy < 0.001f)
+							{
+								float angle = (rand()%6284)*0.001f;//(in radians, between 0 and 2*pi)
+								gx += sinf(angle)*ptypes[PT_FIRW].gravity*0.5f;
+								gy += cosf(angle)*ptypes[PT_FIRW].gravity*0.5f;
+							}
+							parts[i].tmp = 1;
+							parts[i].life = rand()%10+20;
+							multiplier = (parts[i].life+20)*0.2f/sqrtf(gx*gx+gy*gy);
+							parts[i].vx -= gx*multiplier;
+							parts[i].vy -= gy*multiplier;
+							return 0;
 						}
-						parts[i].tmp = 1;
-						parts[i].life = rand()%10+20;
-						multiplier = (parts[i].life+20)*0.2f/sqrtf(gx*gx+gy*gy);
-						parts[i].vx -= gx*multiplier;
-						parts[i].vy -= gy*multiplier;
-						return 0;
 					}
 				}
 	}

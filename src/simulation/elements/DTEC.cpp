@@ -22,7 +22,8 @@ int in_radius(int rd, int x, int y)
 
 int DTEC_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry, rt, rd = parts[i].tmp2;
+	int rx, ry, rt, rd = parts[i].tmp2;
+	int rcount, ri, rnext;
 	if (rd > 25) parts[i].tmp2 = rd = 25;
 	if (parts[i].life)
 	{
@@ -31,17 +32,17 @@ int DTEC_update(UPDATE_FUNC_ARGS)
 			for (ry=-2; ry<3; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					r = pmap[y+ry][x+rx];
-					if (!r)
-						continue;
-					rt = parts[r>>8].type;
-					if (parts_avg(i,r>>8,PT_INSL) != PT_INSL)
+					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 					{
-						if ((ptypes[rt].properties&PROP_CONDUCTS) && !(rt==PT_WATR||rt==PT_SLTW||rt==PT_NTCT||rt==PT_PTCT||rt==PT_INWR) && parts[r>>8].life==0 && in_radius(rd, rx, ry))
+						rt = parts[ri].type;
+						if (parts_avg(i,ri,PT_INSL) != PT_INSL)
 						{
-							parts[r>>8].life = 4;
-							parts[r>>8].ctype = rt;
-							part_change_type(r>>8,x+rx,y+ry,PT_SPRK);
+							if ((ptypes[rt].properties&PROP_CONDUCTS) && !(rt==PT_WATR||rt==PT_SLTW||rt==PT_NTCT||rt==PT_PTCT||rt==PT_INWR) && parts[ri].life==0 && in_radius(rd, rx, ry))
+							{
+								parts[ri].life = 4;
+								parts[ri].ctype = rt;
+								part_change_type(ri,x+rx,y+ry,PT_SPRK);
+							}
 						}
 					}
 				}
@@ -50,13 +51,11 @@ int DTEC_update(UPDATE_FUNC_ARGS)
 		for (ry=-rd; ry<rd+1; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					r = photons[y+ry][x+rx];
-				if (!r)
-					continue;
-				if (parts[r>>8].type == parts[i].ctype && (parts[i].ctype != PT_LIFE || parts[i].tmp == parts[r>>8].tmp))
-					parts[i].life = 1;
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
+				{
+					if (parts[ri].type == parts[i].ctype && (parts[i].ctype != PT_LIFE || parts[i].tmp == parts[ri].tmp))
+						parts[i].life = 1;
+				}
 			}
 	return 0;
 }

@@ -17,27 +17,29 @@
 
 int AMTR_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry;
+	int rx, ry;
+	int rcount, ri, rnext;
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if ((r&0xFF)!=PT_AMTR && (r&0xFF)!=PT_DMND && (r&0xFF)!=PT_CLNE && (r&0xFF)!=PT_PCLN && (r&0xFF)!=PT_NONE && (r&0xFF)!=PT_PHOT && (r&0xFF)!=PT_VOID && (r&0xFF)!=PT_BHOL && (r&0xFF)!=PT_NBHL && (r&0xFF)!=PT_PRTI && (r&0xFF)!=PT_PRTO)
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					parts[i].life++;
-					if (parts[i].life==4)
+					int rt = parts[ri].type;
+					if (rt!=PT_AMTR && rt!=PT_DMND && rt!=PT_CLNE && rt!=PT_PCLN && rt!=PT_PHOT && rt!=PT_VOID && rt!=PT_BHOL && rt!=PT_NBHL && rt!=PT_PRTI && rt!=PT_PRTO)
 					{
-						kill_part(i);
-						return 1;
+						parts[i].life++;
+						if (parts[i].life==4)
+						{
+							kill_part(i);
+							return 1;
+						}
+						if (10>(rand()/(RAND_MAX/100)))
+							sim->part_create(ri, x+rx, y+ry, PT_PHOT);
+						else
+							kill_part(ri);
+						pv[y/CELL][x/CELL] -= 2.0f;
 					}
-					if (10>(rand()/(RAND_MAX/100)))
-						sim->part_create(r>>8, x+rx, y+ry, PT_PHOT);
-					else
-						kill_part(r>>8);
-					pv[y/CELL][x/CELL] -= 2.0f;
 				}
 			}
 	return 0;

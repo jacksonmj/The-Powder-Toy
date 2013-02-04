@@ -59,4 +59,6 @@ Element::Element() :
 	DefaultProperties({})
 {
 	DefaultProperties.temp = R_TEMP + 273.15f;
+	DefaultProperties.pmap_prev = -1;
+	DefaultProperties.pmap_next = -1;
 }
