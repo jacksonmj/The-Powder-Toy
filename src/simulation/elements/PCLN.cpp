@@ -17,29 +17,31 @@
 
 int PCLN_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry;
+	int rx, ry, rt;
+	int rcount, ri, rnext;
 	if (parts[i].life>0 && parts[i].life!=10)
 		parts[i].life--;
 	for (rx=-2; rx<3; rx++)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if ((r&0xFF)==PT_SPRK && parts[r>>8].life>0 && parts[r>>8].life<4)
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					if (parts[r>>8].ctype==PT_PSCN)
-						parts[i].life = 10;
-					else if (parts[r>>8].ctype==PT_NSCN)
-						parts[i].life = 9;
-				}
-				if ((r&0xFF)==PT_PCLN)
-				{
-					if (parts[i].life==10&&parts[r>>8].life<10&&parts[r>>8].life>0)
-						parts[i].life = 9;
-					else if (parts[i].life==0&&parts[r>>8].life==10)
-						parts[i].life = 10;
+					rt = parts[ri].type;
+					if (rt==PT_SPRK && parts[ri].life>0 && parts[ri].life<4)
+					{
+						if (parts[ri].ctype==PT_PSCN)
+							parts[i].life = 10;
+						else if (parts[ri].ctype==PT_NSCN)
+							parts[i].life = 9;
+					}
+					if (rt==PT_PCLN)
+					{
+						if (parts[i].life==10&&parts[ri].life<10&&parts[ri].life>0)
+							parts[i].life = 9;
+						else if (parts[i].life==0&&parts[ri].life==10)
+							parts[i].life = 10;
+					}
 				}
 			}
 	if (parts[i].ctype<=0 || parts[i].ctype>=PT_NUM || !ptypes[parts[i].ctype].enabled || (parts[i].ctype==PT_LIFE && (parts[i].tmp<0 || parts[i].tmp>=NGOLALT)))
@@ -47,20 +49,19 @@ int PCLN_update(UPDATE_FUNC_ARGS)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES)
 				{
-					r = photons[y+ry][x+rx];
-					if (!r)
-						r = pmap[y+ry][x+rx];
-					if (!r)
-						continue;
-					if ((r&0xFF)!=PT_CLNE && (r&0xFF)!=PT_PCLN &&
-				        (r&0xFF)!=PT_BCLN &&  (r&0xFF)!=PT_SPRK &&
-				        (r&0xFF)!=PT_NSCN && (r&0xFF)!=PT_PSCN &&
-				        (r&0xFF)!=PT_STKM && (r&0xFF)!=PT_STKM2 &&
-				        (r&0xFF)!=PT_PBCN && (r&0xFF)<PT_NUM)
+					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
-						parts[i].ctype = r&0xFF;
-						if ((r&0xFF)==PT_LIFE || (r&0xFF)==PT_LAVA)
-							parts[i].tmp = parts[r>>8].ctype;
+						rt = parts[ri].type;
+						if (rt!=PT_CLNE && rt!=PT_PCLN &&
+							rt!=PT_BCLN && rt!=PT_SPRK &&
+							rt!=PT_NSCN && rt!=PT_PSCN &&
+							rt!=PT_STKM && rt!=PT_STKM2 &&
+							rt!=PT_PBCN)
+						{
+							parts[i].ctype = rt;
+							if (rt==PT_LIFE || rt==PT_LAVA)
+								parts[i].tmp = parts[ri].ctype;
+						}
 					}
 				}
 	if (parts[i].ctype>0 && parts[i].ctype<PT_NUM && ptypes[parts[i].ctype].enabled && parts[i].life==10) {

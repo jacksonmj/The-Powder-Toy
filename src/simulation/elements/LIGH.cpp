@@ -40,7 +40,7 @@ int LIGH_nearest_part(int ci, int max_d)
 	return id;
 }
 
-int contact_part(int i, int tp)
+int contact_part(Simulation* sim, int i, int tp)
 {
 	int x=parts[i].x, y=parts[i].y;
 	int r,rx,ry;
@@ -48,11 +48,8 @@ int contact_part(int i, int tp)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if ((r&0xFF)==tp)
-					return r>>8;
+				r = sim->pmap_find_one(x+rx, y+ry, tp);// TODO: not energy parts?
+				if (r>=0) return r;
 			}
 	return -1;
 }
@@ -130,7 +127,8 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 	 * tmp - angle of lighting, measured in degrees anticlockwise from the positive x direction
 	 *
 	*/
-	int r,rx,ry, multipler, powderful;
+	int rx, ry, rt, multipler, powderful;
+	int rcount, ri, rnext;
 	float angle, angle2=-1;
 	int near;
 	powderful = powderful=parts[i].temp*(1+parts[i].life/40)*LIGHTING_POWER;
@@ -146,44 +144,47 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if ((r&0xFF)!=PT_LIGH && (r&0xFF)!=PT_TESC)
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					if ((r&0xFF)!=PT_CLNE&&(r&0xFF)!=PT_THDR&&(r&0xFF)!=PT_DMND&&(r&0xFF)!=PT_FIRE&&(r&0xFF)!=PT_NEUT&&(r&0xFF)!=PT_PHOT)
+					rt = parts[ri].type;
+					if (ptypes[rt].properties&TYPE_ENERGY) continue;
+
+					if (rt!=PT_LIGH && rt!=PT_TESC)
 					{
-						if ((ptypes[r&0xFF].properties&PROP_CONDUCTS) && parts[r>>8].life==0)
+						if (rt!=PT_CLNE&&rt!=PT_THDR&&rt!=PT_DMND&&rt!=PT_FIRE&&rt!=PT_NEUT&&rt!=PT_PHOT)
 						{
-							// TODO: change this create_part
-							create_part(r>>8,x+rx,y+ry,PT_SPRK);
+							if ((ptypes[rt].properties&PROP_CONDUCTS) && parts[ri].life==0)
+							{
+								// TODO: change this create_part
+								create_part(ri,x+rx,y+ry,PT_SPRK);
+							}
+							pv[y/CELL][x/CELL] += powderful/400;
+							if (ptypes[rt].hconduct) parts[ri].temp = restrict_flt(parts[ri].temp+powderful/1.5, MIN_TEMP, MAX_TEMP);
 						}
-						pv[y/CELL][x/CELL] += powderful/400;
-						if (ptypes[r&0xFF].hconduct) parts[r>>8].temp = restrict_flt(parts[r>>8].temp+powderful/1.5, MIN_TEMP, MAX_TEMP);
-					}
-					if ((r&0xFF)==PT_DEUT || (r&0xFF)==PT_PLUT) // start nuclear reactions
-					{
-						parts[r>>8].temp = restrict_flt(parts[r>>8].temp+powderful, MIN_TEMP, MAX_TEMP);
-						pv[y/CELL][x/CELL] +=powderful/35;
-						if (rand()%3==0)
+						if (rt==PT_DEUT || rt==PT_PLUT) // start nuclear reactions
 						{
-							part_change_type(r>>8,x+rx,y+ry,PT_NEUT);
-							parts[r>>8].life = rand()%480+480;
-							parts[r>>8].vx=rand()%10-5;
-							parts[r>>8].vy=rand()%10-5;
+							parts[ri].temp = restrict_flt(parts[ri].temp+powderful, MIN_TEMP, MAX_TEMP);
+							pv[y/CELL][x/CELL] +=powderful/35;
+							if (rand()%3==0)
+							{
+								part_change_type(ri,x+rx,y+ry,PT_NEUT);
+								parts[ri].life = rand()%480+480;
+								parts[ri].vx=rand()%10-5;
+								parts[ri].vy=rand()%10-5;
+							}
 						}
-					}
-					if ((r&0xFF)==PT_COAL || (r&0xFF)==PT_BCOL) // ignite coal
-					{
-						if (parts[r>>8].life>100) {
-							parts[r>>8].life = 99;
+						if (rt==PT_COAL || rt==PT_BCOL) // ignite coal
+						{
+							if (parts[ri].life>=100) {
+								parts[ri].life = 99;
+							}
 						}
-					}
-					if (ptypes[r&0xFF].hconduct)
-						parts[r>>8].temp = restrict_flt(parts[r>>8].temp+powderful/10, MIN_TEMP, MAX_TEMP);
-					if (((r&0xFF)==PT_STKM && player.elem!=PT_LIGH) || ((r&0xFF)==PT_STKM2 && player2.elem!=PT_LIGH))
-					{
-						parts[r>>8].life-=powderful/100;
+						if (ptypes[rt].hconduct)
+							parts[ri].temp = restrict_flt(parts[ri].temp+powderful/10, MIN_TEMP, MAX_TEMP);
+						if ((rt==PT_STKM && player.elem!=PT_LIGH) || (rt==PT_STKM2 && player2.elem!=PT_LIGH))
+						{
+							parts[ri].life-=powderful/100;
+						}
 					}
 				}
 			}
@@ -236,7 +237,7 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 
 			if (t!=PT_TESC)
 			{
-				near=contact_part(near, PT_LIGH);
+				near=contact_part(sim, near, PT_LIGH);
 				if (near!=-1)
 				{
 					parts[near].tmp2=3;
@@ -272,13 +273,14 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 
 	if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 	{
-		r = pmap[y+ry][x+rx];
-		if ((r&0xFF)==PT_LIGH)
+		// TODO: should create_line_par return the index of the last particle or something?
+		ri = sim->pmap_find_one(x+rx, y+ry, PT_LIGH);
+		if (ri>=0)
 		{
-			parts[r>>8].tmp2=1+(rand()%200>parts[i].tmp2*parts[i].tmp2/10+60);
-			parts[r>>8].life=(int)(1.0*parts[i].life/1.5-rand()%2);
-			parts[r>>8].tmp=angle;
-			parts[r>>8].temp=parts[i].temp;
+			parts[ri].tmp2=1+(rand()%200>parts[i].tmp2*parts[i].tmp2/10+60);
+			parts[ri].life=(int)(1.0*parts[i].life/1.5-rand()%2);
+			parts[ri].tmp=angle;
+			parts[ri].temp=parts[i].temp;
 		}
 	}
 
@@ -291,13 +293,14 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 
 		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 		{
-			r = pmap[y+ry][x+rx];
-			if ((r&0xFF)==PT_LIGH)
+			// TODO: should create_line_par return the index of the last particle or something?
+			ri = sim->pmap_find_one(x+rx, y+ry, PT_LIGH);
+			if (ri>=0)
 			{
-				parts[r>>8].tmp2=1+(rand()%200>parts[i].tmp2*parts[i].tmp2/10+40);
-				parts[r>>8].life=(int)(1.0*parts[i].life/1.5-rand()%2);
-				parts[r>>8].tmp=angle;
-				parts[r>>8].temp=parts[i].temp;
+				parts[ri].tmp2=1+(rand()%200>parts[i].tmp2*parts[i].tmp2/10+40);
+				parts[ri].life=(int)(1.0*parts[i].life/1.5-rand()%2);
+				parts[ri].tmp=angle;
+				parts[ri].temp=parts[i].temp;
 			}
 		}
 	}

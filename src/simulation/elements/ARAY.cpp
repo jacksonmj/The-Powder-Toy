@@ -126,6 +126,7 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 							}
 						}
 						//parts[i].life = 4;
+						break;//break out of pmap position loop, so that stacked sparks don't cause multiple activation
 					}
 				}
 	}

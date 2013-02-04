@@ -17,7 +17,8 @@
 
 int MERC_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry, trade, np;
+	int rx, ry, trade, np;
+	int rcount, ri, rnext;
 	int maxtmp = ((10000/(parts[i].temp + 1))-1);
 	if ((10000%((int)parts[i].temp+1))>rand()%((int)parts[i].temp+1))
 		maxtmp ++;
@@ -27,15 +28,17 @@ int MERC_update(UPDATE_FUNC_ARGS)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					r = pmap[y+ry][x+rx];
-					if (!r || (parts[i].tmp >=maxtmp))
-						continue;
-					if ((r&0xFF)==PT_MERC&&33>=rand()/(RAND_MAX/100)+1)
+					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 					{
-						if ((parts[i].tmp + parts[r>>8].tmp + 1) <= maxtmp)
+						if (parts[i].tmp >=maxtmp)
+							break;
+						if (parts[ri].type==PT_MERC&&33>=rand()/(RAND_MAX/100)+1)
 						{
-							parts[i].tmp += parts[r>>8].tmp + 1;
-							kill_part(r>>8);
+							if ((parts[i].tmp + parts[ri].tmp + 1) <= maxtmp)
+							{
+								parts[i].tmp += parts[ri].tmp + 1;
+								kill_part(ri);
+							}
 						}
 					}
 				}
@@ -45,10 +48,10 @@ int MERC_update(UPDATE_FUNC_ARGS)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					r = pmap[y+ry][x+rx];
 					if (parts[i].tmp<=maxtmp)
 						continue;
-					if ((!r)&&parts[i].tmp>=1)//if nothing then create deut
+					// TODO: energy particles should not block
+					if (!sim->pmap[y+ry][x+rx].count&&parts[i].tmp>=1)//if nothing then create MERC
 					{
 						np = sim->part_create(-1,x+rx,y+ry,PT_MERC);
 						if (np<0) continue;
@@ -63,21 +66,21 @@ int MERC_update(UPDATE_FUNC_ARGS)
 		ry = rand()%5-2;
 		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 		{
-			r = pmap[y+ry][x+rx];
-			if (!r)
-				continue;
-			if ((r&0xFF)==PT_MERC&&(parts[i].tmp>parts[r>>8].tmp)&&parts[i].tmp>0)//diffusion
+			FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 			{
-				int temp = parts[i].tmp - parts[r>>8].tmp;
-				if (temp ==1)
+				if (parts[ri].type==PT_MERC&&(parts[i].tmp>parts[ri].tmp)&&parts[i].tmp>0)//diffusion
 				{
-					parts[r>>8].tmp ++;
-					parts[i].tmp --;
-				}
-				else if (temp>0)
-				{
-					parts[r>>8].tmp += temp/2;
-					parts[i].tmp -= temp/2;
+					int temp = parts[i].tmp - parts[ri].tmp;
+					if (temp ==1)
+					{
+						parts[ri].tmp ++;
+						parts[i].tmp --;
+					}
+					else if (temp>0)
+					{
+						parts[ri].tmp += temp/2;
+						parts[i].tmp -= temp/2;
+					}
 				}
 			}
 		}

@@ -17,23 +17,25 @@
 
 int IGNT_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry;
+	int rx, ry, rt;
+	int rcount, ri, rnext;
 	if(parts[i].tmp==0)
 	{
 		for (rx=-1; rx<2; rx++)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					r = pmap[y+ry][x+rx];
-					if (!r)
-						continue;
-					if ((r&0xFF)==PT_FIRE || (r&0xFF)==PT_PLSM)
+					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 					{
-						parts[i].tmp = 1;
-					}
-					else if ((r&0xFF)==PT_SPRK || (r&0xFF)==PT_LIGH || ((r&0xFF)==PT_IGNT && parts[r>>8].life==1))
-					{
-						parts[i].tmp = 1;
+						rt = parts[ri].type;
+						if (rt==PT_FIRE || rt==PT_PLSM)
+						{
+							parts[i].tmp = 1;
+						}
+						else if (rt==PT_SPRK || rt==PT_LIGH || (rt==PT_IGNT && parts[ri].life==1))
+						{
+							parts[i].tmp = 1;
+						}
 					}
 				}
 	}

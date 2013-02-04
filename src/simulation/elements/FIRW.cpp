@@ -18,14 +18,14 @@
 
 int FIRW_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry, rt, np;
+	int rx, ry, rt, np;
 	int rcount, ri, rnext;
 	if (parts[i].tmp<=0) {
 		for (rx=-1; rx<2; rx++)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
+					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 					{
 						rt = parts[ri].type;
 						if (rt==PT_FIRE||rt==PT_PLSM||rt==PT_THDR)

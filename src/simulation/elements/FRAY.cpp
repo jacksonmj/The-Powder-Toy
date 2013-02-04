@@ -17,27 +17,30 @@
 
 int FRAY_update(UPDATE_FUNC_ARGS)
 {
-	int r, nxx, nyy, docontinue, len, nxi, nyi, rx, ry, nr, ry1, rx1;
+	int nxx, nyy, docontinue, len, nxi, nyi, rx, ry, nr, ry1, rx1;
+	int rcount, ri, rnext;
+	int ncount, ni, nnext;
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if ((r&0xFF)==PT_SPRK) {
-					for (docontinue = 1, nxx = 0, nyy = 0, nxi = rx*-1, nyi = ry*-1, len = 0; docontinue; nyy+=nyi, nxx+=nxi, len++) {
-						if (!(x+nxi+nxx<XRES && y+nyi+nyy<YRES && x+nxi+nxx >= 0 && y+nyi+nyy >= 0) || len>10) {
-							break;
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				{
+					if (parts[ri].type==PT_SPRK)
+					{
+						for (docontinue = 1, nxx = 0, nyy = 0, nxi = rx*-1, nyi = ry*-1, len = 0; docontinue; nyy+=nyi, nxx+=nxi, len++) {
+							if (!(x+nxi+nxx<XRES && y+nyi+nyy<YRES && x+nxi+nxx >= 0 && y+nyi+nyy >= 0) || len>10) {
+								break;
+							}
+							FOR_PMAP_POSITION(sim, x+nxi+nxx, y+nyi+nyy, ncount, ni, nnext)
+							{
+								if (!(ptypes[parts[ri].type].properties & TYPE_SOLID)){
+									parts[ri].vx += nxi*((parts[i].temp-273.15)/10.0f);
+									parts[ri].vy += nyi*((parts[i].temp-273.15)/10.0f);
+								}
+							}
 						}
-						r = pmap[y+nyi+nyy][x+nxi+nxx];
-						if (!r)
-							r = photons[y+nyi+nyy][x+nxi+nxx];
-			
-						if (r && !(ptypes[r&0xFF].properties & TYPE_SOLID)){
-							parts[r>>8].vx += nxi*((parts[i].temp-273.15)/10.0f);
-							parts[r>>8].vy += nyi*((parts[i].temp-273.15)/10.0f);
-						}
+						break;//break out of pmap position loop, so that stacked sparks don't cause multiple activation
 					}
 				}
 			}

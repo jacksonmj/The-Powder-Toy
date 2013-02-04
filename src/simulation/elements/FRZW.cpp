@@ -17,17 +17,18 @@
 
 int FRZW_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry;
+	int rx, ry;
+	int rcount, ri, rnext;
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if ((r&0xFF)==PT_WATR&&5>rand()%70)
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					part_change_type(r>>8,x+rx,y+ry,PT_FRZW);
+					if (parts[ri].type==PT_WATR&&5>rand()%70)
+					{
+						part_change_type(ri,x+rx,y+ry,PT_FRZW);
+					}
 				}
 			}
 	if (parts[i].life==0&&13>rand()%2500)

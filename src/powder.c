@@ -295,11 +295,12 @@ int eval_move_special(int pt, int nx, int ny, int ri, int result)
 }
 
 /*
-   RETURN-value explenation
+   RETURN-value explanation
 1 = Swap
 0 = No move/Bounce
 2 = Both particles occupy the same space. This is also returned for a particle moving into empty space.
  */
+// TODO: add a return value for particle will be killed? Though for some materials, like PRTI, this won't be known until we try to do it.
 int eval_move(int pt, int nx, int ny, unsigned *rr)
 {
 	int result = 2;
@@ -360,194 +361,247 @@ int eval_move(int pt, int nx, int ny, unsigned *rr)
 	return result;
 }
 
+/*
+   return value
+-1 = moving particle was killed
+0 = No move/Bounce
+1 = Swap
+2 = Both particles occupy the same space. This is also returned for a particle moving into empty space.
+ */
 int try_move(int i, int x, int y, int nx, int ny)
 {
-	unsigned r, e;
-	int rcount, ri, rnext;
+	int e;
+	int rcount, ri, rnext, rt;
 
 	if (x==nx && y==ny)
 		return 1;
 	if (nx<0 || ny<0 || nx>=XRES || ny>=YRES)
 		return 1;
 
-	e = eval_move(parts[i].type, nx, ny, &r);
+	int t = parts[i].type;
+	e = eval_move(t, nx, ny, NULL);
 
 	/* half-silvered mirror */
-	if (!e && parts[i].type==PT_PHOT &&
-	        ((globalSim->pmap_find_one(x,y,PT_BMTL)>=0 && rand()<RAND_MAX/2) ||
+	if (!e && t==PT_PHOT &&
+	        ((globalSim->pmap_find_one(nx,ny,PT_BMTL)>=0 && rand()<RAND_MAX/2) ||
 	         globalSim->pmap_find_one(x,y,PT_BMTL)>=0))
 		e = 2;
 
 	if (!e) //if no movement
 	{
-		if (!(ptypes[parts[i].type].properties & TYPE_ENERGY))
-			return 0;
-		if (!legacy_enable && parts[i].type==PT_PHOT && r)//PHOT heat conduction
+		if (globalSim->elements[t].Properties & TYPE_ENERGY)
 		{
-			if ((r & 0xFF) == PT_COAL || (r & 0xFF) == PT_BCOL)
-				parts[r>>8].temp = parts[i].temp;
-
-			if ((r & 0xFF) < PT_NUM && ptypes[r&0xFF].hconduct && ((r&0xFF)!=PT_HSWC||parts[r>>8].life==10) && (r&0xFF)!=PT_FILT)
-				parts[i].temp = parts[r>>8].temp = restrict_flt((parts[r>>8].temp+parts[i].temp)/2, MIN_TEMP, MAX_TEMP);
-		}
-		if ((parts[i].type==PT_NEUT || parts[i].type==PT_ELEC) && ((r&0xFF)==PT_CLNE || (r&0xFF)==PT_PCLN || (r&0xFF)==PT_BCLN || (r&0xFF)==PT_PBCN)) {
-			if (!parts[r>>8].ctype)
-				parts[r>>8].ctype = parts[i].type;
-		}
-		if ((r&0xFF)==PT_PRTI && (ptypes[parts[i].type].properties & TYPE_ENERGY))
-		{
-			int nnx, count;
-			for (count=0; count<8; count++)
+			FOR_PMAP_POSITION(globalSim, nx, ny, rcount, ri, rnext)// TODO: not energy parts
 			{
-				if (isign(x-nx)==isign(portal_rx[count]) && isign(y-ny)==isign(portal_ry[count]))
-					break;
-			}
-			count = count%8;
-			parts[r>>8].tmp = (int)((parts[r>>8].temp-73.15f)/100+1);
-			if (parts[r>>8].tmp>=CHANNELS) parts[r>>8].tmp = CHANNELS-1;
-			else if (parts[r>>8].tmp<0) parts[r>>8].tmp = 0;
-			for ( nnx=0; nnx<80; nnx++)
-				if (!portalp[parts[r>>8].tmp][count][nnx].type)
+				rt = parts[ri].type;
+				if (!legacy_enable && t==PT_PHOT)//PHOT heat conduction
 				{
-					portalp[parts[r>>8].tmp][count][nnx] = parts[i];
-					parts[i].type=PT_NONE;
-					break;
+					if (rt == PT_COAL || rt == PT_BCOL)
+						parts[ri].temp = parts[i].temp;
+
+					if (rt < PT_NUM && ptypes[rt].hconduct && (rt!=PT_HSWC||parts[ri].life==10) && rt!=PT_FILT)
+						parts[i].temp = parts[ri].temp = restrict_flt((parts[ri].temp+parts[i].temp)/2, MIN_TEMP, MAX_TEMP);
 				}
+				if (rt==PT_CLNE || rt==PT_PCLN || rt==PT_BCLN || rt==PT_PBCN) {
+					if (!parts[ri].ctype)
+						parts[ri].ctype = t;
+				}
+				if (rt==PT_PRTI)
+				{
+					int nnx, count;
+					for (count=0; count<8; count++)
+					{
+						if (isign(x-nx)==isign(portal_rx[count]) && isign(y-ny)==isign(portal_ry[count]))
+							break;
+					}
+					count = count%8;
+					parts[ri].tmp = (int)((parts[ri].temp-73.15f)/100+1);
+					if (parts[ri].tmp>=CHANNELS) parts[ri].tmp = CHANNELS-1;
+					else if (parts[ri].tmp<0) parts[ri].tmp = 0;
+					for ( nnx=0; nnx<80; nnx++)
+						if (!portalp[parts[ri].tmp][count][nnx].type)
+						{
+							portalp[parts[ri].tmp][count][nnx] = parts[i];
+							kill_part(i);
+							return -1;
+						}
+				}
+				if ((rt==PT_PIPE || rt == PT_PPIP) && !(parts[ri].tmp&0xFF))
+				{
+					parts[ri].tmp =  (parts[ri].tmp&~0xFF) | t;
+					parts[ri].temp = parts[i].temp;
+					parts[ri].tmp2 = parts[i].life;
+					parts[ri].pavg[0] = parts[i].tmp;
+					parts[ri].pavg[1] = parts[i].ctype;
+					kill_part(i);
+					return -1;
+				}
+				if (t==PT_PHOT)
+					parts[i].ctype &= globalSim->elements[rt].PhotonReflectWavelengths;
+			}
 		}
 		return 0;
 	}
 
 	if (e == 2) //if occupy same space
 	{
-		if (parts[i].type == PT_PHOT && (r&0xFF)==PT_GLOW && !parts[r>>8].life)
-			if (rand() < RAND_MAX/30)
+		FOR_PMAP_POSITION(globalSim, nx, ny, rcount, ri, rnext)// TODO: not energy parts
+		{
+			rt = parts[ri].type;
+			if (t==PT_PHOT)
 			{
-				parts[r>>8].life = 120;
-				create_gain_photon(i);
+				parts[i].ctype &= globalSim->elements[rt].PhotonReflectWavelengths;
+				if (rt==PT_GLOW && !parts[ri].life)
+				{
+					if (rand() < RAND_MAX/30)
+					{
+						parts[ri].life = 120;
+						create_gain_photon(i);
+					}
+				}
+				if (rt==PT_BIZR || rt==PT_BIZRG || rt==PT_BIZRS)
+				{
+					part_change_type(i, x, y, PT_ELEC);
+					parts[i].ctype = 0;
+				}
+				if (rt==PT_INVIS && pv[ny/CELL][nx/CELL]<=4.0f && pv[ny/CELL][nx/CELL]>=-4.0f)
+				{
+					part_change_type(i,x,y,PT_NEUT);
+					parts[i].ctype = 0;
+				}
 			}
-		if (parts[i].type == PT_PHOT && (r&0xFF)==PT_FILT)
-		{
-			int temp_bin = (int)((parts[r>>8].temp-273.0f)*0.025f);
-			if (temp_bin < 0) temp_bin = 0;
-			if (temp_bin > 25) temp_bin = 25;
-			if(!parts[r>>8].tmp){
-				parts[i].ctype = 0x1F << temp_bin; //Assign Colour
-			} else if(parts[r>>8].tmp==1){
-				parts[i].ctype &= 0x1F << temp_bin; //Filter Colour
-			} else if(parts[r>>8].tmp==2){
-				parts[i].ctype |= 0x1F << temp_bin; //Add Colour
-			} else if(parts[r>>8].tmp==3){
-				parts[i].ctype &= ~(0x1F << temp_bin); //Subtract Colour
+			if ((t==PT_BIZR||t==PT_BIZRG||t==PT_PHOT) && rt==PT_FILT)
+			{
+				int temp_bin = (int)((parts[ri].temp-273.0f)*0.025f);
+				if (temp_bin < 0) temp_bin = 0;
+				if (temp_bin > 25) temp_bin = 25;
+				if(!parts[ri].tmp){
+					parts[i].ctype = 0x1F << temp_bin; //Assign Colour
+				} else if(parts[ri].tmp==1){
+					parts[i].ctype &= 0x1F << temp_bin; //Filter Colour
+				} else if(parts[ri].tmp==2){
+					parts[i].ctype |= 0x1F << temp_bin; //Add Colour
+				} else if(parts[ri].tmp==3){
+					parts[i].ctype &= ~(0x1F << temp_bin); //Subtract Colour
+				}
 			}
-		}
-		if (parts[i].type == PT_NEUT && (r&0xFF)==PT_GLAS) {
-			if (rand() < RAND_MAX/10)
-				create_cherenkov_photon(i);
-		}
-		if (parts[i].type == PT_PHOT && (r&0xFF)==PT_INVIS && pv[ny/CELL][nx/CELL]<=4.0f && pv[ny/CELL][nx/CELL]>=-4.0f) {
-			part_change_type(i,x,y,PT_NEUT);
-			parts[i].ctype = 0;
-		}
-		if ((parts[i].type==PT_BIZR||parts[i].type==PT_BIZRG) && (r&0xFF)==PT_FILT)
-		{
-			int temp_bin = (int)((parts[r>>8].temp-273.0f)*0.025f);
-			if (temp_bin < 0) temp_bin = 0;
-			if (temp_bin > 25) temp_bin = 25;
-			parts[i].ctype = 0x1F << temp_bin;
-		}
-		if (((r&0xFF)==PT_BIZR || (r&0xFF)==PT_BIZRG || (r&0xFF)==PT_BIZRS) && parts[i].type==PT_PHOT)
-		{
-			part_change_type(i, x, y, PT_ELEC);
-			parts[i].ctype = 0;
+			if (t == PT_NEUT && rt==PT_GLAS)
+			{
+				if (rand() < RAND_MAX/10)
+					create_cherenkov_photon(i);
+			}
 		}
 		return 1;
 	}
-	//else e=1 , we are trying to swap the particles, return 0 no swap/move, 1 is still overlap/move, because the swap takes place later
+	//else e=1 , we are trying to swap the particles
 
-	if (parts[i].type==PT_NEUT && (ptypes[r&0xFF].properties&PROP_NEUTABSORB))
-	{
-		kill_part(i);
+	if (t==PT_CNCT && y<ny && globalSim->pmap_find_one(x, y+1, PT_CNCT)>=0)//check below CNCT for another CNCT
 		return 0;
-	}
-	if ((r&0xFF)==PT_VOID || (r&0xFF)==PT_PVOD) //this is where void eats particles
+			
+	int srcNeutPenetrate = -1;
+	int destNeutPenetrate = -1;
+	bool srcPartFound = false;
+
+	// e=1 for neutron means that target material is NEUTPENETRATE, meaning it gets moved around when neutron passes
+	// First, look for NEUTPENETRATE or empty space at x,y
+	if (t==PT_NEUT && destNeutPenetrate>=0)
 	{
-		//void ctype already checked in eval_move
-		kill_part(i);
-		return 0;
-	}
-	if ((r&0xFF)==PT_BHOL || (r&0xFF)==PT_NBHL) //this is where blackhole eats particles
-	{
-		kill_part(i);
-		if (!legacy_enable)
+		FOR_PMAP_POSITION(globalSim, x, y, rcount, ri, rnext)// TODO: not energy parts
 		{
-			parts[r>>8].temp = restrict_flt(parts[r>>8].temp+parts[i].temp/2, MIN_TEMP, MAX_TEMP);//3.0f;
-		}
-
-		return 0;
-	}
-	if (((r&0xFF)==PT_WHOL||(r&0xFF)==PT_NWHL) && parts[i].type==PT_ANAR) //whitehole eats anar
-	{
-		kill_part(i);
-		if (!legacy_enable)
-		{
-			parts[r>>8].temp = restrict_flt(parts[r>>8].temp- (MAX_TEMP-parts[i].temp)/2, MIN_TEMP, MAX_TEMP);
-		}
-
-		return 0;
-	}
-	if ((r&0xFF)==PT_DEUT && parts[i].type==PT_ELEC)
-	{
-		if(parts[r>>8].life < 6000)
-			parts[r>>8].life += 1;
-		parts[r>>8].temp = 0;
-		kill_part(i);
-		return 0;
-	}
-	if (((r&0xFF)==PT_VIBR || (r&0xFF)==PT_BVBR) && (ptypes[parts[i].type].properties & TYPE_ENERGY))
-	{
-		parts[r>>8].tmp += 20;
-		kill_part(i);
-		return 0;
-	}
-
-	if (parts[i].type==PT_CNCT && y<ny && globalSim->pmap_find_one(x, y+1, PT_CNCT)>=0)//check below CNCT for another CNCT
-		return 0;
-
-	if ((bmap[y/CELL][x/CELL]==WL_EHOLE && !emap[y/CELL][x/CELL]) && !(bmap[ny/CELL][nx/CELL]==WL_EHOLE && !emap[ny/CELL][nx/CELL]))
-		return 0;
-
-	if(parts[i].type==PT_GBMB&&parts[i].life>0)
-		return 0;
-
-	e = r >> 8; //e is now the particle number at r (pmap[ny][nx])
-	if (r)//the swap part, if we make it this far, swap
-	{
-		if (parts[i].type==PT_NEUT) {
-			// target material is NEUTPENETRATE, meaning it gets moved around when neutron passes
-			unsigned s = pmap[y][x];
-			// TODO: loop through looking for PROP_NEUTPENETRATE, choose a random one (or move all)
-			if (s && !(ptypes[s&0xFF].properties&PROP_NEUTPENETRATE))
-				return 1; // if the element currently underneath neutron isn't NEUTPENETRATE, don't move anything except the neutron
-			// if nothing is currently underneath neutron, only move target particle
-			if (s)
+			if (globalSim->elements[parts[ri].type].Properties&PROP_NEUTPENETRATE)
 			{
-				globalSim->pmap_remove(s>>8, x, y);
-				globalSim->pmap_add(s>>8, nx, ny, parts[s>>8].type);
-				parts[s>>8].x = nx;
-				parts[s>>8].y = ny;
+				srcNeutPenetrate = ri;
+				break;
 			}
-			parts[e].x = x;
-			parts[e].y = y;
-			globalSim->pmap_remove(e, nx, ny);
-			globalSim->pmap_add(e, x, y, parts[e].type);
-			return 1;
+			else if (!(globalSim->elements[parts[ri].type].Properties&TYPE_ENERGY))
+			{
+				srcPartFound = true;
+				break;
+			}
 		}
-
-		globalSim->pmap_remove(e, nx, ny);
-		parts[e].x += x-nx;
-		parts[e].y += y-ny;
-		globalSim->pmap_add(e, (int)(parts[e].x+0.5f), (int)(parts[e].y+0.5f), parts[e].type);
 	}
+
+	FOR_PMAP_POSITION(globalSim, nx, ny, rcount, ri, rnext)// TODO: not energy parts
+	{
+		rt = parts[ri].type;
+		if (t==PT_NEUT && (ptypes[rt].properties&PROP_NEUTABSORB))
+		{
+			kill_part(i);
+			return -1;
+		}
+		if (rt==PT_VOID || rt==PT_PVOD) //this is where void eats particles
+		{
+			//void ctype already checked in eval_move
+			kill_part(i);
+			return -1;
+		}
+		if (rt==PT_BHOL || rt==PT_NBHL) //this is where blackhole eats particles
+		{
+			if (!legacy_enable)
+			{
+				parts[ri].temp = restrict_flt(parts[ri].temp+parts[i].temp/2, MIN_TEMP, MAX_TEMP);//3.0f;
+			}
+			kill_part(i);
+			return -1;
+		}
+		if ((rt==PT_WHOL||rt==PT_NWHL) && t==PT_ANAR) //whitehole eats anar
+		{
+			if (!legacy_enable)
+			{
+				parts[ri].temp = restrict_flt(parts[ri].temp- (MAX_TEMP-parts[i].temp)/2, MIN_TEMP, MAX_TEMP);
+			}
+			kill_part(i);
+			return -1;
+		}
+		if (rt==PT_DEUT && t==PT_ELEC)
+		{
+			if(parts[ri].life < 6000)
+				parts[ri].life += 1;
+			parts[ri].temp = 0;
+			kill_part(i);
+			return -1;
+		}
+		if ((rt==PT_VIBR || rt==PT_BVBR) && (ptypes[t].properties & TYPE_ENERGY))
+		{
+			parts[ri].tmp += 20;
+			kill_part(i);
+			return -1;
+		}
+		if ((bmap[y/CELL][x/CELL]==WL_EHOLE && !emap[y/CELL][x/CELL]) && !(bmap[ny/CELL][nx/CELL]==WL_EHOLE && !emap[ny/CELL][nx/CELL]))
+			return 0;
+
+		if(t==PT_GBMB&&parts[i].life>0)
+			return 0;
+		
+		if (t==PT_NEUT && destNeutPenetrate<0 && (globalSim->elements[rt].Properties&PROP_NEUTPENETRATE))
+			destNeutPenetrate = ri;
+
+		// Move all particles at the destination position that can be displaced by this particle
+		// For NEUTPENETRATE particles being displaced by a neutron, only move ones at nx,ny to x,y if there's currently a NEUTPENETRATE particle or empty space at x,y
+		if (!(globalSim->elements[rt].Properties&TYPE_ENERGY) && (t!=PT_NEUT || srcNeutPenetrate>=0 || !srcPartFound))
+		{
+			int tmpResult = can_move[t][rt];
+			if (tmpResult==3)
+				tmpResult = eval_move_special(t, nx, ny, ri, tmpResult);
+			if (tmpResult==1)
+			{
+				globalSim->pmap_remove(ri, nx, ny);
+				parts[ri].x += x-nx;
+				parts[ri].y += y-ny;
+				globalSim->pmap_add(ri, (int)(parts[ri].x+0.5f), (int)(parts[ri].y+0.5f), rt);
+			}
+		}
+	}
+	
+
+	if (t==PT_NEUT && srcNeutPenetrate>=0)
+	{
+		globalSim->pmap_remove(srcNeutPenetrate, x, y);
+		globalSim->pmap_add(srcNeutPenetrate, nx, ny, parts[srcNeutPenetrate].type);
+		parts[srcNeutPenetrate].x = nx;
+		parts[srcNeutPenetrate].y = ny;
+	}
+
 	return 1;
 }
 
@@ -558,7 +612,7 @@ int do_move(int i, int x, int y, float nxf, float nyf)
 	if (parts[i].type == PT_NONE)
 		return 0;
 	result = try_move(i, x, y, nx, ny);
-	if (result)
+	if (result>0)
 	{
 		int t = parts[i].type;
 		if (ny!=y || nx!=x)
@@ -928,6 +982,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 	{
 		bool energyParticleFound = false;
 		bool normalParticleFound = false;
+		bool actionDone = false;
 		int pmaptype;
 		FOR_PMAP_POSITION(globalSim, x, y, rcount, ri, rnext)
 		{
@@ -952,16 +1007,20 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 			)
 			{
 				parts[ri].ctype = t;
+				actionDone = true;
 				if (t==PT_LIFE && v<NGOLALT && pmaptype!=PT_STOR)
 					parts[ri].tmp = v;
 			}
 			else if (pmaptype == PT_DTEC && pmaptype != t)
 			{
 				parts[ri].ctype = t;
+				actionDone = true;
 				if (t==PT_LIFE && v<NGOLALT)
 					parts[ri].tmp = v;
 			}
 		}
+		if (actionDone)
+			return -1;
 		if (globalSim->elements[t].Properties & TYPE_ENERGY)
 		{
 			if (energyParticleFound)
@@ -1281,6 +1340,7 @@ void update_particles_i(pixel *vid, int start, int inc)
 	int surround[8];
 	int surround_hconduct[8];
 	int lighting_ok=1;
+	int moveRet;
 	unsigned int elem_properties;
 	float pGravX, pGravY, pGravD;
 	int excessive_stacking_found = 0;
@@ -2240,7 +2300,8 @@ killed:
 						clear_y = (int)(clear_yf+0.5f);
 						break;
 					}
-					if (fin_x<CELL || fin_y<CELL || fin_x>=XRES-CELL || fin_y>=YRES-CELL || pmap[fin_y][fin_x] || (bmap[fin_y/CELL][fin_x/CELL] && (bmap[fin_y/CELL][fin_x/CELL]==WL_DESTROYALL || !eval_move(t,fin_x,fin_y,NULL))))
+					// TODO: energy parts in pmap should not be counted as an obstacle
+					if (fin_x<CELL || fin_y<CELL || fin_x>=XRES-CELL || fin_y>=YRES-CELL || globalSim->pmap[fin_y][fin_x].count || (bmap[fin_y/CELL][fin_x/CELL] && (bmap[fin_y/CELL][fin_x/CELL]==WL_DESTROYALL || !eval_move(t,fin_x,fin_y,NULL))))
 					{
 						// found an obstacle
 						clear_xf = fin_xf-dx;
@@ -2278,18 +2339,21 @@ killed:
 			}
 			else if (ptypes[t].properties & TYPE_ENERGY)
 			{
-				if (t == PT_PHOT) {
+				if (t == PT_PHOT)
+				{
+					// refraction and total internal reflection
+
 					if (parts[i].flags&FLAG_SKIPMOVE)
 					{
 						parts[i].flags &= ~FLAG_SKIPMOVE;
 						continue;
 					}
 
-					rt = pmap[fin_y][fin_x] & 0xFF;
-					lt = pmap[y][x] & 0xFF;
+					int ri = globalSim->pmap_find_one(fin_x, fin_y, PT_GLAS);
+					int li = globalSim->pmap_find_one(x, y, PT_GLAS);
 
 					r = eval_move(PT_PHOT, fin_x, fin_y, NULL);
-					if (((rt==PT_GLAS && lt!=PT_GLAS) || (rt!=PT_GLAS && lt==PT_GLAS)) && r) {
+					if (r && ((ri>=0 && li<0) || (ri<0 && li>=0))) {
 						if (!get_normal_interp(REFRACT|t, parts[i].x, parts[i].y, parts[i].vx, parts[i].vy, &nrx, &nry)) {
 							kill_part(i);
 							continue;
@@ -2304,7 +2368,7 @@ killed:
 						nn *= nn;
 						nrx = -nrx;
 						nry = -nry;
-						if (rt==PT_GLAS && lt!=PT_GLAS)
+						if (ri>=0 && li<0) //if entering glass
 							nn = 1.0f/nn;
 						ct1 = parts[i].vx*nrx + parts[i].vy*nry;
 						ct2 = 1.0f - (nn*nn)*(1.0f-(ct1*ct1));
@@ -2328,15 +2392,14 @@ killed:
 				if (stagnant)//FLAG_STAGNANT set, was reflected on previous frame
 				{
 					// cast coords as int then back to float for compatibility with existing saves
-					if (!do_move(i, x, y, (float)fin_x, (float)fin_y) && parts[i].type) {
-						kill_part(i);
+					if ((moveRet=do_move(i, x, y, (float)fin_x, (float)fin_y))<=0 && parts[i].type) {
+						if (moveRet==0)
+							kill_part(i);
 						continue;
 					}
 				}
-				else if (!do_move(i, x, y, fin_xf, fin_yf))
+				else if (do_move(i, x, y, fin_xf, fin_yf)==0)
 				{
-					if (parts[i].type == PT_NONE)
-						continue;
 					// reflection
 					parts[i].flags |= FLAG_STAGNANT;
 					if (t==PT_NEUT && 100>(rand()%1000))
@@ -2344,21 +2407,6 @@ killed:
 						kill_part(i);
 						continue;
 					}
-					r = pmap[fin_y][fin_x];
-					
-					if (((r&0xFF)==PT_PIPE || (r&0xFF) == PT_PPIP) && !(parts[r>>8].tmp&0xFF))
-					{
-						parts[r>>8].tmp =  (parts[r>>8].tmp&~0xFF) | parts[i].type;
-						parts[r>>8].temp = parts[i].temp;
-						parts[r>>8].tmp2 = parts[i].life;
-						parts[r>>8].pavg[0] = parts[i].tmp;
-						parts[r>>8].pavg[1] = parts[i].ctype;
-						kill_part(i);
-						continue;
-					}
-
-					if (r & 0xFF)
-						parts[i].ctype &= globalSim->elements[r&0xFF].PhotonReflectWavelengths;
 
 					if (get_normal_interp(t, parts[i].x, parts[i].y, parts[i].vx, parts[i].vy, &nrx, &nry)) {
 						dp = nrx*parts[i].vx + nry*parts[i].vy;
@@ -2379,21 +2427,19 @@ killed:
 			else if (ptypes[t].falldown==0)
 			{
 				// gases and solids (but not powders)
-				if (!do_move(i, x, y, fin_xf, fin_yf))
+				if (do_move(i, x, y, fin_xf, fin_yf)==0)
 				{
-					if (parts[i].type == PT_NONE)
-						continue;
 					// can't move there, so bounce off
 					// TODO
 					if (fin_x>x+ISTP) fin_x=x+ISTP;
 					if (fin_x<x-ISTP) fin_x=x-ISTP;
 					if (fin_y>y+ISTP) fin_y=y+ISTP;
 					if (fin_y<y-ISTP) fin_y=y-ISTP;
-					if (do_move(i, x, y, 0.25f+(float)(2*x-fin_x), 0.25f+fin_y))
+					if (do_move(i, x, y, 0.25f+(float)(2*x-fin_x), 0.25f+fin_y)>0)
 					{
 						parts[i].vx *= ptypes[t].collision;
 					}
-					else if (do_move(i, x, y, 0.25f+fin_x, 0.25f+(float)(2*y-fin_y)))
+					else if (do_move(i, x, y, 0.25f+fin_x, 0.25f+(float)(2*y-fin_y))>0)
 					{
 						parts[i].vy *= ptypes[t].collision;
 					}
@@ -2412,19 +2458,23 @@ killed:
 						goto movedone;
 				}
 				// liquids and powders
-				if (!do_move(i, x, y, fin_xf, fin_yf))
+				if (do_move(i, x, y, fin_xf, fin_yf)==0)
 				{
-					if (parts[i].type == PT_NONE)
-						continue;
-					if (fin_x!=x && do_move(i, x, y, fin_xf, clear_yf))
+					if (fin_x!=x && (moveRet=do_move(i, x, y, fin_xf, clear_yf))!=0)
 					{
-						parts[i].vx *= ptypes[t].collision;
-						parts[i].vy *= ptypes[t].collision;
+						if (moveRet>0)
+						{
+							parts[i].vx *= ptypes[t].collision;
+							parts[i].vy *= ptypes[t].collision;
+						}
 					}
-					else if (fin_y!=y && do_move(i, x, y, clear_xf, fin_yf))
+					else if (fin_y!=y && (moveRet=do_move(i, x, y, clear_xf, fin_yf))!=0)
 					{
-						parts[i].vx *= ptypes[t].collision;
-						parts[i].vy *= ptypes[t].collision;
+						if (moveRet>0)
+						{
+							parts[i].vx *= ptypes[t].collision;
+							parts[i].vy *= ptypes[t].collision;
+						}
 					}
 					else
 					{
@@ -2443,19 +2493,25 @@ killed:
 								mv = fabsf(dx);
 							dx /= mv;
 							dy /= mv;
-							if (do_move(i, x, y, clear_xf+dx, clear_yf+dy))
+							if ((moveRet=do_move(i, x, y, clear_xf+dx, clear_yf+dy))!=0)
 							{
-								parts[i].vx *= ptypes[t].collision;
-								parts[i].vy *= ptypes[t].collision;
+								if (moveRet>0)
+								{
+									parts[i].vx *= ptypes[t].collision;
+									parts[i].vy *= ptypes[t].collision;
+								}
 								goto movedone;
 							}
 							swappage = dx;
 							dx = dy*r;
 							dy = -swappage*r;
-							if (do_move(i, x, y, clear_xf+dx, clear_yf+dy))
+							if ((moveRet=do_move(i, x, y, clear_xf+dx, clear_yf+dy))!=0)
 							{
-								parts[i].vx *= ptypes[t].collision;
-								parts[i].vy *= ptypes[t].collision;
+								if (moveRet>0)
+								{
+									parts[i].vx *= ptypes[t].collision;
+									parts[i].vy *= ptypes[t].collision;
+								}
 								goto movedone;
 							}
 						}
@@ -2473,40 +2529,54 @@ killed:
 
 							for (j=clear_x+r; j>=0 && j>=clear_x-rt && j<clear_x+rt && j<XRES; j+=r)
 							{
-								if (((pmap[fin_y][j]&0xFF)!=t || bmap[fin_y/CELL][j/CELL])
-									&& (s=do_move(i, x, y, (float)j, fin_yf)))
+								if ((globalSim->pmap_find_one(j, fin_y, t)<0 || bmap[fin_y/CELL][j/CELL])
+									&& (s=do_move(i, x, y, (float)j, fin_yf))!=0)
 								{
-									nx = (int)(parts[i].x+0.5f);
-									ny = (int)(parts[i].y+0.5f);
+									if (s>0)
+									{
+										nx = (int)(parts[i].x+0.5f);
+										ny = (int)(parts[i].y+0.5f);
+									}
 									break;
 								}
-								if (fin_y!=clear_y && ((pmap[clear_y][j]&0xFF)!=t || bmap[clear_y/CELL][j/CELL])
-									&& (s=do_move(i, x, y, (float)j, clear_yf)))
+								if (fin_y!=clear_y && (globalSim->pmap_find_one(j, clear_y, t)<0 || bmap[clear_y/CELL][j/CELL])
+									&& (s=do_move(i, x, y, (float)j, clear_yf))!=0)
 								{
-									nx = (int)(parts[i].x+0.5f);
-									ny = (int)(parts[i].y+0.5f);
+									if (s>0)
+									{
+										nx = (int)(parts[i].x+0.5f);
+										ny = (int)(parts[i].y+0.5f);
+									}
 									break;
 								}
-								if ((pmap[clear_y][j]&0xFF)!=t || (bmap[clear_y/CELL][j/CELL] && bmap[clear_y/CELL][j/CELL]!=WL_STREAM))
+								if (globalSim->pmap_find_one(j, clear_y, t)<0 || (bmap[clear_y/CELL][j/CELL] && bmap[clear_y/CELL][j/CELL]!=WL_STREAM))
 									break;
 							}
-							if (parts[i].vy>0)
-								r = 1;
-							else
-								r = -1;
-							if (s==1)
+							if (s==0)
+							{
+								parts[i].vx *= ptypes[t].collision;
+								parts[i].vy *= ptypes[t].collision;
+							}
+							else if (s==1)
+							{
+								if (parts[i].vy>0)
+									r = 1;
+								else
+									r = -1;
+								parts[i].vx *= ptypes[t].collision;
+								parts[i].vy *= ptypes[t].collision;
 								for (j=ny+r; j>=0 && j<YRES && j>=ny-rt && j<ny+rt; j+=r)
 								{
-									if (((pmap[j][nx]&0xFF)!=t || bmap[j/CELL][nx/CELL]) && do_move(i, nx, ny, (float)nx, (float)j))
+									bool tmp = (globalSim->pmap_find_one(nx, j, t)<0);
+									if ((tmp || bmap[j/CELL][nx/CELL]) && do_move(i, nx, ny, (float)nx, (float)j)!=0)
 										break;
-									if ((pmap[j][nx]&255)!=t || (bmap[j/CELL][nx/CELL] && bmap[j/CELL][nx/CELL]!=WL_STREAM))
+									if (tmp || (bmap[j/CELL][nx/CELL] && bmap[j/CELL][nx/CELL]!=WL_STREAM))
 										break;
 								}
-							else if (s==-1) {} // particle is out of bounds
-							else if ((clear_x!=x||clear_y!=y) && do_move(i, x, y, clear_xf, clear_yf)) {}
+							}
+							else if (s<0) {} // particle has been killed
+							else if ((clear_x!=x||clear_y!=y) && do_move(i, x, y, clear_xf, clear_yf)!=0) {}
 							else parts[i].flags |= FLAG_STAGNANT;
-							parts[i].vx *= ptypes[t].collision;
-							parts[i].vy *= ptypes[t].collision;
 						}
 						else if (ptypes[t].falldown>1 && fabsf(pGravX*parts[i].vx+pGravY*parts[i].vy)>fabsf(pGravY*parts[i].vx-pGravX*parts[i].vy))
 						{
@@ -2561,18 +2631,26 @@ killed:
 								ny = (int)(nyf+0.5f);
 								if (nx<0 || ny<0 || nx>=XRES || ny >=YRES)
 									break;
-								if ((pmap[ny][nx]&0xFF)!=t || bmap[ny/CELL][nx/CELL])
+								if (globalSim->pmap_find_one(nx,ny,t)<0 || bmap[ny/CELL][nx/CELL])
 								{
 									s = do_move(i, x, y, nxf, nyf);
-									if (s)
+									if (s!=0)
 									{
-										nx = (int)(parts[i].x+0.5f);
-										ny = (int)(parts[i].y+0.5f);
+										if (s>0)
+										{
+											nx = (int)(parts[i].x+0.5f);
+											ny = (int)(parts[i].y+0.5f);
+										}
 										break;
 									}
 									if (bmap[ny/CELL][nx/CELL]!=WL_STREAM)
 										break;
 								}
+							}
+							if (s>=0)
+							{
+								parts[i].vx *= ptypes[t].collision;
+								parts[i].vy *= ptypes[t].collision;
 							}
 							if (s==1)
 							{
@@ -2610,24 +2688,22 @@ killed:
 									ny = (int)(nyf+0.5f);
 									if (nx<0 || ny<0 || nx>=XRES || ny>=YRES)
 										break;
-									if ((pmap[ny][nx]&0xFF)!=t || bmap[ny/CELL][nx/CELL])
+									if (globalSim->pmap_find_one(nx,ny,t)<0 || bmap[ny/CELL][nx/CELL])
 									{
 										s = do_move(i, clear_x, clear_y, nxf, nyf);
-										if (s || bmap[ny/CELL][nx/CELL]!=WL_STREAM)
+										if (s!=0 || bmap[ny/CELL][nx/CELL]!=WL_STREAM)
 											break;
 									}
 								}
 							}
-							else if (s==-1) {} // particle is out of bounds
+							else if (s<0) {} // particle has been killed
 							else if ((clear_x!=x||clear_y!=y) && do_move(i, x, y, clear_xf, clear_yf)) {}
 							else parts[i].flags |= FLAG_STAGNANT;
-							parts[i].vx *= ptypes[t].collision;
-							parts[i].vy *= ptypes[t].collision;
 						}
 						else
 						{
 							// if interpolation was done, try moving to last clear position
-							if ((clear_x!=x||clear_y!=y) && do_move(i, x, y, clear_xf, clear_yf)) {}
+							if ((clear_x!=x||clear_y!=y) && do_move(i, x, y, clear_xf, clear_yf)!=0) {}
 							else parts[i].flags |= FLAG_STAGNANT;
 							parts[i].vx *= ptypes[t].collision;
 							parts[i].vy *= ptypes[t].collision;

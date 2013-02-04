@@ -17,38 +17,39 @@
 
 int H2_update(UPDATE_FUNC_ARGS)
 {
-	int r,rx,ry,rt;
+	int rx,ry,rt;
+	int rcount, ri, rnext;
 	if (parts[i].temp > 2273.15 && pv[y/CELL][x/CELL] > 50.0f)
 		parts[i].tmp = 1;
 	for (rx=-2; rx<3; rx++)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				rt = (r&0xFF);
-				if (!r)
-					continue;
-				if (pv[y/CELL][x/CELL] > 8.0f && rt == PT_DESL) // This will not work. DESL turns to fire above 5.0 pressure
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					part_change_type(r>>8,x+rx,y+ry,PT_WATR);
-					part_change_type(i,x,y,PT_OIL);
-				}
-				if (parts[r>>8].temp > 2273.15)// && pv[y/CELL][x/CELL] > 50.0f)
-					continue;
-				if (parts[i].temp < 2273.15)
-				{
-					if (rt==PT_FIRE)
+					rt = parts[ri].type;
+					if (pv[y/CELL][x/CELL] > 8.0f && rt == PT_DESL) // This will not work well. DESL turns to fire above 5.0 pressure
 					{
-						parts[r>>8].temp=2473.15;
-						if(parts[r>>8].tmp&0x02)
-						parts[r>>8].temp=3473;
-						parts[r>>8].tmp |= 1;
+						part_change_type(ri,x+rx,y+ry,PT_WATR);
+						part_change_type(i,x,y,PT_OIL);
 					}
-					if (rt==PT_FIRE || rt==PT_PLSM || rt==PT_LAVA)
+					if (parts[ri].temp > 2273.15)// && pv[y/CELL][x/CELL] > 50.0f)
+						continue;
+					if (parts[i].temp < 2273.15)
 					{
-						sim->part_create(i,x,y,PT_FIRE);
-						parts[i].temp+=(rand()/(RAND_MAX/100));
-						parts[i].tmp |= 1;
+						if (rt==PT_FIRE)
+						{
+							parts[ri].temp=2473.15;
+							if(parts[ri].tmp&0x02)
+							parts[ri].temp=3473;
+							parts[ri].tmp |= 1;
+						}
+						if (rt==PT_FIRE || rt==PT_PLSM || rt==PT_LAVA)
+						{
+							sim->part_create(i,x,y,PT_FIRE);
+							parts[i].temp+=(rand()/(RAND_MAX/100));
+							parts[i].tmp |= 1;
+						}
 					}
 				}
 			}

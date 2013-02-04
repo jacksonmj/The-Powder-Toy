@@ -17,7 +17,8 @@
 
 int PHOT_update(UPDATE_FUNC_ARGS)
 {
-	int r, rt, rx, ry;
+	int rt, rx, ry;
+	int rcount, ri, rnext;
 	float rr, rrr;
 	parts[i].pavg[0] = x;
 	parts[i].pavg[1] = y;
@@ -30,34 +31,35 @@ int PHOT_update(UPDATE_FUNC_ARGS)
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry)) {
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if ((r&0xFF)==PT_ISOZ && 5>(rand()%2000))
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					parts[i].vx *= 0.90;
-					parts[i].vy *= 0.90;
-					sim->part_create(r>>8, x+rx, y+ry, PT_PHOT);
-					rrr = (rand()%360)*3.14159f/180.0f;
-					rr = (rand()%128+128)/127.0f;
-					parts[r>>8].vx = rr*cosf(rrr);
-					parts[r>>8].vy = rr*sinf(rrr);
-					pv[y/CELL][x/CELL] -= 15.0f * CFDS;
-				}
-				if ((r&0xFF)==PT_ISZS && 5>(rand()%2000))
-				{
-					parts[i].vx *= 0.90;
-					parts[i].vy *= 0.90;
-					sim->part_create(r>>8, x+rx, y+ry, PT_PHOT);
-					rr = (rand()%228+128)/127.0f;
-					rrr = (rand()%360)*3.14159f/180.0f;
-					parts[r>>8].vx = rr*cosf(rrr);
-					parts[r>>8].vy = rr*sinf(rrr);
-					pv[y/CELL][x/CELL] -= 15.0f * CFDS;
+					rt = parts[ri].type;
+					if (rt==PT_ISOZ && 5>(rand()%2000))
+					{
+						parts[i].vx *= 0.90;
+						parts[i].vy *= 0.90;
+						sim->part_create(ri, x+rx, y+ry, PT_PHOT);
+						rrr = (rand()%360)*3.14159f/180.0f;
+						rr = (rand()%128+128)/127.0f;
+						parts[ri].vx = rr*cosf(rrr);
+						parts[ri].vy = rr*sinf(rrr);
+						pv[y/CELL][x/CELL] -= 15.0f * CFDS;
+					}
+					if (rt==PT_ISZS && 5>(rand()%2000))
+					{
+						parts[i].vx *= 0.90;
+						parts[i].vy *= 0.90;
+						sim->part_create(ri, x+rx, y+ry, PT_PHOT);
+						rr = (rand()%228+128)/127.0f;
+						rrr = (rand()%360)*3.14159f/180.0f;
+						parts[ri].vx = rr*cosf(rrr);
+						parts[ri].vy = rr*sinf(rrr);
+						pv[y/CELL][x/CELL] -= 15.0f * CFDS;
+					}
 				}
 			}
-	r = pmap[y][x];
-	if((r&0xFF) == PT_QRTZ && r)// && parts[i].ctype==0x3FFFFFFF)
+	ri = sim->pmap_find_one(x, y, PT_QRTZ);
+	if(ri>=0)// && parts[i].ctype==0x3FFFFFFF)
 	{
 		float a = (rand()%360)*3.14159f/180.0f;
 		parts[i].vx = 3.0f*cosf(a);

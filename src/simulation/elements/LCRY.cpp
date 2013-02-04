@@ -17,7 +17,8 @@
 
 int LCRY_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry;
+	int rx, ry;
+	int rcount, ri, rnext;
 	if(parts[i].tmp==1 || parts[i].tmp==0)
 	{
 		if(parts[i].tmp==1)
@@ -36,12 +37,12 @@ int LCRY_update(UPDATE_FUNC_ARGS)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					r = pmap[y+ry][x+rx];
-					if (!r)
-						continue;
-					if ((r&0xFF)==PT_LCRY && parts[r>>8].tmp == 3)
+					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 					{
-						parts[r>>8].tmp = 1;
+						if (parts[ri].type==PT_LCRY && parts[ri].tmp == 3)
+						{
+							parts[ri].tmp = 1;
+						}
 					}
 				}
 	}
@@ -63,12 +64,12 @@ int LCRY_update(UPDATE_FUNC_ARGS)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					r = pmap[y+ry][x+rx];
-					if (!r)
-						continue;
-					if ((r&0xFF)==PT_LCRY && parts[r>>8].tmp == 0)
+					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 					{
-						parts[r>>8].tmp = 2;
+						if (parts[ri].type==PT_LCRY && parts[ri].tmp == 0)
+						{
+							parts[ri].tmp = 2;
+						}
 					}
 				}
 	}

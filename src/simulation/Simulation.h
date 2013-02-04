@@ -37,7 +37,7 @@
 // If any particle in the current position is killed or moved except particle r_i and particles that have already been iterated over, then you must break out of the pmap position loop. 
 #define FOR_PMAP_POSITION(sim, x, y, r_count, r_i, r_next) for (r_count=(sim)->pmap[(y)][(x)].count, r_i=(sim)->pmap[(y)][(x)].first, r_next = (r_count ? (sim)->parts[r_i].pmap_next : -1); r_count; r_count--, r_i=r_next, r_next=(sim)->parts[r_i].pmap_next)
 // exactly the same, except for use in Simulation class member functions
-#define FOR_PMAP_POSITION_SIM(x, y, r_count, r_i, r_next) for (r_count=pmap[y][x].count, r_i=globalSim->pmap[y][x].first; r_count; r_count--, r_i=globalSim->parts[r_i].pmap_next)
+#define FOR_PMAP_POSITION_SIM(x, y, r_count, r_i, r_next) for (r_count=pmap[(y)][(x)].count, r_i=pmap[(y)][(x)].first, r_next = (r_count ? parts[r_i].pmap_next : -1); r_count; r_count--, r_i=r_next, r_next=parts[r_i].pmap_next)
 
 class ElementDataContainer;
 struct pmap_entry

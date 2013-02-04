@@ -17,19 +17,20 @@
 
 int GLOW_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry;
+	int rx, ry;
+	int rcount, ri, rnext;
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if ((r&0xFF)==PT_WATR&&5>(rand()%2000))
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					parts[i].type = PT_NONE;
-					part_change_type(r>>8,x+rx,y+ry,PT_DEUT);
-					parts[r>>8].life = 10;
+					if (parts[ri].type==PT_WATR&&5>(rand()%2000))
+					{
+						parts[i].type = PT_NONE;
+						part_change_type(ri,x+rx,y+ry,PT_DEUT);
+						parts[ri].life = 10;
+					}
 				}
 			}
 	parts[i].ctype = pv[y/CELL][x/CELL]*16;

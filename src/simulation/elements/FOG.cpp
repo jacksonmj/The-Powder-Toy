@@ -17,21 +17,23 @@
 
 int FOG_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry;
+	int rx, ry, rt;
+	int rcount, ri, rnext;
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if (ptypes[r&0xFF].state==ST_SOLID&&5>=rand()%50&&parts[i].life==0&&!((r&0xFF)==PT_CLNE||(r&0xFF)==PT_PCLN)) // TODO: should this also exclude BCLN?
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					part_change_type(i,x,y,PT_RIME);
-				}
-				if ((r&0xFF)==PT_SPRK)
-				{
-					parts[i].life += rand()%20;
+					rt = parts[ri].type;
+					if (ptypes[rt].state==ST_SOLID&&5>=rand()%50&&parts[i].life==0&&!(rt==PT_CLNE||rt==PT_PCLN)) // TODO: should this also exclude BCLN?
+					{
+						part_change_type(i,x,y,PT_RIME);
+					}
+					if (rt==PT_SPRK)
+					{
+						parts[i].life += rand()%20;
+					}
 				}
 			}
 	return 0;

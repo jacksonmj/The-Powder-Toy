@@ -17,24 +17,26 @@
 
 int IRON_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry;
+	int rx, ry, rt;
+	int rcount, ri, rnext;
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if ((((r&0xFF) == PT_SALT && 15>(rand()/(RAND_MAX/700))) ||
-				        ((r&0xFF) == PT_SLTW && 30>(rand()/(RAND_MAX/2000))) ||
-				        ((r&0xFF) == PT_WATR && 5 >(rand()/(RAND_MAX/6000))) ||
-				        ((r&0xFF) == PT_O2   && 2 >(rand()/(RAND_MAX/500))) ||
-				        ((r&0xFF) == PT_LO2))&&
-				        (!(parts[i].life))
-				   )
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					part_change_type(i,x,y,PT_BMTL);
-					parts[i].tmp=(rand()/(RAND_MAX/10))+20;
+					rt = parts[ri].type;
+					if (((rt == PT_SALT && 15>(rand()/(RAND_MAX/700))) ||
+							(rt == PT_SLTW && 30>(rand()/(RAND_MAX/2000))) ||
+							(rt == PT_WATR && 5 >(rand()/(RAND_MAX/6000))) ||
+							(rt == PT_O2   && 2 >(rand()/(RAND_MAX/500))) ||
+							(rt == PT_LO2))&&
+							(!(parts[i].life))
+					   )
+					{
+						part_change_type(i,x,y,PT_BMTL);
+						parts[i].tmp=(rand()/(RAND_MAX/10))+20;
+					}
 				}
 			}
 	return 0;

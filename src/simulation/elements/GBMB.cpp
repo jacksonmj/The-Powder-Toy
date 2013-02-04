@@ -17,21 +17,23 @@
 
 int GBMB_update(UPDATE_FUNC_ARGS)
 {
-	int rx,ry,r;
+	int rx,ry,rt;
+	int rcount, ri, rnext;
 	if (parts[i].life<=0)
 	{
 		for (rx=-2; rx<3; rx++)
 			for (ry=-2; ry<3; ry++)
 			{
-				r = pmap[y+ry][x+rx];
-				if(!r)
-					continue;
-				if((r&0xFF)!=PT_BOMB && (r&0xFF)!=PT_GBMB &&
-				   (r&0xFF)!=PT_CLNE && (r&0xFF)!=PT_PCLN &&
-				   (r&0xFF)!=PT_DMND)
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					parts[i].life=60;
-					break;
+					rt = parts[ri].type;
+					if(rt!=PT_BOMB && rt!=PT_GBMB &&
+					   rt!=PT_CLNE && rt!=PT_PCLN &&
+					   rt!=PT_DMND)
+					{
+						parts[i].life=60;
+						break;
+					}
 				}
 			}
 	}

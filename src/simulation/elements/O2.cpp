@@ -17,31 +17,31 @@
 
 int O2_update(UPDATE_FUNC_ARGS)
 {
-	int r,rx,ry;
+	int rx,ry,rt;
+	int rcount, ri, rnext;
 	if (parts[i].temp < 9273.15)
 	{
 		for (rx=-2; rx<3; rx++)
 			for (ry=-2; ry<3; ry++)
 				if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					r = pmap[y+ry][x+rx];
-					if (!r)
-						continue;
-
-					if ((r&0xFF)==PT_FIRE)
+					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 					{
-						parts[r>>8].temp+=(rand()/(RAND_MAX/100));
-						if(parts[r>>8].tmp&0x01)
-						parts[r>>8].temp=3473;
-						parts[r>>8].tmp |= 2;
+						rt = parts[ri].type;
+						if (rt==PT_FIRE)
+						{
+							parts[ri].temp+=(rand()/(RAND_MAX/100));
+							if(parts[ri].tmp&0x01)
+							parts[ri].temp=3473;
+							parts[ri].tmp |= 2;
+						}
+						if (rt==PT_FIRE || rt==PT_PLSM)
+						{
+							sim->part_create(i,x,y,PT_FIRE);
+							parts[i].temp+=(rand()/(RAND_MAX/100));
+							parts[i].tmp |= 2;
+						}
 					}
-					if ((r&0xFF)==PT_FIRE || (r&0xFF)==PT_PLSM)
-					{
-						sim->part_create(i,x,y,PT_FIRE);
-						parts[i].temp+=(rand()/(RAND_MAX/100));
-						parts[i].tmp |= 2;
-					}
-
 				}
 	}
 	else if (parts[i].temp > 9973.15 && pv[y/CELL][x/CELL] > 250.0f && fabsf(gravx[((y/CELL)*(XRES/CELL))+(x/CELL)]) + fabsf(gravy[((y/CELL)*(XRES/CELL))+(x/CELL)]) > 20)

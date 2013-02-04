@@ -17,7 +17,8 @@
 
 int GPMP_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry;
+	int rx, ry;
+	int rcount, ri, rnext;
 	if (parts[i].life>0 && parts[i].life!=10)
 		parts[i].life--;
 	if (parts[i].life==10)
@@ -32,15 +33,15 @@ int GPMP_update(UPDATE_FUNC_ARGS)
 			for (ry=-2; ry<3; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					r = pmap[y+ry][x+rx];
-					if (!r)
-						continue;
-					if ((r&0xFF)==PT_GPMP)
+					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 					{
-						if (parts[r>>8].life<10&&parts[r>>8].life>0)
-							parts[i].life = 9;
-						else if (parts[r>>8].life==0)
-							parts[r>>8].life = 10;
+						if (parts[ri].type==PT_GPMP)
+						{
+							if (parts[ri].life<10&&parts[ri].life>0)
+								parts[i].life = 9;
+							else if (parts[ri].life==0)
+								parts[ri].life = 10;
+						}
 					}
 				}
 	}
