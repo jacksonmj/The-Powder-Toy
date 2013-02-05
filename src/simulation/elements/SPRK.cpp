@@ -160,7 +160,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 				if (rt == PT_PPIP && parts[i].life == 3 && pavg!=PT_INSL)
 				{
 					if (ct == PT_NSCN || ct == PT_PSCN || ct == PT_INST)
-						PPIP_flood_trigger(x+rx, y+ry, ct);
+						PPIP_flood_trigger(sim, x+rx, y+ry, ct);
 				}
 
 				// ct = spark from material, rt = spark to material. Make conduct_sprk = 0 if conduction not allowed

@@ -30,7 +30,8 @@ particle portalp[CHANNELS][8][80];
 
 int PRTI_update(UPDATE_FUNC_ARGS)
 {
-	int r, nnx, rx, ry, fe = 0;
+	int r, nnx, rx, ry, rt, fe = 0;
+	int rcount, ri, rnext;
 	int count =0;
 	parts[i].tmp = (int)((parts[i].temp-73.15f)/100+1);
 	if (parts[i].tmp>=CHANNELS) parts[i].tmp = CHANNELS-1;
@@ -39,36 +40,36 @@ int PRTI_update(UPDATE_FUNC_ARGS)
 	{
 		rx = portal_rx[count];
 		ry = portal_ry[count];
-			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+		if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+		{
+			if (!sim->pmap[y+ry][x+rx].count) fe = 1;
+			FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					fe = 1;
-				if (!r || (r&0xFF)==PT_PRTI || (r&0xFF)==PT_PRTO || (!(ptypes[r&0xFF].properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY)) && (r&0xFF)!=PT_SPRK))
+				rt = parts[ri].type;
+				if (rt==PT_PRTI || rt==PT_PRTO || (!(ptypes[rt].properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY)) && rt!=PT_SPRK))
 				{
-					r = photons[y+ry][x+rx];
-					if (!r || (r&0xFF)==PT_PRTI || (r&0xFF)==PT_PRTO || (!(ptypes[r&0xFF].properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY)) && (r&0xFF)!=PT_SPRK))
-						continue;
+					continue;
 				}
 
-				if ((r&0xFF)==PT_STKM || (r&0xFF)==PT_STKM2 || (r&0xFF)==PT_FIGH)
+				if (rt==PT_STKM || rt==PT_STKM2 || rt==PT_FIGH)
 					continue;// Handling these is a bit more complicated, and is done in STKM_interact()
 
-				if ((r&0xFF) == PT_SOAP)
-					detach(r>>8);
+				if (rt == PT_SOAP)
+					detach(ri);
 
 				for ( nnx=0; nnx<80; nnx++)
 					if (!portalp[parts[i].tmp][count][nnx].type)
 					{
-						portalp[parts[i].tmp][count][nnx] = parts[r>>8];
-						if ((r&0xFF)==PT_SPRK)
-							part_change_type(r>>8,x+rx,y+ry,parts[r>>8].ctype);
+						portalp[parts[i].tmp][count][nnx] = parts[ri];
+						if (rt==PT_SPRK)
+							part_change_type(ri,x+rx,y+ry,parts[ri].ctype);
 						else
-							kill_part(r>>8);
+							kill_part(ri);
 						fe = 1;
 						break;
 					}
 			}
+		}
 	}
 
 

@@ -33,84 +33,86 @@ int PRTO_update(UPDATE_FUNC_ARGS)
 	{
 		rx = portal_rx[count];
 		ry = portal_ry[count];
-			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+		if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+		{
+			if (!sim->pmap[y+ry][x+rx].count) fe = 1;
+			// TODO: if (!r)
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					fe = 1;
-				if (r)
-					continue;
-				if (!r)
+				for ( nnx =0 ; nnx<80; nnx++)
 				{
-					for ( nnx =0 ; nnx<80; nnx++)
+					int randomness = (count + rand()%3-1 + 4)%8;//add -1,0,or 1 to count
+					if (portalp[parts[i].tmp][randomness][nnx].type==PT_SPRK)// TODO: make it look better, spark creation
 					{
-						int randomness = (count + rand()%3-1 + 4)%8;//add -1,0,or 1 to count
-						if (portalp[parts[i].tmp][randomness][nnx].type==PT_SPRK)// TODO: make it look better, spark creation
+						// TODO: change these create_parts
+						create_part(-1,x+1,y,PT_SPRK);
+						create_part(-1,x+1,y+1,PT_SPRK);
+						create_part(-1,x+1,y-1,PT_SPRK);
+						create_part(-1,x,y-1,PT_SPRK);
+						create_part(-1,x,y+1,PT_SPRK);
+						create_part(-1,x-1,y+1,PT_SPRK);
+						create_part(-1,x-1,y,PT_SPRK);
+						create_part(-1,x-1,y-1,PT_SPRK);
+						portalp[parts[i].tmp][randomness][nnx] = emptyparticle;
+						break;
+					}
+					else if (portalp[parts[i].tmp][randomness][nnx].type)
+					{
+						if (portalp[parts[i].tmp][randomness][nnx].type==PT_STKM)
+							player.spwn = 0;
+						if (portalp[parts[i].tmp][randomness][nnx].type==PT_STKM2)
+							player2.spwn = 0;
+						if (portalp[parts[i].tmp][randomness][nnx].type==PT_FIGH)
 						{
-							// TODO: change these create_parts
-							create_part(-1,x+1,y,PT_SPRK);
-							create_part(-1,x+1,y+1,PT_SPRK);
-							create_part(-1,x+1,y-1,PT_SPRK);
-							create_part(-1,x,y-1,PT_SPRK);
-							create_part(-1,x,y+1,PT_SPRK);
-							create_part(-1,x-1,y+1,PT_SPRK);
-							create_part(-1,x-1,y,PT_SPRK);
-							create_part(-1,x-1,y-1,PT_SPRK);
-							portalp[parts[i].tmp][randomness][nnx] = emptyparticle;
-							break;
+							fighcount--;
+							fighters[(unsigned char)portalp[parts[i].tmp][randomness][nnx].tmp].spwn = 0;
 						}
-						else if (portalp[parts[i].tmp][randomness][nnx].type)
+						np = sim->part_create(-1,x+rx,y+ry,portalp[parts[i].tmp][randomness][nnx].type);
+						if (np<0)
 						{
 							if (portalp[parts[i].tmp][randomness][nnx].type==PT_STKM)
-								player.spwn = 0;
+								player.spwn = 1;
 							if (portalp[parts[i].tmp][randomness][nnx].type==PT_STKM2)
-								player2.spwn = 0;
+								player2.spwn = 1;
 							if (portalp[parts[i].tmp][randomness][nnx].type==PT_FIGH)
 							{
-								fighcount--;
-								fighters[(unsigned char)portalp[parts[i].tmp][randomness][nnx].tmp].spwn = 0;
-							}
-							np = sim->part_create(-1,x+rx,y+ry,portalp[parts[i].tmp][randomness][nnx].type);
-							if (np<0)
-							{
-								if (portalp[parts[i].tmp][randomness][nnx].type==PT_STKM)
-									player.spwn = 1;
-								if (portalp[parts[i].tmp][randomness][nnx].type==PT_STKM2)
-									player2.spwn = 1;
-								if (portalp[parts[i].tmp][randomness][nnx].type==PT_FIGH)
-								{
-									fighcount++;
-									fighters[(unsigned char)portalp[parts[i].tmp][randomness][nnx].tmp].spwn = 1;
-								}
-								continue;
-							}
-							if (parts[np].type==PT_FIGH)
-							{
-								// Release the fighters[] element allocated by part_create, the one reserved when the fighter went into the portal will be used
-								fighters[(unsigned char)parts[np].tmp].spwn = 0;
+								fighcount++;
 								fighters[(unsigned char)portalp[parts[i].tmp][randomness][nnx].tmp].spwn = 1;
 							}
-							if (portalp[parts[i].tmp][randomness][nnx].vx == 0.0f && portalp[parts[i].tmp][randomness][nnx].vy == 0.0f)
-							{
-								// particles that have passed from PIPE into PRTI have lost their velocity, so use the velocity of the newly created particle if the particle in the portal has no velocity
-								float tmp_vx = parts[np].vx;
-								float tmp_vy = parts[np].vy;
-								parts[np] = portalp[parts[i].tmp][randomness][nnx];
-								parts[np].vx = tmp_vx;
-								parts[np].vy = tmp_vy;
-							}
-							else
-							{
-								parts[np] = portalp[parts[i].tmp][randomness][nnx];
-							}
-							parts[np].x = x+rx;
-							parts[np].y = y+ry;
-							portalp[parts[i].tmp][randomness][nnx] = emptyparticle;
-							break;
+							continue;
 						}
+						if (parts[np].type==PT_FIGH)
+						{
+							// Release the fighters[] element allocated by part_create, the one reserved when the fighter went into the portal will be used
+							fighters[(unsigned char)parts[np].tmp].spwn = 0;
+							fighters[(unsigned char)portalp[parts[i].tmp][randomness][nnx].tmp].spwn = 1;
+						}
+
+						// Don't overwrite pmap links with old values from the stored particle in the portal, otherwise crashes are likely
+						int pmap_next = parts[np].pmap_next;
+						int pmap_prev = parts[np].pmap_prev;
+						if (portalp[parts[i].tmp][randomness][nnx].vx == 0.0f && portalp[parts[i].tmp][randomness][nnx].vy == 0.0f)
+						{
+							// particles that have passed from PIPE into PRTI have lost their velocity, so use the velocity of the newly created particle if the particle in the portal has no velocity
+							float tmp_vx = parts[np].vx;
+							float tmp_vy = parts[np].vy;
+							parts[np] = portalp[parts[i].tmp][randomness][nnx];
+							parts[np].vx = tmp_vx;
+							parts[np].vy = tmp_vy;
+						}
+						else
+						{
+							parts[np] = portalp[parts[i].tmp][randomness][nnx];
+						}
+						parts[np].pmap_next = pmap_next;
+						parts[np].pmap_prev = pmap_prev;
+						parts[np].x = x+rx;
+						parts[np].y = y+ry;
+						portalp[parts[i].tmp][randomness][nnx].type = 0;
+						break;
 					}
 				}
 			}
+		}
 	}
 	if (fe) {
 		int orbd[4] = {0, 0, 0, 0};	//Orbital distances

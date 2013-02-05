@@ -16,13 +16,13 @@
 #include "simulation/ElementsCommon.h"
 
 int SHLD3_update(UPDATE_FUNC_ARGS) {
-	int r, nnx, nny, rx, ry, np;
+	int nnx, nny, rx, ry, np;
+	int rcount, ri, rnext;
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
+				// TODO: if (!r) pmap
 				{
 					if (1>rand()%2500)
 					{
@@ -31,33 +31,34 @@ int SHLD3_update(UPDATE_FUNC_ARGS) {
 						parts[np].life=7;
 						part_change_type(i,x,y,PT_SHLD2);
 					}
-					else
-						continue;
 
 				}
-				if ((r&0xFF)==PT_SHLD1 && parts[i].life>3)
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					part_change_type(r>>8,x+rx,y+ry,PT_SHLD2);
-					parts[r>>8].life=7;
-				}
-				else if ((r&0xFF)==PT_SPRK&&parts[i].life==0)
-				{
-					if (18>rand()%3000&&parts[i].life==0)
+					if (parts[ri].type==PT_SHLD1 && parts[i].life>3)
 					{
-						part_change_type(i,x,y,PT_SHLD4);
-						parts[i].life = 7;
+						part_change_type(ri,x+rx,y+ry,PT_SHLD2);
+						parts[ri].life=7;
 					}
-					for ( nnx=-1; nnx<2; nnx++)
-						for ( nny=-1; nny<2; nny++)
+					else if (parts[ri].type==PT_SPRK&&parts[i].life==0)
+					{
+						if (18>rand()%3000&&parts[i].life==0)
 						{
-
-							if (!pmap[y+ry+nny][x+rx+nnx])
-							{
-								np = sim->part_create(-1,x+rx+nnx,y+ry+nny,PT_SHLD1);
-								if (np<0) continue;
-								parts[np].life=7;
-							}
+							part_change_type(i,x,y,PT_SHLD4);
+							parts[i].life = 7;
 						}
+						for ( nnx=-1; nnx<2; nnx++)
+							for ( nny=-1; nny<2; nny++)
+							{
+
+								//TODO: if (!pmap[y+ry+nny][x+rx+nnx])
+								{
+									np = sim->part_create(-1,x+rx+nnx,y+ry+nny,PT_SHLD1);
+									if (np<0) continue;
+									parts[np].life=7;
+								}
+							}
+					}
 				}
 			}
 	return 0;

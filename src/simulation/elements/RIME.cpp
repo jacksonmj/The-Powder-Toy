@@ -17,25 +17,26 @@
 
 int RIME_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry;
+	int rx, ry;
+	int rcount, ri, rnext;
 	parts[i].vx = 0;
 	parts[i].vy = 0;
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if ((r&0xFF)==PT_SPRK)
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					part_change_type(i,x,y,PT_FOG);
-					parts[i].life = rand()%50 + 60;
-				}
-				else if ((r&0xFF)==PT_FOG&&parts[r>>8].life>0)
-				{
-					part_change_type(i,x,y,PT_FOG);
-					parts[i].life = parts[r>>8].life;
+					if (parts[ri].type==PT_SPRK)
+					{
+						part_change_type(i,x,y,PT_FOG);
+						parts[i].life = rand()%50 + 60;
+					}
+					else if (parts[ri].type==PT_FOG&&parts[ri].life>0)
+					{
+						part_change_type(i,x,y,PT_FOG);
+						parts[i].life = parts[ri].life;
+					}
 				}
 			}
 	return 0;

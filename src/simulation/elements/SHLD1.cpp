@@ -15,36 +15,38 @@
 
 #include "simulation/ElementsCommon.h"
 
-int SHLD1_update(UPDATE_FUNC_ARGS) {
-	int r, nnx, nny, rx, ry;
+int SHLD1_update(UPDATE_FUNC_ARGS)
+{
+	int nnx, nny, rx, ry;
+	int rcount, ri, rnext;
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				else if ((r&0xFF)==PT_SPRK&&parts[i].life==0)
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					if (55>rand()%200&&parts[i].life==0)
+					if (parts[ri].type==PT_SPRK&&parts[i].life==0)
+					{
+						if (55>rand()%200&&parts[i].life==0)
+						{
+							part_change_type(i,x,y,PT_SHLD2);
+							parts[i].life = 7;
+						}
+						for ( nnx=-1; nnx<2; nnx++)
+							for ( nny=-1; nny<2; nny++)
+							{
+								//TODO: if (!pmap[y+ry+nny][x+rx+nnx])
+								{
+									sim->part_create(-1,x+rx+nnx,y+ry+nny,PT_SHLD1);
+									//parts[pmap[y+ny+nny][x+nx+nnx]>>8].life=7;
+								}
+							}
+					}
+					else if (parts[ri].type==PT_SHLD3&&4>rand()%10)
 					{
 						part_change_type(i,x,y,PT_SHLD2);
 						parts[i].life = 7;
 					}
-					for ( nnx=-1; nnx<2; nnx++)
-						for ( nny=-1; nny<2; nny++)
-						{
-							if (!pmap[y+ry+nny][x+rx+nnx])
-							{
-								sim->part_create(-1,x+rx+nnx,y+ry+nny,PT_SHLD1);
-								//parts[pmap[y+ny+nny][x+nx+nnx]>>8].life=7;
-							}
-						}
-				}
-				else if ((r&0xFF)==PT_SHLD3&&4>rand()%10)
-				{
-					part_change_type(i,x,y,PT_SHLD2);
-					parts[i].life = 7;
 				}
 			}
 	return 0;

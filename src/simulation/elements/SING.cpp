@@ -16,7 +16,8 @@
 #include "simulation/ElementsCommon.h"
 
 int SING_update(UPDATE_FUNC_ARGS) {
-	int r, rx, ry, cry, crx, rad, nxi, nxj, nb, j, spawncount;
+	int rx, ry, cry, crx, rad, nxi, nxj, nb, j, spawncount;
+	int rcount, ri, rnext;
 	int singularity = -parts[i].life;
 	float angle, v;
 
@@ -85,34 +86,36 @@ int SING_update(UPDATE_FUNC_ARGS) {
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if ((r&0xFF)!=PT_DMND&&33>=rand()/(RAND_MAX/100)+1)
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					if ((r&0xFF)==PT_SING && parts[r>>8].life >10)
+					if (sim->elements[parts[ri].type].Properties&TYPE_ENERGY)
+						continue;
+					if (parts[ri].type!=PT_DMND&&33>=rand()/(RAND_MAX/100)+1)
 					{
-						if (parts[i].life+parts[r>>8].life > 255)
-							continue;
-						parts[i].life += parts[r>>8].life;
-					}
-					else
-					{
-						if (parts[i].life+3 > 255)
+						if (parts[ri].type==PT_SING && parts[ri].life >10)
 						{
-							if (parts[r>>8].type!=PT_SING && 1>rand()%100)
-							{
-								int np;
-								np = sim->part_create(r>>8,x+rx,y+ry,PT_SING);
-								parts[np].life = rand()%50+60;
-							}
-							continue;
+							if (parts[i].life+parts[ri].life > 255)
+								continue;
+							parts[i].life += parts[ri].life;
 						}
-						parts[i].life += 3;
-						parts[i].tmp++;
+						else
+						{
+							if (parts[i].life+3 > 255)
+							{
+								if (parts[ri].type!=PT_SING && 1>rand()%100)
+								{
+									int np;
+									np = sim->part_create(ri,x+rx,y+ry,PT_SING);
+									parts[np].life = rand()%50+60;
+								}
+								continue;
+							}
+							parts[i].life += 3;
+							parts[i].tmp++;
+						}
+						parts[i].temp = restrict_flt(parts[ri].temp+parts[i].temp, MIN_TEMP, MAX_TEMP);
+						kill_part(ri);
 					}
-					parts[i].temp = restrict_flt(parts[r>>8].temp+parts[i].temp, MIN_TEMP, MAX_TEMP);
-					kill_part(r>>8);
 				}
 			}
 	return 0;

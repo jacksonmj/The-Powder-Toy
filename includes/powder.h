@@ -145,7 +145,7 @@ int update_legacy_all(UPDATE_FUNC_ARGS);
 int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS);
 void STKM_init_legs(playerst* playerp, int i);
 void STKM_interact(playerst* playerp, int i, int x, int y);
-void PPIP_flood_trigger(int x, int y, int sparkedBy);
+void PPIP_flood_trigger(Simulation* sim, int x, int y, int sparkedBy);
 
 struct part_type
 {

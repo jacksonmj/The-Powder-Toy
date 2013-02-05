@@ -38,12 +38,13 @@ const signed char pos_1_ry[] = {-1, 0, 1,-1, 1,-1, 0, 1};
 
 int ppip_changed = 0;
 
-void PPIP_flood_trigger(int x, int y, int sparkedBy)
+void PPIP_flood_trigger(Simulation* sim, int x, int y, int sparkedBy)
 {
 	int coord_stack_limit = XRES*YRES;
 	unsigned short (*coord_stack)[2];
 	int coord_stack_size = 0;
 	int x1, x2;
+	int rcount, ri, rnext;
 
 	// Separate flags for on and off in case PPIP is sparked by PSCN and NSCN on the same frame
 	// - then PSCN can override NSCN and behaviour is not dependent on particle order
@@ -52,7 +53,8 @@ void PPIP_flood_trigger(int x, int y, int sparkedBy)
 	else if (sparkedBy==PT_NSCN) prop = PPIP_TMPFLAG_TRIGGER_OFF << 3;
 	else if (sparkedBy==PT_INST) prop = PPIP_TMPFLAG_TRIGGER_REVERSE << 3;
 
-	if (prop==0 || (pmap[y][x]&0xFF)!=PT_PPIP || (parts[pmap[y][x]>>8].tmp & prop))
+	ri = sim->pmap_find_one(x,y,PT_PPIP);
+	if (prop==0 || ri<0 || (parts[ri].tmp & prop))
 		return;
 
 	coord_stack = (unsigned short(*)[2])malloc(sizeof(unsigned short)*2*coord_stack_limit);
@@ -65,31 +67,58 @@ void PPIP_flood_trigger(int x, int y, int sparkedBy)
 		coord_stack_size--;
 		x = coord_stack[coord_stack_size][0];
 		y = coord_stack[coord_stack_size][1];
+
+		bool found = false;
+		FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)// TODO: not energy parts
+		{
+			if (parts[ri].type==PT_PPIP)
+			{
+				if (!(parts[ri].tmp & prop))
+				{
+					ppip_changed = 1;
+					found = true;
+				}
+				parts[ri].tmp |= prop;
+			}
+		}
+		if (!found) continue;
+
 		x1 = x2 = x;
 		// go left as far as possible
 		while (x1>=CELL)
 		{
-			if ((pmap[y][x1-1]&0xFF)!=PT_PPIP)
+			bool found = false;
+			FOR_PMAP_POSITION(sim, x1-1, y, rcount, ri, rnext)// TODO: not energy parts
 			{
-				break;
+				if (parts[ri].type==PT_PPIP)
+				{
+					if (!(parts[ri].tmp & prop))
+					{
+						ppip_changed = 1;
+						found = true;
+					}
+					parts[ri].tmp |= prop;
+				}
 			}
+			if (!found) break;
 			x1--;
 		}
 		// go right as far as possible
 		while (x2<XRES-CELL)
 		{
-			if ((pmap[y][x2+1]&0xFF)!=PT_PPIP)
+			bool found = false;
+			FOR_PMAP_POSITION(sim, x2+1, y, rcount, ri, rnext)// TODO: not energy parts
 			{
-				break;
+				if (parts[ri].type==PT_PPIP)
+				{
+					if (!(parts[ri].tmp & prop))
+						ppip_changed = 1;
+					parts[ri].tmp |= prop;
+					found = true;
+				}
 			}
+			if (!found) break;
 			x2++;
-		}
-		// fill span
-		for (x=x1; x<=x2; x++)
-		{
-			if (!(parts[pmap[y][x]>>8].tmp & prop))
-				ppip_changed = 1;
-			parts[pmap[y][x]>>8].tmp |= prop;
 		}
 
 		// add adjacent pixels to stack
@@ -97,30 +126,28 @@ void PPIP_flood_trigger(int x, int y, int sparkedBy)
 		// Don't need to check x bounds here, because already limited to [CELL, XRES-CELL]
 		if (y>=CELL+1)
 			for (x=x1-1; x<=x2+1; x++)
-				if ((pmap[y-1][x]&0xFF)==PT_PPIP && !(parts[pmap[y-1][x]>>8].tmp & prop))
+			{
+				coord_stack[coord_stack_size][0] = x;
+				coord_stack[coord_stack_size][1] = y-1;
+				coord_stack_size++;
+				if (coord_stack_size>=coord_stack_limit)
 				{
-					coord_stack[coord_stack_size][0] = x;
-					coord_stack[coord_stack_size][1] = y-1;
-					coord_stack_size++;
-					if (coord_stack_size>=coord_stack_limit)
-					{
-						free(coord_stack);
-						return;
-					}
+					free(coord_stack);
+					return;
 				}
+			}
 		if (y<YRES-CELL-1)
 			for (x=x1-1; x<=x2+1; x++)
-				if ((pmap[y+1][x]&0xFF)==PT_PPIP && !(parts[pmap[y+1][x]>>8].tmp & prop))
+			{
+				coord_stack[coord_stack_size][0] = x;
+				coord_stack[coord_stack_size][1] = y+1;
+				coord_stack_size++;
+				if (coord_stack_size>=coord_stack_limit)
 				{
-					coord_stack[coord_stack_size][0] = x;
-					coord_stack[coord_stack_size][1] = y+1;
-					coord_stack_size++;
-					if (coord_stack_size>=coord_stack_limit)
-					{
-						free(coord_stack);
-						return;
-					}
+					free(coord_stack);
+					return;
 				}
+			}
 	} while (coord_stack_size>0);
 	free(coord_stack);
 }
@@ -167,7 +194,8 @@ void PIPE_transfer_pipe_to_pipe(particle *src, particle *dest)
 
 void pushParticle(Simulation *sim, int i, int count, int original)
 {
-	int rndstore, rnd, rx, ry, r, x, y, np, q, notctype=(((parts[i].ctype)%3)+2);
+	int rndstore, rnd, rx, ry, rt, x, y, np, q, notctype=(((parts[i].ctype)%3)+2);
+	int rcount, ri, rnext;
 	if ((parts[i].tmp&0xFF) == 0 || count >= 2)//don't push if there is nothing there, max speed of 2 per frame
 		return;
 	x = (int)(parts[i].x+0.5f);
@@ -186,27 +214,29 @@ void pushParticle(Simulation *sim, int i, int count, int original)
 			ry = pos_1_ry[rnd];
 			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES)
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				else if (((r&0xFF)==PT_PIPE || (r&0xFF) == PT_PPIP) && parts[r>>8].ctype!=notctype && (parts[r>>8].tmp&0xFF)==0)
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					PIPE_transfer_pipe_to_pipe(parts+i, parts+(r>>8));
-					if (r>>8 > original)
-						parts[r>>8].flags |= PFLAG_NORMALSPEED;//skip particle push, normalizes speed
-					count++;
-					pushParticle(sim, r>>8,count,original);
-				}
-				else if ((r&0xFF) == PT_PRTI) //Pass particles into PRTI for a pipe speed increase
-				{
-					int nnx;
-					for (nnx=0; nnx<80; nnx++)
-						if (!portalp[parts[r>>8].tmp][count][nnx].type)
-						{
-							PIPE_transfer_pipe_to_part(parts+i, &(portalp[parts[r>>8].tmp][count][nnx]));
-							count++;
-							break;
-						}
+					rt = parts[ri].type;
+					if ((rt==PT_PIPE || rt==PT_PPIP) && parts[ri].ctype!=notctype && (parts[ri].tmp&0xFF)==0)
+					{
+						PIPE_transfer_pipe_to_pipe(parts+i, parts+ri);
+						if (ri > original)
+							parts[ri].flags |= PFLAG_NORMALSPEED;//skip particle push, normalizes speed
+						count++;
+						pushParticle(sim, ri, count,original);
+					}
+					else if (rt == PT_PRTI) //Pass particles into PRTI for a pipe speed increase
+					{
+						int nnx;
+						for (nnx=0; nnx<80; nnx++)
+							// TODO: [count] is probably not the right thing to use here
+							if (!portalp[parts[ri].tmp][count][nnx].type)
+							{
+								PIPE_transfer_pipe_to_part(parts+i, &(portalp[parts[ri].tmp][count][nnx]));
+								count++;
+								break;
+							}
+					}
 				}
 			}
 		}
@@ -214,28 +244,36 @@ void pushParticle(Simulation *sim, int i, int count, int original)
 	else //predefined 1 pixel thick pipe movement
 	{
 		int coords = 7 - ((parts[i].tmp>>10)&7);
-		r = pmap[y+ pos_1_ry[coords]][x+ pos_1_rx[coords]];
-		if (((r&0xFF)==PT_PIPE || (r&0xFF) == PT_PPIP) && parts[r>>8].ctype!=notctype && (parts[r>>8].tmp&0xFF)==0)
+		bool foundSomething = false;
+		FOR_PMAP_POSITION(sim, x+pos_1_rx[coords], y+pos_1_ry[coords], rcount, ri, rnext)// TODO: not energy parts
 		{
-			PIPE_transfer_pipe_to_pipe(parts+i, parts+(r>>8));
-			if (r>>8 > original)
-				parts[r>>8].flags |= PFLAG_NORMALSPEED;//skip particle push, normalizes speed
-			count++;
-			pushParticle(sim, r>>8,count,original);
+			rt = parts[ri].type;
+			if ((rt==PT_PIPE || rt==PT_PPIP) && parts[ri].ctype!=notctype && (parts[ri].tmp&0xFF)==0)
+			{
+				PIPE_transfer_pipe_to_pipe(parts+i, parts+ri);
+				if (ri > original)
+					parts[ri].flags |= PFLAG_NORMALSPEED;//skip particle push, normalizes speed
+				count++;
+				pushParticle(sim,ri,count,original);
+				foundSomething = true;
+			}
+			else if (rt == PT_PRTI) //Pass particles into PRTI for a pipe speed increase
+			{
+				int nnx;
+				for (nnx=0; nnx<80; nnx++)
+					// TODO: [count] is probably not the right thing to use here
+					if (!portalp[parts[ri].tmp][count][nnx].type)
+					{
+						PIPE_transfer_pipe_to_part(parts+i, &(portalp[parts[ri].tmp][count][nnx]));
+						count++;
+						break;
+					}
+				foundSomething = true;
+			}
 		}
-		else if ((r&0xFF) == PT_PRTI) //Pass particles into PRTI for a pipe speed increase
+		if (!foundSomething)
 		{
-			int nnx;
-			for (nnx=0; nnx<80; nnx++)
-				if (!portalp[parts[r>>8].tmp][count][nnx].type)
-				{
-					PIPE_transfer_pipe_to_part(parts+i, &(portalp[parts[r>>8].tmp][count][nnx]));
-					count++;
-					break;
-				}
-		}
-		else if ((r&0xFF) == PT_NONE) //Move particles out of pipe automatically, much faster at ends
-		{
+			//Move particles out of pipe automatically, much faster at ends
 			rx = pos_1_rx[coords];
 			ry = pos_1_ry[coords];
 			np = sim->part_create(-1,x+rx,y+ry,parts[i].tmp&0xFF);
@@ -250,8 +288,9 @@ void pushParticle(Simulation *sim, int i, int count, int original)
 
 int PIPE_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry, np;
+	int rx, ry, np;
 	int rnd, rndstore;
+	int rcount, ri, rnext;
 	if (parts[i].tmp & PPIP_TMPFLAG_TRIGGERS)
 	{
 		int pause_changed = 0;
@@ -269,19 +308,21 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 		}
 		if (pause_changed)
 		{
-			int rx, ry, r;
+			int rx, ry;
 			for (rx=-2; rx<3; rx++)
 				for (ry=-2; ry<3; ry++)
 				{
 					if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 					{
-						r = pmap[y+ry][x+rx];
-						if ((r&0xFF) == PT_BRCK)
+						FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 						{
-							if (parts[i].tmp & PPIP_TMPFLAG_PAUSED)
-								parts[r>>8].tmp = 0;
-							else
-								parts[r>>8].tmp = 1; //make surrounding BRCK glow
+							if (parts[ri].type == PT_BRCK)
+							{
+								if (parts[i].tmp & PPIP_TMPFLAG_PAUSED)
+									parts[ri].tmp = 0;
+								else
+									parts[ri].tmp = 1; //make surrounding BRCK glow
+							}
 						}
 					}
 				}
@@ -319,27 +360,30 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 				for (ry=-1; ry<2; ry++)
 					if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 					{
-						r = pmap[y+ry][x+rx];
-						if (!r)
-							continue;
-						if (((r&0xFF)==PT_PIPE || (r&0xFF) == PT_PPIP)&&parts[r>>8].ctype==1)
+						FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 						{
-							parts[r>>8].ctype = (((parts[i].ctype)%3)+2);//reverse
-							parts[r>>8].life = 6;
-							if ( parts[i].tmp&0x100)//is a single pixel pipe
+							if (parts[ri].type==PT_PIPE || parts[ri].type==PT_PPIP)
 							{
-								parts[r>>8].tmp |= 0x200;//will transfer to a single pixel pipe
-								parts[r>>8].tmp |= count<<10;//coords of where it came from
-								parts[i].tmp |= ((7-count)<<14);
-								parts[i].tmp |= 0x2000;
+								if (parts[ri].ctype==1)
+								{
+									parts[ri].ctype = (((parts[i].ctype)%3)+2);//reverse
+									parts[ri].life = 6;
+									if ( parts[i].tmp&0x100)//is a single pixel pipe
+									{
+										parts[ri].tmp |= 0x200;//will transfer to a single pixel pipe
+										parts[ri].tmp |= count<<10;//coords of where it came from
+										parts[i].tmp |= ((7-count)<<14);
+										parts[i].tmp |= 0x2000;
+									}
+									neighborcount ++;
+									lastneighbor = ri;
+								}
+								else if (parts[ri].ctype!=(((parts[i].ctype-1)%3)+2))
+								{
+									neighborcount ++;
+									lastneighbor = ri;
+								}
 							}
-							neighborcount ++;
-							lastneighbor = r>>8;
-						}
-						else if (((r&0xFF)==PT_PIPE || (r&0xFF) == PT_PPIP)&&parts[r>>8].ctype!=(((parts[i].ctype-1)%3)+2))
-						{
-							neighborcount ++;
-							lastneighbor = r>>8;
 						}
 						count++;
 					}
@@ -366,29 +410,29 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 				ry = pos_1_ry[rnd];
 				if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES)
 				{
-					r = pmap[y+ry][x+rx];
-					if(!r)
-						r = photons[y+ry][x+rx];
-					if (surround_space && !r && (parts[i].tmp&0xFF)!=0)  //creating at end
+					// TODO: normal particles in pmap should block creation
+					if (surround_space && (parts[i].tmp&0xFF)!=0 && (np=sim->part_create(-1,x+rx,y+ry,parts[i].tmp&0xFF))>=0)  //creating at end
 					{
-						np = sim->part_create(-1,x+rx,y+ry,parts[i].tmp&0xFF);
-						if (np!=-1)
+						PIPE_transfer_pipe_to_part(parts+i, parts+np);
+					}
+					else
+					{
+						FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 						{
-							PIPE_transfer_pipe_to_part(parts+i, parts+np);
+							//try eating particle at entrance
+							if ((parts[i].tmp&0xFF) == 0 && (ptypes[parts[ri].type].properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY)))
+							{
+								if (parts[ri].type==PT_SOAP)
+									detach(ri);
+								PIPE_transfer_part_to_pipe(parts+ri, parts+i);
+								kill_part(ri);
+							}
+							else if ((parts[i].tmp&0xFF) == 0 && parts[ri].type==PT_STOR && parts[ri].tmp && (ptypes[parts[ri].tmp].properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY)))
+							{
+								// STOR stores properties in the same places as PIPE does
+								PIPE_transfer_pipe_to_pipe(parts+ri, parts+i);
+							}
 						}
-					}
-					//try eating particle at entrance
-					else if ((parts[i].tmp&0xFF) == 0 && (ptypes[r&0xFF].properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY)))
-					{
-						if ((r&0xFF)==PT_SOAP)
-							detach(r>>8);
-						PIPE_transfer_part_to_pipe(parts+(r>>8), parts+i);
-						kill_part(r>>8);
-					}
-					else if ((parts[i].tmp&0xFF) == 0 && (r&0xFF)==PT_STOR && parts[r>>8].tmp && (ptypes[parts[r>>8].tmp].properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY)))
-					{
-						// STOR stores properties in the same places as PIPE does
-						PIPE_transfer_pipe_to_pipe(parts+(r>>8), parts+i);
 					}
 				}
 			}
@@ -422,13 +466,9 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 				{
 					if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 					{
-						r = pmap[y+ry][x+rx];
-						if (!r)
-						{
-							int index = sim->part_create(-1,x+rx,y+ry,PT_BRCK);//BRCK border, people didn't like DMND
-							if (parts[i].type == PT_PPIP && index != -1)
-								parts[index].tmp = 1;
-						}
+						int index = sim->part_create(-1,x+rx,y+ry,PT_BRCK);//BRCK border, people didn't like DMND
+						if (parts[i].type == PT_PPIP && index != -1)
+							parts[index].tmp = 1;
 					}
 				}
 			if (parts[i].life<=1)
@@ -443,7 +483,7 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 				for (ry=-1; ry<2; ry++)
 					if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 					{
-						if (!pmap[y+ry][x+rx] && bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_ALLOWAIR && bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_WALL && bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_WALLELEC && (bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_EWALL || emap[(y+ry)/CELL][(x+rx)/CELL]))
+						if (!sim->pmap[y+ry][x+rx].count && bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_ALLOWAIR && bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_WALL && bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_WALLELEC && (bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_EWALL || emap[(y+ry)/CELL][(x+rx)/CELL]))
 							parts[i].life=50;
 					}
 		}
@@ -454,8 +494,7 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 				for (ry=-1; ry<2; ry++)
 					if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 					{
-						r = pmap[y+ry][x+rx];
-						if (((r&0xFF)==PT_PIPE || (r&0xFF) == PT_PPIP) && parts[i].ctype==1 && parts[i].life )
+						if ((sim->pmap_find_one(x+rx,y+ry,PT_PIPE)>=0 || sim->pmap_find_one(x+rx,y+ry,PT_PPIP)>=0) && parts[i].ctype==1 && parts[i].life )
 							issingle = 0;
 					}
 			if (issingle)

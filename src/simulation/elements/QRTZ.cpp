@@ -17,7 +17,8 @@
 
 int QRTZ_update(UPDATE_FUNC_ARGS)
 {
-	int r, tmp, trade, rx, ry, np, t;
+	int tmp, trade, rx, ry, np, t;
+	int rcount, ri, rnext;
 	t = parts[i].type;
 	if (t == PT_QRTZ)
 	{
@@ -34,13 +35,13 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 			for (ry=-2; ry<3; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					r = pmap[y+ry][x+rx];
-					if (!r)
-						continue;
-					else if ((r&0xFF)==PT_SLTW && (1>rand()%2500))
+					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 					{
-						kill_part(r>>8);
-						parts[i].ctype ++;
+						if (parts[ri].type==PT_SLTW && (1>rand()%2500))
+						{
+							kill_part(ri);
+							parts[i].ctype ++;
+						}
 					}
 				}
 	// grow if absorbed SLTW
@@ -52,8 +53,7 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 			ry = rand()%3-1;
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r && parts[i].ctype!=0)
+				if (parts[i].ctype!=0)
 				{
 					np = sim->part_create(-1,x+rx,y+ry,PT_QRTZ);
 					if (np>-1)
@@ -84,23 +84,23 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 			ry = rand()%5-2;
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if ((r&0xFF)==t && (parts[i].ctype>parts[r>>8].ctype) && parts[r>>8].ctype>=0 )//diffusion
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					tmp = parts[i].ctype - parts[r>>8].ctype;
-					if (tmp ==1)
+					if (parts[ri].type==t && (parts[i].ctype>parts[ri].ctype) && parts[ri].ctype>=0 )//diffusion
 					{
-						parts[r>>8].ctype ++;
-						parts[i].ctype --;
-						break;
-					}
-					if (tmp>0)
-					{
-						parts[r>>8].ctype += tmp/2;
-						parts[i].ctype -= tmp/2;
-						break;
+						tmp = parts[i].ctype - parts[ri].ctype;
+						if (tmp ==1)
+						{
+							parts[ri].ctype ++;
+							parts[i].ctype --;
+							break;
+						}
+						if (tmp>0)
+						{
+							parts[ri].ctype += tmp/2;
+							parts[i].ctype -= tmp/2;
+							break;
+						}
 					}
 				}
 			}
