@@ -36,9 +36,7 @@ int TSNS_update(UPDATE_FUNC_ARGS)
 						{
 							if ((ptypes[rt].properties&PROP_CONDUCTS) && !(rt==PT_WATR||rt==PT_SLTW||rt==PT_NTCT||rt==PT_PTCT||rt==PT_INWR) && parts[ri].life==0 && in_radius(rd, rx, ry))
 							{
-								parts[ri].life = 4;
-								parts[ri].ctype = rt;
-								part_change_type(ri,x+rx,y+ry,PT_SPRK);
+								sim->spark_conductive(ri, x+rx, y+ry);
 							}
 						}
 					}

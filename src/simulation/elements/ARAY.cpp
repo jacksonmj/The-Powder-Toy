@@ -71,12 +71,11 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 										} else if (rt==PT_FILT) {//get color if passed through FILT
 											colored = parts[ri].ctype;
 											//this if prevents BRAY from stopping on certain materials
-										} else if (rt!=PT_STOR && rt!=PT_INWR && (rt!=PT_SPRK || parts[ri].ctype!=PT_INWR) && rt!=PT_ARAY && rt!=PT_WIFI && !(rt==PT_SWCH && parts[ri].life>=10)) {
+										} else if (rt!=PT_STOR && rt!=PT_INWR && (rt!=PT_SPRK || parts[ri].ctype!=PT_INWR) && rt!=PT_ARAY && rt!=PT_WIFI && rt!=PT_INST && !(rt==PT_SWCH && parts[ri].life>=10)) {
 											if (nyy!=0 || nxx!=0) {
-												// TODO: change this create_part
-												create_part(-1, x+nxi+nxx, y+nyi+nyy, PT_SPRK);
+												sim->spark_all_attempt(ri, x+nxi+nxx, y+nyi+nyy);
 											}
-											if (!(nostop && parts[ri].type==PT_SPRK && parts[ri].ctype >= 0 && parts[ri].ctype < PT_NUM && (ptypes[parts[ri].ctype].properties&PROP_CONDUCTS))) {
+											if (!(nostop && (rt==PT_WIRE || (parts[ri].type==PT_SPRK && parts[ri].ctype >= 0 && parts[ri].ctype < PT_NUM && ((ptypes[parts[ri].ctype].properties&PROP_CONDUCTS) || parts[ri].ctype==PT_INST))))) {
 												docontinue = 0;
 											}
 										} else if(rt==PT_STOR) {

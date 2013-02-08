@@ -57,8 +57,7 @@ int DLAY_update(UPDATE_FUNC_ARGS)
 					}
 					else if(parts[ri].type==PT_NSCN && oldl==1)
 					{
-						// TODO: change this create_part
-						create_part(-1, x+rx, y+ry, PT_SPRK);
+						sim->spark_conductive_attempt(ri, x+rx, y+ry);
 					}
 				}
 			}

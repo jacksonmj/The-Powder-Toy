@@ -65,9 +65,7 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 			r = pmap[y+ry][x+rx];
 			if ((r&0xFF) && (r&0xFF) != PT_BREL && (ptypes[r&0xFF].properties&PROP_CONDUCTS) && !parts[r>>8].life)
 			{
-				parts[r>>8].life = 4;
-				parts[r>>8].ctype = r&0xFF;
-				part_change_type(r>>8,x+rx,y+ry,PT_SPRK);
+				sim->spark_conductive(r>>8, x+rx, y+ry);
 			}
 		}
 		//Release all heat

@@ -155,8 +155,7 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 						{
 							if ((ptypes[rt].properties&PROP_CONDUCTS) && parts[ri].life==0)
 							{
-								// TODO: change this create_part
-								create_part(ri,x+rx,y+ry,PT_SPRK);
+								sim->spark_conductive(ri, x+rx, y+ry);
 							}
 							pv[y/CELL][x/CELL] += powderful/400;
 							if (ptypes[rt].hconduct) parts[ri].temp = restrict_flt(parts[ri].temp+powderful/1.5, MIN_TEMP, MAX_TEMP);

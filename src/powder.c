@@ -119,13 +119,7 @@ static int pn_junction_sprk(int x, int y, int pt)
 	if (!ptFound)
 		return 0;
 
-	if (parts[ri].life != 0)
-		return 0;
-
-	parts[ri].ctype = pt;
-	part_change_type(ri,x,y,PT_SPRK);
-	parts[ri].life = 4;
-	return 1;
+	return globalSim->spark_conductive_attempt(ri, x, y);
 }
 
 static void photoelectric_effect(int nx, int ny)//create sparks from PHOT when hitting PSCN and NSCN
@@ -874,6 +868,8 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 			if (type == PT_WIRE)
 			{
 				parts[index].ctype = PT_DUST;
+				lastSparkedIndex = index;
+				continue;
 			}
 			if (!(type == PT_INST || (ptypes[type].properties&PROP_CONDUCTS)))
 				continue;
@@ -885,12 +881,8 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 				lastSparkedIndex = index;
 				continue;
 			}
-			part_change_type(index, x, y, PT_SPRK);
-			parts[index].life = 4;
-			parts[index].ctype = type;
-			if (parts[index].temp+10.0f < 673.0f && !legacy_enable && (type==PT_METL || type == PT_BMTL || type == PT_BRMT || type == PT_PSCN || type == PT_NSCN || type == PT_ETRD || type == PT_NBLE || type == PT_IRON))
-				parts[index].temp = parts[index].temp+10.0f;
-			lastSparkedIndex = index;
+			if (globalSim->spark_conductive_attempt(index, x, y))
+				lastSparkedIndex = index;
 		}
 		return lastSparkedIndex;
 	}
@@ -2072,9 +2064,7 @@ void update_particles_i(pixel *vid, int start, int inc)
 					{
 						if (emap[ny][nx]==12 && !parts[i].life)
 						{
-							part_change_type(i,x,y,PT_SPRK);
-							parts[i].life = 4;
-							parts[i].ctype = t;
+							globalSim->spark_conductive(i, x, y);
 							t = PT_SPRK;
 						}
 					}

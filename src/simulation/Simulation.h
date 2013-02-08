@@ -72,6 +72,12 @@ public:
 	bool part_change_type(int i, int x, int y, int t);
 	void pmap_reset();
 
+	void spark_all(int i, int x, int y);
+	bool spark_all_attempt(int i, int x, int y);
+	void spark_conductive(int i, int x, int y);
+	bool spark_conductive_attempt(int i, int x, int y);
+	int spark_conductive_position(int x, int y);
+
 	// Functions defined here should hopefully be inlined
 	// Don't put anything that will change often here, since changes cause a lot of recompiling
 

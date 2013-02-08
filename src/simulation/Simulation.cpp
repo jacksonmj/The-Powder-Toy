@@ -400,6 +400,82 @@ void Simulation::part_kill(int i)//kills particle number i
 	part_free(i);
 }
 
+/* spark_conductive turns a particle into SPRK and sets ctype, life, and temperature.
+ * spark_all does something similar, but behaves correctly for WIRE and INST
+ *
+ * spark_conductive_attempt and spark_all_attempt do the same thing, except they check whether the particle can actually be sparked (is conductive, has life of zero) first. Remember to check for INSL though. 
+ * They return true if the particle was successfully sparked.
+*/
+
+void Simulation::spark_all(int i, int x, int y)
+{
+	if (parts[i].type==PT_WIRE)
+		parts[i].ctype = PT_DUST;
+	else if (parts[i].type==PT_INST)
+		flood_INST(x, y, PT_SPRK, PT_INST);
+	else
+		spark_conductive(i, x, y);
+}
+void Simulation::spark_conductive(int i, int x, int y)
+{
+	int type = parts[i].type;
+	part_change_type(i, x, y, PT_SPRK);
+	parts[i].ctype = type;
+	if (type==PT_WATR)
+		parts[i].life = 6;
+	else if (type==PT_SLTW) 
+		parts[i].life = 5;
+	else
+		parts[i].life = 4;
+	if (parts[i].temp < 673.0f && !legacy_enable && (type==PT_METL || type == PT_BMTL || type == PT_BRMT || type == PT_PSCN || type == PT_NSCN || type == PT_ETRD || type == PT_NBLE || type == PT_IRON))
+	{
+		parts[i].temp = parts[i].temp+10.0f;
+		if (parts[i].temp > 673.0f)
+			parts[i].temp = 673.0f;
+	}
+}
+bool Simulation::spark_all_attempt(int i, int x, int y)
+{
+	if ((parts[i].type==PT_WIRE && parts[i].ctype<=0) || (parts[i].type==PT_INST && parts[i].life<=0))
+	{
+		spark_all(i, x, y);
+		return true;
+	}
+	else if (!parts[i].life && (elements[parts[i].type].Properties & PROP_CONDUCTS))
+	{
+		spark_conductive(i, x, y);
+		return true;
+	}
+	return false;
+}
+bool Simulation::spark_conductive_attempt(int i, int x, int y)
+{
+	if (!parts[i].life && (elements[parts[i].type].Properties & PROP_CONDUCTS))
+	{
+		spark_conductive(i, x, y);
+		return true;
+	}
+	return false;
+}
+
+// Attempts to spark all particles in a particular position
+int Simulation::spark_conductive_position(int x, int y)
+{
+	int lastSparkedIndex = -1;
+	int rcount, index, rnext;
+	FOR_PMAP_POSITION_SIM(x, y, rcount, index, rnext)
+	{
+		int type = parts[index].type;
+		if (!(ptypes[type].properties&PROP_CONDUCTS))
+			continue;
+		if (parts[index].life!=0)
+			continue;
+		if (spark_conductive_attempt(index, x, y))
+			lastSparkedIndex = index;
+	}
+	return lastSparkedIndex;
+}
+
 void Simulation_Compat_CopyData(Simulation* sim)
 {
 	// TODO: this can be removed once all the code uses Simulation instead of global variables

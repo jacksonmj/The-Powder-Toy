@@ -58,9 +58,8 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 			part_change_type(i,x,y,ct);
 			ct = parts[i].ctype = PT_NONE;
 			parts[i].life = 20;
-			part_change_type(nearp,(int)(parts[nearp].x+0.5f),(int)(parts[nearp].y+0.5f),PT_SPRK);
+			sim->spark_conductive(nearp, (int)(parts[nearp].x+0.5f),(int)(parts[nearp].y+0.5f));
 			parts[nearp].life = 9;
-			parts[nearp].ctype = PT_ETRD;
 		}
 	}
 	else if (ct==PT_NBLE&&parts[i].life<=1&&parts[i].temp<5273.15)
@@ -206,10 +205,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 						{
 							if (parts[ri].life==0 && parts[i].life<3)
 							{
-								part_change_type(ri,x+rx,y+ry,PT_SPRK);
-								if (rt==PT_WATR) parts[ri].life = 6;
-								else parts[ri].life = 5;
-								parts[ri].ctype = rt;
+								sim->spark_conductive(ri, x+rx, y+ry);
 							}
 						}
 						else if (rt==PT_INST)
@@ -221,20 +217,14 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 						}
 						else if (parts[ri].life==0 && parts[i].life<4)
 						{
-							parts[ri].life = 4;
-							parts[ri].ctype = rt;
-							part_change_type(ri,x+rx,y+ry,PT_SPRK);
-							if (parts[ri].temp+10.0f<673.0f&&!legacy_enable&&(rt==PT_METL||rt==PT_BMTL||rt==PT_BRMT||rt==PT_PSCN||rt==PT_NSCN||rt==PT_ETRD||rt==PT_NBLE||rt==PT_IRON))
-								parts[ri].temp = parts[ri].temp+10.0f;
+							sim->spark_conductive(ri, x+rx, y+ry);
 						}
 						else if (ct==PT_ETRD && parts[i].life==5)
 						{
 							part_change_type(i,x,y,ct);
 							parts[i].ctype = PT_NONE;
 							parts[i].life = 20;
-							parts[ri].life = 4;
-							parts[ri].ctype = rt;
-							part_change_type(ri,x+rx,y+ry,PT_SPRK);
+							sim->spark_conductive(ri, x+rx, y+ry);
 						}
 					}
 				}

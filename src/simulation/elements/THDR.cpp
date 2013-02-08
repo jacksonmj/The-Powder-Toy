@@ -26,12 +26,10 @@ int THDR_update(UPDATE_FUNC_ARGS)
 				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
 					rt = parts[ri].type;
-					if ((ptypes[rt].properties&PROP_CONDUCTS) && parts[ri].life==0 && !(rt==PT_WATR||rt==PT_SLTW) && parts[ri].ctype!=PT_SPRK)
+					if ((ptypes[rt].properties&PROP_CONDUCTS) && parts[ri].life==0 && !(rt==PT_WATR||rt==PT_SLTW))
 					{
 						parts[i].type = PT_NONE;
-						parts[ri].ctype = parts[ri].type;
-						part_change_type(ri,x+rx,y+ry,PT_SPRK);
-						parts[ri].life = 4;
+						sim->spark_conductive(ri, x+rx, y+ry);
 					}
 					else if (rt!=PT_CLNE&&rt!=PT_THDR&&rt!=PT_SPRK&&rt!=PT_DMND&&rt!=PT_FIRE&&!(ptypes[rt].properties&TYPE_ENERGY))
 					{

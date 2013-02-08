@@ -51,9 +51,7 @@ int SWCH_update(UPDATE_FUNC_ARGS)
 							}
 						}
 						else if (rt==PT_SPRK && parts[i].life==10 && parts[ri].life>0 && parts[ri].ctype!=PT_PSCN && parts[ri].ctype!=PT_NSCN) {
-							part_change_type(i,x,y,PT_SPRK);
-							parts[i].ctype = PT_SWCH;
-							parts[i].life = 4;
+							sim->spark_conductive(i, x, y);
 						}
 					}
 				}
