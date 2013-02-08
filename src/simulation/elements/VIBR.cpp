@@ -17,7 +17,8 @@
 
 int VIBR_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry;
+	int rx, ry, rt;
+	int rcount, ri, rnext;
 	int trade, transfer;
 	if (parts[i].ctype == 1) //leaving in, just because
 	{
@@ -60,12 +61,16 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 		//Release sparks before explode
 		if (parts[i].life < 300)
 		{
-			rx = rand()%3-1;
-			ry = rand()%3-1;
-			r = pmap[y+ry][x+rx];
-			if ((r&0xFF) && (r&0xFF) != PT_BREL && (ptypes[r&0xFF].properties&PROP_CONDUCTS) && !parts[r>>8].life)
+			int random = rand();
+			rx = random%3-1;
+			ry = (random>>3)%3-1;
+			if(x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES)
 			{
-				sim->spark_conductive(r>>8, x+rx, y+ry);
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				{
+					if (parts[ri].type != PT_BREL && (sim->elements[parts[ri].type].Properties&PROP_CONDUCTS) && !parts[ri].life)
+						sim->spark_conductive(ri, x+rx, y+ry);
+				}
 			}
 		}
 		//Release all heat
@@ -76,11 +81,14 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 			ry = (random>>3)%7-3;
 			if(x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES)
 			{
-				r = pmap[y+ry][x+rx];
-				if ((r&0xFF) && (r&0xFF)!=PT_VIBR  && (r&0xFF)!=PT_BVBR && ptypes[r&0xFF].hconduct && ((r&0xFF)!=PT_HSWC||parts[r>>8].life==10))
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					parts[r>>8].temp += parts[i].tmp*3;
-					parts[i].tmp = 0;
+					rt = parts[ri].type;
+					if (rt!=PT_VIBR && rt!=PT_BVBR && sim->elements[rt].HeatConduct && (rt!=PT_HSWC||parts[ri].life==10))
+					{
+						parts[ri].temp += parts[i].tmp*3;
+						parts[i].tmp = 0;
+					}
 				}
 			}
 		}
@@ -110,56 +118,62 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					r = photons[y+ry][x+rx];
-				if (!r)
-					continue;
-				//Melts into EXOT
-				if ((r&0xFF) == PT_EXOT && !(rand()%250) && !parts[i].life)
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					sim->part_create(i, x, y, PT_EXOT);
-				}
-				else if ((r&0xFF) == PT_ANAR)
-				{
-					part_change_type(i,x,y,PT_BVBR);
-					pv[y/CELL][x/CELL] -= 1;
-				}
-				else if (parts[i].life && ((r&0xFF)==PT_VIBR  || (r&0xFF)==PT_BVBR) && !parts[r>>8].life)
-				{
-					parts[r>>8].tmp += 10;
-				}
-				//Absorbs energy particles
-				if ((sim->elements[r&0xFF].Properties & TYPE_ENERGY) && !parts[i].life)
-				{
-					parts[i].tmp += 20;
-					kill_part(r>>8);
+					rt = parts[ri].type;
+					//Melts into EXOT
+					if (rt == PT_EXOT && !(rand()%250) && !parts[i].life)
+					{
+						sim->part_create(i, x, y, PT_EXOT);
+					}
+					else if (rt == PT_ANAR)
+					{
+						part_change_type(i,x,y,PT_BVBR);
+						pv[y/CELL][x/CELL] -= 1;
+					}
+					else if (parts[i].life && (rt==PT_VIBR  || rt==PT_BVBR) && !parts[ri].life)
+					{
+						parts[ri].tmp += 10;
+					}
+					//Absorbs energy particles
+					if ((sim->elements[rt].Properties & TYPE_ENERGY) && !parts[i].life)
+					{
+						parts[i].tmp += 20;
+						kill_part(ri);
+					}
 				}
 			}
-	for (trade = 0; trade < 9; trade++)
+	if (parts[i].tmp>0)
 	{
-		int random = rand();
-		rx = random%7-3;
-		ry = (random>>3)%7-3;
-		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+		for (trade = 0; trade < 9; trade++)
 		{
-			r = pmap[y+ry][x+rx];
-			if ((r&0xFF) != PT_VIBR && (r&0xFF) != PT_BVBR)
-				continue;
-			if (parts[i].tmp > parts[r>>8].tmp)
+			int random = rand();
+			rx = random%7-3;
+			ry = (random>>3)%7-3;
+			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				transfer = parts[i].tmp - parts[r>>8].tmp;
-				if (transfer == 1)
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					parts[r>>8].tmp += 1;
-					parts[i].tmp -= 1;
-					trade = 9;
-				}
-				else if (transfer > 0)
-				{
-					parts[r>>8].tmp += transfer/2;
-					parts[i].tmp -= transfer/2;
-					trade = 9;
+					if (parts[ri].type != PT_VIBR && parts[ri].type != PT_BVBR)
+						continue;
+					if (parts[i].tmp > parts[ri].tmp)
+					{
+						transfer = parts[i].tmp - parts[ri].tmp;
+						if (transfer == 1)
+						{
+							parts[ri].tmp += 1;
+							parts[i].tmp -= 1;
+							trade = 9;
+							break;
+						}
+						else if (transfer > 0)
+						{
+							parts[ri].tmp += transfer/2;
+							parts[i].tmp -= transfer/2;
+							trade = 9;
+							break;
+						}
+					}
 				}
 			}
 		}

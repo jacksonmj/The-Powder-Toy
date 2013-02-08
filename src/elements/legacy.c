@@ -13,11 +13,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <element.h>
+#include "simulation/ElementsCommon.h"
 
 // Interactions which only occur when legacy_enable is on
 int update_legacy_all(UPDATE_FUNC_ARGS) {
-	int r, rx, ry, rt;
+	int rx, ry, rt;
+	int rcount, ri, rnext;
 	int t = parts[i].type;
 	if (!legacy_enable) return 0;
 	if (t==PT_WTRV) {
@@ -26,19 +27,20 @@ int update_legacy_all(UPDATE_FUNC_ARGS) {
 				if (x+rx>=0 && y+ry>0 &&
 				        x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					r = pmap[y+ry][x+rx];
-					if (!r)
-						continue;
-					if (((r&0xFF)==PT_WATR||(r&0xFF)==PT_DSTW||(r&0xFF)==PT_SLTW) && 1>(rand()%1000))
+					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 					{
-						part_change_type(i,x,y,PT_WATR);
-						part_change_type(r>>8,x+rx,y+ry,PT_WATR);
-					}
-					if (((r&0xFF)==PT_ICEI || (r&0xFF)==PT_SNOW) && 1>(rand()%1000))
-					{
-						part_change_type(i,x,y,PT_WATR);
-						if (1>(rand()%1000))
-							part_change_type(r>>8,x+rx,y+ry,PT_WATR);
+						rt = parts[ri].type;
+						if ((rt==PT_WATR||rt==PT_DSTW||rt==PT_SLTW) && 1>(rand()%1000))
+						{
+							part_change_type(i,x,y,PT_WATR);
+							part_change_type(ri,x+rx,y+ry,PT_WATR);
+						}
+						if ((rt==PT_ICEI || rt==PT_SNOW) && 1>(rand()%1000))
+						{
+							part_change_type(i,x,y,PT_WATR);
+							if (1>(rand()%1000))
+								part_change_type(ri,x+rx,y+ry,PT_WATR);
+						}
 					}
 				}
 	}
@@ -48,12 +50,13 @@ int update_legacy_all(UPDATE_FUNC_ARGS) {
 				if (x+rx>=0 && y+ry>0 &&
 				        x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					r = pmap[y+ry][x+rx];
-					if (!r)
-						continue;
-					if (((r&0xFF)==PT_FIRE || (r&0xFF)==PT_LAVA) && 1>(rand()%10))
+					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 					{
-						part_change_type(i,x,y,PT_WTRV);
+						rt = parts[ri].type;
+						if ((rt==PT_FIRE || rt==PT_LAVA) && 1>(rand()%10))
+						{
+							part_change_type(i,x,y,PT_WTRV);
+						}
 					}
 				}
 	}
@@ -63,13 +66,14 @@ int update_legacy_all(UPDATE_FUNC_ARGS) {
 				if (x+rx>=0 && y+ry>0 &&
 				        x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					r = pmap[y+ry][x+rx];
-					if (!r)
-						continue;
-					if (((r&0xFF)==PT_FIRE || (r&0xFF)==PT_LAVA) && 1>(rand()%10))
+					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 					{
-						if (rand()%4==0) part_change_type(i,x,y,PT_SALT);
-						else part_change_type(i,x,y,PT_WTRV);
+						rt = parts[ri].type;
+						if ((rt==PT_FIRE || rt==PT_LAVA) && 1>(rand()%10))
+						{
+							if (rand()%4==0) part_change_type(i,x,y,PT_SALT);
+							else part_change_type(i,x,y,PT_WTRV);
+						}
 					}
 				}
 	}
@@ -79,12 +83,13 @@ int update_legacy_all(UPDATE_FUNC_ARGS) {
 				if (x+rx>=0 && y+ry>0 &&
 				        x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					r = pmap[y+ry][x+rx];
-					if (!r)
-						continue;
-					if (((r&0xFF)==PT_FIRE || (r&0xFF)==PT_LAVA) && 1>(rand()%10))
+					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 					{
-						part_change_type(i,x,y,PT_WTRV);
+						rt = parts[ri].type;
+						if ((rt==PT_FIRE || rt==PT_LAVA) && 1>(rand()%10))
+						{
+							part_change_type(i,x,y,PT_WTRV);
+						}
 					}
 				}
 	}
@@ -93,13 +98,14 @@ int update_legacy_all(UPDATE_FUNC_ARGS) {
 			for (ry=-2; ry<3; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					r = pmap[y+ry][x+rx];
-					if (!r)
-						continue;
-					if (((r&0xFF)==PT_WATR || (r&0xFF)==PT_DSTW) && 1>(rand()%1000))
+					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 					{
-						part_change_type(i,x,y,PT_ICEI);
-						part_change_type(r>>8,x+rx,y+ry,PT_ICEI);
+						rt = parts[ri].type;
+						if ((rt==PT_WATR || rt==PT_DSTW) && 1>(rand()%1000))
+						{
+							part_change_type(i,x,y,PT_ICEI);
+							part_change_type(ri,x+rx,y+ry,PT_ICEI);
+						}
 					}
 				}
 	}
@@ -108,16 +114,17 @@ int update_legacy_all(UPDATE_FUNC_ARGS) {
 			for (ry=-2; ry<3; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					r = pmap[y+ry][x+rx];
-					if (!r)
-						continue;
-					if (((r&0xFF)==PT_WATR || (r&0xFF)==PT_DSTW) && 1>(rand()%1000))
+					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 					{
-						part_change_type(i,x,y,PT_ICEI);
-						part_change_type(r>>8,x+rx,y+ry,PT_ICEI);
+						rt = parts[ri].type;
+						if ((rt==PT_WATR || rt==PT_DSTW) && 1>(rand()%1000))
+						{
+							part_change_type(i,x,y,PT_ICEI);
+							part_change_type(ri,x+rx,y+ry,PT_ICEI);
+						}
+						if ((rt==PT_WATR || rt==PT_DSTW) && 15>(rand()%1000))
+							part_change_type(i,x,y,PT_WATR);
 					}
-					if (((r&0xFF)==PT_WATR || (r&0xFF)==PT_DSTW) && 15>(rand()%1000))
-						part_change_type(i,x,y,PT_WATR);
 				}
 	}
 	if (t==PT_WTRV && pv[y/CELL][x/CELL]>4.0f)

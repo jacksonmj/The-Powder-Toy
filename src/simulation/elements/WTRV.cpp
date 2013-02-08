@@ -17,19 +17,21 @@
 
 int WTRV_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry;
+	int rx, ry;
+	int rcount, ri, rnext;
 	for (rx=-2; rx<3; rx++)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if (((r&0xFF)==PT_RBDM||(r&0xFF)==PT_LRBD) && !legacy_enable && parts[i].temp>(273.15f+12.0f) && 1>(rand()%500))
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					part_change_type(i,x,y,PT_FIRE);
-					parts[i].life = 4;
-					parts[i].ctype = PT_WATR;
+					if ((parts[ri].type==PT_RBDM||parts[ri].type==PT_LRBD) && !legacy_enable && parts[i].temp>(273.15f+12.0f) && 1>(rand()%500))
+					{
+						part_change_type(i,x,y,PT_FIRE);
+						parts[i].life = 4;
+						parts[i].ctype = PT_WATR;
+						return 1;
+					}
 				}
 			}
 	if(parts[i].temp>1273&&parts[i].ctype==PT_FIRE)
