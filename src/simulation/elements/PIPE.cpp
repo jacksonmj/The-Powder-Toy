@@ -14,6 +14,7 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/elements/PRTI.h"
 
 #define PFLAG_NORMALSPEED 0x00010000
 
@@ -227,15 +228,15 @@ void pushParticle(Simulation *sim, int i, int count, int original)
 					}
 					else if (rt == PT_PRTI) //Pass particles into PRTI for a pipe speed increase
 					{
-						int nnx;
-						for (nnx=0; nnx<80; nnx++)
-							// TODO: [count] is probably not the right thing to use here
-							if (!portalp[parts[ri].tmp][count][nnx].type)
-							{
-								PIPE_transfer_pipe_to_part(parts+i, &(portalp[parts[ri].tmp][count][nnx]));
-								count++;
-								break;
-							}
+						PortalChannel *channel = ((PRTI_ElementDataContainer*)sim->elementData[PT_PRTI])->GetParticleChannel(sim, i);
+						int slot = PRTI_ElementDataContainer::GetSlot(-rx, -ry);
+						particle *storePart = channel->AllocParticle(slot);
+						if (storePart)
+						{
+							PIPE_transfer_pipe_to_part(parts+i, storePart);
+							count++;
+							break;
+						}
 					}
 				}
 			}
@@ -259,15 +260,15 @@ void pushParticle(Simulation *sim, int i, int count, int original)
 			}
 			else if (rt == PT_PRTI) //Pass particles into PRTI for a pipe speed increase
 			{
-				int nnx;
-				for (nnx=0; nnx<80; nnx++)
-					// TODO: [count] is probably not the right thing to use here
-					if (!portalp[parts[ri].tmp][count][nnx].type)
-					{
-						PIPE_transfer_pipe_to_part(parts+i, &(portalp[parts[ri].tmp][count][nnx]));
-						count++;
-						break;
-					}
+				PortalChannel *channel = ((PRTI_ElementDataContainer*)sim->elementData[PT_PRTI])->GetParticleChannel(sim, i);
+				int slot = PRTI_ElementDataContainer::GetSlot(-pos_1_rx[coords], -pos_1_ry[coords]);
+				particle *storePart = channel->AllocParticle(slot);
+				if (storePart)
+				{
+					PIPE_transfer_pipe_to_part(parts+i, storePart);
+					count++;
+					break;
+				}
 				foundSomething = true;
 			}
 		}

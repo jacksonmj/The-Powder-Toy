@@ -51,7 +51,9 @@ class Simulation
 {
 public:
 	particle parts[NPART];
-	//bool partsFree[NPART];
+#ifdef DEBUG_PARTSALLOC
+	bool partsFree[NPART];
+#endif
 	int elementCount[PT_NUM];
 	Element elements[PT_NUM];
 	ElementDataContainer *elementData[PT_NUM];
@@ -66,13 +68,14 @@ public:
 	void Clear();
 	bool Check();
 	int part_create(int p, int x, int y, int t);
-	void part_change_type(int i, int x, int y, int t);
 	void part_kill(int i);
-	
+	bool part_change_type(int i, int x, int y, int t);
+	void pmap_reset();
+
 	// Functions defined here should hopefully be inlined
 	// Don't put anything that will change often here, since changes cause a lot of recompiling
 
-	bool is_element(int t)
+	bool is_element(int t) const
 	{
 		return (t>=0 && t<PT_NUM && elements[t].Enabled);
 	}
@@ -86,9 +89,11 @@ public:
 		pfree = parts[i].life;
 		if (i>parts_lastActiveIndex)
 			parts_lastActiveIndex = i;
-		/*if (!partsFree[i])
+#ifdef DEBUG_PARTSALLOC
+		if (!partsFree[i])
 			printf("Particle allocated that isn't free: %d\n", i);
-		partsFree[i] = false;*/
+		partsFree[i] = false;
+#endif
 		return i;
 	}
 	void part_free(int i)
@@ -96,10 +101,32 @@ public:
 		parts[i].type = 0;
 		parts[i].life = pfree;
 		pfree = i;
-		/*if (partsFree[i])
+#ifdef DEBUG_PARTSALLOC
+		if (partsFree[i])
 			printf("Particle freed twice: %d\n", i);
-		partsFree[i] = true;*/
+		partsFree[i] = true;
+#endif
 	}
+	void part_move(int i, int x, int y, float nxf, float nyf)
+	{
+		volatile float tmpx = nxf, tmpy = nyf;// volatile to hopefully force truncation of floats in x87 registers by storing and reloading from memory, so that rounding issues don't cause particles to appear in the wrong pmap list. If using -mfpmath=sse or an ARM CPU, this may be unnecessary.
+		parts[i].x = tmpx;
+		parts[i].y = tmpy;
+		int nx = (int)(parts[i].x+0.5f), ny = (int)(parts[i].y+0.5f);
+		if (ny!=y || nx!=x)
+		{
+			if (nx<CELL || nx>=XRES-CELL || ny<CELL || ny>=YRES-CELL)
+			{
+				kill_part(i);
+			}
+			else
+			{
+				pmap_remove(i, x, y);
+				pmap_add(i, nx, ny, parts[i].type);
+			}
+		}
+	}
+
 	void pmap_add(int i, int x, int y, int t)
 	{
 		// NB: all arguments are assumed to be within bounds
@@ -129,14 +156,7 @@ public:
 			pmap[y][x].first = parts[i].pmap_next;
 		pmap[y][x].count--;
 	}
-	void part_move(int i, float nxf, float nyf)
-	{
-		pmap_remove(i, (int)(parts[i].x+0.5f), (int)(parts[i].y+0.5f));
-		parts[i].x = nxf;
-		parts[i].y = nyf;
-		pmap_add(i, (int)(parts[i].x+0.5f), (int)(parts[i].y+0.5f), parts[i].type);
-	}
-	int pmap_find_one(int x, int y, int t)
+	int pmap_find_one(int x, int y, int t) const
 	{
 		int count = pmap[y][x].count;
 		int i = pmap[y][x].first;
@@ -147,7 +167,6 @@ public:
 		}
 		return -1;
 	}
-	void pmap_reset();
 };
 
 void Simulation_Compat_CopyData(Simulation *sim);

@@ -249,6 +249,14 @@ int SOAP_update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
+void SOAP_ChangeType(ELEMENT_CHANGETYPE_FUNC_ARGS)
+{
+	if (from==PT_SOAP && to!=PT_SOAP)
+	{
+		detach(i);
+	}
+}
+
 void SOAP_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_SOAP";
@@ -297,5 +305,6 @@ void SOAP_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = &SOAP_update;
 	elem->Graphics = NULL;
+	elem->Func_ChangeType = &SOAP_ChangeType;
 }
 

@@ -14,10 +14,13 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/elements/FIGH.h"
+#include "simulation/elements/PRTI.h"
 
 #define INBOND(x, y) ((x)>=0 && (y)>=0 && (x)<XRES && (y)<YRES)
 
 void STKM_interact(Simulation *sim, playerst* playerp, int i, int x, int y);
+
 
 int STKM_update(UPDATE_FUNC_ARGS)
 {
@@ -461,21 +464,17 @@ void STKM_interact(Simulation *sim, playerst* playerp, int i, int x, int y)
 
 		if (rt==PT_PRTI && parts[i].type)
 		{
-			int nnx, count=1;//gives rx=0, ry=1 in update_PRTO
-			parts[ri].tmp = (int)((parts[ri].temp-73.15f)/100+1);
-			if (parts[ri].tmp>=CHANNELS) parts[ri].tmp = CHANNELS-1;
-			else if (parts[ri].tmp<0) parts[ri].tmp = 0;
-			for (nnx=0; nnx<80; nnx++)
-				if (!portalp[parts[ri].tmp][count][nnx].type)
-				{
-					portalp[parts[ri].tmp][count][nnx] = parts[i];
-					kill_part(i);
-					//stop new STKM/fighters being created to replace the ones in the portal:
+			int t = parts[i].type;
+			int tmp = parts[i].tmp;
+			PortalChannel *channel = ((PRTI_ElementDataContainer*)sim->elementData[PT_PRTI])->GetParticleChannel(sim, ri);
+			if (channel->StoreParticle(sim, i, 1))//slot=1 gives rx=0, ry=1 in PRTO_update
+			{
+				//stop new STKM/fighters being created to replace the ones in the portal:
+				if (t==PT_FIGH)
+					((FIGH_ElementDataContainer*)sim->elementData[PT_FIGH])->AllocSpecific(tmp);
+				else
 					playerp->spwn = 1;
-					if (portalp[parts[ri].tmp][count][nnx].type==PT_FIGH)
-						fighcount++;
-					break;
-				}
+			}
 		}
 
 		if ((rt==PT_BHOL || rt==PT_NBHL) && parts[i].type)
@@ -521,19 +520,27 @@ void STKM_init_legs(playerst* playerp, int i)
 	playerp->legs[15] = y+12;
 }
 
-int STKM_create_override(ELEMENT_CREATE_OVERRIDE_FUNC_ARGS)
+bool STKM_create_allowed(ELEMENT_CREATE_ALLOWED_FUNC_ARGS)
 {
-	if (player.spwn)
-		return -1;
-	else
-		return -4;
+	return !player.spwn;
 }
 
 void STKM_create(ELEMENT_CREATE_FUNC_ARGS)
 {
-	STKM_init_legs(&player, i);
-	player.spwn = 1;
 	sim->part_create(-3, x, y, PT_SPAWN);
+}
+
+void STKM_ChangeType(ELEMENT_CHANGETYPE_FUNC_ARGS)
+{
+	if (to==PT_STKM)
+	{
+		STKM_init_legs(&player, i);
+		player.spwn = 1;
+	}
+	else
+	{
+		player.spwn = 0;
+	}
 }
 
 void STKM_init_element(ELEMENT_INIT_FUNC_ARGS)
@@ -583,7 +590,8 @@ void STKM_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = &STKM_update;
 	elem->Graphics = &STKM_graphics;
-	elem->Func_Create_Override = &STKM_create_override;
+	elem->Func_Create_Allowed = &STKM_create_allowed;
 	elem->Func_Create = &STKM_create;
+	elem->Func_ChangeType = &STKM_ChangeType;
 }
 

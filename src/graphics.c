@@ -56,7 +56,7 @@
 #endif
 
 #include "simulation/Simulation.h"
-
+#include "simulation/elements/FIGH.h"
 
 //unsigned cmode = CM_FIRE;
 unsigned int *render_modes;
@@ -2147,7 +2147,7 @@ void render_parts(pixel *vid)
 					else if(t==PT_STKM2)
 						cplayer = &player2;
 					else if(t==PT_FIGH)
-						cplayer = &fighters[(unsigned char)parts[i].tmp];
+						cplayer = ((FIGH_ElementDataContainer*)globalSim->elementData[PT_FIGH])->Get(parts[i].tmp);
 					else
 						continue;
 
@@ -2667,7 +2667,7 @@ void render_parts(pixel *vid)
 						drad = (M_PI * ((float)orbl[r]) / 180.0f)*1.41f;
 						nxo = (int)(ddist*cos(drad));
 						nyo = (int)(ddist*sin(drad));
-						if (ny+nyo>0 && ny+nyo<YRES && nx+nxo>0 && nx+nxo<XRES && (pmap[ny+nyo][nx+nxo]&0xFF) != PT_PRTI)
+						if (ny+nyo>0 && ny+nyo<YRES && nx+nxo>0 && nx+nxo<XRES && globalSim->pmap_find_one(nx+nxo, ny+nyo, PT_PRTI)<0)
 							addpixel(vid, nx+nxo, ny+nyo, colr, colg, colb, 255-orbd[r]);
 					}
 				}
@@ -2685,7 +2685,7 @@ void render_parts(pixel *vid)
 						drad = (M_PI * ((float)orbl[r]) / 180.0f)*1.41f;
 						nxo = (int)(ddist*cos(drad));
 						nyo = (int)(ddist*sin(drad));
-						if (ny+nyo>0 && ny+nyo<YRES && nx+nxo>0 && nx+nxo<XRES && (pmap[ny+nyo][nx+nxo]&0xFF) != PT_PRTO)
+						if (ny+nyo>0 && ny+nyo<YRES && nx+nxo>0 && nx+nxo<XRES && globalSim->pmap_find_one(nx+nxo, ny+nyo, PT_PRTO)<0)
 							addpixel(vid, nx+nxo, ny+nyo, colr, colg, colb, 255-orbd[r]);
 					}
 				}

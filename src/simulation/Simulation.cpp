@@ -86,14 +86,18 @@ void Simulation::pmap_reset()
 	pmap_entry *pmap_flat = (pmap_entry*)pmap;
 	for (i=0; i<XRES*YRES; i++)
 		pmap_flat[i].count = 0;
-	/*for (i=0; i<NPART; i++)
-		partsFree[i] = true;*/
+#ifdef DEBUG_PARTSALLOC
+	for (i=0; i<NPART; i++)
+		partsFree[i] = true;
+#endif
 	for (i=0; i<NPART; i++)
 	{
 		if (parts[i].type)
 		{
 			pmap_add(i, (int)(parts[i].x+0.5f), (int)(parts[i].y+0.5f), parts[i].type);
-			//partsFree[i] = false;
+#ifdef DEBUG_PARTSALLOC
+			partsFree[i] = false;
+#endif
 		}
 	}
 }
@@ -229,7 +233,7 @@ int Simulation::part_create(int p, int x, int y, int t)
 	// This function is only for actually creating particles.
 	// Not for tools, or changing things into spark, or special brush things like setting clone ctype.
 
-	int i;
+	int i, oldType = PT_NONE;
 	if (x<0 || y<0 || x>=XRES || y>=YRES || t<=0 || t>=PT_NUM || !elements[t].Enabled)
 	{
 		return -1;
@@ -243,6 +247,12 @@ int Simulation::part_create(int p, int x, int y, int t)
 		// Useful if creation should be blocked in some conditions, but otherwise no changes to this function (e.g. SPWN)
 		if (ret!=-4)
 			return ret;
+	}
+
+	if (elements[t].Func_Create_Allowed)
+	{
+		if (!(*(elements[t].Func_Create_Allowed))(this, p, x, y, t))
+			return -1;
 	}
 
 	if (p==-1)
@@ -266,6 +276,11 @@ int Simulation::part_create(int p, int x, int y, int t)
 	{
 		int oldX = (int)(parts[p].x+0.5f);
 		int oldY = (int)(parts[p].y+0.5f);
+		oldType = parts[p].type;
+		if (elements[oldType].Func_ChangeType)
+		{
+			(*(elements[oldType].Func_ChangeType))(this, p, oldX, oldY, oldType, t);
+		}
 		pmap_remove(p, oldX, oldY);
 		i = p;
 	}
@@ -288,12 +303,6 @@ int Simulation::part_create(int p, int x, int y, int t)
 	parts[i].lastY = (float)y;
 #endif
 
-	// Set non-static properties (such as randomly generated ones)
-	if (elements[t].Func_Create)
-	{
-		(*(elements[t].Func_Create))(this, i, x, y);
-	}
-
 	// Fancy dust effects for powder types
 	if((elements[t].Properties & TYPE_PART) && pretty_powder)
 	{
@@ -308,57 +317,86 @@ int Simulation::part_create(int p, int x, int y, int t)
 		parts[i].dcolour = COLRGB(colr, colg, colb);
 	}
 
+	// Set non-static properties (such as randomly generated ones)
+	if (elements[t].Func_Create)
+	{
+		(*(elements[t].Func_Create))(this, i, x, y, t);
+	}
+
 	pmap_add(i, x, y, t);
+
+	if (elements[t].Func_ChangeType)
+	{
+		(*(elements[t].Func_ChangeType))(this, i, x, y, oldType, t);
+	}
 
 	elementCount[t]++;
 	return i;
 }
 
+bool Simulation::part_change_type(int i, int x, int y, int t)//changes the type of particle number i, to t.  This also changes pmap at the same time.
+{
+	if (x<0 || y<0 || x>=XRES || y>=YRES || i>=NPART || t<0 || t>=PT_NUM)
+		return false;
+
+	if (t==parts[i].type)
+		return true;
+
+	if (elements[t].Func_Create_Allowed)
+	{
+		if (!(*(elements[t].Func_Create_Allowed))(this, i, x, y, t))
+			return false;
+	}
+
+	int oldType = parts[i].type;
+	if (oldType) elementCount[oldType]--;
+
+	if (!ptypes[t].enabled)
+		t = PT_NONE;
+
+	parts[i].type = t;
+	if (t) elementCount[t]++;
+	// TODO: add stuff here if separating parts and energy parts in new linked list pmap
+	/*if (ptypes[t].properties & TYPE_ENERGY)
+	{
+		photons[y][x] = t|(i<<8);
+		if ((pmap[y][x]>>8)==i)
+			pmap[y][x] = 0;
+	}
+	else
+	{
+		pmap[y][x] = t|(i<<8);
+		if ((photons[y][x]>>8)==i)
+			photons[y][x] = 0;
+	}*/
+	if (elements[oldType].Func_ChangeType)
+	{
+		(*(elements[oldType].Func_ChangeType))(this, i, x, y, oldType, t);
+	}
+	if (elements[t].Func_ChangeType)
+	{
+		(*(elements[t].Func_ChangeType))(this, i, x, y, oldType, t);
+	}
+	return true;
+}
+
 void Simulation::part_kill(int i)//kills particle number i
 {
 	int x, y;
+	int t = parts[i].type;
 
-	// Remove from pmap even if type==0, otherwise infinite recursion occurs when flood fill deleting
-	// a particle which sets type to 0 without calling kill_part (such as LIFE)
 	x = (int)(parts[i].x+0.5f);
 	y = (int)(parts[i].y+0.5f);
+
+	if (t && elements[t].Func_ChangeType)
+	{
+		(*(elements[t].Func_ChangeType))(this, i, x, y, t, PT_NONE);
+	}
+
 	pmap_remove(i, x, y);
-
-	if (parts[i].type == PT_NONE) // TODO: remove this? (//This shouldn't happen anymore, but it's here just in case)
+	if (t == PT_NONE) // TODO: remove this? (//This shouldn't happen anymore, but it's here just in case)
 		return;
-
-	if (parts[i].type)
-	{
-		elementCount[parts[i].type]--;
-	}
-
-	// TODO: move these into element functions?
-	if (parts[i].type == PT_STKM)
-	{
-		player.spwn = 0;
-	}
-	if (parts[i].type == PT_STKM2)
-	{
-		player2.spwn = 0;
-	}
-	if (parts[i].type == PT_FIGH)
-	{
-		fighters[(unsigned char)parts[i].tmp].spwn = 0;
-		fighcount--;
-	}
-	if (parts[i].type == PT_SPAWN)
-	{
-		ISSPAWN1 = 0;
-	}
-	if (parts[i].type == PT_SPAWN2)
-	{
-		ISSPAWN2 = 0;
-	}
-	if (parts[i].type == PT_SOAP)
-	{
-		detach(i);
-	}
-
+	if (t) elementCount[t]--;
 	part_free(i);
 }
 

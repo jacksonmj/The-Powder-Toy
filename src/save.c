@@ -25,6 +25,7 @@
 #include "hmap.h"
 
 #include "simulation/Simulation.h"
+#include "simulation/elements/FIGH.h"
 
 int change_wallpp(int wt)
 {
@@ -1479,15 +1480,13 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 					}
 					else if (partsptr[newIndex].type == PT_FIGH)
 					{
-						unsigned char fcount = 0;
-						while (fcount < 100 && fcount < (fighcount+1) && fighters[fcount].spwn==1) fcount++;
-						if (fcount < 100 && fighters[fcount].spwn==0)
+						partsptr[newIndex].tmp = ((FIGH_ElementDataContainer*)globalSim->elementData[PT_FIGH])->Alloc();
+						if (partsptr[newIndex].tmp>=0)
 						{
-							partsptr[newIndex].tmp = fcount;
-							fighters[fcount].spwn = 1;
-							fighters[fcount].elem = PT_DUST;
-							fighcount++;
-							STKM_init_legs(&(fighters[fcount]), newIndex);
+							playerst* figh = ((FIGH_ElementDataContainer*)globalSim->elementData[PT_FIGH])->Get(partsptr[newIndex].tmp);
+							figh->spwn = 1;
+							figh->elem = PT_DUST;
+							STKM_init_legs(figh, newIndex);
 						}
 					}
 					else if (partsptr[newIndex].type == PT_SOAP)
@@ -2180,15 +2179,13 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned c
 			}
 			else if (parts[i-1].type == PT_FIGH)
 			{
-				unsigned char fcount = 0;
-				while (fcount < 100 && fcount < (fighcount+1) && fighters[fcount].spwn==1) fcount++;
-				if (fcount < 100 && fighters[fcount].spwn==0)
+				parts[i-1].tmp = ((FIGH_ElementDataContainer*)globalSim->elementData[PT_FIGH])->Alloc();
+				if (parts[i-1].tmp>=0)
 				{
-					parts[i-1].tmp = fcount;
-					fighters[fcount].spwn = 1;
-					fighters[fcount].elem = PT_DUST;
-					fighcount++;
-					STKM_init_legs(&(fighters[fcount]), i-1);
+					playerst* figh = ((FIGH_ElementDataContainer*)globalSim->elementData[PT_FIGH])->Get(parts[i-1].tmp);
+					figh->spwn = 1;
+					figh->elem = PT_DUST;
+					STKM_init_legs(figh, i-1);
 				}
 			}
 			else if (ver<79 && parts[i-1].type == PT_SPNG)

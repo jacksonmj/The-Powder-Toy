@@ -24,19 +24,27 @@ int STKM2_update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-int STKM2_create_override(ELEMENT_CREATE_OVERRIDE_FUNC_ARGS)
+bool STKM2_create_allowed(ELEMENT_CREATE_ALLOWED_FUNC_ARGS)
 {
-	if (player2.spwn)
-		return -1;
-	else
-		return -4;
+	return !player2.spwn;
 }
 
 void STKM2_create(ELEMENT_CREATE_FUNC_ARGS)
 {
-	STKM_init_legs(&player2, i);
-	player2.spwn = 1;
 	sim->part_create(-3, x, y, PT_SPAWN2);
+}
+
+void STKM2_ChangeType(ELEMENT_CHANGETYPE_FUNC_ARGS)
+{
+	if (to==PT_STKM2)
+	{
+		STKM_init_legs(&player2, i);
+		player2.spwn = 1;
+	}
+	else
+	{
+		player2.spwn = 0;
+	}
 }
 
 void STKM2_init_element(ELEMENT_INIT_FUNC_ARGS)
@@ -84,7 +92,8 @@ void STKM2_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = &STKM2_update;
 	elem->Graphics = &STKM_graphics;
-	elem->Func_Create_Override = &STKM2_create_override;
+	elem->Func_Create_Allowed = &STKM2_create_allowed;
 	elem->Func_Create = &STKM2_create;
+	elem->Func_ChangeType = &STKM2_ChangeType;
 }
 

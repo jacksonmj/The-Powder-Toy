@@ -251,8 +251,6 @@ extern int GRID_MODE;
 extern int VINE_MODE;
 extern int DEBUG_MODE;
 extern int GENERATION;
-extern int ISSPAWN1;
-extern int ISSPAWN2;
 extern sign signs[MAXSIGNS];
 extern stamp stamps[STAMP_MAX];
 extern int stamp_count;

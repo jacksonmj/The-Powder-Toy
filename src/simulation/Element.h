@@ -31,8 +31,10 @@ class Simulation;
 #define UPDATE_FUNC_SUBCALL_ARGS sim, i, x, y, surround_space, nt
 #define GRAPHICS_FUNC_ARGS Simulation *sim, particle *cpart, int nx, int ny, int *pixel_mode, int* cola, int *colr, int *colg, int *colb, int *firea, int *firer, int *fireg, int *fireb
 #define GRAPHICS_FUNC_SUBCALL_ARGS sim, cpart, nx, ny, pixel_mode, cola, colr, colg, colb, firea, firer, fireg, fireb
-#define ELEMENT_CREATE_FUNC_ARGS Simulation *sim, int i, int x, int y
+#define ELEMENT_CREATE_FUNC_ARGS Simulation *sim, int i, int x, int y, int t
 #define ELEMENT_CREATE_OVERRIDE_FUNC_ARGS Simulation *sim, int p, int x, int y, int t
+#define ELEMENT_CREATE_ALLOWED_FUNC_ARGS Simulation *sim, int i, int x, int y, int t
+#define ELEMENT_CHANGETYPE_FUNC_ARGS Simulation *sim, int i, int x, int y, int from, int to
 
 
 class Element
@@ -91,14 +93,26 @@ public:
 	int (*Update) (UPDATE_FUNC_ARGS);
 	int (*Graphics) (GRAPHICS_FUNC_ARGS);
 	// Func_Create can be used to set initial properties that are not constant (e.g. a random life value)
-	// It cannot be used to block creation, to do that use Func_Create_Override and return -1 to block or -4 to allow
+	// It cannot be used to block creation, to do that use Func_Create_Allowed
 	// Particle type should not be changed in this function
 	void (*Func_Create)(ELEMENT_CREATE_FUNC_ARGS);
 
-	// Func_Create_Override can be used to completely override part_create
+	// Func_Create_Override can be used to completely override Simulation::part_create
 	// Coordinates and particle type are checked before calling this.
 	// The meaning of the return value is identical to part_create, except that returning -4 means continue with part_create as though there was no override function
 	int (*Func_Create_Override)(ELEMENT_CREATE_OVERRIDE_FUNC_ARGS);
+
+	// Func_Create_Allowed is used to check whether a particle can be created, by both Simulation::part_create and Simulation::part_change_type
+	// Arguments are the same as Simulation::part_create or Simulation::part_change_type
+	// This function should not modify the particle
+	// Before calling this, coordinates and particle type are checked, but not eval_move()
+	bool (*Func_Create_Allowed)(ELEMENT_CREATE_ALLOWED_FUNC_ARGS);
+
+	// Func_ChangeType is called by Simulation::part_create, Simulation::part_change_type, and Simulation::part_kill
+	// It should be used for things such as setting STKM legs and allocating/freeing a fighters[] slot
+	// For part_create and part_change_type, it is called at the end of the function, after the pmap and all the properties and element counts are set
+	// For part_kill, it is called at the start of the function, before modifying particle properties or removing it from the pmap
+	void (*Func_ChangeType)(ELEMENT_CHANGETYPE_FUNC_ARGS);
 
 	particle DefaultProperties;
 
