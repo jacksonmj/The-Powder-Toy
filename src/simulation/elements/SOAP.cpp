@@ -38,7 +38,8 @@ void attach(int i1, int i2)
 
 int SOAP_update(UPDATE_FUNC_ARGS) 
 {
-	int r, rx, ry, nr, ng, nb, na;
+	int rx, ry, rt, nr, ng, nb, na;
+	int rcount, ri, rnext;
 	float tr, tg, tb, ta;
 	float blend;
 	
@@ -93,12 +94,11 @@ int SOAP_update(UPDATE_FUNC_ARGS)
 				for (ry=-2; ry<3; ry++)
 					if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 					{
-						r = pmap[y+ry][x+rx];
-						if (!r)
-							continue;
-
-						if ((parts[r>>8].type == PT_SOAP) && (parts[r>>8].ctype&1) && !(parts[r>>8].ctype&4))
-							attach(i, r>>8);
+						FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+						{
+							if ((parts[ri].type == PT_SOAP) && (parts[ri].ctype&1) && !(parts[ri].ctype&4))
+								attach(i, ri);
+						}
 					}
 		}
 		else
@@ -108,42 +108,45 @@ int SOAP_update(UPDATE_FUNC_ARGS)
 					for (ry=-2; ry<3; ry++)
 						if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 						{
-							r = pmap[y+ry][x+rx];
-							if (!r && !bmap[(y+ry)/CELL][(x+rx)/CELL])
+							if (parts[i].temp>0 && bmap[(y+ry)/CELL][(x+rx)/CELL])
+							{
+								detach(i);
 								continue;
+							}
 
-							if (parts[i].temp>0)
+							FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 							{
-								if (bmap[(y+ry)/CELL][(x+rx)/CELL] 
-										|| (r && ptypes[r&0xFF].state != ST_GAS 
-											&& (r&0xFF) != PT_SOAP && (r&0xFF) != PT_GLAS))
+								rt = parts[ri].type;
+
+								if (parts[i].temp>0)
 								{
-									detach(i);
-									continue;
+									if (ptypes[rt].state != ST_GAS && rt != PT_SOAP && rt != PT_GLAS)
+									{
+										detach(i);
+										continue;
+									}
 								}
-							}
 
-							if ((r&0xFF) == PT_SOAP && parts[r>>8].ctype == 1)
-							{
-								int buf;
+								if (rt == PT_SOAP && parts[ri].ctype == 1)
+								{
+									int buf;
 
-								buf = parts[i].tmp;
+									buf = parts[i].tmp;
 
-								parts[i].tmp = r>>8;
-								parts[buf].tmp2 = r>>8;
-								parts[r>>8].tmp2 = i;
-								parts[r>>8].tmp = buf;
-								parts[r>>8].ctype = 7;
-							}
+									parts[i].tmp = ri;
+									parts[buf].tmp2 = ri;
+									parts[ri].tmp2 = i;
+									parts[ri].tmp = buf;
+									parts[ri].ctype = 7;
+								}
 
-							if ((r&0xFF) == PT_SOAP && parts[r>>8].ctype == 7 && parts[i].tmp != r>>8 && parts[i].tmp2 != r>>8)
-							{
-								int buf;
-
-								parts[parts[i].tmp].tmp2 = parts[r>>8].tmp2;
-								parts[parts[r>>8].tmp2].tmp = parts[i].tmp;
-								parts[r>>8].tmp2 = i;
-								parts[i].tmp = r>>8;
+								if (rt == PT_SOAP && parts[ri].ctype == 7 && parts[i].tmp != ri && parts[i].tmp2 != ri)
+								{
+									parts[parts[i].tmp].tmp2 = parts[ri].tmp2;
+									parts[parts[ri].tmp2].tmp = parts[i].tmp;
+									parts[ri].tmp2 = i;
+									parts[i].tmp = ri;
+								}
 							}
 						}
 		}
@@ -195,26 +198,25 @@ int SOAP_update(UPDATE_FUNC_ARGS)
 			for (ry=-2; ry<3; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					r = pmap[y+ry][x+rx];
-					if (!r)
-						continue;
-
-					if ((r&0xFF) == PT_OIL)
+					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 					{
-						float ax, ay;
+						if (parts[ri].type == PT_OIL)
+						{
+							float ax, ay;
 
-						parts[i].vy -= 0.1f;
+							parts[i].vy -= 0.1f;
 
-						parts[i].vy *= 0.5f;
-						parts[i].vx *= 0.5f;
+							parts[i].vy *= 0.5f;
+							parts[i].vx *= 0.5f;
 
-						ax = (parts[i].vx + parts[r>>8].vx)/2;
-						ay = (parts[i].vy + parts[r>>8].vy)/2;
+							ax = (parts[i].vx + parts[ri].vx)/2;
+							ay = (parts[i].vy + parts[ri].vy)/2;
 
-						parts[i].vx = ax;
-						parts[i].vy = ay;
-						parts[r>>8].vx = ax;
-						parts[r>>8].vy = ay;
+							parts[i].vx = ax;
+							parts[i].vy = ay;
+							parts[ri].vx = ax;
+							parts[ri].vy = ay;
+						}
 					}
 				}
 	}
@@ -223,23 +225,24 @@ int SOAP_update(UPDATE_FUNC_ARGS)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if ((r&0xFF)!=PT_SOAP)
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					blend = 0.85f;
-					tr = (parts[r>>8].dcolour>>16)&0xFF;
-					tg = (parts[r>>8].dcolour>>8)&0xFF;
-					tb = (parts[r>>8].dcolour)&0xFF;
-					ta = (parts[r>>8].dcolour>>24)&0xFF;
-					
-					nr = (tr*blend);
-					ng = (tg*blend);
-					nb = (tb*blend);
-					na = (ta*blend);
-					
-					parts[r>>8].dcolour = nr<<16 | ng<<8 | nb | na<<24;
+					rt = parts[ri].type;
+					if (rt!=PT_SOAP)
+					{
+						blend = 0.85f;
+						tr = (parts[ri].dcolour>>16)&0xFF;
+						tg = (parts[ri].dcolour>>8)&0xFF;
+						tb = (parts[ri].dcolour)&0xFF;
+						ta = (parts[ri].dcolour>>24)&0xFF;
+						
+						nr = (tr*blend);
+						ng = (tg*blend);
+						nb = (tb*blend);
+						na = (ta*blend);
+						
+						parts[ri].dcolour = nr<<16 | ng<<8 | nb | na<<24;
+					}
 				}
 			}
 

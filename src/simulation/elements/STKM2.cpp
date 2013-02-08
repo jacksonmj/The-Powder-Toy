@@ -26,54 +26,17 @@ int STKM2_update(UPDATE_FUNC_ARGS)
 
 int STKM2_create_override(ELEMENT_CREATE_OVERRIDE_FUNC_ARGS)
 {
-	int i;
-
 	if (player2.spwn)
 		return -1;
-
-	if (p==-1)
-	{
-		if (pmap[y][x] ? (eval_move(t, x, y, NULL)!=2) : (bmap[y/CELL][x/CELL] && eval_move(t, x, y, NULL)==0))
-		{
-			if ((pmap[y][x]&0xFF)!=PT_SPAWN&&(pmap[y][x]&0xFF)!=PT_SPAWN2)
-			{
-				return -1;
-			}
-		}
-		i = sim->part_alloc();
-	}
-	else if (p<0)
-	{
-		i = sim->part_alloc();
-	}
 	else
-	{
-		int oldX = (int)(parts[p].x+0.5f);
-		int oldY = (int)(parts[p].y+0.5f);
-		sim->pmap_remove(p, oldX, oldY);
-		i = p;
-	}
+		return -4;
+}
 
-	if (i<0)
-		return -1;
-
-	sim->parts[i] = sim->elements[t].DefaultProperties;
-	sim->parts[i].type = t;
-	sim->parts[i].x = (float)x;
-	sim->parts[i].y = (float)y;
-#ifdef OGLR
-	sim->parts[i].lastX = (float)x;
-	sim->parts[i].lastY = (float)y;
-#endif
-	parts[i].life = 100;
+void STKM2_create(ELEMENT_CREATE_FUNC_ARGS)
+{
 	STKM_init_legs(&player2, i);
 	player2.spwn = 1;
-
 	sim->part_create(-3, x, y, PT_SPAWN2);
-
-	sim->elementCount[t]++;
-	sim->pmap_add(i, x, y, t);
-	return i;
 }
 
 void STKM2_init_element(ELEMENT_INIT_FUNC_ARGS)
@@ -122,5 +85,6 @@ void STKM2_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Update = &STKM2_update;
 	elem->Graphics = &STKM_graphics;
 	elem->Func_Create_Override = &STKM2_create_override;
+	elem->Func_Create = &STKM2_create;
 }
 

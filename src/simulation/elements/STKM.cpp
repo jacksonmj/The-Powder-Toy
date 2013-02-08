@@ -17,6 +17,8 @@
 
 #define INBOND(x, y) ((x)>=0 && (y)>=0 && (x)<XRES && (y)<YRES)
 
+void STKM_interact(Simulation *sim, playerst* playerp, int i, int x, int y);
+
 int STKM_update(UPDATE_FUNC_ARGS)
 {
 	run_stickman(&player, UPDATE_FUNC_SUBCALL_ARGS);
@@ -32,7 +34,8 @@ int STKM_graphics(GRAPHICS_FUNC_ARGS)
 
 int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry;
+	int rx, ry, rt;
+	int rcount, ri, rnext;
 	int t = parts[i].type;
 	float pp, d;
 	float dt = 0.9;///(FPSB*FPSB);  //Delta time in square
@@ -52,6 +55,7 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 	//Death
 	if (parts[i].life<1 || (pv[y/CELL][x/CELL]>=4.5f && playerp->elem != SPC_AIR) ) //If his HP is less that 0 or there is very big wind...
 	{
+		int r;
 		for (r=-2; r<=1; r++)
 		{
 			sim->part_create(-1, x+r, y-2, playerp->elem);
@@ -205,45 +209,42 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 	//Searching for particles near head
 	for (rx=-2; rx<3; rx++)
 		for (ry=-2; ry<3; ry++)
-			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					r = photons[y+ry][x+rx];
-
-				if (!r && !bmap[(y+ry)/CELL][(x+rx)/CELL])
-					continue;
-				
-				if (ptypes[r&0xFF].falldown!=0 || ptypes[r&0xFF].state == ST_GAS 
-						|| ptypes[r&0xFF].properties&TYPE_GAS
-						|| ptypes[r&0xFF].properties&TYPE_LIQUID
-						|| (r&0xFF) == PT_NEUT || (r&0xFF) == PT_PHOT)
-				{
-					playerp->elem = r&0xFF;  //Current element
-				}
-				if ((r&0xFF)==PT_TESC || (r&0xFF)==PT_LIGH)
-					playerp->elem = PT_LIGH;
-				if ((r&0xFF) == PT_PLNT && parts[i].life<100) //Plant gives him 5 HP
-				{
-					if (parts[i].life<=95)
-						parts[i].life += 5;
-					else
-						parts[i].life = 100;
-					kill_part(r>>8);
-				}
-
-				if ((r&0xFF) == PT_NEUT)
-				{
-					if (parts[i].life<=100) parts[i].life -= (102-parts[i].life)/2;
-					else parts[i].life *= 0.9f;
-					kill_part(r>>8);
-				}
 				if (bmap[(ry+y)/CELL][(rx+x)/CELL]==WL_FAN)
 					playerp->elem = SPC_AIR;
-				if ((r&0xFF)==PT_PRTI)
-					STKM_interact(playerp, i, rx, ry);
-				if (!parts[i].type)//STKM_interact may kill STKM
-					return 1;
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				{
+					rt = parts[ri].type;
+					if (ptypes[rt].falldown!=0 || ptypes[rt].state == ST_GAS 
+							|| ptypes[rt].properties&TYPE_GAS
+							|| ptypes[rt].properties&TYPE_LIQUID
+							|| rt == PT_NEUT || rt == PT_PHOT)
+					{
+						playerp->elem = rt;  //Current element
+					}
+					if (rt==PT_TESC || rt==PT_LIGH)
+						playerp->elem = PT_LIGH;
+					if (rt == PT_PLNT && parts[i].life<100) //Plant gives him 5 HP
+					{
+						if (parts[i].life<=95)
+							parts[i].life += 5;
+						else
+							parts[i].life = 100;
+						kill_part(ri);
+					}
+
+					if (rt == PT_NEUT)
+					{
+						if (parts[i].life<=100) parts[i].life -= (102-parts[i].life)/2;
+						else parts[i].life *= 0.9f;
+						kill_part(ri);
+					}
+					if (rt==PT_PRTI)
+						STKM_interact(sim, playerp, i, rx, ry);
+					if (!parts[i].type)//STKM_interact may kill STKM
+						return 1;
+				}
 			}
 
 	//Head position
@@ -254,8 +255,16 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 	if (((int)(playerp->comm)&0x08) == 0x08)
 	{
 		ry -= 2*(rand()%2)+1;
-		r = pmap[ry][rx];
-		if (ptypes[r&0xFF].state == ST_SOLID)
+		bool solidFound = false;
+		FOR_PMAP_POSITION(sim, rx, ry, rcount, ri, rnext)// TODO: not energy parts
+		{
+			if (ptypes[parts[ri].type].state == ST_SOLID)
+			{
+				solidFound = true;
+				break;
+			}
+		}
+		if (solidFound)
 		{
 			// TODO: change this create_part
 			create_part(-1, rx, ry, PT_SPRK);
@@ -405,10 +414,10 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 	}
 
 	//If legs touch something
-	STKM_interact(playerp, i, (int)(playerp->legs[4]+0.5), (int)(playerp->legs[5]+0.5));
-	STKM_interact(playerp, i, (int)(playerp->legs[12]+0.5), (int)(playerp->legs[13]+0.5));
-	STKM_interact(playerp, i, (int)(playerp->legs[4]+0.5), (int)playerp->legs[5]);
-	STKM_interact(playerp, i, (int)(playerp->legs[12]+0.5), (int)playerp->legs[13]);
+	STKM_interact(sim, playerp, i, (int)(playerp->legs[4]+0.5), (int)(playerp->legs[5]+0.5));
+	STKM_interact(sim, playerp, i, (int)(playerp->legs[12]+0.5), (int)(playerp->legs[13]+0.5));
+	STKM_interact(sim, playerp, i, (int)(playerp->legs[4]+0.5), (int)playerp->legs[5]);
+	STKM_interact(sim, playerp, i, (int)(playerp->legs[12]+0.5), (int)playerp->legs[13]);
 	if (!parts[i].type)
 		return 1;
 
@@ -416,27 +425,29 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-void STKM_interact(playerst* playerp, int i, int x, int y)
+void STKM_interact(Simulation *sim, playerst* playerp, int i, int x, int y)
 {
-	int r;
+	int rt;
+	int rcount, ri, rnext;
 	if (x<0 || y<0 || x>=XRES || y>=YRES || !parts[i].type)
 		return;
-	r = pmap[y][x];
-	if (r)
+	FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)// TODO: not energy parts
 	{
-		if ((r&0xFF)==PT_SPRK && playerp->elem!=PT_LIGH) //If on charge
+		rt = parts[ri].type;
+
+		if (rt==PT_SPRK && playerp->elem!=PT_LIGH) //If on charge
 		{
 			parts[i].life -= (int)(rand()*20/RAND_MAX)+32;
 		}
 
-		if (ptypes[r&0xFF].hconduct && ((playerp->elem!=PT_LIGH && parts[r>>8].temp>=323) || parts[r>>8].temp<=243))
+		if (ptypes[rt].hconduct && ((playerp->elem!=PT_LIGH && parts[ri].temp>=323) || parts[ri].temp<=243))
 		{
 			parts[i].life -= 2;
 			playerp->accs[3] -= 1;
 		}
 			
-		if (ptypes[r&0xFF].properties&PROP_DEADLY)
-			switch (r&0xFF)
+		if (ptypes[rt].properties&PROP_DEADLY)
+			switch (rt)
 			{
 				case PT_ACID:
 					parts[i].life -= 5;
@@ -445,37 +456,37 @@ void STKM_interact(playerst* playerp, int i, int x, int y)
 					parts[i].life -= 1;
 			}
 
-		if (ptypes[r&0xFF].properties&PROP_RADIOACTIVE)
+		if (ptypes[rt].properties&PROP_RADIOACTIVE)
 			parts[i].life -= 1;
 
-		if ((r&0xFF)==PT_PRTI && parts[i].type)
+		if (rt==PT_PRTI && parts[i].type)
 		{
 			int nnx, count=1;//gives rx=0, ry=1 in update_PRTO
-			parts[r>>8].tmp = (int)((parts[r>>8].temp-73.15f)/100+1);
-			if (parts[r>>8].tmp>=CHANNELS) parts[r>>8].tmp = CHANNELS-1;
-			else if (parts[r>>8].tmp<0) parts[r>>8].tmp = 0;
+			parts[ri].tmp = (int)((parts[ri].temp-73.15f)/100+1);
+			if (parts[ri].tmp>=CHANNELS) parts[ri].tmp = CHANNELS-1;
+			else if (parts[ri].tmp<0) parts[ri].tmp = 0;
 			for (nnx=0; nnx<80; nnx++)
-				if (!portalp[parts[r>>8].tmp][count][nnx].type)
+				if (!portalp[parts[ri].tmp][count][nnx].type)
 				{
-					portalp[parts[r>>8].tmp][count][nnx] = parts[i];
+					portalp[parts[ri].tmp][count][nnx] = parts[i];
 					kill_part(i);
 					//stop new STKM/fighters being created to replace the ones in the portal:
 					playerp->spwn = 1;
-					if (portalp[parts[r>>8].tmp][count][nnx].type==PT_FIGH)
+					if (portalp[parts[ri].tmp][count][nnx].type==PT_FIGH)
 						fighcount++;
 					break;
 				}
 		}
 
-		if (((r&0xFF)==PT_BHOL || (r&0xFF)==PT_NBHL) && parts[i].type)
+		if ((rt==PT_BHOL || rt==PT_NBHL) && parts[i].type)
 		{
 			if (!legacy_enable)
 			{
-				parts[r>>8].temp = restrict_flt(parts[r>>8].temp+parts[i].temp/2, MIN_TEMP, MAX_TEMP);
+				parts[ri].temp = restrict_flt(parts[ri].temp+parts[i].temp/2, MIN_TEMP, MAX_TEMP);
 			}
 			kill_part(i);
 		}
-		if (((r&0xFF)==PT_VOID || ((r&0xFF)==PT_PVOD && parts[r>>8].life==10)) && (!parts[r>>8].ctype || (parts[r>>8].ctype==parts[i].type)!=(parts[r>>8].tmp&1)) && parts[i].type)
+		if ((rt==PT_VOID || (rt==PT_PVOD && parts[ri].life==10)) && (!parts[ri].ctype || (parts[ri].ctype==parts[i].type)!=(parts[ri].tmp&1)) && parts[i].type)
 		{
 			kill_part(i);
 		}
@@ -512,54 +523,17 @@ void STKM_init_legs(playerst* playerp, int i)
 
 int STKM_create_override(ELEMENT_CREATE_OVERRIDE_FUNC_ARGS)
 {
-	int i;
-
 	if (player.spwn)
 		return -1;
-
-	if (p==-1)
-	{
-		if (pmap[y][x] ? (eval_move(t, x, y, NULL)!=2) : (bmap[y/CELL][x/CELL] && eval_move(t, x, y, NULL)==0))
-		{
-			if ((pmap[y][x]&0xFF)!=PT_SPAWN&&(pmap[y][x]&0xFF)!=PT_SPAWN2)
-			{
-				return -1;
-			}
-		}
-		i = sim->part_alloc();
-	}
-	else if (p<0)
-	{
-		i = sim->part_alloc();
-	}
 	else
-	{
-		int oldX = (int)(parts[p].x+0.5f);
-		int oldY = (int)(parts[p].y+0.5f);
-		sim->pmap_remove(p, oldX, oldY);
-		i = p;
-	}
+		return -4;
+}
 
-	if (i<0)
-		return -1;
-
-	sim->parts[i] = sim->elements[t].DefaultProperties;
-	sim->parts[i].type = t;
-	sim->parts[i].x = (float)x;
-	sim->parts[i].y = (float)y;
-#ifdef OGLR
-	sim->parts[i].lastX = (float)x;
-	sim->parts[i].lastY = (float)y;
-#endif
-	parts[i].life = 100;
+void STKM_create(ELEMENT_CREATE_FUNC_ARGS)
+{
 	STKM_init_legs(&player, i);
 	player.spwn = 1;
-
 	sim->part_create(-3, x, y, PT_SPAWN);
-
-	sim->elementCount[t]++;
-	sim->pmap_add(i, x, y, t);
-	return i;
 }
 
 void STKM_init_element(ELEMENT_INIT_FUNC_ARGS)
@@ -610,5 +584,6 @@ void STKM_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Update = &STKM_update;
 	elem->Graphics = &STKM_graphics;
 	elem->Func_Create_Override = &STKM_create_override;
+	elem->Func_Create = &STKM_create;
 }
 

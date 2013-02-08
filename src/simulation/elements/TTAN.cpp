@@ -26,7 +26,7 @@ int TTAN_update(UPDATE_FUNC_ARGS)
 		for (nx=-1; nx<2; nx++) {
 			for (ny=-1; ny<2; ny++) {
 				if ((!nx != !ny) && x+nx>=0 && y+ny>=0 && x+nx<XRES && y+ny<YRES) {
-					if((pmap[y+ny][x+nx]&0xFF)==PT_TTAN)
+					if (sim->pmap_find_one(x+nx, y+ny, PT_TTAN)>=0)
 						ttan++;
 				}
 			}

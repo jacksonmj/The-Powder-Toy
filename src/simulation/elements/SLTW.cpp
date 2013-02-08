@@ -16,29 +16,31 @@
 #include "simulation/ElementsCommon.h"
 
 int SLTW_update(UPDATE_FUNC_ARGS) {
-	int r, rx, ry;
+	int rx, ry, rt;
+	int rcount, ri, rnext;
 	for (rx=-2; rx<3; rx++)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if ((r&0xFF)==PT_SALT && 1>(rand()%10000))
-					part_change_type(r>>8,x+rx,y+ry,PT_SLTW);
-				if ((r&0xFF)==PT_PLNT&&5>(rand()%1000))
-					kill_part(r>>8);
-				if (((r&0xFF)==PT_RBDM||(r&0xFF)==PT_LRBD) && !legacy_enable && parts[i].temp>(273.15f+12.0f) && 1>(rand()%500))
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					part_change_type(i,x,y,PT_FIRE);
-					parts[i].life = 4;
-				}
-				if ((r&0xFF)==PT_FIRE){
-					kill_part(r>>8);
+					rt = parts[ri].type;
+					if (rt==PT_SALT && 1>(rand()%10000))
+						part_change_type(ri,x+rx,y+ry,PT_SLTW);
+					if (rt==PT_PLNT&&5>(rand()%1000))
+						kill_part(ri);
+					if ((rt==PT_RBDM||rt==PT_LRBD) && !legacy_enable && parts[i].temp>(273.15f+12.0f) && 1>(rand()%500))
+					{
+						part_change_type(i,x,y,PT_FIRE);
+						parts[i].life = 4;
+					}
+					if (rt==PT_FIRE){
+						kill_part(ri);
 						if(1>(rand()%150)){
 							kill_part(i);
 							return 1;
 						}
+					}
 				}
 			}
 	return 0;

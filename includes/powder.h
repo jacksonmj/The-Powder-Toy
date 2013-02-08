@@ -144,7 +144,7 @@ int update_legacy_PYRO(UPDATE_FUNC_ARGS);
 int update_legacy_all(UPDATE_FUNC_ARGS);
 int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS);
 void STKM_init_legs(playerst* playerp, int i);
-void STKM_interact(playerst* playerp, int i, int x, int y);
+
 void PPIP_flood_trigger(Simulation* sim, int x, int y, int sparkedBy);
 
 struct part_type
@@ -456,7 +456,9 @@ extern int GRAV_B2;
 int do_move(int i, int x, int y, float nxf, float nyf);
 int try_move(int i, int x, int y, int nx, int ny);
 int eval_move(int pt, int nx, int ny, unsigned *rr);
+int eval_move_special(int pt, int nx, int ny, int ri, int result);
 void init_can_move();
+extern unsigned char can_move[PT_NUM][PT_NUM];
 
 static void create_cherenkov_photon(int pp);
 static void create_gain_photon(int pp);

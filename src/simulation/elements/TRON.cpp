@@ -44,13 +44,35 @@ const int tron_rx[4] = {-1, 0, 1, 0};
 const int tron_ry[4] = { 0,-1, 0, 1};
 unsigned int tron_colours[32];
 
-bool canmovetron(Simulation * sim, int r, int len)
+bool canmovetron(Simulation * sim, int x, int y, int len)
 {
-	if (!r || ((r&0xFF) == PT_SWCH && parts[r>>8].life >= 10) || ((r&0xFF) == PT_INVIS && parts[r>>8].tmp == 1))
-		return true;
-	if (((sim->elements[r&0xFF].Properties & PROP_LIFE_KILL_DEC) || ((sim->elements[r&0xFF].Properties & PROP_LIFE_KILL) && (sim->elements[r&0xFF].Properties & PROP_LIFE_DEC))) && parts[r>>8].life < len)
-		return true;
-	return false;
+	int result=2, tmpResult, rt;
+	int rcount, ri, rnext;
+	
+	//TODO: maybe TRON should be able to cross some walls? E.g. detector wall
+	if (bmap[y/CELL][x/CELL])
+		return false;
+
+	FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)// TODO: not energy parts
+	{
+		rt = parts[ri].type;
+		if (rt==PT_SWCH && parts[ri].life>=10)
+			tmpResult = 2;
+		else if (rt==PT_INVIS && parts[ri].tmp==1)
+			tmpResult = 2;
+		else if (((sim->elements[rt].Properties & PROP_LIFE_KILL_DEC) || (sim->elements[rt].Properties & (PROP_LIFE_KILL|PROP_LIFE_DEC))==(PROP_LIFE_KILL|PROP_LIFE_DEC)) && parts[ri].life < len)
+			tmpResult = 2;
+		else
+		{
+			tmpResult = can_move[PT_TRON][parts[ri].type];
+			if (tmpResult==3)
+				tmpResult = eval_move_special(PT_TRON, x, y, ri, tmpResult);
+		}
+		// Find the particle which restricts movement the most
+		if (tmpResult<result)
+			result = tmpResult;
+	}
+	return (tmpResult==2);
 }
 
 int new_tronhead(Simulation *sim, int x, int y, int i, int direction)
@@ -77,7 +99,7 @@ int new_tronhead(Simulation *sim, int x, int y, int i, int direction)
 
 int trymovetron(Simulation *sim, int x, int y, int dir, int i, int len)
 {
-	int k,j,r,rx,ry,tx,ty,count;
+	int k,j,rx,ry,tx,ty,count;
 	count = 0;
 	rx = x;
 	ry = y;
@@ -85,14 +107,12 @@ int trymovetron(Simulation *sim, int x, int y, int dir, int i, int len)
 	{
 		rx += tron_rx[dir];
 		ry += tron_ry[dir];
-		r = pmap[ry][rx];
-		if (canmovetron(sim, r, k-1) && !bmap[(ry)/CELL][(rx)/CELL] && ry > CELL && rx > CELL && ry < YRES-CELL && rx < XRES-CELL)
+		if (ry > CELL && rx > CELL && ry < YRES-CELL && rx < XRES-CELL && canmovetron(sim, rx, ry, k-1))
 		{
 			count++;
 			for (tx = rx - tron_ry[dir] , ty = ry - tron_rx[dir], j=1; abs(tx-rx) < (len-k) && abs(ty-ry) < (len-k); tx-=tron_ry[dir],ty-=tron_rx[dir],j++)
 			{
-				r = pmap[ty][tx];
-				if (canmovetron(sim, r, j+k-1) && !bmap[(ty)/CELL][(tx)/CELL] && ty > CELL && tx > CELL && ty < YRES-CELL && tx < XRES-CELL)
+				if (ty > CELL && tx > CELL && ty < YRES-CELL && tx < XRES-CELL && canmovetron(sim, tx, ty, j+k-1))
 				{
 					if (j == (len-k))//there is a safe path, so we can break out
 						return len+1;
@@ -103,8 +123,7 @@ int trymovetron(Simulation *sim, int x, int y, int dir, int i, int len)
 			}
 			for (tx = rx + tron_ry[dir] , ty = ry + tron_rx[dir], j=1; abs(tx-rx) < (len-k) && abs(ty-ry) < (len-k); tx+=tron_ry[dir],ty+=tron_rx[dir],j++)
 			{
-				r = pmap[ty][tx];
-				if (canmovetron(sim, r, j+k-1) && !bmap[(ty)/CELL][(tx)/CELL] && ty > CELL && tx > CELL && ty < YRES-CELL && tx < XRES-CELL)
+				if (ty > CELL && tx > CELL && ty < YRES-CELL && tx < XRES-CELL && canmovetron(sim, tx, ty, j+k-1))
 				{
 					if (j == (len-k))
 						return len+1;

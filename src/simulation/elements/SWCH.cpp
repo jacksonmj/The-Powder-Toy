@@ -15,44 +15,51 @@
 
 #include "simulation/ElementsCommon.h"
 
-int isRedBRAY(UPDATE_FUNC_ARGS, int xc, int yc)
+int isRedBRAY(Simulation *sim, int xc, int yc)
 {
-       return (pmap[yc][xc]&0xFF) == PT_BRAY && parts[pmap[yc][xc]>>8].tmp == 2;
+	int rcount, ri, rnext;
+	FOR_PMAP_POSITION(sim, xc, yc, rcount, ri, rnext)// TODO: not energy parts
+	{
+		if (parts[ri].type == PT_BRAY && parts[ri].tmp == 2)
+			return 1;
+	}
+	return 0;
 }
 
 int SWCH_update(UPDATE_FUNC_ARGS)
 {
-	int r, rt, rx, ry;
+	int rt, rx, ry;
+	int rcount, ri, rnext;
 	if (parts[i].life>0 && parts[i].life!=10)
 		parts[i].life--;
 	for (rx=-2; rx<3; rx++)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				r = pmap[y+ry][x+rx];
-				if (!r)
-					continue;
-				if (parts_avg(i,r>>8,PT_INSL)!=PT_INSL) {
-					rt = r&0xFF;
-					if (rt==PT_SWCH)
-					{
-						if (parts[i].life>=10&&parts[r>>8].life<10&&parts[r>>8].life>0)
-							parts[i].life = 9;
-						else if (parts[i].life==0&&parts[r>>8].life>=10)
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				{
+					rt = parts[ri].type;
+					if (parts_avg(i,ri,PT_INSL)!=PT_INSL) {// TODO: only evaluate parts_avg once for each position?
+						if (rt==PT_SWCH)
 						{
-							//Set to other particle's life instead of 10, otherwise spark loops form when SWCH is sparked while turning on
-							parts[i].life = parts[r>>8].life;
+							if (parts[i].life>=10&&parts[ri].life<10&&parts[ri].life>0)
+								parts[i].life = 9;
+							else if (parts[i].life==0&&parts[ri].life>=10)
+							{
+								//Set to other particle's life instead of 10, otherwise spark loops form when SWCH is sparked while turning on
+								parts[i].life = parts[ri].life;
+							}
 						}
-					}
-					else if (rt==PT_SPRK && parts[i].life==10 && parts[r>>8].life>0 && parts[r>>8].ctype!=PT_PSCN && parts[r>>8].ctype!=PT_NSCN) {
-						part_change_type(i,x,y,PT_SPRK);
-						parts[i].ctype = PT_SWCH;
-						parts[i].life = 4;
+						else if (rt==PT_SPRK && parts[i].life==10 && parts[ri].life>0 && parts[ri].ctype!=PT_PSCN && parts[ri].ctype!=PT_NSCN) {
+							part_change_type(i,x,y,PT_SPRK);
+							parts[i].ctype = PT_SWCH;
+							parts[i].life = 4;
+						}
 					}
 				}
 			}
 	//turn SWCH on/off from two red BRAYS. There must be one either above or below, and one either left or right to work, and it can't come from the side, it must be a diagonal beam
-	if (!(pmap[y-1][x-1]&0xFF) && !(pmap[y-1][x+1]&0xFF) && (isRedBRAY(UPDATE_FUNC_SUBCALL_ARGS, x, y-1) || isRedBRAY(UPDATE_FUNC_SUBCALL_ARGS, x, y+1)) && (isRedBRAY(UPDATE_FUNC_SUBCALL_ARGS, x+1, y) || isRedBRAY(UPDATE_FUNC_SUBCALL_ARGS, x-1, y)))
+	if (!isRedBRAY(sim,x-1,y-1) && !isRedBRAY(sim,x+1,y-1) && (isRedBRAY(sim, x, y-1) || isRedBRAY(sim, x, y+1)) && (isRedBRAY(sim, x+1, y) || isRedBRAY(sim, x-1, y)))
 	{
 		if (parts[i].life == 10)
 			parts[i].life = 9;
