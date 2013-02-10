@@ -412,7 +412,7 @@ void Simulation::spark_all(int i, int x, int y)
 	if (parts[i].type==PT_WIRE)
 		parts[i].ctype = PT_DUST;
 	else if (parts[i].type==PT_INST)
-		flood_INST(x, y, PT_SPRK, PT_INST);
+		INST_flood_spark(this, x, y);
 	else
 		spark_conductive(i, x, y);
 }
@@ -458,7 +458,7 @@ bool Simulation::spark_conductive_attempt(int i, int x, int y)
 	return false;
 }
 
-// Attempts to spark all particles in a particular position
+// Attempts to spark all PROP_CONDUCTS particles in a particular position
 int Simulation::spark_conductive_position(int x, int y)
 {
 	int lastSparkedIndex = -1;
@@ -466,12 +466,12 @@ int Simulation::spark_conductive_position(int x, int y)
 	FOR_PMAP_POSITION_SIM(x, y, rcount, index, rnext)
 	{
 		int type = parts[index].type;
-		if (!(ptypes[type].properties&PROP_CONDUCTS))
+		if (!(elements[type].Properties & PROP_CONDUCTS))
 			continue;
 		if (parts[index].life!=0)
 			continue;
-		if (spark_conductive_attempt(index, x, y))
-			lastSparkedIndex = index;
+		spark_conductive(index, x, y);
+		lastSparkedIndex = index;
 	}
 	return lastSparkedIndex;
 }

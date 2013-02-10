@@ -212,7 +212,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 						{
 							if (parts[ri].life==0 && parts[i].life<4)
 							{
-								flood_INST(x+rx,y+ry,PT_SPRK,PT_INST);//spark the wire
+								INST_flood_spark(sim, x+rx, y+ry);
 							}
 						}
 						else if (parts[ri].life==0 && parts[i].life<4)

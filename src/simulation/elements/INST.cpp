@@ -14,6 +14,124 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/CoordStack.h"
+
+bool pmap_contains_sparkable_INST(Simulation *sim, int x, int y)
+{
+	int rcount, ri, rnext;
+	FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)
+	{
+		if (parts[ri].type==PT_INST && parts[ri].life<=0)
+			return true;
+	}
+	return false;
+}
+
+int INST_flood_spark(Simulation *sim, int x, int y)
+{
+	int x1, x2;
+	const int cm = PT_INST;
+	int created_something = 0;
+	int rcount, ri, rnext;
+	bool found;
+
+	ri = sim->pmap_find_one(x, y, cm);
+	if (ri<0 || parts[ri].life!=0)
+		return 0;
+
+	try
+	{
+		CoordStack cs;
+		cs.push(x, y);
+
+		do
+		{
+			cs.pop(x, y);
+			x1 = x2 = x;
+			// go left as far as possible
+			while (x1>=CELL)
+			{
+				if (!pmap_contains_sparkable_INST(sim, x1-1, y)) break;
+				x1--;
+			}
+			// go right as far as possible
+			while (x2<XRES-CELL)
+			{
+				if (!pmap_contains_sparkable_INST(sim, x2+1, y)) break;
+				x2++;
+			}
+			// fill span
+			for (x=x1; x<=x2; x++)
+			{
+				FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)
+				{
+					if (parts[ri].type==cm && parts[ri].life<=0)
+					{
+						sim->spark_conductive(ri, x, y);
+						created_something = 1;
+					}
+				}
+			}
+
+			// add vertically adjacent pixels to stack
+			// (wire crossing for INST)
+			if (y>=CELL+1 && x1==x2 &&
+					sim->pmap_find_one_conductive(x1-1,y-1,cm)>=0 &&
+					sim->pmap_find_one_conductive(x1,  y-1,cm)>=0 &&
+					sim->pmap_find_one_conductive(x1+1,y-1,cm)>=0 &&
+					sim->pmap_find_one_conductive(x1-1,y-2,cm)<0 &&
+					sim->pmap_find_one_conductive(x1,  y-2,cm)>=0 &&
+					sim->pmap_find_one_conductive(x1+1,y-2,cm)<0)
+			{
+				// travelling vertically up, skipping a horizontal line
+				if (pmap_contains_sparkable_INST(sim, x1, y-2))
+					cs.push(x1, y-2);
+			}
+			else if (y>=CELL+1)
+			{
+				for (x=x1; x<=x2; x++)
+				{
+					// if at the end of a horizontal section, or if it's a T junction
+					if (x==x1 || x==x2 || y>=YRES-CELL-1 || sim->pmap_find_one_conductive(x,y+1,cm)<0)
+					{
+						if (pmap_contains_sparkable_INST(sim, x, y-1))
+							cs.push(x, y-1);
+					}
+				}
+			}
+
+			if (y<YRES-CELL-1 && x1==x2 &&
+					sim->pmap_find_one_conductive(x1-1,y+1,cm)>=0 &&
+					sim->pmap_find_one_conductive(x1,  y+1,cm)>=0 &&
+					sim->pmap_find_one_conductive(x1+1,y+1,cm)>=0 &&
+					sim->pmap_find_one_conductive(x1-1,y+2,cm)<0 &&
+					sim->pmap_find_one_conductive(x1,  y+2,cm)>=0 &&
+					sim->pmap_find_one_conductive(x1+1,y+2,cm)<0)
+			{
+				// travelling vertically down, skipping a horizontal line
+				if (pmap_contains_sparkable_INST(sim, x1, y+2))
+					cs.push(x1, y+2);
+			}
+			else if (y<YRES-CELL-1)
+			{
+				for (x=x1; x<=x2; x++)
+				{
+					if (x==x1 || x==x2 || y<0 || sim->pmap_find_one_conductive(x,y-1,cm)<0)
+					{
+						if (pmap_contains_sparkable_INST(sim, x, y+1))
+							cs.push(x, y+1);
+					}
+				}
+			}
+		} while (cs.getSize()>0);
+	}
+	catch (std::exception& e)
+	{
+		return -1;
+	}
+
+	return created_something;
+}
 
 void INST_init_element(ELEMENT_INIT_FUNC_ARGS)
 {

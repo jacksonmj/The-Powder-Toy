@@ -81,10 +81,19 @@ public:
 	// Functions defined here should hopefully be inlined
 	// Don't put anything that will change often here, since changes cause a lot of recompiling
 
-	bool is_element(int t) const
+	bool IsElement(int t) const
 	{
 		return (t>=0 && t<PT_NUM && elements[t].Enabled);
 	}
+	bool InBounds(int x, int y)
+	{
+		return (x>=0 && y>=0 && x<XRES && y<YRES);
+	}
+	static bool part_cmp_conductive(const particle& p, int t)
+	{
+		return (p.type==t || (p.type==PT_SPRK && p.ctype==t));
+	}
+
 	// Most of the time, part_alloc and part_free should not be used directly unless you really know what you're doing. 
 	// Use part_create and part_kill instead.
 	int part_alloc()
@@ -169,6 +178,17 @@ public:
 		for (; count>0; i=parts[i].pmap_next, count--)
 		{
 			if (parts[i].type==t)
+				return i;
+		}
+		return -1;
+	}
+	int pmap_find_one_conductive(int x, int y, int t) const
+	{
+		int count = pmap[y][x].count;
+		int i = pmap[y][x].first;
+		for (; count>0; i=parts[i].pmap_next, count--)
+		{
+			if (part_cmp_conductive(parts[i], t))
 				return i;
 		}
 		return -1;
