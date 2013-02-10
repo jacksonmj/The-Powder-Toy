@@ -27,6 +27,7 @@
 #endif
 
 #include "simulation/Simulation.h"
+#include "simulation/CoordStack.h"
 #include "simulation/ElementDataContainer.h"
 #include "simulation/elements/PRTI.h"
 
@@ -2730,6 +2731,7 @@ void create_box(int x1, int y1, int x2, int y2, int c, int flags)
 
 int flood_prop_2(int x, int y, size_t propoffset, void * propvalue, int proptype, int parttype, char * bitmap)
 {
+	Simulation *sim = globalSim;
 	int x1, x2, i, dy = 1;
 	x1 = x2 = x;
 	while (x1>=CELL)
@@ -2785,12 +2787,10 @@ int flood_prop(int x, int y, size_t propoffset, void * propvalue, int proptype)
 
 int flood_parts(int x, int y, int fullc, int cm, int bm, int flags)
 {
+	Simulation *sim = globalSim;
 	int c = fullc&0xFF;
 	int x1, x2, dy = (c<PT_NUM)?1:CELL;
 	int co = c;
-	int coord_stack_limit = XRES*YRES;
-	unsigned short (*coord_stack)[2];
-	int coord_stack_size = 0;
 	int created_something = 0;
 
 	if (c==SPC_PROP)
@@ -2799,9 +2799,9 @@ int flood_parts(int x, int y, int fullc, int cm, int bm, int flags)
 	{
 		if (c==0)
 		{
-			cm = pmap[y][x]&0xFF;
-			if (!cm)
+			if (sim->pmap[y][x].count==0)
 				return 0;
+			cm = sim->parts[sim->pmap[y][x].first].type;
 			if ((flags&BRUSH_REPLACEMODE) && cm!=SLALT)
 				return 0;
 		}
@@ -2822,74 +2822,58 @@ int flood_parts(int x, int y, int fullc, int cm, int bm, int flags)
 			bm = 0;
 	}
 
-	if (((pmap[y][x]&0xFF)!=cm || bmap[y/CELL][x/CELL]!=bm )||( (flags&BRUSH_SPECIFIC_DELETE) && cm!=SLALT))
+	if (((cm>0 && sim->pmap_find_one(x, y, cm)<0) || bmap[y/CELL][x/CELL]!=bm )||( (flags&BRUSH_SPECIFIC_DELETE) && cm!=SLALT))
 		return 1;
 
-	coord_stack = (unsigned short(*)[2])malloc(sizeof(unsigned short)*2*coord_stack_limit);
-	coord_stack[coord_stack_size][0] = x;
-	coord_stack[coord_stack_size][1] = y;
-	coord_stack_size++;
-
-	do
+	try
 	{
-		coord_stack_size--;
-		x = coord_stack[coord_stack_size][0];
-		y = coord_stack[coord_stack_size][1];
-		x1 = x2 = x;
-		// go left as far as possible
-		while (x1>=CELL)
-		{
-			if ((pmap[y][x1-1]&0xFF)!=cm || bmap[y/CELL][(x1-1)/CELL]!=bm)
-			{
-				break;
-			}
-			x1--;
-		}
-		// go right as far as possible
-		while (x2<XRES-CELL)
-		{
-			if ((pmap[y][x2+1]&0xFF)!=cm || bmap[y/CELL][(x2+1)/CELL]!=bm)
-			{
-				break;
-			}
-			x2++;
-		}
-		// fill span
-		for (x=x1; x<=x2; x++)
-		{
-			if (create_parts(x, y, 0, 0, fullc, flags, 1))
-				created_something = 1;
-		}
+		CoordStack cs;
+		cs.push(x, y);
 
-		// add vertically adjacent pixels to stack
-		if (y>=CELL+dy)
+		do
+		{
+			cs.pop(x, y);
+			x1 = x2 = x;
+			// go left as far as possible
+			while (x1>=CELL)
+			{
+				if ((cm==0 ? sim->pmap[y][x1-1].count>0 : sim->pmap_find_one(x1-1, y, cm)<0) || bmap[y/CELL][(x1-1)/CELL]!=bm)
+					break;
+				x1--;
+			}
+			// go right as far as possible
+			while (x2<XRES-CELL)
+			{
+				if ((cm==0 ? sim->pmap[y][x2+1].count>0 : sim->pmap_find_one(x2+1, y, cm)<0) || bmap[y/CELL][(x2+1)/CELL]!=bm)
+					break;
+				x2++;
+			}
+			// fill span
 			for (x=x1; x<=x2; x++)
-				if ((pmap[y-dy][x]&0xFF)==cm && bmap[(y-dy)/CELL][x/CELL]==bm)
-				{
-					coord_stack[coord_stack_size][0] = x;
-					coord_stack[coord_stack_size][1] = y-dy;
-					coord_stack_size++;
-					if (coord_stack_size>=coord_stack_limit)
+			{
+				if (create_parts(x, y, 0, 0, fullc, flags, 1))
+					created_something = 1;
+			}
+
+			// add vertically adjacent pixels to stack
+			if (y>=CELL+dy)
+				for (x=x1; x<=x2; x++)
+					if ((cm==0 ? sim->pmap[y-dy][x].count==0 : sim->pmap_find_one(x, y-dy, cm)>=0) && bmap[(y-dy)/CELL][x/CELL]==bm)
 					{
-						free(coord_stack);
-						return -1;
+						cs.push(x, y-dy);
 					}
-				}
-		if (y<YRES-CELL-dy)
-			for (x=x1; x<=x2; x++)
-				if ((pmap[y+dy][x]&0xFF)==cm && bmap[(y+dy)/CELL][x/CELL]==bm)
-				{
-					coord_stack[coord_stack_size][0] = x;
-					coord_stack[coord_stack_size][1] = y+dy;
-					coord_stack_size++;
-					if (coord_stack_size>=coord_stack_limit)
+			if (y<YRES-CELL-dy)
+				for (x=x1; x<=x2; x++)
+					if ((cm==0 ? sim->pmap[y+dy][x].count==0 : sim->pmap_find_one(x, y+dy, cm)>=0) && bmap[(y+dy)/CELL][x/CELL]==bm)
 					{
-						free(coord_stack);
-						return -1;
+						cs.push(x, y+dy);
 					}
-				}
-	} while (coord_stack_size>0);
-	free(coord_stack);
+		} while (cs.getSize()>0);
+	}
+	catch (std::exception& e)
+	{
+		return -1;
+	}
 	return created_something;
 }
 

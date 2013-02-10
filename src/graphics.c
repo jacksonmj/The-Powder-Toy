@@ -57,6 +57,7 @@
 
 #include "simulation/Simulation.h"
 #include "simulation/elements/FIGH.h"
+#include "graphics/ARGBColour.h"
 
 //unsigned cmode = CM_FIRE;
 unsigned int *render_modes;
@@ -3324,48 +3325,29 @@ void create_decorations(int x, int y, int rx, int ry, int r, int g, int b, int c
 }
 void create_decoration(int x, int y, int r, int g, int b, int click, int tool)
 {
-	int rp, tr = 0, tg = 0, tb = 0;
-	rp = pmap[y][x];
-	if (!rp)
-		return;
-	if (tool == DECO_DRAW)
+	int ta = 0, tr = 0, tg = 0, tb = 0;
+	int rcount, ri, rnext;
+	ARGBColour smudgeCol;
+	if (tool == DECO_SMUDGE)
 	{
-		if (click == 4)
-			parts[rp>>8].dcolour = 0;
-		else
-			parts[rp>>8].dcolour = ((255<<24)|(r<<16)|(g<<8)|b);
-	}
-	else if (tool == DECO_LIGHTEN)
-	{//maybe get a better lighten/darken?
-		if (parts[rp>>8].dcolour == 0)
-			return;
-		tr = (parts[rp>>8].dcolour>>16)&0xFF;
-		tg = (parts[rp>>8].dcolour>>8)&0xFF;
-		tb = (parts[rp>>8].dcolour)&0xFF;
-		parts[rp>>8].dcolour = ((parts[rp>>8].dcolour&0xFF000000)|(clamp_flt(tr+(255-tr)*0.02+1, 0,255)<<16)|(clamp_flt(tg+(255-tg)*0.02+1, 0,255)<<8)|clamp_flt(tb+(255-tb)*0.02+1, 0,255));
-	}
-	else if (tool == DECO_DARKEN)
-	{
-		if (parts[rp>>8].dcolour == 0)
-			return;
-		tr = (parts[rp>>8].dcolour>>16)&0xFF;
-		tg = (parts[rp>>8].dcolour>>8)&0xFF;
-		tb = (parts[rp>>8].dcolour)&0xFF;
-		parts[rp>>8].dcolour = ((parts[rp>>8].dcolour&0xFF000000)|(clamp_flt(tr-(tr)*0.02, 0,255)<<16)|(clamp_flt(tg-(tg)*0.02, 0,255)<<8)|clamp_flt(tb-(tb)*0.02, 0,255));
-	}
-	else if (tool == DECO_SMUDGE)
-	{
-		int rx, ry, num = 0, ta = 0;
+		int rx, ry, num = 0;
+		ta = 0;
 		for (rx=-2; rx<3; rx++)
 			for (ry=-2; ry<3; ry++)
 			{
-				if ((pmap[y+ry][x+rx]&0xFF) && parts[pmap[y+ry][x+rx]>>8].dcolour)
+				if (globalSim->InBounds(x+rx, r+ry))
 				{
-					num++;
-					ta += (parts[pmap[y+ry][x+rx]>>8].dcolour>>24)&0xFF;
-					tr += (parts[pmap[y+ry][x+rx]>>8].dcolour>>16)&0xFF;
-					tg += (parts[pmap[y+ry][x+rx]>>8].dcolour>>8)&0xFF;
-					tb += (parts[pmap[y+ry][x+rx]>>8].dcolour)&0xFF;
+					FOR_PMAP_POSITION(globalSim, x+rx, y+ry, rcount, ri, rnext)
+					{
+						if (parts[ri].dcolour)
+						{
+							num++;
+							ta += COLA(parts[ri].dcolour);
+							tr += COLR(parts[ri].dcolour);
+							tg += COLG(parts[ri].dcolour);
+							tb += COLB(parts[ri].dcolour);
+						}
+					}
 				}
 			}
 		if (num == 0)
@@ -3374,9 +3356,46 @@ void create_decoration(int x, int y, int r, int g, int b, int click, int tool)
 		tr = fminf(255,(int)((float)tr/num+.5));
 		tg = fminf(255,(int)((float)tg/num+.5));
 		tb = fminf(255,(int)((float)tb/num+.5));
-		if (!parts[rp>>8].dcolour)
-			ta = fmaxf(0,ta-3);
-		parts[rp>>8].dcolour = ((ta<<24)|(tr<<16)|(tg<<8)|tb);
+		smudgeCol = COLARGB(ta,tr,tg,tb);
+	}
+
+	FOR_PMAP_POSITION(globalSim, x, y, rcount, ri, rnext)
+	{
+		if (tool == DECO_DRAW)
+		{
+			if (click == 4)
+				parts[ri].dcolour = 0;
+			else
+				parts[ri].dcolour = COLRGB(r, g, b);
+		}
+		else if (tool == DECO_LIGHTEN)
+		{//maybe get a better lighten/darken?
+			if (parts[ri].dcolour == 0)
+				return;
+			tr = COLR(parts[ri].dcolour);
+			tg = COLG(parts[ri].dcolour);
+			tb = COLB(parts[ri].dcolour);
+			parts[ri].dcolour = COLARGB(COLA(parts[ri].dcolour), clamp_flt(tr+(255-tr)*0.02+1, 0,255), clamp_flt(tg+(255-tg)*0.02+1, 0,255), clamp_flt(tb+(255-tb)*0.02+1, 0,255));
+		}
+		else if (tool == DECO_DARKEN)
+		{
+			if (parts[ri].dcolour == 0)
+				return;
+			tr = COLR(parts[ri].dcolour);
+			tg = COLG(parts[ri].dcolour);
+			tb = COLB(parts[ri].dcolour);
+			parts[ri].dcolour = COLARGB(COLA(parts[ri].dcolour), clamp_flt(tr-(tr)*0.02, 0,255), clamp_flt(tg-(tg)*0.02, 0,255), clamp_flt(tb-(tb)*0.02, 0,255));
+		}
+		else if (tool == DECO_SMUDGE)
+		{
+			ta = COLA(smudgeCol);
+			tr = COLR(smudgeCol);
+			tg = COLG(smudgeCol);
+			tb = COLB(smudgeCol);
+			if (!parts[ri].dcolour)
+				ta = fmaxf(0,ta-3);//TODO: what is this for?
+			parts[ri].dcolour = COLARGB(ta,tr,tg,tb);
+		}
 	}
 }
 void line_decorations(int x1, int y1, int x2, int y2, int rx, int ry, int r, int g, int b, int click, int tool)
