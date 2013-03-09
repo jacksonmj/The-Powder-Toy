@@ -1246,8 +1246,6 @@ void update_particles_i(pixel *vid, int start, int inc)
 	float c_heat = 0.0f;
 	int h_count = 0;
 	int starti = (start*-1);
-	int surround[8];
-	int surround_hconduct[8];
 	int lighting_ok=1;
 	int moveRet;
 	unsigned int elem_properties;
@@ -1739,19 +1737,6 @@ void update_particles_i(pixel *vid, int start, int inc)
 #endif
 			}
 
-			j = surround_space = nt = 0;//if nt is greater than 1 after this, then there is a particle around the current particle, that is NOT the current particle's type, for water movement.
-			for (nx=-1; nx<2; nx++)
-				for (ny=-1; ny<2; ny++) {
-					if (nx||ny) {
-						surround[j] = r = pmap[y+ny][x+nx];
-						j++;
-						if (!(r&0xFF))
-							surround_space++;//there is empty space
-						if ((r&0xFF)!=t)
-							nt++;//there is nothing or a different particle
-					}
-				}
-
 			gel_scale = 1.0f;
 			if (t==PT_GEL)
 				gel_scale = parts[i].tmp*2.55f;
@@ -1759,97 +1744,86 @@ void update_particles_i(pixel *vid, int start, int inc)
 			if (!legacy_enable)
 			{
 				if (y-2 >= 0 && y-2 < YRES && (ptypes[t].properties&TYPE_LIQUID) && (t!=PT_GEL || gel_scale>(1+rand()%255))) {//some heat convection for liquids
-					r = pmap[y-2][x];
-					if (!(!r || parts[i].type != (r&0xFF))) {
-						if (parts[i].temp>parts[r>>8].temp) {
+					int swapIndex = globalSim->pmap_find_one(x,y-2,t);
+					if (swapIndex>=0) {
+						if (parts[i].temp>parts[swapIndex].temp) {
 							swappage = parts[i].temp;
-							parts[i].temp = parts[r>>8].temp;
-							parts[r>>8].temp = swappage;
+							parts[i].temp = parts[swapIndex].temp;
+							parts[swapIndex].temp = swappage;
 						}
 					}
 				}
+			}
 
+			j = surround_space = nt = 0;//if nt is greater than 1 after this, then there is a particle around the current particle, that is NOT the current particle's type, for water movement.
+
+			for (nx=-1; nx<2; nx++)
+				for (ny=-1; ny<2; ny++) {
+					if (nx||ny) {
+						if (!globalSim->pmap[y+ny][x+nx].count) // TODO: not energy parts
+							surround_space++;//there is empty space
+						if (globalSim->pmap_find_one(x+nx,y+ny,t)<0)
+							nt++;//there is nothing or a different particle
+					}
+				}
+
+			if (!legacy_enable)
+			{
 				//heat transfer code
-				h_count = 0;
-#ifdef REALISTIC
-				if (t&&(t!=PT_HSWC||parts[i].life==10)&&(ptypes[t].hconduct*gel_scale))
-				{
-					float c_Cm = 0.0f;
-#else
+				//this is probably a bit slower now, with the removal of the fixed size surround_hconduct array
 				if (t&&(t!=PT_HSWC||parts[i].life==10)&&(ptypes[t].hconduct*gel_scale)>(rand()%250))
 				{
-					float c_Cm = 0.0f;
-#endif
 					if (aheat_enable && !(ptypes[t].properties&PROP_NOAMBHEAT))
 					{
-#ifdef REALISTIC
-						c_heat = parts[i].temp*96.645/ptypes[t].hconduct*gel_scale*fabs(ptypes[t].weight)
-							+ hv[y/CELL][x/CELL]*100*(pv[y/CELL][x/CELL]+273.15f)/256;
-						c_Cm = 96.645/ptypes[t].hconduct*gel_scale*fabs(ptypes[t].weight) 
-							+ 100*(pv[y/CELL][x/CELL]+273.15f)/256;
-						pt = c_heat/c_Cm;
-						pt = restrict_flt(pt, -MAX_TEMP+MIN_TEMP, MAX_TEMP-MIN_TEMP);
-						parts[i].temp = pt;
-						//Pressure increase from heat (temporary)
-						pv[y/CELL][x/CELL] += (pt-hv[y/CELL][x/CELL])*0.004;
-						hv[y/CELL][x/CELL] = pt;
-#else
 						c_heat = (hv[y/CELL][x/CELL]-parts[i].temp)*0.04;
 						c_heat = restrict_flt(c_heat, -MAX_TEMP+MIN_TEMP, MAX_TEMP-MIN_TEMP);
 						parts[i].temp += c_heat;
 						hv[y/CELL][x/CELL] -= c_heat;
-#endif
 					}
-					c_heat = 0.0f; c_Cm = 0.0f;
-					for (j=0; j<8; j++)
+
+					h_count = 0;
+					c_heat = 0.0f;
+					int rcount, ri, rnext, rx, ry;
+					for (rx=-1; rx<2; rx++)
 					{
-						surround_hconduct[j] = i;
-						r = surround[j];
-						if (!r)
-							continue;
-						rt = r&0xFF;
-
-						if (rt&&ptypes[rt].hconduct&&(rt!=PT_HSWC||parts[r>>8].life==10)
-						        &&(t!=PT_FILT||(rt!=PT_BRAY&&rt!=PT_BIZR&&rt!=PT_BIZRG))
-						        &&(rt!=PT_FILT||(t!=PT_BRAY&&t!=PT_PHOT&&t!=PT_BIZR&&t!=PT_BIZRG))
-						        &&(t!=PT_ELEC||rt!=PT_DEUT)
-						        &&(t!=PT_DEUT||rt!=PT_ELEC))
+						for (ry=-1; ry<2; ry++)
 						{
-							surround_hconduct[j] = r>>8;
-#ifdef REALISTIC 
-							if (rt==PT_GEL)
-								gel_scale = parts[r>>8].tmp*2.55f;
-							else gel_scale = 1.0f;
-
-							c_heat += parts[r>>8].temp*96.645/ptypes[rt].hconduct*gel_scale*fabs(ptypes[rt].weight);
-							c_Cm += 96.645/ptypes[rt].hconduct*gel_scale*fabs(ptypes[rt].weight);
-#else
-							c_heat += parts[r>>8].temp;
-#endif
-							h_count++;
+							FOR_PMAP_POSITION(globalSim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts?
+							{
+								rt = parts[ri].type;
+								// ri!=i instead of just using all particles found because if this loop is changed to exclude energy particles then the loop might not include particle i
+								if (ri!=i&&ptypes[rt].hconduct&&(rt!=PT_HSWC||parts[ri].life==10)
+									&&(t!=PT_FILT||(rt!=PT_BRAY&&rt!=PT_BIZR&&rt!=PT_BIZRG))
+									&&(rt!=PT_FILT||(t!=PT_BRAY&&t!=PT_PHOT&&t!=PT_BIZR&&t!=PT_BIZRG))
+									&&(t!=PT_ELEC||rt!=PT_DEUT)
+									&&(t!=PT_DEUT||rt!=PT_ELEC))
+								{
+									c_heat += parts[ri].temp;
+									h_count++;
+								}
+							}
 						}
 					}
-#ifdef REALISTIC
-					if (t==PT_GEL)
-						gel_scale = parts[i].tmp*2.55f;
-					else gel_scale = 1.0f;
-
-					if (t == PT_PHOT)
-						pt = (c_heat+parts[i].temp*96.645)/(c_Cm+96.645);
-					else
-						pt = (c_heat+parts[i].temp*96.645/ptypes[t].hconduct*gel_scale*fabs(ptypes[t].weight))/(c_Cm+96.645/ptypes[t].hconduct*gel_scale*fabs(ptypes[t].weight));
-
-					c_heat += parts[i].temp*96.645/ptypes[t].hconduct*gel_scale*fabs(ptypes[t].weight);
-					c_Cm += 96.645/ptypes[t].hconduct*gel_scale*fabs(ptypes[t].weight);
-					parts[i].temp = restrict_flt(pt, MIN_TEMP, MAX_TEMP);
-#else
 					pt = (c_heat+parts[i].temp)/(h_count+1);
 					pt = parts[i].temp = restrict_flt(pt, MIN_TEMP, MAX_TEMP);
-					for (j=0; j<8; j++)
+					for (rx=-1; rx<2; rx++)
 					{
-						parts[surround_hconduct[j]].temp = pt;
+						for (ry=-1; ry<2; ry++)
+						{
+							FOR_PMAP_POSITION(globalSim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts?
+							{
+								rt = parts[ri].type;
+								if (ptypes[rt].hconduct&&(rt!=PT_HSWC||parts[ri].life==10)
+									&&(t!=PT_FILT||(rt!=PT_BRAY&&rt!=PT_BIZR&&rt!=PT_BIZRG))
+									&&(rt!=PT_FILT||(t!=PT_BRAY&&t!=PT_PHOT&&t!=PT_BIZR&&t!=PT_BIZRG))
+									&&(t!=PT_ELEC||rt!=PT_DEUT)
+									&&(t!=PT_DEUT||rt!=PT_ELEC))
+								{
+									parts[ri].temp = pt;
+								}
+							}
+						}
 					}
-#endif
 
 					ctemph = ctempl = pt;
 					// change boiling point with pressure
@@ -1867,93 +1841,29 @@ void update_particles_i(pixel *vid, int start, int inc)
 
 					if (ctemph>ptransitions[t].thv&&ptransitions[t].tht>-1) {
 						// particle type change due to high temperature
-#ifdef REALISTIC
-						float dbt = ctempl - pt;
-						if (ptransitions[t].tht!=PT_NUM)
-						{
-							if (platent[t] <= (c_heat - (ptransitions[t].thv - dbt)*c_Cm))
-							{
-								pt = (c_heat - platent[t])/c_Cm;
-								t = ptransitions[t].tht;
-							}
-							else
-							{
-								parts[i].temp = restrict_flt(ptransitions[t].thv - dbt, MIN_TEMP, MAX_TEMP);
-								s = 0;
-							}
-						}
-#else
+
 						if (ptransitions[t].tht!=PT_NUM)
 							t = ptransitions[t].tht;
-#endif
 						else if (t==PT_ICEI || t==PT_SNOW) {
 							if (parts[i].ctype<PT_NUM&&parts[i].ctype!=t) {
 								if (ptransitions[parts[i].ctype].tlt==t&&pt<=ptransitions[parts[i].ctype].tlv) s = 0;
 								else {
-#ifdef REALISTIC
-									//One ice table value for all it's kinds
-									if (platent[t] <= (c_heat - (ptransitions[parts[i].ctype].tlv - dbt)*c_Cm))
-									{
-										pt = (c_heat - platent[t])/c_Cm;
-										t = parts[i].ctype;
-										parts[i].ctype = PT_NONE;
-										parts[i].life = 0;
-									}
-									else
-									{
-										parts[i].temp = restrict_flt(ptransitions[parts[i].ctype].tlv - dbt, MIN_TEMP, MAX_TEMP);
-										s = 0;
-									}
-#else
 									t = parts[i].ctype;
 									parts[i].ctype = PT_NONE;
 									parts[i].life = 0;
-#endif
 								}
 							}
 							else s = 0;
 						}
 						else if (t==PT_SLTW) {
-#ifdef REALISTIC
-							if (platent[t] <= (c_heat - (ptransitions[t].thv - dbt)*c_Cm))
-							{
-								pt = (c_heat - platent[t])/c_Cm;
-
-								if (rand()%4==0) t = PT_SALT;
-								else t = PT_WTRV;
-							}
-							else
-							{
-								parts[i].temp = restrict_flt(ptransitions[t].thv - dbt, MIN_TEMP, MAX_TEMP);
-								s = 0;
-							}
-#else
 							if (rand()%4==0) t = PT_SALT;
 							else t = PT_WTRV;
-#endif
 						}
 						else s = 0;
 					} else if (ctempl<ptransitions[t].tlv&&ptransitions[t].tlt>-1) {
 						// particle type change due to low temperature
-#ifdef REALISTIC
-						float dbt = ctempl - pt;
-						if (ptransitions[t].tlt!=PT_NUM)
-						{
-							if (platent[ptransitions[t].tlt] >= (c_heat - (ptransitions[t].tlv - dbt)*c_Cm))
-							{
-								pt = (c_heat + platent[ptransitions[t].tlt])/c_Cm;
-								t = ptransitions[t].tlt;
-							}
-							else
-							{
-								parts[i].temp = restrict_flt(ptransitions[t].tlv - dbt, MIN_TEMP, MAX_TEMP);
-								s = 0;
-							}
-						}
-#else
 						if (ptransitions[t].tlt!=PT_NUM)
 							t = ptransitions[t].tlt;
-#endif
 						else if (t==PT_WTRV) {
 							if (pt<273.0f) t = PT_RIME;
 							else t = PT_DSTW;
@@ -1986,13 +1896,6 @@ void update_particles_i(pixel *vid, int start, int inc)
 						else s = 0;
 					}
 					else s = 0;
-#ifdef REALISTIC
-					pt = restrict_flt(pt, MIN_TEMP, MAX_TEMP);
-					for (j=0; j<8; j++)
-					{
-						parts[surround_hconduct[j]].temp = pt;
-					}
-#endif
 					if (s) { // particle type change occurred
 						if (t==PT_ICEI||t==PT_LAVA||t==PT_SNOW)
 							parts[i].ctype = parts[i].type;
@@ -2729,60 +2632,70 @@ void create_box(int x1, int y1, int x2, int y2, int c, int flags)
 			create_parts(i, j, 0, 0, c, flags, 1);
 }
 
-int flood_prop_2(int x, int y, size_t propoffset, void * propvalue, int proptype, int parttype, char * bitmap)
+int flood_prop(int x, int y, int parttype, size_t propoffset, void * propvalue, int proptype)
 {
 	Simulation *sim = globalSim;
-	int x1, x2, i, dy = 1;
-	x1 = x2 = x;
-	while (x1>=CELL)
-	{
-		if ((pmap[y][x1-1]&0xFF)!=parttype || bitmap[(y*XRES)+x1-1])
-		{
-			break;
-		}
-		x1--;
-	}
-	while (x2<XRES-CELL)
-	{
-		if ((pmap[y][x2+1]&0xFF)!=parttype || bitmap[(y*XRES)+x2+1])
-		{
-			break;
-		}
-		x2++;
-	}
-	for (x=x1; x<=x2; x++)
-	{
-		i = pmap[y][x]>>8;
-		if(proptype==2){
-			*((float*)(((char*)&parts[i])+propoffset)) = *((float*)propvalue);
-		} else if(proptype==0) {
-			*((int*)(((char*)&parts[i])+propoffset)) = *((int*)propvalue);
-		} else if(proptype==1) {
-			*((char*)(((char*)&parts[i])+propoffset)) = *((char*)propvalue);
-		}
-		bitmap[(y*XRES)+x] = 1;
-	}
-	if (y>=CELL+dy)
-		for (x=x1; x<=x2; x++)
-			if ((pmap[y-dy][x]&0xFF)==parttype && !bitmap[((y-dy)*XRES)+x])
-				if (!flood_prop_2(x, y-dy, propoffset, propvalue, proptype, parttype, bitmap))
-					return 0;
-	if (y<YRES-CELL-dy)
-		for (x=x1; x<=x2; x++)
-			if ((pmap[y+dy][x]&0xFF)==parttype && !bitmap[((y+dy)*XRES)+x])
-				if (!flood_prop_2(x, y+dy, propoffset, propvalue, proptype, parttype, bitmap))
-					return 0;
-	return 1;
-}
-
-int flood_prop(int x, int y, size_t propoffset, void * propvalue, int proptype)
-{
-	int r = 0;
+	int x1, x2, dy = 1;
+	int did_something = 0;
+	int rcount, ri, rnext;
 	char * bitmap = (char*)malloc(XRES*YRES); //Bitmap for checking
+	if (!bitmap) return -1;
 	memset(bitmap, 0, XRES*YRES);
-	r = pmap[y][x];
-	flood_prop_2(x, y, propoffset, propvalue, proptype, r&0xFF, bitmap);
+	try
+	{
+		CoordStack cs;
+		cs.push(x, y);
+		do
+		{
+			cs.pop(x, y);
+			x1 = x2 = x;
+			x1 = x2 = x;
+			while (x1>=CELL)
+			{
+				if (sim->pmap_find_one(x1-1, y, parttype)<0 || bitmap[(y*XRES)+x1-1])
+					break;
+				x1--;
+			}
+			while (x2<XRES-CELL)
+			{
+				if (sim->pmap_find_one(x2+1, y, parttype)<0 || bitmap[(y*XRES)+x2+1])
+					break;
+				x2++;
+			}
+			for (x=x1; x<=x2; x++)
+			{
+				FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)// TODO: not energy parts
+				{
+					if (parts[ri].type==parttype)
+					{
+						if(proptype==2){
+							*((float*)(((char*)&parts[ri])+propoffset)) = *((float*)propvalue);
+						} else if(proptype==0) {
+							*((int*)(((char*)&parts[ri])+propoffset)) = *((int*)propvalue);
+						} else if(proptype==1) {
+							*((char*)(((char*)&parts[ri])+propoffset)) = *((char*)propvalue);
+						}
+						did_something = 1;
+					}
+				}
+				bitmap[(y*XRES)+x] = 1;
+			}
+			if (y>=CELL+dy)
+				for (x=x1; x<=x2; x++)
+					if (sim->pmap_find_one(x, y-dy, parttype)>=0 && !bitmap[((y-dy)*XRES)+x])
+						cs.push(x, y-dy);
+			if (y<YRES-CELL-dy)
+				for (x=x1; x<=x2; x++)
+					if (sim->pmap_find_one(x, y+dy, parttype)>=0 && !bitmap[((y+dy)*XRES)+x])
+						cs.push(x, y+dy);
+		} while (cs.getSize()>0);
+	}
+	catch (std::exception& e)
+	{
+		return -1;
+	}
 	free(bitmap);
+	return did_something;
 }
 
 int flood_parts(int x, int y, int fullc, int cm, int bm, int flags)

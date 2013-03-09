@@ -50,6 +50,8 @@
 #include <powdergraphics.h>
 #include "save.h"
 
+#include "simulation/Simulation.h"
+
 SDLMod sdl_mod;
 int sdl_key, sdl_rkey, sdl_wheel, sdl_ascii, sdl_zoom_trig=0;
 #if (defined(LIN32) || defined(LIN64)) && defined(SDL_VIDEO_DRIVER_X11)
@@ -1276,6 +1278,9 @@ void prop_edit_ui(pixel *vid_buf, int x, int y)
 	int ysize = 87;
 	int edity, editx, edit2y, edit2x;
 	int x0=(XRES-xsize)/2,y0=(YRES-MENUSIZE-ysize)/2,b=1,bq,mx,my;
+	int rcount, ri, rnext;
+	int parttype = 0;
+
 	ui_list ed;
 	ui_edit ed2;
 
@@ -1395,9 +1400,14 @@ void prop_edit_ui(pixel *vid_buf, int x, int y)
 		goto exit;
 	}
 	
+	FOR_PMAP_POSITION(globalSim, x, y, rcount, ri, rnext)
+	{
+		parttype = parts[ri].type;
+	}
+	if (!parttype) goto exit;
 	if(format==0){
 		sscanf(ed2.str, "%d", &valuei);
-		flood_prop(x, y, propoffset, &valuei, format);
+		flood_prop(x, y, parttype, propoffset, &valuei, format);
 	}
 	if(format==1){
 		int isint = 1, i;
@@ -1423,11 +1433,11 @@ void prop_edit_ui(pixel *vid_buf, int x, int y)
 			}
 		}
 		valuec = (unsigned char)valuei;
-		flood_prop(x, y, propoffset, &valuec, format);
+		flood_prop(x, y, parttype, propoffset, &valuec, format);
 	}
 	if(format==2){
 		sscanf(ed2.str, "%f", &valuef);
-		flood_prop(x, y, propoffset, &valuef, format);
+		flood_prop(x, y, parttype, propoffset, &valuef, format);
 	}
 	if(format==3){
 		int j;
@@ -1452,7 +1462,7 @@ void prop_edit_ui(pixel *vid_buf, int x, int y)
 		{
 			sscanf(ed2.str, "%d", &valueui);
 		}
-		flood_prop(x, y, propoffset, &valueui, 0);
+		flood_prop(x, y, parttype, propoffset, &valueui, 0);
 	}
 exit:
 	while (!sdl_poll())

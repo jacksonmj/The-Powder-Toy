@@ -1924,8 +1924,9 @@ void render_parts(pixel *vid)
 #endif
 
 
-			if(photons[ny][nx]&0xFF && !(ptypes[t].properties & TYPE_ENERGY) && t!=PT_STKM && t!=PT_STKM2 && t!=PT_FIGH)
-				continue;
+			// TODO: fix this (fixing would be easier if normal parts and energy parts were separated in pmap)
+			//if(photons[ny][nx]&0xFF && !(ptypes[t].properties & TYPE_ENERGY) && t!=PT_STKM && t!=PT_STKM2 && t!=PT_FIGH)
+			//	continue;
 				
 			//Defaults
 			pixel_mode = 0 | PMODE_FLAT;
@@ -3327,7 +3328,7 @@ void create_decoration(int x, int y, int r, int g, int b, int click, int tool)
 {
 	int ta = 0, tr = 0, tg = 0, tb = 0;
 	int rcount, ri, rnext;
-	ARGBColour smudgeCol;
+	ARGBColour smudgeCol = 0;
 	if (tool == DECO_SMUDGE)
 	{
 		int rx, ry, num = 0;
@@ -3523,10 +3524,22 @@ void render_signs(pixel *vid_buf)
 			}
 			if (strcmp(signs[i].text, "{t}")==0)
 			{
-				if (signs[i].x>=0 && signs[i].x<XRES && signs[i].y>=0 && signs[i].y<YRES && pmap[signs[i].y][signs[i].x])
-					sprintf(buff, "Temp: %4.2f", parts[pmap[signs[i].y][signs[i].x]>>8].temp-273.15);  //...temperature
+				float temp = 0.0f;
+				int rcount, ri, rnext;
+				if (globalSim->InBounds(signs[i].x, signs[i].y) && globalSim->pmap[signs[i].y][signs[i].x].count)
+				{
+					// Find the average temperature of all particles in this location
+					FOR_PMAP_POSITION(globalSim, signs[i].x, signs[i].y, rcount, ri, rnext)
+					{
+						temp += parts[ri].temp;
+					}
+					temp = temp/globalSim->pmap[signs[i].y][signs[i].x].count;
+					sprintf(buff, "Temp: %4.2f", temp-273.15);  //...temperature
+				}
 				else
+				{
 					sprintf(buff, "Temp: 0.00");  //...temperature
+				}
 				drawtext(vid_buf, x+3, y+3, buff, 255, 255, 255, 255);
 			}
 

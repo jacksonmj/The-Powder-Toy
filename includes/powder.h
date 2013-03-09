@@ -465,7 +465,7 @@ static void create_gain_photon(int pp);
 
 void kill_part(int i);
 
-int flood_prop(int x, int y, size_t propoffset, void * propvalue, int proptype);
+int flood_prop(int x, int y, int parttype, size_t propoffset, void * propvalue, int proptype);
 
 void detach(int i);
 

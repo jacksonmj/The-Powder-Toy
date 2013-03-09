@@ -29,7 +29,8 @@
 Simulation *globalSim = NULL; // TODO: remove this global variable
 
 Simulation::Simulation() :
-	pfree(-1)
+	pfree(-1),
+	heat_mode(1)
 {
 	memset(elementData, 0, sizeof(elementData));
 	Clear();

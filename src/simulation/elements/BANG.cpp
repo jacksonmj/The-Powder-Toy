@@ -46,7 +46,7 @@ int BANG_update(UPDATE_FUNC_ARGS)
 	else if(parts[i].tmp==1)
 	{
 		int tempvalue = 2;
-		flood_prop(x, y, offsetof(particle, tmp), &tempvalue, 0);
+		flood_prop(x, y, parts[i].type, offsetof(particle, tmp), &tempvalue, 0);
 		parts[i].tmp = 2;
 	}
 	else if(parts[i].tmp==2)
