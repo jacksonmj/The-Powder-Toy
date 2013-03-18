@@ -25,6 +25,8 @@ struct particle
 	float lastX, lastY;
 #endif
 	float temp;
+	float transitionStoredEnergy;
+	int transitionPendingFrames;
 	float pavg[2];
 	int flags;
 	int tmp;

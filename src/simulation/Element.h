@@ -73,7 +73,6 @@ public:
 	 */
 	int Weight;
 
-	unsigned char HeatConduct;
 	// Latent value is in TPT imaginary units - 750/226*enthalpy value of the material
 	unsigned int Latent;
 	char *Description;
@@ -89,6 +88,11 @@ public:
 	int LowTemperatureTransitionElement;
 	float HighTemperatureTransitionThreshold;
 	int HighTemperatureTransitionElement;
+
+	float HeatCapacity;// Joules per Kelvin per particle
+	unsigned char HeatConduct;// 0-250, 250 is most conductive
+	float LowTemperatureTransitionEnergy;// Joules per particle
+	float HighTemperatureTransitionEnergy;// Joules per particle
 
 	int (*Update) (UPDATE_FUNC_ARGS);
 	int (*Graphics) (GRAPHICS_FUNC_ARGS);

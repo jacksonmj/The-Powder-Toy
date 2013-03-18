@@ -453,6 +453,11 @@ extern int GRAV_R2;
 extern int GRAV_G2;
 extern int GRAV_B2;
 
+extern int lighting_recreate;
+
+int get_normal_interp(int pt, float x0, float y0, float dx, float dy, float *nx, float *ny);
+int get_wavelength_bin(int *wm);
+
 int do_move(int i, int x, int y, float nxf, float nyf);
 int try_move(int i, int x, int y, int nx, int ny);
 int eval_move(int pt, int nx, int ny, unsigned *rr);
@@ -493,9 +498,7 @@ void create_arc(int sx, int sy, int dx, int dy, int midpoints, int variance, int
 
 int nearest_part(int ci, int t, int max_d);
 
-void update_particles_i(pixel *vid, int start, int inc);
-
-void update_particles(pixel *vid);
+void update_wallmaps();
 
 void rotate_area(int area_x, int area_y, int area_w, int area_h, int invert);
 

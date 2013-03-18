@@ -702,7 +702,7 @@ int main(int argc, char *argv[])
 		for(i=0; i<30; i++){
 			memset(vid_buf, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
 			draw_walls(vid_buf);
-			update_particles(vid_buf);
+			globalSim->UpdateParticles();
 			render_parts(vid_buf);
 			render_fire(vid_buf);
 		}
@@ -1073,7 +1073,7 @@ int main(int argc, char *argv[])
 			#endif
 		}
 		
-		update_particles(part_vbuf); //update everything
+		globalSim->UpdateParticles(); //update everything
 			
 		if(debug_flags & (DEBUG_PERFORMANCE_CALC|DEBUG_PERFORMANCE_FRAME))
 		{

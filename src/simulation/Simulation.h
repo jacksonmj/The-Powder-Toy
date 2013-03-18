@@ -67,10 +67,21 @@ public:
 	void InitElements();
 	void Clear();
 	bool Check();
+	void UpdateParticles();
+	void RecalcFreeParticles();
+	void pmap_reset();
+
 	int part_create(int p, int x, int y, int t);
 	void part_kill(int i);
 	bool part_change_type(int i, int x, int y, int t);
-	void pmap_reset();
+	// Functions for changing particle temperature, respecting temperature caps.
+	// The _noLatent functions also set the stored transition energy of the particle to make it appear as though latent heat does not apply - the particles will change into the type that they should be at that temperature, instead of the temperature increase just contributing towards the stored transition energy
+	// set_temp sets the temperature to a specific value, add_temp changes the temperature by the given amount (can be positive or negative)
+	void part_set_temp(int i, float newTemp);
+	void part_set_temp_noLatent(int i, float newTemp);
+	void part_add_temp(int i, float change);
+	void part_add_temp_noLatent(int i, float change);
+	void part_add_energy(int i, float amount);
 
 	void spark_all(int i, int x, int y);
 	bool spark_all_attempt(int i, int x, int y);
