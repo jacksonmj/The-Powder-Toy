@@ -35,8 +35,6 @@ part_type ptypes[PT_NUM];
 part_transition ptransitions[PT_NUM];
 unsigned int platent[PT_NUM];
 
-int wire_placed = 0;
-
 int lighting_recreate = 0;
 int force_stacking_check = 0;//whether to force a check for excessively stacked particles
 

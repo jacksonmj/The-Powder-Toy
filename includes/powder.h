@@ -420,7 +420,6 @@ extern const particle emptyparticle;
 extern const int portal_rx[8];
 extern const int portal_ry[8];
 
-extern int wire_placed;
 extern int force_stacking_check;
 extern int ppip_changed;
 
