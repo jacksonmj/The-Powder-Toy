@@ -1652,9 +1652,9 @@ void addpixel(pixel *vid, int x, int y, int r, int g, int b, int a)
 	if (x<0 || y<0 || x>=XRES+BARSIZE || y>=YRES+MENUSIZE)
 		return;
 	t = vid[y*(XRES+BARSIZE)+x];
-	r = (a*r + 255*PIXR(t)) >> 8;
-	g = (a*g + 255*PIXG(t)) >> 8;
-	b = (a*b + 255*PIXB(t)) >> 8;
+	r = ((a*r) >> 8) + PIXR(t);
+	g = ((a*g) >> 8) + PIXG(t);
+	b = ((a*b) >> 8) + PIXB(t);
 	if (r>255)
 		r = 255;
 	if (g>255)
