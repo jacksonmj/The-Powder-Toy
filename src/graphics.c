@@ -59,6 +59,11 @@
 #include "simulation/elements/FIGH.h"
 #include "graphics/ARGBColour.h"
 
+#ifdef HIGH_QUALITY_RESAMPLE
+#include "lib/resampler/resampler.h"
+#include <algorithm>
+#endif
+
 #if defined(__MMX__)
 #include <mmintrin.h>
 #endif
@@ -409,10 +414,98 @@ pixel *resample_img_nn(pixel * src, int sw, int sh, int rw, int rh)
 
 pixel *resample_img(pixel *src, int sw, int sh, int rw, int rh)
 {
+#ifdef HIGH_QUALITY_RESAMPLE
+
+	unsigned char * source = (unsigned char*)src;
+	int sourceWidth = sw, sourceHeight = sh;
+	int resultWidth = rw, resultHeight = rh;
+	int sourcePitch = sourceWidth*PIXELSIZE, resultPitch = resultWidth*PIXELSIZE;
+	// Filter scale - values < 1.0 cause aliasing, but create sharper looking mips.
+	const float filter_scale = 0.75f;
+	const char* pFilter = "lanczos12";
+
+
+	Resampler * resamplers[PIXELCHANNELS];
+	float * samples[PIXELCHANNELS];
+
+	//Resampler for each colour channel
+	if (sourceWidth <= 0 || sourceHeight <= 0 || resultWidth <= 0 || resultHeight <= 0)
+		return NULL;
+	resamplers[0] = new Resampler(sourceWidth, sourceHeight, resultWidth, resultHeight, Resampler::BOUNDARY_CLAMP, 0.0f, 1.0f, pFilter, NULL, NULL, filter_scale, filter_scale);
+	samples[0] = new float[sourceWidth];
+	for (int i = 1; i < PIXELCHANNELS; i++)
+	{
+		resamplers[i] = new Resampler(sourceWidth, sourceHeight, resultWidth, resultHeight, Resampler::BOUNDARY_CLAMP, 0.0f, 1.0f, pFilter, resamplers[0]->get_clist_x(), resamplers[0]->get_clist_y(), filter_scale, filter_scale);
+		samples[i] = new float[sourceWidth];
+	}
+
+	unsigned char * resultImage = new unsigned char[resultHeight * resultPitch];
+	std::fill(resultImage, resultImage + (resultHeight*resultPitch), 0);
+
+	//Resample time
+	int resultY = 0;
+	for (int sourceY = 0; sourceY < sourceHeight; sourceY++)
+	{
+		unsigned char * sourcePixel = &source[sourceY * sourcePitch];
+
+		//Move pixel components into channel samples
+		for (int c = 0; c < PIXELCHANNELS; c++)
+		{
+			for (int x = 0; x < sourceWidth; x++)
+			{
+				samples[c][x] = sourcePixel[(x*PIXELSIZE)+c] * (1.0f/255.0f);
+			}
+		}
+
+		//Put channel sample data into resampler
+		for (int c = 0; c < PIXELCHANNELS; c++)
+		{
+			if (!resamplers[c]->put_line(&samples[c][0]))
+			{
+				printf("Out of memory!\n");
+				return NULL;
+			}
+		}
+
+		//Perform resample and Copy components from resampler result samples to image buffer
+		for ( ; ; )
+		{
+			int comp_index;
+			for (comp_index = 0; comp_index < PIXELCHANNELS; comp_index++)
+			{
+				const float* resultSamples = resamplers[comp_index]->get_line();
+				if (!resultSamples)
+					break;
+
+				unsigned char * resultPixel = &resultImage[(resultY * resultPitch) + comp_index];
+
+				for (int x = 0; x < resultWidth; x++)
+				{
+					int c = (int)(255.0f * resultSamples[x] + .5f);
+					if (c < 0) c = 0; else if (c > 255) c = 255;
+					*resultPixel = (unsigned char)c;
+					resultPixel += PIXELSIZE;
+				}
+			}
+			if (comp_index < PIXELCHANNELS)
+				break;
+
+			resultY++;
+		}
+	}
+
+	//Clean up
+	for(int i = 0; i < PIXELCHANNELS; i++)
+	{
+		delete resamplers[i];
+		delete[] samples[i];
+	}
+
+	return (pixel*)resultImage;
+#else
 	int y, x, fxceil, fyceil;
 	//int i,j,x,y,w,h,r,g,b,c;
 	pixel *q = NULL;
-	//TODO: Actual resampling, this is just cheap nearest pixel crap
 	if(rw == sw && rh == sh){
 		//Don't resample
 		q = (pixel*)malloc(rw*rh*PIXELSIZE);
@@ -492,6 +585,7 @@ pixel *resample_img(pixel *src, int sw, int sh, int rw, int rh)
 		}
 	}
 	return q;
+#endif
 }
 
 pixel *rescale_img(pixel *src, int sw, int sh, int *qw, int *qh, int f)
@@ -3648,7 +3742,7 @@ void render_fire(pixel *vid)
 			b = fire_b[j][i];
 			if (r || g || b)
 			{
-#if defined(__MMX__)
+#if defined(__MMX__) and defined(PIXELBYTES)
 				// optimised fire rendering using MMX instructions
 				// Note that _mm_mullo_pi16 stores the low 16 bits of the 32 bit answers, rather than capping it, so fire alpha values greater than 256 may give strange results
 				// Therefore, if the max fire_alpha value is greater than 256, the slow rendering method is used so that answers are capped correctly
@@ -3729,7 +3823,7 @@ void prepare_alpha(int size, float intensity)
 			if (tmp>65535)
 				tmp = 65535;
 			fire_alpha[y][x] = tmp;
-#if defined(__MMX__)
+#if defined(__MMX__) and defined(PIXELBYTES)
 			if (tmp>256)
 				fire_mmx = false;
 			// Now duplicate the alpha value (which is less than 65535 so a 16 bit value) 4 times in tmp for MMX optimisations

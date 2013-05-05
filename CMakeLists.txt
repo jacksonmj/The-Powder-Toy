@@ -10,6 +10,7 @@ file(GLOB powder_SRC
     "src/*.c"
     "src/elements/*.c"
     "src/*.cpp"
+    "src/lib/resampler/*.cpp"
     "src/simulation/*.cpp"
     "src/simulation/elements/*.cpp"
 )
@@ -201,10 +202,10 @@ endif(Optimisations)
 option(OptimisationsX86 "Enable x86 specific optimisations, such as MMX and SSE" ON)
 if (OptimisationsX86)
 	if(CMAKE_COMPILER_IS_GNUCC)
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmmx -msse -msse2")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmmx -msse -msse2 -DX86 -DX86_SSE2")
 	endif(CMAKE_COMPILER_IS_GNUCC)
 	if(CMAKE_COMPILER_IS_GNUCXX)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmmx -msse -msse2")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmmx -msse -msse2 -DX86 -DX86_SSE2")
 	endif(CMAKE_COMPILER_IS_GNUCXX)
 endif(OptimisationsX86)
 

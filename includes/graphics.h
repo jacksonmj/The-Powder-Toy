@@ -19,6 +19,9 @@
 #include <SDL/SDL.h>
 #include "defines.h"
 
+//Defining PIXELBYTES indicates that R, G, B values are stored in separate bytes, and that the pixel format is therefore suitable for use with MMX instructions
+
+#define PIXELCHANNELS 3
 #ifdef PIX16
 #define PIXELSIZE 2
 #define PIXPACK(x) ((((x)>>8)&0xF800)|(((x)>>5)&0x07E0)|(((x)>>3)&0x001F))
@@ -34,6 +37,7 @@
 #define PIXR(x) ((x)&0xFF)
 #define PIXG(x) (((x)>>8)&0xFF)
 #define PIXB(x) ((x)>>16)
+#define PIXELBYTES 1
 #else
 #ifdef PIX32BGRA
 #define PIXPACK(x) ((((x)>>8)&0x0000FF00)|(((x)<<8)&0x00FF0000)|(((x)<<24)&0xFF000000))
@@ -41,20 +45,24 @@
 #define PIXR(x) (((x)>>8)&0xFF)
 #define PIXG(x) (((x)>>16)&0xFF)
 #define PIXB(x) (((x)>>24))
+#define PIXELBYTES 1
 #elif defined(PIX32OGL)
+#define PIXELCHANNELS 4
 #define PIXPACK(x) (0xFF000000|((x)&0xFFFFFF))
-#define PIXRGB(r,g,b) (0xFF000000|((r)<<16)|((g)<<8)|((b)))// (((b)<<16)|((g)<<8)|(r))
-#define PIXRGBA(r,g,b,a) (((a)<<24)|((r)<<16)|((g)<<8)|((b)))// (((b)<<16)|((g)<<8)|(r))
+#define PIXRGB(r,g,b) (0xFF000000|((r)<<16)|((g)<<8)|((b)))
+#define PIXRGBA(r,g,b,a) (((a)<<24)|((r)<<16)|((g)<<8)|((b)))
 #define PIXA(x) (((x)>>24)&0xFF)
 #define PIXR(x) (((x)>>16)&0xFF)
 #define PIXG(x) (((x)>>8)&0xFF)
 #define PIXB(x) ((x)&0xFF)
+#define PIXELBYTES 1
 #else
 #define PIXPACK(x) (x)
 #define PIXRGB(r,g,b) (((r)<<16)|((g)<<8)|(b))
 #define PIXR(x) ((x)>>16)
 #define PIXG(x) (((x)>>8)&0xFF)
 #define PIXB(x) ((x)&0xFF)
+#define PIXELBYTES 1
 #endif
 #endif
 #endif

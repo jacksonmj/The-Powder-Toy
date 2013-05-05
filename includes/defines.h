@@ -162,6 +162,10 @@ typedef unsigned int pixel;
 #endif
 #endif
 
+#if defined(DEBUG) || defined(RENDERER) || defined(X86_SSE2)
+#define HIGH_QUALITY_RESAMPLE //High quality image resampling, slower but much higher quality than linear interpolation
+#endif
+
 #define SDEUT
 //#define REALHEAT
 
