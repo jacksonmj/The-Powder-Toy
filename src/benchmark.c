@@ -159,6 +159,24 @@ void benchmark_run()
 		printf("General speed test:\n");
 		clear_sim();
 
+		printf("render_fire: ");
+		BENCHMARK_INIT(benchmark_repeat_count, 50)
+		{
+			int j, i;
+			for (j=YRES/CELL/4; j<YRES/CELL-YRES/CELL/4; j++)
+				for (i=XRES/CELL/4; i<XRES/CELL-XRES/CELL/4; i++)
+				{
+					fire_r[j][i] = 255;
+					fire_g[j][i] = 255;
+					fire_b[j][i] = 255;
+				}
+			BENCHMARK_RUN()
+			{
+				render_fire(vid_buf);
+			}
+		}
+		BENCHMARK_END()
+
 		gravity_init();
 		update_grav();
 		printf("Gravity - no gravmap changes: ");
