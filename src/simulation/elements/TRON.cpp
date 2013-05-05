@@ -72,7 +72,7 @@ bool canmovetron(Simulation * sim, int x, int y, int len)
 		if (tmpResult<result)
 			result = tmpResult;
 	}
-	return (tmpResult==2);
+	return (result==2);
 }
 
 int new_tronhead(Simulation *sim, int x, int y, int i, int direction)
