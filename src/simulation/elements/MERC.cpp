@@ -58,6 +58,7 @@ int MERC_update(UPDATE_FUNC_ARGS)
 						parts[i].tmp--;
 						parts[np].temp = parts[i].temp;
 						parts[np].tmp = 0;
+						parts[np].dcolour = parts[i].dcolour;
 					}
 				}
 	for ( trade = 0; trade<4; trade ++)
