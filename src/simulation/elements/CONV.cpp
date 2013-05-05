@@ -89,7 +89,7 @@ void CONV_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Solid. Converts whatever touches it into its ctype.";
+	elem->Description = "Solid. Converts everything into whatever it first touches.";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_SOLID;

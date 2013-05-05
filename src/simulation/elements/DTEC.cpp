@@ -15,11 +15,6 @@
 
 #include "simulation/ElementsCommon.h"
 
-int in_radius(int rd, int x, int y)
-{
-	return (pow((double)x,2)*pow((double)rd,2)+pow((double)y,2)*pow((double)rd,2)<=pow((double)rd,2)*pow((double)rd,2));
-}
-
 int DTEC_update(UPDATE_FUNC_ARGS)
 {
 	int rx, ry, rt, rd = parts[i].tmp2;
@@ -37,7 +32,7 @@ int DTEC_update(UPDATE_FUNC_ARGS)
 						rt = parts[ri].type;
 						if (parts_avg(i,ri,PT_INSL) != PT_INSL)
 						{
-							if ((ptypes[rt].properties&PROP_CONDUCTS) && !(rt==PT_WATR||rt==PT_SLTW||rt==PT_NTCT||rt==PT_PTCT||rt==PT_INWR) && parts[ri].life==0 && in_radius(rd, rx, ry))
+							if ((ptypes[rt].properties&PROP_CONDUCTS) && !(rt==PT_WATR||rt==PT_SLTW||rt==PT_NTCT||rt==PT_PTCT||rt==PT_INWR) && parts[ri].life==0)
 							{
 								sim->spark_conductive(ri, x+rx, y+ry);
 							}

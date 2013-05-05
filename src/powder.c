@@ -910,7 +910,8 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 				t!=PT_CLNE&&t!=PT_PCLN&&
 				t!=PT_BCLN&&t!=PT_STKM&&
 				t!=PT_STKM2&&t!=PT_PBCN&&
-				t!=PT_STOR&&t!=PT_FIGH)
+				t!=PT_STOR&&t!=PT_FIGH&&
+				t!=PT_CONV)
 			)
 			{
 				parts[ri].ctype = t;
