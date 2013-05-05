@@ -60,7 +60,7 @@ bool canmovetron(Simulation * sim, int x, int y, int len)
 			tmpResult = 2;
 		else if (rt==PT_INVIS && parts[ri].tmp==1)
 			tmpResult = 2;
-		else if (((sim->elements[rt].Properties & PROP_LIFE_KILL_DEC) || (sim->elements[rt].Properties & (PROP_LIFE_KILL|PROP_LIFE_DEC))==(PROP_LIFE_KILL|PROP_LIFE_DEC)) && parts[ri].life < len)
+		else if ((((sim->elements[rt].Properties & PROP_LIFE_KILL_DEC) && sim->parts[ri].life > 0) || (sim->elements[rt].Properties & (PROP_LIFE_KILL|PROP_LIFE_DEC))==(PROP_LIFE_KILL|PROP_LIFE_DEC)) && parts[ri].life < len)
 			tmpResult = 2;
 		else
 		{
