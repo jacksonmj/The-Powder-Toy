@@ -1455,57 +1455,131 @@ int flood_parts(int x, int y, int fullc, int cm, int bm, int flags)
 
 int flood_water(int x, int y, int i, int originaly, int check)
 {
-	int x1 = 0,x2 = 0;
-	// go left as far as possible
-	x1 = x2 = x;
-	if (!pmap[y][x])
+	Simulation *sim = globalSim;
+	int x1, x2;
+	int rcount, ri, rnext;
+
+	try
+	{
+		CoordStack cs;
+		cs.push(x, y);
+
+		do
+		{
+			cs.pop(x, y);
+			bool foundOne = false;
+			FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)
+			{
+				if (sim->elements[parts[ri].type].Falldown==2 && (parts[ri].flags & FLAG_WATEREQUAL) == check)
+				{
+					foundOne = true;
+					break;
+				}
+			}
+			if (!foundOne) continue;
+
+			x1 = x2 = x;
+			// go left as far as possible
+			while (x1>=CELL)
+			{
+				bool foundOne = false;
+				FOR_PMAP_POSITION(sim, x1-1, y, rcount, ri, rnext)
+				{
+					if (sim->elements[parts[ri].type].Falldown==2)
+					{
+						foundOne = true;
+						break;
+					}
+				}
+				if (!foundOne) break;
+				x1--;
+			}
+			// go right as far as possible
+			while (x2<XRES-CELL)
+			{
+				bool foundOne = false;
+				FOR_PMAP_POSITION(sim, x2+1, y, rcount, ri, rnext)
+				{
+					if (sim->elements[parts[ri].type].Falldown==2)
+					{
+						foundOne = true;
+						break;
+					}
+				}
+				if (!foundOne) break;
+				x2++;
+			}
+
+			// fill span
+			for (x=x1; x<=x2; x++)
+			{
+				if (check)
+				{
+					FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)
+					{
+						parts[ri].flags &= ~FLAG_WATEREQUAL;//flag it as checked (different from the original particle's checked flag)
+					}
+				}
+				else
+				{
+					FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)
+					{
+						parts[ri].flags |= FLAG_WATEREQUAL;//flag it as checked (different from the original particle's checked flag)
+					}
+				}
+				//check above, maybe around other sides too?
+				if ( ((y-1) > originaly) && !pmap[y-1][x] && eval_move(parts[i].type, x, y-1, NULL))
+				{
+					sim->part_move(i, (int)(parts[i].x + 0.5f), (int)(parts[i].y + 0.5f), x, y-1);
+					return 0;
+				}
+			}
+
+			// add vertically adjacent pixels to stack
+			if (y>=CELL+1)
+			{
+				bool foundPrev = false;
+				for (x=x1; x<=x2; x++)
+				{
+					bool foundOne = false;
+					FOR_PMAP_POSITION(sim, x, y-1, rcount, ri, rnext)
+					{
+						if (sim->elements[parts[ri].type].Falldown==2 && (parts[ri].flags & FLAG_WATEREQUAL) == check)
+						{
+							foundOne = true;
+							break;
+						}
+					}
+					// If there's a long row, only add one because there will be a horizontal fill anyway
+					if (foundOne && !foundPrev) cs.push(x, y-1);
+					foundPrev = foundOne;
+				}
+			}
+			if (y<YRES-CELL-1)
+			{
+				bool foundPrev = false;
+				for (x=x1; x<=x2; x++)
+				{
+					bool foundOne = false;
+					FOR_PMAP_POSITION(sim, x, y+1, rcount, ri, rnext)
+					{
+						if (sim->elements[parts[ri].type].Falldown==2 && (parts[ri].flags & FLAG_WATEREQUAL) == check)
+						{
+							foundOne = true;
+							break;
+						}
+					}
+					// If there's a long row, only add one because there will be a horizontal fill anyway
+					if (foundOne && !foundPrev) cs.push(x, y+1);
+					foundPrev = foundOne;
+				}
+			}
+		} while (cs.getSize()>0);
+	}
+	catch (std::exception& e)
+	{
 		return 1;
-
-	while (x1>=CELL)
-	{
-		if ((ptypes[(pmap[y][x1-1]&0xFF)].falldown)!=2)
-		{
-			break;
-		}
-		x1--;
 	}
-	while (x2<XRES-CELL)
-	{
-		if ((ptypes[(pmap[y][x2+1]&0xFF)].falldown)!=2)
-		{
-			break;
-		}
-		x2++;
-	}
-
-	// fill span
-	for (x=x1; x<=x2; x++)
-	{
-		parts[pmap[y][x]>>8].tmp2 = !check;//flag it as checked, maybe shouldn't use .tmp2
-		//check above, maybe around other sides too?
-		if ( ((y-1) > originaly) && !pmap[y-1][x] && eval_move(parts[i].type, x, y-1, NULL))
-		{
-			int oldx = (int)(parts[i].x + 0.5f);
-			int oldy = (int)(parts[i].y + 0.5f);
-			pmap[y-1][x] = pmap[oldy][oldx];
-			pmap[oldy][oldx] = 0;
-			parts[i].x = x;
-			parts[i].y = y-1;
-			return 0;
-		}
-	}
-	// fill children
-	
-	if (y>=CELL+1)
-		for (x=x1; x<=x2; x++)
-			if ((ptypes[(pmap[y-1][x]&0xFF)].falldown)==2 && parts[pmap[y-1][x]>>8].tmp2 == check)
-				if (!flood_water(x, y-1, i, originaly, check))
-					return 0;
-	if (y<YRES-CELL-1)
-		for (x=x1; x<=x2; x++)
-			if ((ptypes[(pmap[y+1][x]&0xFF)].falldown)==2 && parts[pmap[y+1][x]>>8].tmp2 == check)
-				if (!flood_water(x, y+1, i, originaly, check))
-					return 0;
 	return 1;
 }
 

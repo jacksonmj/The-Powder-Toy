@@ -1555,7 +1555,7 @@ killed:
 			{
 				if (water_equal_test && elements[t].Falldown == 2 && 1>= rand()%400)//checking stagnant is cool, but then it doesn't update when you change it later.
 				{
-					if (!flood_water(x,y,i,y, parts[i].tmp2))
+					if (!flood_water(x,y,i,y, parts[i].flags&FLAG_WATEREQUAL))
 						goto movedone;
 				}
 				// liquids and powders
