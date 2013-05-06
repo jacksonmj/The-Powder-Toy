@@ -46,7 +46,7 @@ int DTEC_update(UPDATE_FUNC_ARGS)
 			{
 				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if (parts[ri].type == parts[i].ctype && (parts[i].ctype != PT_LIFE || parts[i].tmp == parts[ri].tmp))
+					if (parts[ri].type == parts[i].ctype && (parts[i].ctype != PT_LIFE || parts[i].tmp == parts[ri].ctype || !parts[i].tmp))
 						parts[i].life = 1;
 				}
 			}
