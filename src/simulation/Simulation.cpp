@@ -815,7 +815,6 @@ void Simulation::UpdateParticles()
 	{
 		/*int createdsomething = 0;
 		CGOL=0;
-		ISGOL=0;
 		for (ny=CELL; ny<YRES-CELL; ny++)
 		{//go through every particle and set neighbor map
 			for (nx=CELL; nx<XRES-CELL; nx++)

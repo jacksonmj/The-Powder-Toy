@@ -58,7 +58,6 @@ void LOVE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = &update_MISC;
 	elem->Graphics = NULL;
 }
 
