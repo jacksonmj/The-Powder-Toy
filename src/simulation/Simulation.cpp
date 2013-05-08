@@ -1828,7 +1828,7 @@ void Simulation_Compat_CopyData(Simulation* sim)
 
 	for (int t=0; t<PT_NUM; t++)
 	{
-		ptypes[t].name = mystrdup(sim->elements[t].Name);
+		ptypes[t].name = mystrdup(sim->elements[t].Name.c_str());
 		ptypes[t].pcolors = PIXRGB(COLR(sim->elements[t].Colour), COLG(sim->elements[t].Colour), COLB(sim->elements[t].Colour));
 		ptypes[t].menu = sim->elements[t].MenuVisible;
 		ptypes[t].menusection = sim->elements[t].MenuSection;
@@ -1849,7 +1849,7 @@ void Simulation_Compat_CopyData(Simulation* sim)
 		ptypes[t].weight = sim->elements[t].Weight;
 		ptypes[t].heat = sim->elements[t].DefaultProperties.temp;
 		ptypes[t].hconduct = sim->elements[t].HeatConduct;
-		ptypes[t].descs = mystrdup(sim->elements[t].Description);
+		ptypes[t].descs = mystrdup(sim->elements[t].Description.c_str());
 		ptypes[t].state = sim->elements[t].State;
 		ptypes[t].properties = sim->elements[t].Properties;
 		ptypes[t].update_func = sim->elements[t].Update;
