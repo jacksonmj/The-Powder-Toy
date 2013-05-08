@@ -68,69 +68,21 @@ typedef struct menu_wall menu_wall;
 #define SC_CRACKER 14
 #define SC_CRACKER2 15
 
-static menu_section msections[] = //doshow does not do anything currently.
-{
-	{"\xC1", "Walls", 0, 1},
-	{"\xC2", "Electronics", 0, 1},
-	{"\xD6", "Powered Materials", 0, 1},
-	{"\x99", "Sensors", 0, 1},
-	{"\xE2", "Force Creating", 0, 1},
-	{"\xC3", "Explosives", 0, 1},
-	{"\xC5", "Gases", 0, 1},
-	{"\xC4", "Liquids", 0, 1},
-	{"\xD0", "Powders", 0, 1},
-	{"\xD1", "Solids", 0, 1},
-	{"\xC6", "Radioactive", 0, 1},
-	{"\xCC", "Special", 0, 1},
-	{"\xD2", "Life", 0, 1},
-	{"\xD7", "Tools", 0, 1},
-	{"\xD2", "More Life", 0, 1},
-	{"\xC8", "", 0, 0},
-	{"\xC8", "Cracker", 0, 0},
-	{"\xC8", "Cracker!", 0, 0},
-};
+extern menu_section msections[];
 
-static quick_option quickmenu[] =
-{
-	{"P", "Sand effect", QM_TOGGLE, &pretty_powder},
-	{"G", "Draw gravity grid", QM_TOGGLE, &drawgrav_enable},
-	{"D", "Show decorations", QM_TOGGLE, &decorations_enable},
-	{"N", "Newtonian gravity", QM_TOGGLE, &ngrav_enable},
-	{"A", "Ambient heat", QM_TOGGLE, &aheat_enable},
-	{"C", "Show Console", QM_TOGGLE, &console_mode},
-	{NULL}
-};
+extern quick_option quickmenu[];
 
-static menu_section colorsections[] = //doshow does not do anything currently.
-{
-	{"\xC4", "Colors", 7, 1},
-	{"\xD7", "Tools", 0, 1},
-};
+extern menu_section colorsections[];
 #define DECO_SECTIONS 2
 
-static menu_wall colorlist[] =
-{
-	{PIXPACK(0xFF0000), "Red"},
-	{PIXPACK(0x00FF00), "Green"},
-	{PIXPACK(0x0000FF), "Blue"},
-	{PIXPACK(0xFFFF00), "Yellow"},
-	{PIXPACK(0xFF00FF), "Pink"},
-	{PIXPACK(0x00FFFF), "Cyan"},
-	{PIXPACK(0xFFFFFF), "White"},
-};
+extern menu_wall colorlist[];
 
 #define DECO_DRAW 0
 #define DECO_LIGHTEN 1
 #define DECO_DARKEN 2
 #define DECO_SMUDGE 3
 
-static menu_wall toollist[] =
-{
-	{PIXPACK(0xFF0000), "Draw"},
-	{PIXPACK(0xDDDDDD), "Lighten"},
-	{PIXPACK(0x111111), "Darken"},
-	{PIXPACK(0x00FF00), "Smudge"},
-};
+extern menu_wall toollist[];
 
 struct ui_edit
 {

@@ -35,7 +35,7 @@ __asm__ __volatile ("cpuid":\
 	"=a" (af), "=b" (bf), "=c" (cf), "=d" (df) : "a" (func));
 #endif
 
-static char hex[] = "0123456789ABCDEF";
+extern char hex[];
 
 //Signum function
 int isign(float i);

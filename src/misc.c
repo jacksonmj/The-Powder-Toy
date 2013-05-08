@@ -44,6 +44,8 @@
 
 char *clipboard_text = NULL;
 
+char hex[] = "0123456789ABCDEF";
+
 //Signum function
 TPT_GNU_INLINE int isign(float i)
 {

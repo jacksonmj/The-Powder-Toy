@@ -268,90 +268,9 @@ struct gol_menu
 };
 typedef struct gol_menu gol_menu;
 
-static gol_menu gmenu[NGOL] = 
-{
-	{"GOL",		PIXPACK(0x0CAC00), 0, "Game Of Life B3/S23"},
-	{"HLIF",	PIXPACK(0xFF0000), 1, "High Life B36/S23"},
-	{"ASIM",	PIXPACK(0x0000FF), 2, "Assimilation B345/S4567"},
-	{"2x2",		PIXPACK(0xFFFF00), 3, "2x2 B36/S125"},
-	{"DANI",	PIXPACK(0x00FFFF), 4, "Day and Night B3678/S34678"},
-	{"AMOE",	PIXPACK(0xFF00FF), 5, "Amoeba B357/S1358"},
-	{"MOVE",	PIXPACK(0xFFFFFF), 6, "'Move' particles. Does not move things.. it is a life type B368/S245"},
-	{"PGOL",	PIXPACK(0xE05010), 7, "Pseudo Life B357/S238"},
-	{"DMOE",	PIXPACK(0x500000), 8, "Diamoeba B35678/S5678"},
-	{"34",		PIXPACK(0x500050), 9, "34 B34/S34"},
-	{"LLIF",	PIXPACK(0x505050), 10, "Long Life B345/S5"},
-	{"STAN",	PIXPACK(0x5000FF), 11, "Stains B3678/S235678"},
-	{"SEED",	PIXPACK(0xFBEC7D), 12, "B2/S"},
-	{"MAZE",	PIXPACK(0xA8E4A0), 13, "B3/S12345"},
-	{"COAG",	PIXPACK(0x9ACD32), 14, "B378/S235678"},
-	{"WALL",	PIXPACK(0x0047AB), 15, "B45678/S2345"},
-	{"GNAR",	PIXPACK(0xE5B73B), 16, "B1/S1"},
-	{"REPL",	PIXPACK(0x259588), 17, "B1357/S1357"},
-	{"MYST",	PIXPACK(0x0C3C00), 18, "B3458/S05678"},
-	{"LOTE",	PIXPACK(0xFF0000), 19, "Behaves kinda like Living on the Edge S3458/B37/4"},
-	{"FRG2",	PIXPACK(0x00FF00), 20, "Like Frogs rule S124/B3/3"},
-	{"STAR",	PIXPACK(0x0000FF), 21, "Like Star Wars rule S3456/B278/6"},
-	{"FROG",	PIXPACK(0x00AA00), 22, "Frogs S12/B34/3"},
-	{"BRAN",	PIXPACK(0xCCCC00), 23, "Brian 6 S6/B246/3"}
-};
-
-static int grule[NGOL+1][10] =
-{
-//	 0,1,2,3,4,5,6,7,8,STATES    live=1  spawn=2 spawn&live=3   States are kind of how long until it dies, normal ones use two states(living,dead) for others the intermediate states live but do nothing
-	{0,0,0,0,0,0,0,0,0,2},//blank
-	{0,0,1,3,0,0,0,0,0,2},//GOL
-	{0,0,1,3,0,0,2,0,0,2},//HLIF
-	{0,0,0,2,3,3,1,1,0,2},//ASIM
-	{0,1,1,2,0,1,2,0,0,2},//2x2
-	{0,0,0,3,1,0,3,3,3,2},//DANI
-	{0,1,0,3,0,3,0,2,1,2},//AMOE
-	{0,0,1,2,1,1,2,0,2,2},//MOVE
-	{0,0,1,3,0,2,0,2,1,2},//PGOL
-	{0,0,0,2,0,3,3,3,3,2},//DMOE
-	{0,0,0,3,3,0,0,0,0,2},//34
-	{0,0,0,2,2,3,0,0,0,2},//LLIF
-	{0,0,1,3,0,1,3,3,3,2},//STAN
-	{0,0,2,0,0,0,0,0,0,2},//SEED
-	{0,1,1,3,1,1,0,0,0,2},//MAZE
-	{0,0,1,3,0,1,1,3,3,2},//COAG
-	{0,0,1,1,3,3,2,2,2,2},//WALL
-	{0,3,0,0,0,0,0,0,0,2},//GNAR
-	{0,3,0,3,0,3,0,3,0,2},//REPL
-	{1,0,0,2,2,3,1,1,3,2},//MYST
-	{0,0,0,3,1,1,0,2,1,4},//LOTE
-	{0,1,1,2,1,0,0,0,0,3},//FRG2
-	{0,0,2,1,1,1,1,2,2,6},//STAR
-	{0,1,1,2,2,0,0,0,0,3},//FROG
-	{0,0,2,0,2,0,3,0,0,3},//BRAN
-};
-static int goltype[NGOL] =
-{
-	GT_GOL,
-	GT_HLIF,
-	GT_ASIM,
-	GT_2x2,
-	GT_DANI,
-	GT_AMOE,
-	GT_MOVE,
-	GT_PGOL,
-	GT_DMOE,
-	GT_34,
-	GT_LLIF,
-	GT_STAN,
-	GT_SEED,
-	GT_MAZE,
-	GT_COAG,
-	GT_WALL,
-	GT_GNAR,
-	GT_REPL,
-	GT_MYST,
-	GT_LOTE,
-	GT_FRG2,
-	GT_STAR,
-	GT_FROG,
-	GT_BRAN,
-};
+extern gol_menu gmenu[NGOL];
+extern int grule[NGOL+1][10];
+extern int goltype[NGOL];
 static int loverule[9][9] =
 {
 	{0,0,1,1,0,0,0,0,0},
@@ -386,34 +305,7 @@ struct wall_type
 };
 typedef struct wall_type wall_type;
 
-static wall_type wtypes[] =
-{
-	{PIXPACK(0xC0C0C0), PIXPACK(0x101010), 0, "Wall. Indestructible. Blocks everything. Conductive."},
-	{PIXPACK(0x808080), PIXPACK(0x808080), 0, "E-Wall. Becomes transparent when electricity is connected."},
-	{PIXPACK(0xFF8080), PIXPACK(0xFF2008), 1, "Detector. Generates electricity when a particle is inside."},
-	{PIXPACK(0x808080), PIXPACK(0x000000), 0, "Streamline. Set start point of a streamline."},
-	{PIXPACK(0x808080), PIXPACK(0x000000), 0, "Sign. Click on a sign to edit it or anywhere else to place a new one."},
-	{PIXPACK(0x8080FF), PIXPACK(0x000000), 1, "Fan. Accelerates air. Use line tool to set direction and strength."},
-	{PIXPACK(0xC0C0C0), PIXPACK(0x101010), 2, "Wall. Blocks most particles but lets liquids through. Conductive."},
-	{PIXPACK(0x808080), PIXPACK(0x000000), 1, "Wall. Absorbs particles but lets air currents through."},
-	{PIXPACK(0x808080), PIXPACK(0x000000), 0, "Erases walls."},
-	{PIXPACK(0x808080), PIXPACK(0x000000), 3, "Wall. Indestructible. Blocks everything."},
-	{PIXPACK(0x3C3C3C), PIXPACK(0x000000), 1, "Wall. Indestructible. Blocks particles, allows air"},
-	{PIXPACK(0x575757), PIXPACK(0x000000), 1, "Wall. Indestructible. Blocks liquids and gases, allows powders"},
-	{PIXPACK(0xFFFF22), PIXPACK(0x101010), 2, "Conductor, allows particles, conducts electricity"},
-	{PIXPACK(0x242424), PIXPACK(0x101010), 0, "E-Hole, absorbs particles, release them when powered"},
-	{PIXPACK(0xFFFFFF), PIXPACK(0x000000), -1, "Air, creates airflow and pressure"},
-	{PIXPACK(0xFFBB00), PIXPACK(0x000000), -1, "Heats the targeted element."},
-	{PIXPACK(0x00BBFF), PIXPACK(0x000000), -1, "Cools the targeted element."},
-	{PIXPACK(0x303030), PIXPACK(0x000000), -1, "Vacuum, reduces air pressure."},
-	{PIXPACK(0x579777), PIXPACK(0x000000), 1, "Wall. Indestructible. Blocks liquids and solids, allows gases"},
-	{PIXPACK(0x000000), PIXPACK(0x000000), -1, "Drag tool"},
-	{PIXPACK(0xFFEE00), PIXPACK(0xAA9900), 4, "Gravity wall"},
-	{PIXPACK(0x0000BB), PIXPACK(0x000000), -1, "Positive gravity tool."},
-	{PIXPACK(0x000099), PIXPACK(0x000000), -1, "Negative gravity tool."},
-	{PIXPACK(0xFFAA00), PIXPACK(0xAA5500), 4, "Energy wall, allows only energy type particles to pass"},
-	{PIXPACK(0xFFAA00), PIXPACK(0xAA5500), -1, "Property edit tool"},
-};
+extern wall_type wtypes[];
 
 #define CHANNELS ((int)(MAX_TEMP-73)/100+2)
 extern particle portalp[CHANNELS][8][80];
@@ -465,8 +357,8 @@ int eval_move_special(int pt, int nx, int ny, int ri, int result);
 void init_can_move();
 extern unsigned char can_move[PT_NUM][PT_NUM];
 
-static void create_cherenkov_photon(int pp);
-static void create_gain_photon(int pp);
+void create_cherenkov_photon(int pp);
+void create_gain_photon(int pp);
 
 void kill_part(int i);
 

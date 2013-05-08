@@ -81,6 +81,35 @@ int lolz[XRES/9][YRES/9];
 unsigned char gol[YRES][XRES];
 unsigned char gol2[YRES][XRES][NGOL+1];
 
+wall_type wtypes[] =
+{
+	{PIXPACK(0xC0C0C0), PIXPACK(0x101010), 0, "Wall. Indestructible. Blocks everything. Conductive."},
+	{PIXPACK(0x808080), PIXPACK(0x808080), 0, "E-Wall. Becomes transparent when electricity is connected."},
+	{PIXPACK(0xFF8080), PIXPACK(0xFF2008), 1, "Detector. Generates electricity when a particle is inside."},
+	{PIXPACK(0x808080), PIXPACK(0x000000), 0, "Streamline. Set start point of a streamline."},
+	{PIXPACK(0x808080), PIXPACK(0x000000), 0, "Sign. Click on a sign to edit it or anywhere else to place a new one."},
+	{PIXPACK(0x8080FF), PIXPACK(0x000000), 1, "Fan. Accelerates air. Use line tool to set direction and strength."},
+	{PIXPACK(0xC0C0C0), PIXPACK(0x101010), 2, "Wall. Blocks most particles but lets liquids through. Conductive."},
+	{PIXPACK(0x808080), PIXPACK(0x000000), 1, "Wall. Absorbs particles but lets air currents through."},
+	{PIXPACK(0x808080), PIXPACK(0x000000), 0, "Erases walls."},
+	{PIXPACK(0x808080), PIXPACK(0x000000), 3, "Wall. Indestructible. Blocks everything."},
+	{PIXPACK(0x3C3C3C), PIXPACK(0x000000), 1, "Wall. Indestructible. Blocks particles, allows air"},
+	{PIXPACK(0x575757), PIXPACK(0x000000), 1, "Wall. Indestructible. Blocks liquids and gases, allows powders"},
+	{PIXPACK(0xFFFF22), PIXPACK(0x101010), 2, "Conductor, allows particles, conducts electricity"},
+	{PIXPACK(0x242424), PIXPACK(0x101010), 0, "E-Hole, absorbs particles, release them when powered"},
+	{PIXPACK(0xFFFFFF), PIXPACK(0x000000), -1, "Air, creates airflow and pressure"},
+	{PIXPACK(0xFFBB00), PIXPACK(0x000000), -1, "Heats the targeted element."},
+	{PIXPACK(0x00BBFF), PIXPACK(0x000000), -1, "Cools the targeted element."},
+	{PIXPACK(0x303030), PIXPACK(0x000000), -1, "Vacuum, reduces air pressure."},
+	{PIXPACK(0x579777), PIXPACK(0x000000), 1, "Wall. Indestructible. Blocks liquids and solids, allows gases"},
+	{PIXPACK(0x000000), PIXPACK(0x000000), -1, "Drag tool"},
+	{PIXPACK(0xFFEE00), PIXPACK(0xAA9900), 4, "Gravity wall"},
+	{PIXPACK(0x0000BB), PIXPACK(0x000000), -1, "Positive gravity tool."},
+	{PIXPACK(0x000099), PIXPACK(0x000000), -1, "Negative gravity tool."},
+	{PIXPACK(0xFFAA00), PIXPACK(0xAA5500), 4, "Energy wall, allows only energy type particles to pass"},
+	{PIXPACK(0xFFAA00), PIXPACK(0xAA5500), -1, "Property edit tool"},
+};
+
 void get_gravity_field(int x, int y, float particleGrav, float newtonGrav, float *pGravX, float *pGravY)
 {
 	*pGravX = newtonGrav*gravx[(y/CELL)*(XRES/CELL)+(x/CELL)];
@@ -952,7 +981,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 	return i;
 }
 
-static void create_gain_photon(int pp)//photons from PHOT going through GLOW
+void create_gain_photon(int pp)//photons from PHOT going through GLOW
 {
 	float xx, yy;
 	int i, lr, temp_bin, nx, ny;
@@ -994,7 +1023,7 @@ static void create_gain_photon(int pp)//photons from PHOT going through GLOW
 	parts[i].ctype = 0x1F << temp_bin;
 }
 
-static void create_cherenkov_photon(int pp)//photons from NEUT going through GLAS
+void create_cherenkov_photon(int pp)//photons from NEUT going through GLAS
 {
 	int i, lr, nx, ny;
 	float r, eff_ior;
