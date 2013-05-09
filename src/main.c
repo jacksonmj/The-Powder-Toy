@@ -1778,6 +1778,7 @@ int main(int argc, char *argv[])
 						}
 
 					globalSim->pmap_reset();
+					globalSim->RecalcElementCounts();
 					force_stacking_check = 1;//check for excessive stacking of particles next time update_particles is run
 				}
 				else

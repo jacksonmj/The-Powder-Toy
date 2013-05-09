@@ -240,7 +240,7 @@ extern int GSPEED;
 extern int love[XRES/9][YRES/9];
 extern int lolz[XRES/9][YRES/9];
 extern unsigned char gol[YRES][XRES];
-extern unsigned char gol2[YRES][XRES][NGOL+1];
+extern unsigned short gol2[YRES][XRES][9];
 extern int SEC;
 extern int SEC2;
 extern int console_mode;

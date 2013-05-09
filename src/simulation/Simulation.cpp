@@ -108,6 +108,18 @@ void Simulation::pmap_reset()
 	}
 }
 
+/* Recalculates elementCount[] values */
+void Simulation::RecalcElementCounts()
+{
+	for (int t=0; t<PT_NUM; t++)
+		elementCount[t] = 0;
+	for (int i=0; i<NPART; i++)
+	{
+		if (parts[i].type)
+			elementCount[parts[i].type]++;
+	}
+}
+
 /* Recalculates the pfree/parts[].life linked list for particles with ID <= parts_lastActiveIndex.
  * This ensures that future particle allocations are done near the start of the parts array, to keep parts_lastActiveIndex low.
  * parts_lastActiveIndex is also decreased if appropriate.
@@ -279,6 +291,26 @@ bool Simulation::Check()
 		i = parts[i].life;
 	}
 	delete[] partSeen;
+
+	int *elementCountCheck = new int[PT_NUM];
+	for (i=0; i<PT_NUM; i++)
+	{
+		elementCountCheck[i] = 0;
+	}
+	for (int i=0; i<NPART; i++)
+	{
+		if (parts[i].type)
+			elementCountCheck[parts[i].type]++;
+	}
+	for (i=0; i<PT_NUM; i++)
+	{
+		if (elementCount[i]!=elementCountCheck[i])
+		{
+			printf("elementCount for %s is wrong: value is %d, should be %d\n", elements[i].Name.c_str(), elementCount[i], elementCountCheck[i]);
+			isGood = false;
+		}
+	}
+	delete[] elementCountCheck;
 
 	if (!isGood)
 	{
@@ -813,50 +845,57 @@ void Simulation::UpdateParticles()
 	//game of life!
 	if (elementCount[PT_LIFE] && ++CGOL>=GSPEED)//GSPEED is frames per generation
 	{
-		/*int createdsomething = 0;
 		CGOL=0;
+		//TODO: maybe this should only loop through active particles
 		for (ny=CELL; ny<YRES-CELL; ny++)
 		{//go through every particle and set neighbor map
 			for (nx=CELL; nx<XRES-CELL; nx++)
 			{
-				r = pmap[ny][nx];
-				if (!r)
+				if (!pmap[ny][nx].count)
 				{
 					gol[ny][nx] = 0;
 					continue;
 				}
-				else
+				r = pmap_find_one(nx, ny, PT_LIFE);
+				if (r>=0)
 				{
-					//for ( golnum=1; golnum<=NGOL; golnum++) //This shouldn't be necessary any more.
-					//{
-						if (parts[r>>8].type==PT_LIFE)// && parts[r>>8].ctype==golnum-1
+					golnum = parts[r].ctype+1;
+					if (golnum<=0 || golnum>NGOL) {
+						kill_part(r);
+						continue;
+					}
+					gol[ny][nx] = golnum;
+					if (parts[r].tmp == grule[golnum][9]-1) {
+						for ( nnx=-1; nnx<2; nnx++)
 						{
-							golnum = parts[r>>8].ctype+1;
-							if (golnum<=0 || golnum>NGOLALT) {
-								parts[r>>8].type = PT_NONE;
-								continue;
-							}
-							if (parts[r>>8].tmp == grule[golnum][9]-1) {
-								gol[ny][nx] = golnum;
-								for ( nnx=-1; nnx<2; nnx++)
+							for ( nny=-1; nny<2; nny++)//it will count itself as its own neighbor, which is needed, but will have 1 extra for delete check
+							{
+								int adx = ((nx+nnx+XRES-3*CELL)%(XRES-2*CELL))+CELL;
+								int ady = ((ny+nny+YRES-3*CELL)%(YRES-2*CELL))+CELL;
+								if (!pmap[ady][adx].count || pmap_find_one(adx, ady, PT_LIFE)>=0)
 								{
-									for ( nny=-1; nny<2; nny++)//it will count itself as its own neighbor, which is needed, but will have 1 extra for delete check
+									//the total neighbor count is in 0
+									gol2[ady][adx][0] ++;
+									//insert golnum into neighbor table
+									for ( i=1; i<9; i++)
 									{
-										rt = pmap[((ny+nny+YRES-3*CELL)%(YRES-2*CELL))+CELL][((nx+nnx+XRES-3*CELL)%(XRES-2*CELL))+CELL];
-										if (!rt || (rt&0xFF)==PT_LIFE)
+										if (!gol2[ady][adx][i])
 										{
-											gol2[((ny+nny+YRES-3*CELL)%(YRES-2*CELL))+CELL][((nx+nnx+XRES-3*CELL)%(XRES-2*CELL))+CELL][golnum] ++;
-											gol2[((ny+nny+YRES-3*CELL)%(YRES-2*CELL))+CELL][((nx+nnx+XRES-3*CELL)%(XRES-2*CELL))+CELL][0] ++;
+											gol2[ady][adx][i] = (golnum<<4)+1;
+											break;
+										}
+										else if((gol2[ady][adx][i]>>4)==golnum)
+										{
+											gol2[ady][adx][i]++;
+											break;
 										}
 									}
 								}
-							} else {
-								parts[r>>8].tmp --;
-								if (parts[r>>8].tmp<=0)
-									parts[r>>8].type = PT_NONE;//using kill_part makes it not work
 							}
 						}
-					//}
+					} else {
+						parts[r].tmp --;
+					}
 				}
 			}
 		}
@@ -864,33 +903,42 @@ void Simulation::UpdateParticles()
 		{ //go through every particle again, but check neighbor map, then update particles
 			for (nx=CELL; nx<XRES-CELL; nx++)
 			{
-				r = pmap[ny][nx];
-				neighbors = gol2[ny][nx][0];
-				if (neighbors==0 || !((r&0xFF)==PT_LIFE || !(r&0xFF)))
+				r = pmap_find_one(nx, ny, PT_LIFE);
+				if (pmap[ny][nx].count && r<0)
 					continue;
-				for ( golnum = 1; golnum<=NGOL; golnum++)
+				neighbors = gol2[ny][nx][0];
+				if (neighbors)
 				{
-					goldelete = neighbors;
-					if (gol[ny][nx]==0&&grule[golnum][goldelete]>=2&&gol2[ny][nx][golnum]>=(goldelete%2)+goldelete/2)
+					golnum = gol[ny][nx];
+					if (!pmap[ny][nx].count)// TODO: not energy particles
 					{
-						if (create_part(-1, nx, ny, PT_LIFE|((golnum-1)<<8)))
-							createdsomething = 1;
+						//Find which type we can try and create
+						int creategol = 0xFF;
+						for ( i=1; i<9; i++)
+						{
+							if (!gol2[ny][nx][i]) break;
+							golnum = (gol2[ny][nx][i]>>4);
+							if (grule[golnum][neighbors]>=2 && (gol2[ny][nx][i]&0xF)>=(neighbors%2)+neighbors/2)
+							{
+								if (golnum<creategol) creategol=golnum;
+							}
+						}
+						if (creategol<0xFF)
+							create_part(-1, nx, ny, PT_LIFE|((creategol-1)<<8));
 					}
-					else if (gol[ny][nx]==golnum&&(grule[golnum][goldelete-1]==0||grule[golnum][goldelete-1]==2))//subtract 1 because it counted itself
+					else if (grule[golnum][neighbors-1]==0 || grule[golnum][neighbors-1]==2)//subtract 1 because it counted itself
 					{
-						if (parts[r>>8].tmp==grule[golnum][9]-1)
-							parts[r>>8].tmp --;
+						if (parts[r].tmp==grule[golnum][9]-1)
+							parts[r].tmp --;
 					}
-					if (r && parts[r>>8].tmp<=0)
-						parts[r>>8].type = PT_NONE;//using kill_part makes it not work
+					for ( z = 0; z<9; z++)
+						gol2[ny][nx][z] = 0;
 				}
-				for ( z = 0; z<=NGOL; z++)
-					gol2[ny][nx][z] = 0;//this improves performance A LOT compared to the memset, i was getting ~23 more fps with this.
+				//we still need to kill things with 0 neighbors (higher state life)
+				if (r>=0 && parts[r].tmp<=0)
+						kill_part(r);
 			}
 		}
-		if (createdsomething)
-			GENERATION ++;
-		//memset(gol2, 0, sizeof(gol2));*/
 	}
 	for (t=1; t<PT_NUM; t++)
 	{

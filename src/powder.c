@@ -74,7 +74,7 @@ int VINE_MODE = 0;
 int love[XRES/9][YRES/9];
 int lolz[XRES/9][YRES/9];
 unsigned char gol[YRES][XRES];
-unsigned char gol2[YRES][XRES][NGOL+1];
+unsigned short gol2[YRES][XRES][9];
 
 wall_type wtypes[] =
 {

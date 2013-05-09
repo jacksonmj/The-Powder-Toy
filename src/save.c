@@ -105,6 +105,7 @@ int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char 
 		result = parse_save_PSv(save, size, replace, x0, y0, bmap, fvx, fvy, signs, partsptr, pmap);
 	}
 	globalSim->pmap_reset();
+	globalSim->RecalcElementCounts();
 	return result;
 }
 

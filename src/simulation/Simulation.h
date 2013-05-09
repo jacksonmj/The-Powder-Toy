@@ -69,6 +69,7 @@ public:
 	bool Check();
 	void UpdateParticles();
 	void RecalcFreeParticles();
+	void RecalcElementCounts();
 	void pmap_reset();
 
 	int part_create(int p, int x, int y, int t);
