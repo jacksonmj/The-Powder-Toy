@@ -66,10 +66,11 @@
 
 #if defined(__MMX__)
 #include <mmintrin.h>
-#endif
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
+#endif
+
 
 //unsigned cmode = CM_FIRE;
 unsigned int *render_modes;
@@ -3759,17 +3760,25 @@ void render_fire(pixel *vid)
 					for (y=-CELL; y<2*CELL; y++)
 						for (x=-CELL; x<2*CELL; x++)
 						{
-							__m64 fireAdd;
-#if defined(__SSE__)
+#if defined(__SSE__) and defined(__GNUC__)
 							// unsigned multiply allows a slight optimisation, but is not available in the MMX instruction set
 							// With SSE, alpha is multiplied by 2^8 when initialised, and the high 16 bits of the answer are stored (equivalent to dividing the answer by 2^16), so the answer stored is alpha*colour/256
-							fireAdd = _mm_mulhi_pu16(fireColour, (__m64)(fire_alpha_mmx[y+CELL][x+CELL]));
+							__m64 tmp = (__m64)(fire_alpha_mmx[y+CELL][x+CELL]);
+
+							// (in these asm instructions, the second operand is where the result is stored)
+							__asm__("\
+								pmulhuw %[fireColour], %[tmp] /* Multiply packed 16 bit R/G/B fireColour values by packed 16 bit alpha values, store the high 16 bits of each result */\n\t\
+								packuswb %[zero], %[tmp] /* Squash the 16 bit colour values back into 8 bit values (saturating, values over 255 are set to 255) */\n\t\
+								paddusb %[tmp], %[pixelColour] /* Add the scaled fire colour to the pixel. Saturating 8 bit addition - each pair of bytes is added separately, and if the result is over 255 it is set to 255 */"
+								: [pixelColour] "+y" (vid[(j*CELL+y)*(XRES+BARSIZE)+i*CELL+x]),
+								  [tmp] "+&y" (tmp)
+								: [fireColour] "y" (fireColour),
+								  [zero] "y" (zero));
 #else
 							// if only signed multiply is available, alpha can't be premultiplied by 256 since that could correspond to a negative number
 							// therefore use a slightly slower method
-							fireAdd = _mm_mullo_pi16(fireColour, (__m64)(fire_alpha_mmx[y+CELL][x+CELL]));// multiply each R/G/B colour value in fireColour by the alpha value for this pixel location
+							__m64 fireAdd = _mm_mullo_pi16(fireColour, (__m64)(fire_alpha_mmx[y+CELL][x+CELL]));// multiply each R/G/B colour value in fireColour by the alpha value for this pixel location
 							fireAdd = _mm_srli_pi16(fireAdd, 8);// Divide results by 256 (shift right by 8)
-#endif
 							fireAdd = _mm_packs_pu16 (fireAdd, zero);// Squash the 16 bit colour values back into 8 bit values (saturating, values over 255 are set to 255)
 							// fireAdd now contains the fire colour in the pixel format used by SDL, scaled by fire_alpha[y+CELL][x+CELL]/256
 
@@ -3777,6 +3786,7 @@ void render_fire(pixel *vid)
 							__m64 pixColour = _m_from_int(vid[(j*CELL+y)*(XRES+BARSIZE)+i*CELL+x]);// Get the current pixel colour
 							pixColour = _mm_adds_pu8(pixColour, fireAdd);// Saturating 8 bit addition of pixColour and fireAdd. Each pair of bytes is added separately, and if the result is over 255 it is set to 255
 							vid[(j*CELL+y)*(XRES+BARSIZE)+i*CELL+x] = _m_to_int(pixColour);// Store the modified pixel colour back into the video buffer
+#endif
 						}
 					_mm_empty();// needed for floating point instructions to work after using MMX instructions
 				}
@@ -3840,7 +3850,7 @@ void prepare_alpha(int size, float intensity)
 #if defined(__MMX__) and defined(PIXELBYTES)
 			if (tmp>255)
 				fire_mmx = false;
-#if defined(__SSE__)
+#if defined(__SSE__) and defined(__GNUC__)
 			tmp *= 256;
 #endif
 			// Now duplicate the alpha value (which is less than 65535 so a 16 bit value) 4 times in tmp for MMX optimisations
