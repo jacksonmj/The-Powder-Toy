@@ -429,8 +429,8 @@ int http_async_req_status(void *ctx)
 	    cx->tlen = 0;
 	    cx->tlen += sprintf(cx->tbuf+cx->tlen, "POST %s HTTP/1.1\n", cx->path);
 	    cx->tlen += sprintf(cx->tbuf+cx->tlen, "Host: %s\n", cx->host);
-	    if(!cx->keep)
-		cx->tlen += sprintf(cx->tbuf+cx->tlen, "Connection: close\n");
+	    //if(!cx->keep)
+		//cx->tlen += sprintf(cx->tbuf+cx->tlen, "Connection: close\n");
 	    if(cx->thdr) {
 		memcpy(cx->tbuf+cx->tlen, cx->thdr, cx->thlen);
 		cx->tlen += cx->thlen;
@@ -459,8 +459,8 @@ int http_async_req_status(void *ctx)
 		cx->thdr = NULL;
 		cx->thlen = 0;
 	    }
-	    if(!cx->keep)
-		cx->tlen += sprintf(cx->tbuf+cx->tlen, "Connection: close\n");
+	    //if(!cx->keep)
+		//cx->tlen += sprintf(cx->tbuf+cx->tlen, "Connection: close\n");
 	    cx->tlen += sprintf(cx->tbuf+cx->tlen, "\n");
 	}
 	cx->state = HTS_XMIT;
