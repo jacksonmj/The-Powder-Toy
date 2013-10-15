@@ -39,7 +39,7 @@
 #define SAVE_VERSION 24
 #define MINOR_VERSION 9
 
-#define SERVER "powder.unaligned.org"
+#define SERVER "powdertoythings.co.uk/OldPowder"
 
 #undef PLOSS
 
@@ -93,13 +93,11 @@ char *it_msg =
     "Use 'S' to save parts of the window as 'stamps'.\n"
     "'L' will load the most recent stamp, 'K' shows a library of stamps you saved.\n"
     "\n"
-    "\brhttp://powder.unaligned.org/\n"
-    "\bbirc.unaligned.org #wtf\n"
-    "\n"
     "\bg(c) 2008-9 Stanislaw K Skowronek\n"
     "\n"
-    "\bgSpecial thanks to Brian Ledbetter for maintaining ports & server development."
-    "\nThanks to CW for hosting the server."
+    "\bgThis is \boPowder Toy v24.9\bg, showing old saves from a http://powder.unaligned.org/ backup\nsupplied by Skylark.\n"
+    "The server with the old saves is read-only, you cannot login, vote, tag, or make new saves.\n"
+    "The current version of Powder Toy can be found at http://powdertoy.co.uk/\n"
 #ifdef WIN32
     "\nThanks to Akuryo for Windows icons."
 #endif
@@ -3150,8 +3148,8 @@ void draw_svf_ui(pixel *vid_buf)
     if(svf_admin) {
 	drawtext(vid_buf, 463, YRES+44, "\xA4", 0, 32, 0, 255);
 	drawtext(vid_buf, 463, YRES+44, "\xA3", 0, 255, 127, 255);
-    } else if(amd)
-	drawtext(vid_buf, 465, YRES+45, "\x97", 0, 230, 153, 255);
+    }/* else if(amd)
+	drawtext(vid_buf, 465, YRES+45, "\x97", 0, 230, 153, 255); */
 }
 
 typedef struct ui_edit {
@@ -5888,8 +5886,8 @@ int main(int argc, char *argv[])
 	}
 	if(it) {
 	    it--;
-	    if(fbi_img)
-		draw_image(vid_buf, fbi_img, (XRES-FBI_W)/2, (YRES-FBI_H)/2+25, FBI_W, FBI_H, it>12?64:it*5);
+	    //if(fbi_img)
+		//draw_image(vid_buf, fbi_img, (XRES-FBI_W)/2, (YRES-FBI_H)/2+25, FBI_W, FBI_H, it>12?64:it*5);
 	    drawtext(vid_buf, 16, 20, it_msg, 255, 255, 255, it>51?255:it*5);
 	}
 
