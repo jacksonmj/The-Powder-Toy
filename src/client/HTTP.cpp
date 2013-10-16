@@ -505,8 +505,8 @@ int http_async_req_status(void *ctx)
 			cx->tlen = 0;
 			cx->tlen += sprintf(cx->tbuf+cx->tlen, "POST %s HTTP/1.1\r\n", cx->path);
 			cx->tlen += sprintf(cx->tbuf+cx->tlen, "Host: %s\r\n", cx->host);
-			if (!cx->keep)
-				cx->tlen += sprintf(cx->tbuf+cx->tlen, "Connection: close\r\n");
+			//if (!cx->keep)
+			//	cx->tlen += sprintf(cx->tbuf+cx->tlen, "Connection: close\r\n");
 			if (cx->thdr)
 			{
 				memcpy(cx->tbuf+cx->tlen, cx->thdr, cx->thlen);
@@ -540,8 +540,8 @@ int http_async_req_status(void *ctx)
 				cx->thdr = NULL;
 				cx->thlen = 0;
 			}
-			if (!cx->keep)
-				cx->tlen += sprintf(cx->tbuf+cx->tlen, "Connection: close\r\n");
+			//if (!cx->keep)
+			//	cx->tlen += sprintf(cx->tbuf+cx->tlen, "Connection: close\r\n");
 			cx->tlen += sprintf(cx->tbuf+cx->tlen, "User-Agent: %s\r\n", userAgent);
 			cx->tlen += sprintf(cx->tbuf+cx->tlen, "\r\n");
 		}

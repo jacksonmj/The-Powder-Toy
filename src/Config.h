@@ -82,9 +82,9 @@
 #define MTOS_EXPAND(str) #str
 #define MTOS(str) MTOS_EXPAND(str)
 
-#define SERVER "powdertoy.co.uk"
-#define SCRIPTSERVER "powdertoy.co.uk"
-#define STATICSERVER "static.powdertoy.co.uk"
+#define SERVER "powdertoythings.co.uk/OldPowder"
+#define SCRIPTSERVER "powdertoythings.co.uk/OldPowder"
+#define STATICSERVER "powdertoythings.co.uk/OldPowder/static"
 
 #define LOCAL_SAVE_DIR "Saves"
 
