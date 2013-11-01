@@ -10,6 +10,7 @@ namespace Sound
 		double frequency;
 		double volume;
 		int offset;
+		int fade;
 	} Note;
 	extern pthread_mutex_t Mutex;
 	void AddNote(int duration, double frequency, double volume);

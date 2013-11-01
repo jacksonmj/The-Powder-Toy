@@ -70,9 +70,9 @@ int Element_NOTE::update(UPDATE_FUNC_ARGS)
 					if (!r)
 						continue;
 					if((r&0xFF) == PT_SPRK)
-						if(parts[r>>8].life == 2+(r>>8 < i))
+						if(parts[r>>8].life == 3)
 						{
-							parts[i].tmp2 = 8;
+							parts[i].tmp2 = 7;
 							Sound::AddNote(parts[i].life, 440*pow(1.05946309436f, tone-30), parts[i].tmp*0.01f);
 							return 0;
 						}
