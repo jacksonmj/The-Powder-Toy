@@ -585,7 +585,7 @@ int try_move(int i, int x, int y, int nx, int ny)
 				tmpResult = eval_move_special(t, nx, ny, ri, tmpResult);
 			if (tmpResult==1)
 			{
-				globalSim->pmap_remove(ri, nx, ny);
+				globalSim->pmap_remove(ri, nx, ny, rt);
 				parts[ri].x += x-nx;
 				parts[ri].y += y-ny;
 				globalSim->pmap_add(ri, (int)(parts[ri].x+0.5f), (int)(parts[ri].y+0.5f), rt);
@@ -596,7 +596,7 @@ int try_move(int i, int x, int y, int nx, int ny)
 
 	if (t==PT_NEUT && srcNeutPenetrate>=0)
 	{
-		globalSim->pmap_remove(srcNeutPenetrate, x, y);
+		globalSim->pmap_remove(srcNeutPenetrate, x, y, parts[srcNeutPenetrate].type);
 		globalSim->pmap_add(srcNeutPenetrate, nx, ny, parts[srcNeutPenetrate].type);
 		parts[srcNeutPenetrate].x = nx;
 		parts[srcNeutPenetrate].y = ny;
@@ -624,7 +624,7 @@ int do_move(int i, int x, int y, float nxf, float nyf)
 				kill_part(i);
 				return -1;
 			}
-			globalSim->pmap_remove(i, x, y);
+			globalSim->pmap_remove(i, x, y, t);
 			globalSim->pmap_add(i, nx, ny, t);
 		}
 		// Assign coords after the out of bounds check which might kill the particle, because kill_part > pmap_remove uses the current particle coords

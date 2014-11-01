@@ -30,20 +30,23 @@
 // special transition - lava ctypes etc need extra code, which is only found and run if ST is given
 #define ST PT_NUM
 
-// to loop through all the particles in a certain position
-// sim is the Simulation object
+// Macros to loop through all the particles in a certain position
+// sim is the Simulation object ("FOR_PMAP_POSITION(this, ...)" in Simulation methods)
 // x and y are the coordinates of the position to loop through
-// r_count, r_i, and r_next are int variables (which need declaring before using this macro. r_count is the number of particles in this position, r_i the current particle index, and r_next is temporary storage for the next particle index
+// r_count, r_i, and r_next are int variables (which need declaring before using this macro). r_count is the number of particles left to iterate in this position, r_i the current particle index, and r_next is temporary storage for the next particle index
 // If any particle in the current position is killed or moved except particle r_i and particles that have already been iterated over, then you must break out of the pmap position loop. 
-#define FOR_PMAP_POSITION(sim, x, y, r_count, r_i, r_next) for (r_count=(sim)->pmap[(y)][(x)].count, r_i=(sim)->pmap[(y)][(x)].first, r_next = (r_count ? (sim)->parts[r_i].pmap_next : -1); r_count; r_count--, r_i=r_next, r_next=(sim)->parts[r_i].pmap_next)
-// exactly the same, except for use in Simulation class member functions
-#define FOR_PMAP_POSITION_SIM(x, y, r_count, r_i, r_next) for (r_count=pmap[(y)][(x)].count, r_i=pmap[(y)][(x)].first, r_next = (r_count ? parts[r_i].pmap_next : -1); r_count; r_count--, r_i=r_next, r_next=parts[r_i].pmap_next)
+#define FOR_PMAP_POSITION(sim, x, y, r_count, r_i, r_next) for (r_count=(sim)->pmap[(y)][(x)].count, r_next = (sim)->pmap[(y)][(x)].first; r_count ? (r_i=r_next, r_next=(sim)->parts[r_i].pmap_next, true):false; r_count--)
+#define FOR_PMAP_POSITION_NOENERGY(sim, x, y, r_count, r_i, r_next) for (r_count=(sim)->pmap[(y)][(x)].count_notEnergy, r_next = (sim)->pmap[(y)][(x)].first; r_count ? (r_i=r_next, r_next=(sim)->parts[r_i].pmap_next, true):false; r_count--)
+#define FOR_PMAP_POSITION_ONLYENERGY(sim, x, y, r_count, r_i, r_next) for (r_count=(sim)->pmap[(y)][(x)].count-(sim)->pmap[(y)][(x)].count_notEnergy, r_next = (sim)->pmap[(y)][(x)].first_energy; r_count ? (r_i=r_next, r_next=(sim)->parts[r_i].pmap_next, true):false; r_count--)
+
 
 class ElementDataContainer;
 struct pmap_entry
 {
-	int count;
-	int first;
+	int count;// number of particles, including energy particles
+	int first;// ID of first particle
+	int count_notEnergy;// number of particles, not including energy particles
+	int first_energy;// ID of first energy particle, or if there are no energy particles, ID of last non-energy particle
 };
 typedef struct pmap_entry pmap_entry;
 
@@ -184,7 +187,7 @@ public:
 			}
 			else
 			{
-				pmap_remove(i, x, y);
+				pmap_remove(i, x, y, parts[i].type);
 				pmap_add(i, nx, ny, parts[i].type);
 			}
 		}
@@ -193,20 +196,63 @@ public:
 	void pmap_add(int i, int x, int y, int t)
 	{
 		// NB: all arguments are assumed to be within bounds
-		if (pmap[y][x].count)
+		if (elements[t].Properties&TYPE_ENERGY)
 		{
-			parts[pmap[y][x].first].pmap_prev = i;
-			parts[i].pmap_next = pmap[y][x].first;
+			if (pmap[y][x].count-pmap[y][x].count_notEnergy)
+			{
+				// If there are some energy particles already, insert at head of energy particle list
+				int prevHead = pmap[y][x].first_energy;
+				if (pmap[y][x].count_notEnergy)
+				{
+					// If there are some non-energy particles, link to end of that list
+					parts[i].pmap_prev = parts[prevHead].pmap_prev;
+					parts[parts[prevHead].pmap_prev].pmap_next = i;
+				}
+				else
+				{
+					parts[i].pmap_prev = -1;
+				}
+				parts[i].pmap_next = prevHead;
+				parts[prevHead].pmap_prev = i;
+			}
+			else if (pmap[y][x].count)
+			{
+				// If there are no energy particles, then first_energy is the last non-energy particle. Insert this particle after it.
+				int i_prev = pmap[y][x].first_energy;
+				parts[i_prev].pmap_next = i;
+				parts[i].pmap_prev = i_prev;
+				parts[i].pmap_next = -1;
+			}
+			else
+			{
+				parts[i].pmap_next = -1;
+				parts[i].pmap_prev = -1;
+			}
+			pmap[y][x].first_energy = i;
+			if (!pmap[y][x].count_notEnergy)
+				pmap[y][x].first = i;
 		}
 		else
 		{
-			parts[i].pmap_next = -1;
+			if (pmap[y][x].count)
+			{
+				parts[pmap[y][x].first].pmap_prev = i;
+				parts[i].pmap_next = pmap[y][x].first;
+			}
+			else
+			{
+				parts[i].pmap_next = -1;
+				// If this is the only particle, it is the last non-energy particle too (which is the ID stored in first_energy when there are no energy particles)
+				pmap[y][x].first_energy = i;
+			}
+			parts[i].pmap_prev = -1;
+			pmap[y][x].first = i;
 		}
-		parts[i].pmap_prev = -1;
-		pmap[y][x].first = i;
 		pmap[y][x].count++;
+		if (!(elements[t].Properties&TYPE_ENERGY))
+			pmap[y][x].count_notEnergy++;
 	}
-	void pmap_remove(int i, int x, int y)
+	void pmap_remove(int i, int x, int y, int t)
 	{
 		// NB: all arguments are assumed to be within bounds
 		if (parts[i].pmap_prev>=0)
@@ -215,11 +261,34 @@ public:
 			parts[parts[i].pmap_next].pmap_prev = parts[i].pmap_prev;
 		if (pmap[y][x].first==i)
 			pmap[y][x].first = parts[i].pmap_next;
+
+		int energyCount = pmap[y][x].count-pmap[y][x].count_notEnergy;
+		if (energyCount<=1)
+		{
+			if (pmap[y][x].first_energy==i)
+			{
+				// energyCount==1 and is first_energy: this is the only energy particle left
+				// energyCount==0 and is first_energy: this is the last non-energy particle
+				// In both cases, set first_energy to pmap_prev so that first_energy is the ID of the last non-energy particle
+				pmap[y][x].first_energy = parts[i].pmap_prev;
+			}
+		}
+		else if (pmap[y][x].first_energy==i)
+		{
+			pmap[y][x].first_energy = parts[i].pmap_next;
+		}
+
 		pmap[y][x].count--;
+		if (!(elements[t].Properties&TYPE_ENERGY))
+			pmap[y][x].count_notEnergy--;
 	}
 	int pmap_find_one(int x, int y, int t) const
 	{
-		int count = pmap[y][x].count;
+		int count;
+		if (elements[t].Properties&TYPE_ENERGY)
+			count = pmap[y][x].count;
+		else
+			count = pmap[y][x].count_notEnergy;
 		int i = pmap[y][x].first;
 		for (; count>0; i=parts[i].pmap_next, count--)
 		{
@@ -230,7 +299,7 @@ public:
 	}
 	int pmap_find_one_conductive(int x, int y, int t) const
 	{
-		int count = pmap[y][x].count;
+		int count = pmap[y][x].count_notEnergy;
 		int i = pmap[y][x].first;
 		for (; count>0; i=parts[i].pmap_next, count--)
 		{

@@ -79,6 +79,7 @@ public:
 	std::string Description;
 
 	char State;
+	// NB: if (Properties&TYPE_ENERGY) is changed, pmap needs rebuilding (sim->pmap_reset()) since it is divided according to this property
 	unsigned int Properties;
 
 	float LowPressureTransitionThreshold;

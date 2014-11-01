@@ -78,7 +78,10 @@ void Simulation::Clear()
 	int i;
 	pmap_entry *pmap_flat = (pmap_entry*)pmap;
 	for (i=0; i<XRES*YRES; i++)
+	{
 		pmap_flat[i].count = 0;
+		pmap_flat[i].count_notEnergy = 0;
+	}
 
 	pfree = 0;
 }
@@ -91,7 +94,10 @@ void Simulation::pmap_reset()
 	int i;
 	pmap_entry *pmap_flat = (pmap_entry*)pmap;
 	for (i=0; i<XRES*YRES; i++)
+	{
 		pmap_flat[i].count = 0;
+		pmap_flat[i].count_notEnergy = 0;
+	}
 #ifdef DEBUG_PARTSALLOC
 	for (i=0; i<NPART; i++)
 		partsFree[i] = true;
@@ -184,6 +190,7 @@ bool Simulation::Check()
 {
 	bool isGood = true;
 	int i, x, y;
+
 	for (y=0; y<YRES; y++)
 	{
 		for (x=0; x<XRES; x++)
@@ -191,6 +198,10 @@ bool Simulation::Check()
 			if (!pmap[y][x].count)
 				continue;
 			int count = 0;
+			int count_notEnergy = 0;
+			bool inEnergyList = false;
+			int lastNotEnergyId = -1;
+			int alleged_energyCount = pmap[y][x].count-pmap[y][x].count_notEnergy;
 			for (i=pmap[y][x].first; i>=0; i=parts[i].pmap_next)
 			{
 				if (count>NPART)
@@ -205,7 +216,10 @@ bool Simulation::Check()
 					isGood = false;
 					break;
 				}
+				bool isEnergyPart = !!(elements[parts[i].type].Properties&TYPE_ENERGY);
 				count++;
+				if (!isEnergyPart)
+					count_notEnergy++;
 				if (x!=(int)(parts[i].x+0.5f) || y!=(int)(parts[i].y+0.5f))
 				{
 					printf("coordinates do not match: particle %d at %d,%d is in pmap list for %d,%d\n", i, x, y, (int)(parts[i].x+0.5f), (int)(parts[i].y+0.5f));
@@ -227,14 +241,40 @@ bool Simulation::Check()
 						isGood = false;
 					}
 				}
+				if (count > pmap[y][x].count_notEnergy)
+					inEnergyList = true;
+
+				if (isEnergyPart && !inEnergyList)
+				{
+					printf("Energy particle %d in pmap list for %d,%d is in the non-energy section\n", i, x, y);
+					isGood = false;
+				}
+				if (!isEnergyPart && inEnergyList)
+				{
+					printf("Non-energy particle %d in pmap list for %d,%d is in the energy section\n", i, x, y);
+					isGood = false;
+				}
+				if (!isEnergyPart)
+					lastNotEnergyId = i;
+			}
+			if (alleged_energyCount==0 && count>0 && pmap[y][x].first_energy!=lastNotEnergyId)
+			{
+				printf("pmap list for %d,%d has no energy particles but first_energy != ID of last non-energy particle (%d)\n", x, y, i);
+				isGood = false;
 			}
 			if (count!=pmap[y][x].count)
 			{
-				printf("Stored length of pmap list for %d,%d does not match the actual length\n", x, y);
+				printf("Stored total length of pmap list for %d,%d does not match the actual length\n", x, y);
+				isGood = false;
+			}
+			if (count_notEnergy!=pmap[y][x].count_notEnergy)
+			{
+				printf("Stored non-energy length of pmap list for %d,%d does not match the actual length\n", x, y);
 				isGood = false;
 			}
 		}
 	}
+	return isGood;
 	for (i=0; i<NPART; i++)
 	{
 		if (parts[i].type)
@@ -377,7 +417,7 @@ int Simulation::part_create(int p, int x, int y, int t)
 		{
 			(*(elements[oldType].Func_ChangeType))(this, p, oldX, oldY, oldType, t);
 		}
-		pmap_remove(p, oldX, oldY);
+		pmap_remove(p, oldX, oldY, oldType);
 		i = p;
 	}
 	else // Dunno, act like it was p=-3
@@ -489,10 +529,8 @@ void Simulation::part_kill(int i)//kills particle number i
 		(*(elements[t].Func_ChangeType))(this, i, x, y, t, PT_NONE);
 	}
 
-	pmap_remove(i, x, y);
-	if (t == PT_NONE) // TODO: remove this? (//This shouldn't happen anymore, but it's here just in case)
-		return;
-	if (t) elementCount[t]--;
+	pmap_remove(i, x, y, t);
+	elementCount[t]--;
 	part_free(i);
 }
 
@@ -501,7 +539,7 @@ void Simulation::part_kill(int i)//kills particle number i
  * Returns true if the particle was successfully sparked.
  * Arguments: particle index to spark, integer coordinates of that particle
  * 
- * spark_particle_nocheck sparks a particle without checking whether the particle is currently allowed to be sparked (no return value)
+ * spark_particle_nocheck sparks a particle without checking whether the particle is currently allowed to be sparked. No return value.
  * spark_particle_conductiveOnly only sparks PROP_CONDUCTS particles
 */
 
@@ -557,7 +595,7 @@ int Simulation::spark_position_conductiveOnly(int x, int y)
 {
 	int lastSparkedIndex = -1;
 	int rcount, index, rnext;
-	FOR_PMAP_POSITION_SIM(x, y, rcount, index, rnext)
+	FOR_PMAP_POSITION(this, x, y, rcount, index, rnext)
 	{
 		int type = parts[index].type;
 		if (!(elements[type].Properties & PROP_CONDUCTS))
@@ -575,7 +613,7 @@ int Simulation::spark_position(int x, int y)
 {
 	int lastSparkedIndex = -1;
 	int rcount, index, rnext;
-	FOR_PMAP_POSITION_SIM(x, y, rcount, index, rnext)
+	FOR_PMAP_POSITION(this, x, y, rcount, index, rnext)
 	{
 		if (spark_particle(index, x, y))
 			lastSparkedIndex = index;
@@ -1151,7 +1189,7 @@ void Simulation::UpdateParticles()
 					{
 						for (ry=-1; ry<2; ry++)
 						{
-							FOR_PMAP_POSITION_SIM(x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts?
+							FOR_PMAP_POSITION(this, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts?
 							{
 								rt = parts[ri].type;
 								// ri!=i instead of just using all particles found because if this loop is changed to exclude energy particles then the loop might not include particle i
@@ -1173,7 +1211,7 @@ void Simulation::UpdateParticles()
 					{
 						for (ry=-1; ry<2; ry++)
 						{
-							FOR_PMAP_POSITION_SIM(x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts?
+							FOR_PMAP_POSITION(this, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts?
 							{
 								rt = parts[ri].type;
 								if (elements[rt].HeatConduct&&(rt!=PT_HSWC||parts[ri].life==10)
