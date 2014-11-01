@@ -65,6 +65,10 @@ public:
 	{
 		return stack_size;
 	}
+	void clear()
+	{
+		stack_size = 0;
+	}
 };
 
 #endif 
