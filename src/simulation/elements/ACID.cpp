@@ -46,7 +46,7 @@ int ACID_update(UPDATE_FUNC_ARGS)
 						}
 						else if ((rt!=PT_CLNE && rt!=PT_PCLN && ptypes[rt].hardness>(rand()%1000))&&parts[i].life>=50)
 						{
-							if (parts_avg(i, ri, PT_GLAS) != PT_GLAS)//GLAS protects stuff from acid
+							if (!sim->check_middle_particle_type(i, ri, PT_GLAS))//GLAS protects stuff from acid
 							{
 								float newtemp = ((60.0f-(float)ptypes[ri].hardness))*7.0f;
 								if(newtemp < 0){

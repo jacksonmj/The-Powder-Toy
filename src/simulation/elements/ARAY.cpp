@@ -71,11 +71,11 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 										} else if (rt==PT_FILT) {//get color if passed through FILT
 											colored = parts[ri].ctype;
 											//this if prevents BRAY from stopping on certain materials
-										} else if (rt!=PT_STOR && rt!=PT_INWR && (rt!=PT_SPRK || parts[ri].ctype!=PT_INWR) && rt!=PT_ARAY && rt!=PT_WIFI && rt!=PT_INST && !(rt==PT_SWCH && parts[ri].life>=10)) {
+										} else if (rt!=PT_STOR && !sim->part_cmp_conductive(parts[ri], PT_INWR) && rt!=PT_ARAY && rt!=PT_WIFI && rt!=PT_INST && !(rt==PT_SWCH && parts[ri].life>=10)) {
 											if (nyy!=0 || nxx!=0) {
-												sim->spark_all_attempt(ri, x+nxi+nxx, y+nyi+nyy);
+												sim->spark_particle(ri, x+nxi+nxx, y+nyi+nyy);
 											}
-											if (!(nostop && (rt==PT_WIRE || (parts[ri].type==PT_SPRK && parts[ri].ctype >= 0 && parts[ri].ctype < PT_NUM && ((ptypes[parts[ri].ctype].properties&PROP_CONDUCTS) || parts[ri].ctype==PT_INST))))) {
+											if (!(nostop && sim->part_is_sparkable(parts[ri]))) {
 												docontinue = 0;
 											}
 										} else if(rt==PT_STOR) {
@@ -111,7 +111,7 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 										if (rt==PT_BRAY) {
 											parts[ri].life = 1;
 											//this if prevents red BRAY from stopping on certain materials
-										} else if (rt==PT_STOR || rt==PT_INWR || (rt==PT_SPRK && parts[ri].ctype==PT_INWR) || rt==PT_ARAY || rt==PT_WIFI || rt==PT_FILT || (rt==PT_SWCH && parts[ri].life>=10)) {
+										} else if (rt==PT_STOR || sim->part_cmp_conductive(parts[ri], PT_INWR) || rt==PT_ARAY || rt==PT_WIFI || rt==PT_FILT || (rt==PT_SWCH && parts[ri].life>=10)) {
 											if(rt==PT_STOR)
 											{
 												parts[ri].tmp = 0;
@@ -125,7 +125,7 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 							}
 						}
 						//parts[i].life = 4;
-						break;//break out of pmap position loop, so that stacked sparks don't cause multiple activation
+						break;//break out of FOR_PMAP_POSITION loop, so that stacked sparks don't cause multiple activation
 					}
 				}
 	}

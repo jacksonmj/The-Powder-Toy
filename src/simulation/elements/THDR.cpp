@@ -29,7 +29,7 @@ int THDR_update(UPDATE_FUNC_ARGS)
 					if ((ptypes[rt].properties&PROP_CONDUCTS) && parts[ri].life==0 && !(rt==PT_WATR||rt==PT_SLTW))
 					{
 						parts[i].type = PT_NONE;
-						sim->spark_conductive(ri, x+rx, y+ry);
+						sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
 					}
 					else if (rt!=PT_CLNE&&rt!=PT_THDR&&rt!=PT_SPRK&&rt!=PT_DMND&&rt!=PT_FIRE&&!(ptypes[rt].properties&TYPE_ENERGY))
 					{

@@ -496,24 +496,27 @@ void Simulation::part_kill(int i)//kills particle number i
 	part_free(i);
 }
 
-/* spark_conductive turns a particle into SPRK and sets ctype, life, and temperature.
- * spark_all does something similar, but behaves correctly for WIRE and INST
- *
- * spark_conductive_attempt and spark_all_attempt do the same thing, except they check whether the particle can actually be sparked (is conductive, has life of zero) first. Remember to check for INSL though. 
- * They return true if the particle was successfully sparked.
+/* spark_particle turns a particle into SPRK and sets ctype, life, and temperature. It first checks whether the particle can actually be sparked (is conductive or WIRE or INST, and has life of zero) first. Remember to check for INSL though. 
+ * 
+ * Returns true if the particle was successfully sparked.
+ * Arguments: particle index to spark, integer coordinates of that particle
+ * 
+ * spark_particle_nocheck sparks a particle without checking whether the particle is currently allowed to be sparked (no return value)
+ * spark_particle_conductiveOnly only sparks PROP_CONDUCTS particles
 */
 
-void Simulation::spark_all(int i, int x, int y)
+void Simulation::spark_particle_nocheck(int i, int x, int y)
 {
 	if (parts[i].type==PT_WIRE)
 		parts[i].ctype = PT_DUST;
 	else if (parts[i].type==PT_INST)
 		INST_flood_spark(this, x, y);
 	else
-		spark_conductive(i, x, y);
+		spark_particle_nocheck_forceSPRK(i, x, y);
 }
-void Simulation::spark_conductive(int i, int x, int y)
+void Simulation::spark_particle_nocheck_forceSPRK(int i, int x, int y)
 {
+	// (split into a separate function so INST flood fill can use it to create SPRK without triggering another flood fill)
 	int type = parts[i].type;
 	part_change_type(i, x, y, PT_SPRK);
 	parts[i].ctype = type;
@@ -530,32 +533,27 @@ void Simulation::spark_conductive(int i, int x, int y)
 			parts[i].temp = 673.0f;
 	}
 }
-bool Simulation::spark_all_attempt(int i, int x, int y)
+bool Simulation::spark_particle(int i, int x, int y)
 {
-	if ((parts[i].type==PT_WIRE && parts[i].ctype<=0) || (parts[i].type==PT_INST && parts[i].life<=0))
+	if ((parts[i].type==PT_WIRE && parts[i].ctype<=0) || (parts[i].type==PT_INST && parts[i].life<=0) || (parts[i].type==PT_SWCH && parts[i].life==10) || (!parts[i].life && (elements[parts[i].type].Properties & PROP_CONDUCTS)))
 	{
-		spark_all(i, x, y);
-		return true;
-	}
-	else if (!parts[i].life && (elements[parts[i].type].Properties & PROP_CONDUCTS))
-	{
-		spark_conductive(i, x, y);
+		spark_particle_nocheck(i, x, y);
 		return true;
 	}
 	return false;
 }
-bool Simulation::spark_conductive_attempt(int i, int x, int y)
+bool Simulation::spark_particle_conductiveOnly(int i, int x, int y)
 {
 	if (!parts[i].life && (elements[parts[i].type].Properties & PROP_CONDUCTS))
 	{
-		spark_conductive(i, x, y);
+		spark_particle_nocheck(i, x, y);
 		return true;
 	}
 	return false;
 }
 
-// Attempts to spark all PROP_CONDUCTS particles in a particular position
-int Simulation::spark_conductive_position(int x, int y)
+// Sparks all PROP_CONDUCTS particles in a particular position
+int Simulation::spark_position_conductiveOnly(int x, int y)
 {
 	int lastSparkedIndex = -1;
 	int rcount, index, rnext;
@@ -566,8 +564,21 @@ int Simulation::spark_conductive_position(int x, int y)
 			continue;
 		if (parts[index].life!=0)
 			continue;
-		spark_conductive(index, x, y);
+		spark_particle_nocheck(index, x, y);
 		lastSparkedIndex = index;
+	}
+	return lastSparkedIndex;
+}
+
+// Sparks all particles in a particular position
+int Simulation::spark_position(int x, int y)
+{
+	int lastSparkedIndex = -1;
+	int rcount, index, rnext;
+	FOR_PMAP_POSITION_SIM(x, y, rcount, index, rnext)
+	{
+		if (spark_particle(index, x, y))
+			lastSparkedIndex = index;
 	}
 	return lastSparkedIndex;
 }
@@ -1318,8 +1329,8 @@ void Simulation::UpdateParticles()
 					{
 						if (emap[ny][nx]==12 && !parts[i].life)
 						{
-							spark_conductive(i, x, y);
-							t = PT_SPRK;
+							if (spark_particle_conductiveOnly(i, x, y))
+								t = PT_SPRK;
 						}
 					}
 					else if (bmap[ny][nx]==WL_DETECT || bmap[ny][nx]==WL_EWALL || bmap[ny][nx]==WL_ALLOWLIQUID || bmap[ny][nx]==WL_WALLELEC || bmap[ny][nx]==WL_ALLOWALLELEC || bmap[ny][nx]==WL_EHOLE)

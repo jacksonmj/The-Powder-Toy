@@ -30,12 +30,9 @@ int DTEC_update(UPDATE_FUNC_ARGS)
 					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 					{
 						rt = parts[ri].type;
-						if (parts_avg(i,ri,PT_INSL) != PT_INSL)
+						if ((ptypes[rt].properties&PROP_CONDUCTS) && !(rt==PT_WATR||rt==PT_SLTW||rt==PT_NTCT||rt==PT_PTCT||rt==PT_INWR) && parts[ri].life==0 && !sim->is_spark_blocked(x,y,x+rx,y+ry))
 						{
-							if ((ptypes[rt].properties&PROP_CONDUCTS) && !(rt==PT_WATR||rt==PT_SLTW||rt==PT_NTCT||rt==PT_PTCT||rt==PT_INWR) && parts[ri].life==0)
-							{
-								sim->spark_conductive(ri, x+rx, y+ry);
-							}
+							sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
 						}
 					}
 				}

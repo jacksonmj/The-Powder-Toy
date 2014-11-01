@@ -67,7 +67,7 @@ int INST_flood_spark(Simulation *sim, int x, int y)
 				{
 					if (parts[ri].type==cm && parts[ri].life<=0)
 					{
-						sim->spark_conductive(ri, x, y);
+						sim->spark_particle_nocheck_forceSPRK(ri, x, y);
 						created_something = 1;
 					}
 				}

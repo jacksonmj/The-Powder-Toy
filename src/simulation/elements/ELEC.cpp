@@ -103,7 +103,7 @@ int ELEC_update(UPDATE_FUNC_ARGS)
 					}
 					if (ptypes[rt].properties & PROP_CONDUCTS && (rt!=PT_NBLE||parts[i].temp<2273.15))
 					{
-						sim->spark_conductive_attempt(ri, x+rx, y+ry);
+						sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
 						kill_part(i);
 						return 1;
 					}

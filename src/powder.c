@@ -142,7 +142,7 @@ static int pn_junction_sprk(int x, int y, int pt)
 	if (!ptFound)
 		return 0;
 
-	return globalSim->spark_conductive_attempt(ri, x, y);
+	return globalSim->spark_particle_conductiveOnly(ri, x, y);
 }
 
 static void photoelectric_effect(int nx, int ny)//create sparks from PHOT when hitting PSCN and NSCN
@@ -887,25 +887,11 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 		int index, type, lastSparkedIndex=-1;
 		FOR_PMAP_POSITION(globalSim, x, y, rcount, index, rnext)
 		{
-			int type = parts[index].type;
-			if (type == PT_WIRE)
+			if (p == -2 || parts[index].type != PT_INST)
 			{
-				parts[index].ctype = PT_DUST;
-				lastSparkedIndex = index;
-				continue;
+				if (globalSim->spark_particle(index, x, y))
+					lastSparkedIndex = index;
 			}
-			if (!(type == PT_INST || (ptypes[type].properties&PROP_CONDUCTS)))
-				continue;
-			if (parts[index].life!=0)
-				continue;
-			if (p == -2 && type == PT_INST)
-			{
-				INST_flood_spark(globalSim, x, y);
-				lastSparkedIndex = index;
-				continue;
-			}
-			if (globalSim->spark_conductive_attempt(index, x, y))
-				lastSparkedIndex = index;
 		}
 		return lastSparkedIndex;
 	}
@@ -1179,26 +1165,6 @@ void set_emap(int x, int y)
 					set_emap(x, y+1);
 			}
 }
-
-TPT_GNU_INLINE int parts_avg(int ci, int ni,int t)
-{
-	if (t==PT_INSL)//to keep electronics working
-	{
-		// TODO: not energy parts
-		if (globalSim->pmap_find_one(((int)(parts[ci].x+0.5f) + (int)(parts[ni].x+0.5f))/2, ((int)(parts[ci].y+0.5f) + (int)(parts[ni].y+0.5f))/2, t)>=0)
-			return t;
-		else
-			return PT_NONE;
-	}
-	else
-	{
-		if (globalSim->pmap_find_one((int)((parts[ci].x + parts[ni].x)/2+0.5f), (int)((parts[ci].y + parts[ni].y)/2+0.5f), t)>=0)
-			return t;
-		else
-			return PT_NONE;
-	}
-}
-
 
 int nearest_part(int ci, int t, int max_d)
 {

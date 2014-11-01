@@ -32,10 +32,10 @@ int DLAY_update(UPDATE_FUNC_ARGS)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
+				if (sim->pmap[y+ry][x+rx].count<=0 || sim->is_spark_blocked(x,y,x+rx,y+ry))
+					continue;
 				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
-					if (parts_avg(ri, i,PT_INSL)==PT_INSL)
-						continue;
 					if (parts[ri].type==PT_SPRK && parts[i].life==0 && parts[ri].life>0 && parts[ri].life<4 && parts[ri].ctype==PT_PSCN)
 					{
 						parts[i].life = (int)(parts[i].temp-273.15);
@@ -57,7 +57,7 @@ int DLAY_update(UPDATE_FUNC_ARGS)
 					}
 					else if(parts[ri].type==PT_NSCN && oldl==1)
 					{
-						sim->spark_conductive_attempt(ri, x+rx, y+ry);
+						sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
 					}
 				}
 			}

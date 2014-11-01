@@ -76,7 +76,7 @@ int WIFI_update(UPDATE_FUNC_ARGS)
 					{
 						if ((rt==PT_NSCN||rt==PT_PSCN||rt==PT_INWR)&&parts[ri].life==0)
 						{
-							sim->spark_conductive(ri, x+rx, y+ry);
+							sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
 						}
 					}
 					else

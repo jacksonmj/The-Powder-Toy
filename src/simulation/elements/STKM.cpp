@@ -269,7 +269,7 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 		}
 		if (solidFound)
 		{
-			sim->spark_conductive_position(rx, ry);
+			sim->spark_position_conductiveOnly(rx, ry);
 			playerp->frames = 0;
 		}
 		else

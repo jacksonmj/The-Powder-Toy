@@ -69,7 +69,7 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
 					if (parts[ri].type != PT_BREL && (sim->elements[parts[ri].type].Properties&PROP_CONDUCTS) && !parts[ri].life)
-						sim->spark_conductive(ri, x+rx, y+ry);
+						sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
 				}
 			}
 		}

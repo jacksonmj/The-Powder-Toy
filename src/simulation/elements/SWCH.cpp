@@ -36,23 +36,23 @@ int SWCH_update(UPDATE_FUNC_ARGS)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
+				if (sim->pmap[y+ry][x+rx].count<=0 || sim->is_spark_blocked(x,y,x+rx,y+ry))
+					continue;
 				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
 					rt = parts[ri].type;
-					if (parts_avg(i,ri,PT_INSL)!=PT_INSL) {// TODO: only evaluate parts_avg once for each position?
-						if (rt==PT_SWCH)
+					if (rt==PT_SWCH)
+					{
+						if (parts[i].life>=10&&parts[ri].life<10&&parts[ri].life>0)
+							parts[i].life = 9;
+						else if (parts[i].life==0&&parts[ri].life>=10)
 						{
-							if (parts[i].life>=10&&parts[ri].life<10&&parts[ri].life>0)
-								parts[i].life = 9;
-							else if (parts[i].life==0&&parts[ri].life>=10)
-							{
-								//Set to other particle's life instead of 10, otherwise spark loops form when SWCH is sparked while turning on
-								parts[i].life = parts[ri].life;
-							}
+							//Set to other particle's life instead of 10, otherwise spark loops form when SWCH is sparked while turning on
+							parts[i].life = parts[ri].life;
 						}
-						else if (rt==PT_SPRK && parts[i].life==10 && parts[ri].life>0 && parts[ri].ctype!=PT_PSCN && parts[ri].ctype!=PT_NSCN) {
-							sim->spark_conductive(i, x, y);
-						}
+					}
+					else if (rt==PT_SPRK && parts[i].life==10 && parts[ri].life>0 && parts[ri].ctype!=PT_PSCN && parts[ri].ctype!=PT_NSCN) {
+						sim->spark_particle(i, x, y);
 					}
 				}
 			}

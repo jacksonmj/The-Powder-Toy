@@ -19,7 +19,7 @@ int NPTCT_update(UPDATE_FUNC_ARGS);
 
 int SPRK_update(UPDATE_FUNC_ARGS)
 {
-	int rx, ry, rt, conduct_sprk, nearp, pavg, ct = parts[i].ctype;
+	int rx, ry, rt, conduct_sprk, nearp, ct = parts[i].ctype;
 	int rcount, ri, rnext;
 	update_PYRO(UPDATE_FUNC_SUBCALL_ARGS);
 
@@ -52,13 +52,13 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 	else if (ct==PT_ETRD&&parts[i].life==1)
 	{
 		nearp = nearest_part(i, PT_ETRD, -1);
-		if (nearp!=-1&&parts_avg(i, nearp, PT_INSL)!=PT_INSL)
+		if (nearp!=-1&& !sim->is_spark_blocked(i, nearp))
 		{
 			create_line(x, y, (int)(parts[nearp].x+0.5f), (int)(parts[nearp].y+0.5f), 0, 0, PT_PLSM, 0);
 			part_change_type(i,x,y,ct);
 			ct = parts[i].ctype = PT_NONE;
 			parts[i].life = 20;
-			sim->spark_conductive(nearp, (int)(parts[nearp].x+0.5f),(int)(parts[nearp].y+0.5f));
+			sim->spark_particle_conductiveOnly(nearp, (int)(parts[nearp].x+0.5f),(int)(parts[nearp].y+0.5f));
 			parts[nearp].life = 9;
 		}
 	}
@@ -126,13 +126,14 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
+				if (sim->pmap[y+ry][x+rx].count<=0) continue;
+				bool spark_blocked = sim->is_spark_blocked(x,y,x+rx,y+ry); // is spark blocked by insl
 				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
 				{
 					rt = parts[ri].type;
 					conduct_sprk = 1;
 
-					pavg = parts_avg(ri, i,PT_INSL);// TODO: only evaluate this once for each position
-					if ((rt==PT_SWCH||(rt==PT_SPRK&&parts[ri].ctype==PT_SWCH)) && pavg!=PT_INSL && parts[i].life<4) // make sparked SWCH turn off correctly
+					if ((rt==PT_SWCH||(rt==PT_SPRK&&parts[ri].ctype==PT_SWCH)) && !spark_blocked && parts[i].life<4) // make sparked SWCH turn off correctly
 					{
 						if (rt==PT_SWCH&&ct==PT_PSCN&&parts[ri].life<10) {
 							parts[ri].life = 10;
@@ -154,7 +155,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 						else if (ct==PT_NSCN && parts[ri].tmp == 3) parts[ri].tmp = 1;
 					}
 
-					if (rt == PT_PPIP && parts[i].life == 3 && pavg!=PT_INSL)
+					if (rt == PT_PPIP && parts[i].life == 3 && !spark_blocked)
 					{
 						if (ct == PT_NSCN || ct == PT_PSCN || ct == PT_INST)
 							PPIP_flood_trigger(sim, x+rx, y+ry, ct);
@@ -162,13 +163,13 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 
 					// ct = spark from material, rt = spark to material. Make conduct_sprk = 0 if conduction not allowed
 
-					if (pavg == PT_INSL) conduct_sprk = 0;
+					if (spark_blocked) conduct_sprk = 0;
 					if (!(ptypes[rt].properties&PROP_CONDUCTS||rt==PT_INST||rt==PT_QRTZ)) conduct_sprk = 0;
 					if (abs(rx)+abs(ry)>=4 &&ct!=PT_SWCH&&rt!=PT_SWCH)
 						conduct_sprk = 0;
 
 
-					if (ct==PT_METL && (rt==PT_NTCT||rt==PT_PTCT||rt==PT_INWR||(rt==PT_SPRK&&(parts[ri].ctype==PT_NTCT||parts[ri].ctype==PT_PTCT))) && pavg!=PT_INSL && parts[i].life<4)
+					if (ct==PT_METL && (rt==PT_NTCT||rt==PT_PTCT||rt==PT_INWR||(rt==PT_SPRK&&(parts[ri].ctype==PT_NTCT||parts[ri].ctype==PT_PTCT))) && !spark_blocked && parts[i].life<4)
 					{
 						parts[ri].temp = 473.0f;
 						if (rt==PT_NTCT||rt==PT_PTCT)
@@ -205,7 +206,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 						{
 							if (parts[ri].life==0 && parts[i].life<3)
 							{
-								sim->spark_conductive(ri, x+rx, y+ry);
+								sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
 							}
 						}
 						else if (rt==PT_INST)
@@ -217,14 +218,14 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 						}
 						else if (parts[ri].life==0 && parts[i].life<4)
 						{
-							sim->spark_conductive(ri, x+rx, y+ry);
+							sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
 						}
 						else if (ct==PT_ETRD && parts[i].life==5)
 						{
 							part_change_type(i,x,y,ct);
 							parts[i].ctype = PT_NONE;
 							parts[i].life = 20;
-							sim->spark_conductive(ri, x+rx, y+ry);
+							sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
 						}
 					}
 				}

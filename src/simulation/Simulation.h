@@ -84,11 +84,12 @@ public:
 	void part_add_temp_noLatent(int i, float change);
 	void part_add_energy(int i, float amount);
 
-	void spark_all(int i, int x, int y);
-	bool spark_all_attempt(int i, int x, int y);
-	void spark_conductive(int i, int x, int y);
-	bool spark_conductive_attempt(int i, int x, int y);
-	int spark_conductive_position(int x, int y);
+	void spark_particle_nocheck(int i, int x, int y);
+	void spark_particle_nocheck_forceSPRK(int i, int x, int y);
+	bool spark_particle(int i, int x, int y);
+	bool spark_particle_conductiveOnly(int i, int x, int y);
+	int spark_position(int x, int y);
+	int spark_position_conductiveOnly(int x, int y);
 
 	// Functions defined here should hopefully be inlined
 	// Don't put anything that will change often here, since changes cause a lot of recompiling
@@ -97,13 +98,48 @@ public:
 	{
 		return (t>=0 && t<PT_NUM && elements[t].Enabled);
 	}
-	bool InBounds(int x, int y)
+	bool InBounds(int x, int y) const
 	{
 		return (x>=0 && y>=0 && x<XRES && y<YRES);
 	}
-	static bool part_cmp_conductive(const particle& p, int t)
+	// Is this particle an element of type t, ignoring the current SPRKed status of this particle?
+	bool part_cmp_conductive(const particle& p, int t) const
 	{
 		return (p.type==t || (p.type==PT_SPRK && p.ctype==t));
+	}
+	// Is this particle a sparkable element (though not necessarily able to be sparked immediately)?
+	bool part_is_sparkable(const particle& p) const
+	{
+		if (p.type==PT_WIRE || p.type==PT_INST || (elements[p.type].Properties&PROP_CONDUCTS))
+			return true;
+		if (p.type==PT_SWCH && p.life >= 10)
+			return true;
+		if (p.type==PT_SPRK && p.ctype >= 0 && p.ctype < PT_NUM && ((elements[p.ctype].Properties&PROP_CONDUCTS) || p.ctype==PT_INST || p.ctype==PT_SWCH))
+			return true;
+		return false;
+	}
+	// Returns true if spark trying to travel between i1 and i2 is blocked by INSL (or other future spark blocking elements)
+	// Plus a version for if integer coordinates are already known
+	bool is_spark_blocked(int i1, int i2) const
+	{
+		if (pmap_find_one(((int)(parts[i1].x+0.5f) + (int)(parts[i2].x+0.5f))/2, ((int)(parts[i1].y+0.5f) + (int)(parts[i2].y+0.5f))/2, PT_INSL)>=0)
+			return true;
+		return false;
+	}
+	bool is_spark_blocked(int x1, int y1, int x2, int y2) const
+	{
+		if (pmap_find_one((x1+x2)/2, (y1+y2)/2, PT_INSL)>=0)
+			return true;
+		return false;
+	}
+	
+	// Returns true if a particle of type t exists halfway between i1 and i2
+	bool check_middle_particle_type(int i1, int i2, int t) const
+	{
+		if (pmap_find_one((int)((parts[i1].x + parts[i2].x)/2+0.5f), (int)((parts[i1].y + parts[i2].y)/2+0.5f), t)>=0)
+			return true;
+		else
+			return false;
 	}
 
 	// Most of the time, part_alloc and part_free should not be used directly unless you really know what you're doing. 
@@ -172,8 +208,6 @@ public:
 	}
 	void pmap_remove(int i, int x, int y)
 	{
-		//if (pmap[y][x].count<=0)
-		//	printf("count<0\n");
 		// NB: all arguments are assumed to be within bounds
 		if (parts[i].pmap_prev>=0)
 			parts[parts[i].pmap_prev].pmap_next = parts[i].pmap_next;

@@ -384,8 +384,6 @@ int is_wire_off(int x, int y);
 
 void set_emap(int x, int y);
 
-int parts_avg(int ci, int ni, int t);
-
 void create_arc(int sx, int sy, int dx, int dy, int midpoints, int variance, int type, int flags);
 
 int nearest_part(int ci, int t, int max_d);
