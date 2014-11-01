@@ -3760,6 +3760,8 @@ void render_fire(pixel *vid)
 					for (y=-CELL; y<2*CELL; y++)
 						for (x=-CELL; x<2*CELL; x++)
 						{
+							if (!globalSim->InBounds(i*CELL+x, j*CELL+y))
+								continue;
 #if defined(__SSE__) and defined(__GNUC__)
 							// unsigned multiply allows a slight optimisation, but is not available in the MMX instruction set
 							// With SSE, alpha is multiplied by 2^8 when initialised, and the high 16 bits of the answer are stored (equivalent to dividing the answer by 2^16), so the answer stored is alpha*colour/256
