@@ -27,11 +27,9 @@ int DMG_update(UPDATE_FUNC_ARGS)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
-					if (sim->elements[rt].Properties&TYPE_ENERGY)
-						continue;
 					if (rt!=PT_DMG && rt!=PT_EMBR && rt!=PT_DMND && rt!=PT_CLNE && rt!=PT_PCLN && rt!=PT_BCLN)
 					{
 						kill_part(i);
@@ -42,7 +40,7 @@ int DMG_update(UPDATE_FUNC_ARGS)
 									dist = sqrtf(powf(nxi, 2)+powf(nxj, 2));//;(pow((float)nxi,2))/(pow((float)rad,2))+(pow((float)nxj,2))/(pow((float)rad,2));
 									if (!dist || (dist <= rad))
 									{
-										FOR_PMAP_POSITION(sim, x+nxi, y+nxj, rrcount, rri, rrnext)// TODO: not energy parts
+										FOR_PMAP_POSITION_NOENERGY(sim, x+nxi, y+nxj, rrcount, rri, rrnext)
 										{
 											angle = atan2f(nxj, nxi);
 											fx = cosf(angle) * 7.0f;

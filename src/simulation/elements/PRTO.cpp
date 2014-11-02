@@ -39,7 +39,7 @@ int PRTO_update(UPDATE_FUNC_ARGS)
 		ry = portal_ry[(count + 4)%8];
 		if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 		{
-			if (!sim->pmap[y+ry][x+rx].count) fe = 1;
+			if (!sim->pmap[y+ry][x+rx].count_notEnergy) fe = 1;
 			if (!channel->particleCount[randomness])
 				continue;
 			// TODO: if (!r)

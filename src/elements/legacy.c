@@ -27,7 +27,7 @@ int update_legacy_all(UPDATE_FUNC_ARGS) {
 				if (x+rx>=0 && y+ry>0 &&
 				        x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						rt = parts[ri].type;
 						if ((rt==PT_WATR||rt==PT_DSTW||rt==PT_SLTW) && 1>(rand()%1000))
@@ -50,7 +50,7 @@ int update_legacy_all(UPDATE_FUNC_ARGS) {
 				if (x+rx>=0 && y+ry>0 &&
 				        x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						rt = parts[ri].type;
 						if ((rt==PT_FIRE || rt==PT_LAVA) && 1>(rand()%10))
@@ -66,7 +66,7 @@ int update_legacy_all(UPDATE_FUNC_ARGS) {
 				if (x+rx>=0 && y+ry>0 &&
 				        x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						rt = parts[ri].type;
 						if ((rt==PT_FIRE || rt==PT_LAVA) && 1>(rand()%10))
@@ -83,7 +83,7 @@ int update_legacy_all(UPDATE_FUNC_ARGS) {
 				if (x+rx>=0 && y+ry>0 &&
 				        x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						rt = parts[ri].type;
 						if ((rt==PT_FIRE || rt==PT_LAVA) && 1>(rand()%10))
@@ -98,7 +98,7 @@ int update_legacy_all(UPDATE_FUNC_ARGS) {
 			for (ry=-2; ry<3; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						rt = parts[ri].type;
 						if ((rt==PT_WATR || rt==PT_DSTW) && 1>(rand()%1000))
@@ -114,7 +114,7 @@ int update_legacy_all(UPDATE_FUNC_ARGS) {
 			for (ry=-2; ry<3; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						rt = parts[ri].type;
 						if ((rt==PT_WATR || rt==PT_DSTW) && 1>(rand()%1000))

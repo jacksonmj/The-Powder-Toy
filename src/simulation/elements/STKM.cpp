@@ -216,12 +216,12 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 			{
 				if (bmap[(ry+y)/CELL][(rx+x)/CELL]==WL_FAN)
 					playerp->elem = SPC_AIR;
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
 					if (ptypes[rt].falldown!=0 || ptypes[rt].state == ST_GAS 
-							|| ptypes[rt].properties&TYPE_GAS
-							|| ptypes[rt].properties&TYPE_LIQUID
+							|| (ptypes[rt].properties&TYPE_GAS)
+							|| (ptypes[rt].properties&TYPE_LIQUID)
 							|| rt == PT_NEUT || rt == PT_PHOT)
 					{
 						playerp->elem = rt;  //Current element
@@ -259,7 +259,7 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 	{
 		ry -= 2*(rand()%2)+1;
 		bool solidFound = false;
-		FOR_PMAP_POSITION(sim, rx, ry, rcount, ri, rnext)// TODO: not energy parts
+		FOR_PMAP_POSITION_NOENERGY(sim, rx, ry, rcount, ri, rnext)
 		{
 			if (ptypes[parts[ri].type].state == ST_SOLID)
 			{
@@ -433,7 +433,7 @@ void STKM_interact(Simulation *sim, playerst* playerp, int i, int x, int y)
 	int rcount, ri, rnext;
 	if (x<0 || y<0 || x>=XRES || y>=YRES || !parts[i].type)
 		return;
-	FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)// TODO: not energy parts
+	FOR_PMAP_POSITION_NOENERGY(sim, x, y, rcount, ri, rnext)
 	{
 		rt = parts[ri].type;
 

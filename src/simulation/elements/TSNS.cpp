@@ -29,9 +29,9 @@ int TSNS_update(UPDATE_FUNC_ARGS)
 			for (ry=-2; ry<3; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					if (sim->pmap[y+ry][x+rx].count<=0 || sim->is_spark_blocked(x,y,x+rx,y+ry))
-					continue;
-					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+					if (sim->pmap[y+ry][x+rx].count_notEnergy<=0 || sim->is_spark_blocked(x,y,x+rx,y+ry))
+						continue;
+					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						rt = parts[ri].type;
 						if ((ptypes[rt].properties&PROP_CONDUCTS) && !(rt==PT_WATR||rt==PT_SLTW||rt==PT_NTCT||rt==PT_PTCT||rt==PT_INWR) && parts[ri].life==0)

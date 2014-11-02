@@ -19,15 +19,16 @@ int GLOW_update(UPDATE_FUNC_ARGS)
 {
 	int rx, ry;
 	int rcount, ri, rnext;
+	bool killPart = false;
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					if (parts[ri].type==PT_WATR&&5>(rand()%2000))
 					{
-						parts[i].type = PT_NONE;
+						killPart = true;
 						part_change_type(ri,x+rx,y+ry,PT_DEUT);
 						parts[ri].life = 10;
 					}
@@ -37,7 +38,7 @@ int GLOW_update(UPDATE_FUNC_ARGS)
 
 	parts[i].tmp = abs((int)((vx[y/CELL][x/CELL]+vy[y/CELL][x/CELL])*16.0f)) + abs((int)((parts[i].vx+parts[i].vy)*64.0f));
 	//printf("%f %f\n", parts[i].vx, parts[i].vy);
-	if (parts[i].type==PT_NONE) {
+	if (killPart) {
 		kill_part(i);
 		return 1;
 	}

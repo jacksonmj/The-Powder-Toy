@@ -24,7 +24,7 @@ int GBMB_update(UPDATE_FUNC_ARGS)
 		for (rx=-2; rx<3; rx++)
 			for (ry=-2; ry<3; ry++)
 			{
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
 					if(rt!=PT_BOMB && rt!=PT_GBMB &&

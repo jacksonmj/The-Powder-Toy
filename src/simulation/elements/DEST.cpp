@@ -22,20 +22,12 @@ int DEST_update(UPDATE_FUNC_ARGS)
 	rx=rand()%5-2;
 	ry=rand()%5-2;
 
-	bool partFound = false;
-	FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+	FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 	{
 		int rt = parts[ri].type;
 		if (rt==PT_DEST || rt==PT_DMND || rt==PT_BCLN  || rt==PT_CLNE  || rt==PT_PCLN  || rt==PT_PBCN)
 			return 0;
-		if (!(sim->elements[rt].Properties&TYPE_ENERGY))
-		{
-			partFound = true;
-			break;
-		}
 	}
-	if (!partFound)
-		return 0;
 
 	if (parts[i].life<=0 || parts[i].life>37)
 	{
@@ -44,11 +36,9 @@ int DEST_update(UPDATE_FUNC_ARGS)
 		pv[y/CELL][x/CELL]+=60.0f;
 	}
 	parts[i].temp+=10000;
-	FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+	FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 	{
 		int rt = parts[ri].type;
-		if (sim->elements[rt].Properties&TYPE_ENERGY)
-			continue;
 		if (rt==PT_PLUT || rt==PT_DEUT)
 		{
 			pv[y/CELL][x/CELL]+=20.0f;

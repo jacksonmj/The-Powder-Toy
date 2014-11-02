@@ -22,7 +22,7 @@ int ELEC_update(UPDATE_FUNC_ARGS)
 	float rr, rrr;
 	parts[i].pavg[0] = x;
 	parts[i].pavg[1] = y;
-	FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)// TODO: not energy parts
+	FOR_PMAP_POSITION_NOENERGY(sim, x, y, rcount, ri, rnext)
 	{
 		if(parts[ri].type==PT_GLOW)
 		{
@@ -82,7 +82,7 @@ int ELEC_update(UPDATE_FUNC_ARGS)
 						kill_part(i);
 						return 1;
 					}
-					if (rt==PT_NEUT && !sim->pmap[y+ry][x+rx].count)// TODO: energy particles should not block this
+					if (rt==PT_NEUT && !sim->pmap[y+ry][x+rx].count_notEnergy)
 					{
 						part_change_type(ri, x+rx, y+ry, PT_H2);
 						parts[ri].life = 0;

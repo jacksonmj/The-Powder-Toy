@@ -42,7 +42,7 @@ int BOYL_update(UPDATE_FUNC_ARGS)
 			if (x+rx>=0 && y+ry>0 &&
 			        x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					int rt = parts[ri].type;
 					if (rt==PT_WATR && 1>rand()%30)

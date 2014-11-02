@@ -22,7 +22,7 @@ int SLTW_update(UPDATE_FUNC_ARGS) {
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
 					if (rt==PT_SALT && 1>(rand()%10000))

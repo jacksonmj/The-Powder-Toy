@@ -19,7 +19,7 @@
 bool pmap_contains_sparkable_INST(Simulation *sim, int x, int y)
 {
 	int rcount, ri, rnext;
-	FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)
+	FOR_PMAP_POSITION_NOENERGY(sim, x, y, rcount, ri, rnext)
 	{
 		if (parts[ri].type==PT_INST && parts[ri].life<=0)
 			return true;
@@ -63,7 +63,7 @@ int INST_flood_spark(Simulation *sim, int x, int y)
 			// fill span
 			for (x=x1; x<=x2; x++)
 			{
-				FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)
+				FOR_PMAP_POSITION_NOENERGY(sim, x, y, rcount, ri, rnext)
 				{
 					if (parts[ri].type==cm && parts[ri].life<=0)
 					{

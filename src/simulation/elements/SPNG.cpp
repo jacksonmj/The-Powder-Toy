@@ -27,7 +27,7 @@ int SPNG_update(UPDATE_FUNC_ARGS)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						rt = parts[ri].type;
 						if ((rt==PT_WATR || rt==PT_DSTW || rt==PT_FRZW) && parts[i].life<limit && 500>rand()%absorbChanceDenom)
@@ -74,7 +74,7 @@ int SPNG_update(UPDATE_FUNC_ARGS)
 		ry = rand()%5-2;
 		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 		{
-			FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+			FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 			{
 				if (parts[ri].type==PT_SPNG&&(parts[i].life>parts[ri].life)&&parts[i].life>0)//diffusion
 				{
@@ -102,7 +102,7 @@ int SPNG_update(UPDATE_FUNC_ARGS)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						if (parts[ri].type==PT_FIRE)
 						{

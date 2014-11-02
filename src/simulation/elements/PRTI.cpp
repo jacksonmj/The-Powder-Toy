@@ -42,7 +42,7 @@ int PRTI_update(UPDATE_FUNC_ARGS)
 		ry = portal_ry[count];
 		if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 		{
-			if (!sim->pmap[y+ry][x+rx].count) fe = 1;
+			if (!sim->pmap[y+ry][x+rx].count_notEnergy) fe = 1;
 			FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 			{
 				rt = parts[ri].type;

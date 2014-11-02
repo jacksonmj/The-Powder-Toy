@@ -23,13 +23,12 @@ int CO2_update(UPDATE_FUNC_ARGS)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				// TODO: if (!r) (excluding energy parts)
 				if (parts[i].ctype==5 && 20>(rand()%40000))
 				{
 					if (sim->part_create(-1, x+rx, y+ry, PT_WATR)>=0)
 						parts[i].ctype = 0;
 				}
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					int rt = parts[ri].type;
 					if (rt==PT_FIRE){

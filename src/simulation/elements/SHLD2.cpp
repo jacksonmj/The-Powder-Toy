@@ -23,9 +23,9 @@ int SHLD2_update(UPDATE_FUNC_ARGS)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				if (parts[i].life>0) //TODO: pmap: !r &&
+				if (!sim->pmap[y+ry][x+rx].count_notEnergy && parts[i].life>0)
 					sim->part_create(-1,x+rx,y+ry,PT_SHLD1);
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					if (parts[ri].type==PT_SPRK&&parts[i].life==0)
 					{
@@ -37,7 +37,7 @@ int SHLD2_update(UPDATE_FUNC_ARGS)
 						for ( nnx=-1; nnx<2; nnx++)
 							for ( nny=-1; nny<2; nny++)
 							{
-								//TODO: if (!pmap[y+ry+nny][x+rx+nnx])
+								if (!sim->pmap[y+ry+nny][x+rx+nnx].count_notEnergy)
 								{
 									np = sim->part_create(-1,x+rx+nnx,y+ry+nny,PT_SHLD1);
 									if (np<0) continue;

@@ -25,7 +25,7 @@ int EMP_update(UPDATE_FUNC_ARGS)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					if (parts[ri].type==PT_SPRK && parts[ri].life>0 && parts[ri].life<4)
 					{
@@ -64,7 +64,7 @@ int EMP_update(UPDATE_FUNC_ARGS)
 				for (ny=-2; ny<3; ny++)
 					if (rx+nx>=0 && ry+ny>=0 && rx+nx<XRES && ry+ny<YRES && (rx || ry))
 					{
-						FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
+						FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 						{
 							rt = parts[ri].type;
 							/*if ((n&0xFF)==PT_BTRY && rand()%60==0)

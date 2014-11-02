@@ -23,7 +23,7 @@ int ACID_update(UPDATE_FUNC_ARGS)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					int rt = parts[ri].type;
 					if (rt!=PT_ACID && rt!=PT_CAUS)
@@ -71,7 +71,7 @@ int ACID_update(UPDATE_FUNC_ARGS)
 		ry = rand()%5-2;
 		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 		{
-			FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+			FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 			{
 				if (parts[ri].type==PT_ACID&&(parts[i].life>parts[ri].life)&&parts[i].life>0)//diffusion
 				{

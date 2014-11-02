@@ -131,7 +131,7 @@ static int pn_junction_sprk(int x, int y, int pt)
 {
 	int rcount, ri, rnext;
 	bool ptFound = false;
-	FOR_PMAP_POSITION(globalSim, x, y, rcount, ri, rnext)// TODO: not energy parts
+	FOR_PMAP_POSITION_NOENERGY(globalSim, x, y, rcount, ri, rnext)
 	{
 		if (parts[ri].type==pt)
 		{
@@ -322,9 +322,9 @@ int eval_move(int pt, int nx, int ny, unsigned *rr)
 	if (nx<0 || ny<0 || nx>=XRES || ny>=YRES)
 		return 0;
 
-	if (globalSim->pmap[ny][nx].count)
+	if (globalSim->pmap[ny][nx].count_notEnergy)
 	{
-		FOR_PMAP_POSITION(globalSim, nx, ny, rcount, ri, rnext)// TODO: not energy parts
+		FOR_PMAP_POSITION_NOENERGY(globalSim, nx, ny, rcount, ri, rnext)
 		{
 			int tmpResult = can_move[pt][parts[ri].type];
 			if (tmpResult==3)
@@ -338,7 +338,7 @@ int eval_move(int pt, int nx, int ny, unsigned *rr)
 	if (rr)
 	{
 		// TODO: remove this
-		if (globalSim->pmap[ny][nx].count)
+		if (globalSim->pmap[ny][nx].count_notEnergy)
 			*rr = (globalSim->pmap[ny][nx].first<<8) | parts[globalSim->pmap[ny][nx].first].type;
 	}
 
@@ -359,7 +359,7 @@ int eval_move(int pt, int nx, int ny, unsigned *rr)
 		if (bmap[ny/CELL][nx/CELL]==WL_EHOLE && !emap[ny/CELL][nx/CELL] && !(ptypes[pt].properties&TYPE_SOLID))
 		{
 			bool foundSolid = false;
-			FOR_PMAP_POSITION(globalSim, nx, ny, rcount, ri, rnext)// TODO: not energy parts
+			FOR_PMAP_POSITION_NOENERGY(globalSim, nx, ny, rcount, ri, rnext)
 			{
 				if (ptypes[parts[ri].type].properties&TYPE_SOLID)
 				{
@@ -404,7 +404,7 @@ int try_move(int i, int x, int y, int nx, int ny)
 	{
 		if (globalSim->elements[t].Properties & TYPE_ENERGY)
 		{
-			FOR_PMAP_POSITION(globalSim, nx, ny, rcount, ri, rnext)// TODO: not energy parts
+			FOR_PMAP_POSITION_NOENERGY(globalSim, nx, ny, rcount, ri, rnext)
 			{
 				rt = parts[ri].type;
 				if (!legacy_enable && t==PT_PHOT)//PHOT heat conduction
@@ -445,7 +445,7 @@ int try_move(int i, int x, int y, int nx, int ny)
 
 	if (e == 2) //if occupy same space
 	{
-		FOR_PMAP_POSITION(globalSim, nx, ny, rcount, ri, rnext)// TODO: not energy parts
+		FOR_PMAP_POSITION_NOENERGY(globalSim, nx, ny, rcount, ri, rnext)
 		{
 			rt = parts[ri].type;
 			if (t==PT_PHOT)
@@ -506,14 +506,14 @@ int try_move(int i, int x, int y, int nx, int ny)
 	// First, look for NEUTPENETRATE or empty space at x,y
 	if (t==PT_NEUT && destNeutPenetrate>=0)
 	{
-		FOR_PMAP_POSITION(globalSim, x, y, rcount, ri, rnext)// TODO: not energy parts
+		FOR_PMAP_POSITION_NOENERGY(globalSim, x, y, rcount, ri, rnext)
 		{
 			if (globalSim->elements[parts[ri].type].Properties&PROP_NEUTPENETRATE)
 			{
 				srcNeutPenetrate = ri;
 				break;
 			}
-			else if (!(globalSim->elements[parts[ri].type].Properties&TYPE_ENERGY))
+			else
 			{
 				srcPartFound = true;
 				break;
@@ -521,7 +521,7 @@ int try_move(int i, int x, int y, int nx, int ny)
 		}
 	}
 
-	FOR_PMAP_POSITION(globalSim, nx, ny, rcount, ri, rnext)// TODO: not energy parts
+	FOR_PMAP_POSITION_NOENERGY(globalSim, nx, ny, rcount, ri, rnext)
 	{
 		rt = parts[ri].type;
 		if (t==PT_NEUT && (ptypes[rt].properties&PROP_NEUTABSORB))
@@ -578,7 +578,7 @@ int try_move(int i, int x, int y, int nx, int ny)
 
 		// Move all particles at the destination position that can be displaced by this particle
 		// For NEUTPENETRATE particles being displaced by a neutron, only move ones at nx,ny to x,y if there's currently a NEUTPENETRATE particle or empty space at x,y
-		if (!(globalSim->elements[rt].Properties&TYPE_ENERGY) && (t!=PT_NEUT || srcNeutPenetrate>=0 || !srcPartFound))
+		if (t!=PT_NEUT || srcNeutPenetrate>=0 || !srcPartFound)
 		{
 			int tmpResult = can_move[t][rt];
 			if (tmpResult==3)
@@ -885,7 +885,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 	if (t==PT_SPRK)
 	{
 		int index, type, lastSparkedIndex=-1;
-		FOR_PMAP_POSITION(globalSim, x, y, rcount, index, rnext)
+		FOR_PMAP_POSITION_NOENERGY(globalSim, x, y, rcount, index, rnext)
 		{
 			if (p == -2 || parts[index].type != PT_INST)
 			{
@@ -1318,7 +1318,7 @@ int flood_prop(int x, int y, int parttype, size_t propoffset, void * propvalue, 
 			}
 			for (x=x1; x<=x2; x++)
 			{
-				FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)
 				{
 					if (parts[ri].type==parttype)
 					{
@@ -1459,7 +1459,7 @@ int flood_water(int x, int y, int i, int originaly, int check)
 		{
 			cs.pop(x, y);
 			bool foundOne = false;
-			FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)
+			FOR_PMAP_POSITION_NOENERGY(sim, x, y, rcount, ri, rnext)
 			{
 				if (sim->elements[parts[ri].type].Falldown==2 && (parts[ri].flags & FLAG_WATEREQUAL) == check)
 				{
@@ -1474,7 +1474,7 @@ int flood_water(int x, int y, int i, int originaly, int check)
 			while (x1>=CELL)
 			{
 				bool foundOne = false;
-				FOR_PMAP_POSITION(sim, x1-1, y, rcount, ri, rnext)
+				FOR_PMAP_POSITION_NOENERGY(sim, x1-1, y, rcount, ri, rnext)
 				{
 					if (sim->elements[parts[ri].type].Falldown==2)
 					{
@@ -1489,7 +1489,7 @@ int flood_water(int x, int y, int i, int originaly, int check)
 			while (x2<XRES-CELL)
 			{
 				bool foundOne = false;
-				FOR_PMAP_POSITION(sim, x2+1, y, rcount, ri, rnext)
+				FOR_PMAP_POSITION_NOENERGY(sim, x2+1, y, rcount, ri, rnext)
 				{
 					if (sim->elements[parts[ri].type].Falldown==2)
 					{
@@ -1506,14 +1506,14 @@ int flood_water(int x, int y, int i, int originaly, int check)
 			{
 				if (check)
 				{
-					FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)
+					FOR_PMAP_POSITION_NOENERGY(sim, x, y, rcount, ri, rnext)
 					{
 						parts[ri].flags &= ~FLAG_WATEREQUAL;//flag it as checked (different from the original particle's checked flag)
 					}
 				}
 				else
 				{
-					FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)
+					FOR_PMAP_POSITION_NOENERGY(sim, x, y, rcount, ri, rnext)
 					{
 						parts[ri].flags |= FLAG_WATEREQUAL;//flag it as checked (different from the original particle's checked flag)
 					}
@@ -1533,7 +1533,7 @@ int flood_water(int x, int y, int i, int originaly, int check)
 				for (x=x1; x<=x2; x++)
 				{
 					bool foundOne = false;
-					FOR_PMAP_POSITION(sim, x, y-1, rcount, ri, rnext)
+					FOR_PMAP_POSITION_NOENERGY(sim, x, y-1, rcount, ri, rnext)
 					{
 						if (sim->elements[parts[ri].type].Falldown==2 && (parts[ri].flags & FLAG_WATEREQUAL) == check)
 						{
@@ -1552,7 +1552,7 @@ int flood_water(int x, int y, int i, int originaly, int check)
 				for (x=x1; x<=x2; x++)
 				{
 					bool foundOne = false;
-					FOR_PMAP_POSITION(sim, x, y+1, rcount, ri, rnext)
+					FOR_PMAP_POSITION_NOENERGY(sim, x, y+1, rcount, ri, rnext)
 					{
 						if (sim->elements[parts[ri].type].Falldown==2 && (parts[ri].flags & FLAG_WATEREQUAL) == check)
 						{

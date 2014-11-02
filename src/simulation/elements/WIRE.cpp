@@ -43,7 +43,7 @@ int WIRE_update(UPDATE_FUNC_ARGS)
 		{
 			if(x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
 					if(rt==PT_SPRK && parts[ri].life==3 && parts[ri].ctype==PT_PSCN)

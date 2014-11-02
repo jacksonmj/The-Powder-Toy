@@ -35,7 +35,7 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 			for (ry=-2; ry<3; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						if (parts[ri].type==PT_SLTW && (1>rand()%2500))
 						{
@@ -84,7 +84,7 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 			ry = rand()%5-2;
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					if (parts[ri].type==t && (parts[i].ctype>parts[ri].ctype) && parts[ri].ctype>=0 )//diffusion
 					{

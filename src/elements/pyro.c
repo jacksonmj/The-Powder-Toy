@@ -52,7 +52,7 @@ int update_PYRO(UPDATE_FUNC_ARGS) {
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					if (bmap[(y+ry)/CELL][(x+rx)/CELL] && bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_STREAM)
 						continue;
@@ -84,7 +84,7 @@ int update_legacy_PYRO(UPDATE_FUNC_ARGS) {
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					if (bmap[(y+ry)/CELL][(x+rx)/CELL] && bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_STREAM)
 						continue;
@@ -104,7 +104,7 @@ int update_legacy_PYRO(UPDATE_FUNC_ARGS) {
 						else
 						{
 							parts[i].life = 0;
-							t = parts[i].type = (parts[i].ctype)?parts[i].ctype:PT_STNE;
+							t = (parts[i].ctype)?parts[i].ctype:PT_STNE;
 							parts[i].ctype = PT_NONE;//rt;
 							part_change_type(i,x,y,t);
 							return 1;
@@ -112,7 +112,7 @@ int update_legacy_PYRO(UPDATE_FUNC_ARGS) {
 					}
 					if (t!=PT_SPRK && (rt==PT_ICEI || rt==PT_SNOW))
 					{
-						parts[ri].type = PT_WATR;
+						part_change_type(ri,x+rx,y+ry,PT_WATR);
 						if (t==PT_FIRE)
 						{
 							kill_part(i);
@@ -121,7 +121,7 @@ int update_legacy_PYRO(UPDATE_FUNC_ARGS) {
 						if (t==PT_LAVA)
 						{
 							parts[i].life = 0;
-							t = parts[i].type = PT_STNE;
+							t = PT_STNE;
 							part_change_type(i,x,y,t);
 						}
 					}
@@ -136,7 +136,7 @@ int update_legacy_PYRO(UPDATE_FUNC_ARGS) {
 						if (t==PT_LAVA)
 						{
 							parts[i].life = 0;
-							t = parts[i].type = (parts[i].ctype)?parts[i].ctype:PT_STNE;
+							t = (parts[i].ctype)?parts[i].ctype:PT_STNE;
 							parts[i].ctype = PT_NONE;
 							part_change_type(i,x,y,t);
 						}

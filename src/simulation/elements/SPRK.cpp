@@ -107,7 +107,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						rt = parts[ri].type;
 						if ((rt == PT_DSTW && 30>(rand()/(RAND_MAX/1000))) ||
@@ -126,9 +126,9 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				if (sim->pmap[y+ry][x+rx].count<=0) continue;
+				if (sim->pmap[y+ry][x+rx].count_notEnergy<=0) continue;
 				bool spark_blocked = sim->is_spark_blocked(x,y,x+rx,y+ry); // is spark blocked by insl
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
 					conduct_sprk = 1;

@@ -32,10 +32,10 @@ int DEUT_update(UPDATE_FUNC_ARGS)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						if (parts[i].life >=maxlife)
-							continue;
+							break;
 						if (parts[ri].type==PT_DEUT&&33>=rand()/(RAND_MAX/100)+1)
 						{
 							if ((parts[i].life + parts[ri].life + 1) <= maxlife)
@@ -53,7 +53,7 @@ int DEUT_update(UPDATE_FUNC_ARGS)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
 					if (parts[i].life<=maxlife)
-						continue;
+						break;
 					if (parts[i].life>=1)//if nothing then create deut
 					{
 						np = sim->part_create(-1,x+rx,y+ry,PT_DEUT);
@@ -69,7 +69,7 @@ int DEUT_update(UPDATE_FUNC_ARGS)
 		ry = rand()%5-2;
 		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 		{
-			FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+			FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 			{
 				if (parts[ri].type==PT_DEUT&&(parts[i].life>parts[ri].life)&&parts[i].life>0)//diffusion
 				{

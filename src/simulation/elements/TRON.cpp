@@ -53,7 +53,7 @@ bool canmovetron(Simulation * sim, int x, int y, int len)
 	if (bmap[y/CELL][x/CELL])
 		return false;
 
-	FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)// TODO: not energy parts
+	FOR_PMAP_POSITION_NOENERGY(sim, x, y, rcount, ri, rnext)
 	{
 		rt = parts[ri].type;
 		if (rt==PT_SWCH && parts[ri].life>=10)

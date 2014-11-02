@@ -70,7 +70,7 @@ void PPIP_flood_trigger(Simulation* sim, int x, int y, int sparkedBy)
 		y = coord_stack[coord_stack_size][1];
 
 		bool found = false;
-		FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)// TODO: not energy parts
+		FOR_PMAP_POSITION_NOENERGY(sim, x, y, rcount, ri, rnext)
 		{
 			if (parts[ri].type==PT_PPIP)
 			{
@@ -89,7 +89,7 @@ void PPIP_flood_trigger(Simulation* sim, int x, int y, int sparkedBy)
 		while (x1>=CELL)
 		{
 			bool found = false;
-			FOR_PMAP_POSITION(sim, x1-1, y, rcount, ri, rnext)// TODO: not energy parts
+			FOR_PMAP_POSITION_NOENERGY(sim, x1-1, y, rcount, ri, rnext)
 			{
 				if (parts[ri].type==PT_PPIP)
 				{
@@ -108,7 +108,7 @@ void PPIP_flood_trigger(Simulation* sim, int x, int y, int sparkedBy)
 		while (x2<XRES-CELL)
 		{
 			bool found = false;
-			FOR_PMAP_POSITION(sim, x2+1, y, rcount, ri, rnext)// TODO: not energy parts
+			FOR_PMAP_POSITION_NOENERGY(sim, x2+1, y, rcount, ri, rnext)
 			{
 				if (parts[ri].type==PT_PPIP)
 				{
@@ -215,7 +215,7 @@ void pushParticle(Simulation *sim, int i, int count, int original)
 			ry = pos_1_ry[rnd];
 			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES)
 			{
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
 					if ((rt==PT_PIPE || rt==PT_PPIP) && parts[ri].ctype!=notctype && (parts[ri].tmp&0xFF)==0)
@@ -246,7 +246,7 @@ void pushParticle(Simulation *sim, int i, int count, int original)
 	{
 		int coords = 7 - ((parts[i].tmp>>10)&7);
 		bool foundSomething = false;
-		FOR_PMAP_POSITION(sim, x+pos_1_rx[coords], y+pos_1_ry[coords], rcount, ri, rnext)// TODO: not energy parts
+		FOR_PMAP_POSITION_NOENERGY(sim, x+pos_1_rx[coords], y+pos_1_ry[coords], rcount, ri, rnext)
 		{
 			rt = parts[ri].type;
 			if ((rt==PT_PIPE || rt==PT_PPIP) && parts[ri].ctype!=notctype && (parts[ri].tmp&0xFF)==0)
@@ -315,7 +315,7 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 				{
 					if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 					{
-						FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+						FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 						{
 							if (parts[ri].type == PT_BRCK)
 							{
@@ -361,7 +361,7 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 				for (ry=-1; ry<2; ry++)
 					if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 					{
-						FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+						FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 						{
 							if (parts[ri].type==PT_PIPE || parts[ri].type==PT_PPIP)
 							{
@@ -484,7 +484,7 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 				for (ry=-1; ry<2; ry++)
 					if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 					{
-						if (!sim->pmap[y+ry][x+rx].count && bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_ALLOWAIR && bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_WALL && bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_WALLELEC && (bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_EWALL || emap[(y+ry)/CELL][(x+rx)/CELL]))
+						if (!sim->pmap[y+ry][x+rx].count_notEnergy && bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_ALLOWAIR && bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_WALL && bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_WALLELEC && (bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_EWALL || emap[(y+ry)/CELL][(x+rx)/CELL]))
 							parts[i].life=50;
 					}
 		}

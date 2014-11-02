@@ -66,7 +66,7 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 			ry = (random>>3)%3-1;
 			if(x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES)
 			{
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					if (parts[ri].type != PT_BREL && (sim->elements[parts[ri].type].Properties&PROP_CONDUCTS) && !parts[ri].life)
 						sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
@@ -81,7 +81,7 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 			ry = (random>>3)%7-3;
 			if(x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES)
 			{
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
 					if (rt!=PT_VIBR && rt!=PT_BVBR && sim->elements[rt].HeatConduct && (rt!=PT_HSWC||parts[ri].life==10))
@@ -152,7 +152,7 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 			ry = (random>>3)%7-3;
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					if (parts[ri].type != PT_VIBR && parts[ri].type != PT_BVBR)
 						continue;

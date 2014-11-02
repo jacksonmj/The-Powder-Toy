@@ -19,16 +19,17 @@ int THDR_update(UPDATE_FUNC_ARGS)
 {
 	int rt, rx, ry;
 	int rcount, ri, rnext;
+	bool killPart = false;
 	for (rx=-2; rx<3; rx++)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
 					if ((ptypes[rt].properties&PROP_CONDUCTS) && parts[ri].life==0 && !(rt==PT_WATR||rt==PT_SLTW))
 					{
-						parts[i].type = PT_NONE;
+						killPart = true;
 						sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
 					}
 					else if (rt!=PT_CLNE&&rt!=PT_THDR&&rt!=PT_SPRK&&rt!=PT_DMND&&rt!=PT_FIRE&&!(ptypes[rt].properties&TYPE_ENERGY))
@@ -41,12 +42,12 @@ int THDR_update(UPDATE_FUNC_ARGS)
 						}
 						else
 						{
-							parts[i].type = PT_NONE;
+							killPart = true;
 						}
 					}
 				}
 			}
-	if (parts[i].type==PT_NONE) {
+	if (killPart) {
 		kill_part(i);
 		return 1;
 	}

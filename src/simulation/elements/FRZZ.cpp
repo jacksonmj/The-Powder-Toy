@@ -19,21 +19,22 @@ int FRZZ_update(UPDATE_FUNC_ARGS)
 {
 	int rx, ry;
 	int rcount, ri, rnext;
+	bool killPart = false;
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					if (parts[ri].type==PT_WATR&&5>rand()%100)
 					{
 						part_change_type(ri,x+rx,y+ry,PT_FRZW);
 						parts[ri].life = 100;
-						parts[i].type = PT_NONE;
+						killPart = true;
 					}
 				}
 			}
-	if (parts[i].type==PT_NONE) {
+	if (killPart) {
 		kill_part(i);
 		return 1;
 	}

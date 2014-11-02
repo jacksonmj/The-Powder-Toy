@@ -595,7 +595,7 @@ int Simulation::spark_position_conductiveOnly(int x, int y)
 {
 	int lastSparkedIndex = -1;
 	int rcount, index, rnext;
-	FOR_PMAP_POSITION(this, x, y, rcount, index, rnext)
+	FOR_PMAP_POSITION_NOENERGY(this, x, y, rcount, index, rnext)
 	{
 		int type = parts[index].type;
 		if (!(elements[type].Properties & PROP_CONDUCTS))
@@ -613,7 +613,7 @@ int Simulation::spark_position(int x, int y)
 {
 	int lastSparkedIndex = -1;
 	int rcount, index, rnext;
-	FOR_PMAP_POSITION(this, x, y, rcount, index, rnext)
+	FOR_PMAP_POSITION_NOENERGY(this, x, y, rcount, index, rnext)
 	{
 		if (spark_particle(index, x, y))
 			lastSparkedIndex = index;
@@ -900,7 +900,7 @@ void Simulation::UpdateParticles()
 		{//go through every particle and set neighbor map
 			for (nx=CELL; nx<XRES-CELL; nx++)
 			{
-				if (!pmap[ny][nx].count)
+				if (!pmap[ny][nx].count_notEnergy)
 				{
 					gol[ny][nx] = 0;
 					continue;
@@ -921,7 +921,7 @@ void Simulation::UpdateParticles()
 							{
 								int adx = ((nx+nnx+XRES-3*CELL)%(XRES-2*CELL))+CELL;
 								int ady = ((ny+nny+YRES-3*CELL)%(YRES-2*CELL))+CELL;
-								if (!pmap[ady][adx].count || pmap_find_one(adx, ady, PT_LIFE)>=0)
+								if (!pmap[ady][adx].count_notEnergy || pmap_find_one(adx, ady, PT_LIFE)>=0)
 								{
 									//the total neighbor count is in 0
 									gol2[ady][adx][0] ++;
@@ -953,13 +953,13 @@ void Simulation::UpdateParticles()
 			for (nx=CELL; nx<XRES-CELL; nx++)
 			{
 				r = pmap_find_one(nx, ny, PT_LIFE);
-				if (pmap[ny][nx].count && r<0)
+				if (pmap[ny][nx].count_notEnergy && r<0)
 					continue;
 				neighbors = gol2[ny][nx][0];
 				if (neighbors)
 				{
 					golnum = gol[ny][nx];
-					if (!pmap[ny][nx].count)// TODO: not energy particles
+					if (!pmap[ny][nx].count_notEnergy)
 					{
 						//Find which type we can try and create
 						int creategol = 0xFF;
@@ -1161,7 +1161,7 @@ void Simulation::UpdateParticles()
 			for (nx=-1; nx<2; nx++)
 				for (ny=-1; ny<2; ny++) {
 					if (nx||ny) {
-						if (!pmap[y+ny][x+nx].count) // TODO: not energy parts
+						if (!pmap[y+ny][x+nx].count_notEnergy)
 							surround_space++;//there is empty space
 						if (pmap_find_one(x+nx,y+ny,t)<0)
 							nt++;//there is nothing or a different particle
@@ -1189,10 +1189,10 @@ void Simulation::UpdateParticles()
 					{
 						for (ry=-1; ry<2; ry++)
 						{
-							FOR_PMAP_POSITION(this, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts?
+							FOR_PMAP_POSITION_NOENERGY(this, x+rx, y+ry, rcount, ri, rnext)
 							{
 								rt = parts[ri].type;
-								// ri!=i instead of just using all particles found because if this loop is changed to exclude energy particles then the loop might not include particle i
+								// ri!=i instead of just using all particles found because this loop excludes energy particles so might not include particle i. Particle i included below in pt calculation. 
 								if (ri!=i&&elements[rt].HeatConduct&&(rt!=PT_HSWC||parts[ri].life==10)
 									&&(t!=PT_FILT||(rt!=PT_BRAY&&rt!=PT_BIZR&&rt!=PT_BIZRG))
 									&&(rt!=PT_FILT||(t!=PT_BRAY&&t!=PT_PHOT&&t!=PT_BIZR&&t!=PT_BIZRG))
@@ -1211,7 +1211,7 @@ void Simulation::UpdateParticles()
 					{
 						for (ry=-1; ry<2; ry++)
 						{
-							FOR_PMAP_POSITION(this, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts?
+							FOR_PMAP_POSITION_NOENERGY(this, x+rx, y+ry, rcount, ri, rnext)
 							{
 								rt = parts[ri].type;
 								if (elements[rt].HeatConduct&&(rt!=PT_HSWC||parts[ri].life==10)
@@ -1510,8 +1510,7 @@ killed:
 						clear_y = (int)(clear_yf+0.5f);
 						break;
 					}
-					// TODO: energy parts in pmap should not be counted as an obstacle
-					if (fin_x<CELL || fin_y<CELL || fin_x>=XRES-CELL || fin_y>=YRES-CELL || pmap[fin_y][fin_x].count || (bmap[fin_y/CELL][fin_x/CELL] && (bmap[fin_y/CELL][fin_x/CELL]==WL_DESTROYALL || !eval_move(t,fin_x,fin_y,NULL))))
+					if (fin_x<CELL || fin_y<CELL || fin_x>=XRES-CELL || fin_y>=YRES-CELL || pmap[fin_y][fin_x].count_notEnergy || (bmap[fin_y/CELL][fin_x/CELL] && (bmap[fin_y/CELL][fin_x/CELL]==WL_DESTROYALL || !eval_move(t,fin_x,fin_y,NULL))))
 					{
 						// found an obstacle
 						clear_xf = fin_xf-dx;

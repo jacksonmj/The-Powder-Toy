@@ -86,10 +86,8 @@ int SING_update(UPDATE_FUNC_ARGS) {
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if (sim->elements[parts[ri].type].Properties&TYPE_ENERGY)
-						continue;
 					if (parts[ri].type!=PT_DMND&&33>=rand()/(RAND_MAX/100)+1)
 					{
 						if (parts[ri].type==PT_SING && parts[ri].life >10)

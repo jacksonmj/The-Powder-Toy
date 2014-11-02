@@ -33,7 +33,7 @@ int WARP_update(UPDATE_FUNC_ARGS)
 		ry = rand()%3-1;
 		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 		{
-			FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+			FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 			{
 				rt = parts[ri].type;
 				if (rt!=PT_WARP&&rt!=PT_STKM&&rt!=PT_STKM2&&rt!=PT_DMND&&rt!=PT_CLNE&&rt!=PT_BCLN&&rt!=PT_PCLN)

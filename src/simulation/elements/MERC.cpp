@@ -28,7 +28,7 @@ int MERC_update(UPDATE_FUNC_ARGS)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						if (parts[i].tmp >=maxtmp)
 							break;
@@ -50,8 +50,7 @@ int MERC_update(UPDATE_FUNC_ARGS)
 				{
 					if (parts[i].tmp<=maxtmp)
 						continue;
-					// TODO: energy particles should not block
-					if (!sim->pmap[y+ry][x+rx].count&&parts[i].tmp>=1)//if nothing then create MERC
+					if (!sim->pmap[y+ry][x+rx].count_notEnergy && parts[i].tmp>=1)//if nothing then create MERC
 					{
 						np = sim->part_create(-1,x+rx,y+ry,PT_MERC);
 						if (np<0) continue;
@@ -67,7 +66,7 @@ int MERC_update(UPDATE_FUNC_ARGS)
 		ry = rand()%5-2;
 		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 		{
-			FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+			FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 			{
 				if (parts[ri].type==PT_MERC&&(parts[i].tmp>parts[ri].tmp)&&parts[i].tmp>0)//diffusion
 				{
