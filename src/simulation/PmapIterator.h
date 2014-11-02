@@ -16,11 +16,14 @@
 #ifndef Simulation_PmapIterator_h
 #define Simulation_PmapIterator_h
 
+#include "simulation/Simulation.h"
+
 #include <iterator>
 
 /*
- * Class to iterate through all the particle IDs at a given x,y location
- * in an slightly but not entirely standard-C++-like manner.
+Class to iterate through all the particle IDs at a given x,y location
+in a slightly but not entirely standard-C++-like manner.
+A bit slower than the FOR_PMAP_POSITION loops provided by Simulation.h
 
 Equivalent of it.begin() is  it=PmapIterator::All(sim, x, y)
  - TODO: maybe add .begin_All() etc methods to pmap struct
