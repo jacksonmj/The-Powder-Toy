@@ -785,24 +785,6 @@ int get_normal_interp(int pt, float x0, float y0, float dx, float dy, float *nx,
 	return get_normal(pt, x, y, dx, dy, nx, ny);
 }
 
-//For soap only
-void detach(int i)
-{
-	if ((parts[i].ctype&2) == 2)
-	{
-		if ((parts[parts[i].tmp].ctype&4) == 4)
-			parts[parts[i].tmp].ctype ^= 4;
-	}
-
-	if ((parts[i].ctype&4) == 4)
-	{
-		if ((parts[parts[i].tmp2].ctype&2) == 2)
-			parts[parts[i].tmp2].ctype ^= 2;
-	}
-
-	parts[i].ctype = 0;
-}
-
 void kill_part(int i)//kills particle number i
 {
 	globalSim->part_kill(i);

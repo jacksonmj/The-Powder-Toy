@@ -15,6 +15,7 @@
 
 #include "simulation/ElementsCommon.h"
 #include "simulation/elements/PRTI.h"
+#include "simulation/elements/SOAP.h"
 
 #define PFLAG_NORMALSPEED 0x00010000
 
@@ -424,7 +425,7 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 							if ((parts[i].tmp&0xFF) == 0 && (ptypes[parts[ri].type].properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY)))
 							{
 								if (parts[ri].type==PT_SOAP)
-									detach(ri);
+									SOAP_detach(sim, ri);
 								PIPE_transfer_part_to_pipe(parts+ri, parts+i);
 								kill_part(ri);
 							}

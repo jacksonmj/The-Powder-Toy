@@ -15,25 +15,42 @@
 
 #include "simulation/ElementsCommon.h"
 
-void attach(int i1, int i2)
+void SOAP_attach(Simulation *sim, int i1, int i2)
 {
-	if (!(parts[i2].ctype&4))
+	if (!(sim->parts[i2].ctype&4))
 	{
-		parts[i1].ctype |= 2;
-		parts[i1].tmp = i2;
+		sim->parts[i1].ctype |= 2;
+		sim->parts[i1].tmp = i2;
 
-		parts[i2].ctype |= 4;
-		parts[i2].tmp2 = i1;
+		sim->parts[i2].ctype |= 4;
+		sim->parts[i2].tmp2 = i1;
 	}
 	else
-	if (!(parts[i2].ctype&2))
+	if (!(sim->parts[i2].ctype&2))
 	{
-		parts[i1].ctype |= 4;
-		parts[i1].tmp2= i2;
+		sim->parts[i1].ctype |= 4;
+		sim->parts[i1].tmp2= i2;
 
-		parts[i2].ctype |= 2;
-		parts[i2].tmp = i1;
+		sim->parts[i2].ctype |= 2;
+		sim->parts[i2].tmp = i1;
 	}
+}
+
+void SOAP_detach(Simulation *sim, int i)
+{
+	if ((sim->parts[i].ctype&2) == 2)
+	{
+		if ((sim->parts[sim->parts[i].tmp].ctype&4) == 4)
+			sim->parts[sim->parts[i].tmp].ctype ^= 4;
+	}
+
+	if ((sim->parts[i].ctype&4) == 4)
+	{
+		if ((sim->parts[sim->parts[i].tmp2].ctype&2) == 2)
+			sim->parts[sim->parts[i].tmp2].ctype ^= 2;
+	}
+
+	sim->parts[i].ctype = 0;
 }
 
 int SOAP_update(UPDATE_FUNC_ARGS) 
@@ -64,13 +81,13 @@ int SOAP_update(UPDATE_FUNC_ARGS)
 						if (parts[target].ctype&2)
 						{
 							target = parts[target].tmp;
-							detach(target);
+							SOAP_detach(sim, target);
 						}
 
 						if (parts[target].ctype&4)
 						{
 							target = parts[target].tmp2;
-							detach(target);
+							SOAP_detach(sim, target);
 						}
 					}
 				}
@@ -79,7 +96,7 @@ int SOAP_update(UPDATE_FUNC_ARGS)
 					parts[i].ctype = 0;
 
 				if ((parts[i].ctype&6) == 6 && (parts[parts[i].tmp].ctype&6) == 6 && parts[parts[i].tmp].tmp == i)
-					detach(i);
+					SOAP_detach(sim, i);
 			}
 
 			parts[i].vy -= 0.1f;
@@ -97,7 +114,7 @@ int SOAP_update(UPDATE_FUNC_ARGS)
 						FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 						{
 							if ((parts[ri].type == PT_SOAP) && (parts[ri].ctype&1) && !(parts[ri].ctype&4))
-								attach(i, ri);
+								SOAP_attach(sim, i, ri);
 						}
 					}
 		}
@@ -110,7 +127,7 @@ int SOAP_update(UPDATE_FUNC_ARGS)
 						{
 							if (parts[i].temp>0 && bmap[(y+ry)/CELL][(x+rx)/CELL])
 							{
-								detach(i);
+								SOAP_detach(sim, i);
 								continue;
 							}
 
@@ -122,7 +139,7 @@ int SOAP_update(UPDATE_FUNC_ARGS)
 								{
 									if (ptypes[rt].state != ST_GAS && rt != PT_SOAP && rt != PT_GLAS)
 									{
-										detach(i);
+										SOAP_detach(sim, i);
 										continue;
 									}
 								}
@@ -253,7 +270,7 @@ void SOAP_ChangeType(ELEMENT_CHANGETYPE_FUNC_ARGS)
 {
 	if (from==PT_SOAP && to!=PT_SOAP)
 	{
-		detach(i);
+		SOAP_detach(sim, i);
 	}
 }
 

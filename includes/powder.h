@@ -364,8 +364,6 @@ void kill_part(int i);
 
 int flood_prop(int x, int y, int parttype, size_t propoffset, void * propvalue, int proptype);
 
-void detach(int i);
-
 void part_change_type(int i, int x, int y, int t);
 
 void get_gravity_field(int x, int y, float particleGrav, float newtonGrav, float *pGravX, float *pGravY);

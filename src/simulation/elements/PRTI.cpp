@@ -15,6 +15,7 @@
 
 #include "simulation/ElementsCommon.h"
 #include "simulation/elements/PRTI.h"
+#include "simulation/elements/SOAP.h"
 
 /*these are the count values of where the particle gets stored, depending on where it came from
    0 1 2
@@ -55,7 +56,7 @@ int PRTI_update(UPDATE_FUNC_ARGS)
 					continue;// Handling these is a bit more complicated, and is done in STKM_interact()
 
 				if (rt == PT_SOAP)
-					detach(ri);
+					SOAP_detach(sim, ri);
 
 				if (channel->StoreParticle(sim, ri, count))
 					fe = 1;

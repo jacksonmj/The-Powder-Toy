@@ -14,6 +14,7 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/elements/SOAP.h"
 
 int STOR_update(UPDATE_FUNC_ARGS)
 {
@@ -32,7 +33,7 @@ int STOR_update(UPDATE_FUNC_ARGS)
 					if (!parts[i].tmp && !parts[i].life && rt!=PT_STOR && !(ptypes[rt].properties&TYPE_SOLID) && (!parts[i].ctype || rt==parts[i].ctype))
 					{
 						if (rt == PT_SOAP)
-							detach(ri);
+							SOAP_detach(sim, ri);
 						parts[i].tmp = parts[ri].type;
 						parts[i].temp = parts[ri].temp;
 						parts[i].tmp2 = parts[ri].life;
