@@ -30,6 +30,7 @@
 #include "simulation/CoordStack.h"
 #include "simulation/ElementDataContainer.h"
 #include "simulation/elements/PRTI.h"
+#include "simulation/elements/FILT.h"
 
 part_type ptypes[PT_NUM];
 part_transition ptransitions[PT_NUM];
@@ -472,18 +473,7 @@ int try_move(int i, int x, int y, int nx, int ny)
 			}
 			if ((t==PT_BIZR||t==PT_BIZRG||t==PT_PHOT) && rt==PT_FILT)
 			{
-				int temp_bin = (int)((parts[ri].temp-273.0f)*0.025f);
-				if (temp_bin < 0) temp_bin = 0;
-				if (temp_bin > 25) temp_bin = 25;
-				if(!parts[ri].tmp){
-					parts[i].ctype = 0x1F << temp_bin; //Assign Colour
-				} else if(parts[ri].tmp==1){
-					parts[i].ctype &= 0x1F << temp_bin; //Filter Colour
-				} else if(parts[ri].tmp==2){
-					parts[i].ctype |= 0x1F << temp_bin; //Add Colour
-				} else if(parts[ri].tmp==3){
-					parts[i].ctype &= ~(0x1F << temp_bin); //Subtract Colour
-				}
+				parts[i].ctype = FILT_interactWavelengths(&parts[ri], parts[i].ctype);
 			}
 			if (t == PT_NEUT && rt==PT_GLAS)
 			{
@@ -896,6 +886,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 				pmaptype==PT_CLNE||
 				pmaptype==PT_BCLN||
 				pmaptype==PT_CONV||
+				pmaptype==PT_CRAY||
 				(pmaptype==PT_PCLN&&t!=PT_PSCN&&t!=PT_NSCN)||
 				(pmaptype==PT_PBCN&&t!=PT_PSCN&&t!=PT_NSCN)
 			)&&(
@@ -903,7 +894,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 				t!=PT_BCLN&&t!=PT_STKM&&
 				t!=PT_STKM2&&t!=PT_PBCN&&
 				t!=PT_STOR&&t!=PT_FIGH&&
-				t!=PT_CONV)
+				t!=PT_CONV&&t!=PT_CRAY)
 			)
 			{
 				parts[ri].ctype = t;

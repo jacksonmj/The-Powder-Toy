@@ -616,6 +616,27 @@ int Simulation::spark_position(int x, int y)
 	return lastSparkedIndex;
 }
 
+// Returns true if the element is blocked from moving to (or being created at) x,y by a wall 
+bool Simulation::IsWallBlocking(int x, int y, int type)
+{
+	if (bmap[y/CELL][x/CELL])
+	{
+		int wall = bmap[y/CELL][x/CELL];
+		if (wall == WL_ALLOWGAS && !(elements[type].Properties&TYPE_GAS))
+			return true;
+		else if (wall == WL_ALLOWENERGY && !(elements[type].Properties&TYPE_ENERGY))
+			return true;
+		else if (wall == WL_ALLOWLIQUID && elements[type].Falldown!=2)
+			return true;
+		else if (wall == WL_ALLOWSOLID && elements[type].Falldown!=1)
+			return true;
+		else if (wall == WL_ALLOWAIR || wall == WL_WALL || wall == WL_WALLELEC)
+			return true;
+		else if (wall == WL_EWALL && !emap[y/CELL][x/CELL])
+			return true;
+	}
+	return false;
+}
 
 //the main function for updating particles
 void Simulation::UpdateParticles()

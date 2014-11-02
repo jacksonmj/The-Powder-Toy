@@ -94,6 +94,8 @@ public:
 	int spark_position(int x, int y);
 	int spark_position_conductiveOnly(int x, int y);
 
+	bool IsWallBlocking(int x, int y, int type);
+
 	// Functions defined here should hopefully be inlined
 	// Don't put anything that will change often here, since changes cause a lot of recompiling
 
