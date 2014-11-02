@@ -1991,7 +1991,15 @@ int main(int argc, char *argv[])
 		if (b && !bq && x>=(XRES-19-new_message_len) &&
 		        x<=(XRES-14) && y>=(YRES-37) && y<=(YRES-24) && svf_messages)
 		{
-			open_link("http://" SERVER "/Conversations.html");
+			if (b==4)
+			{
+				// right click, dismiss
+				svf_messages = 0;
+			}
+			else
+			{
+				open_link("http://" SERVER "/Conversations.html");
+			}
 		}
 		if (update_flag)
 		{
@@ -2014,47 +2022,55 @@ int main(int argc, char *argv[])
 		if (b && !bq && x>=(XRES-19-old_ver_len) &&
 		        x<=(XRES-14) && y>=(YRES-22) && y<=(YRES-9) && old_version)
 		{
-			tmp = (char*)malloc(128);
-#ifdef BETA
-			if (is_beta)
+			if (b==4)
 			{
-				sprintf(tmp, "Your version: %d.%d Beta (%d)\nNew version: %d.%d Beta (%d)", SAVE_VERSION, MINOR_VERSION, BUILD_NUM, major, minor, buildnum);
-			}
-			else
-			{
-				sprintf(tmp, "Your version: %d.%d Beta (%d)\nNew version: %d.%d (%d)", SAVE_VERSION, MINOR_VERSION, BUILD_NUM, major, minor, buildnum);
-			}
-#else
-			if (is_beta)
-			{
-				sprintf(tmp, "Your version: %d.%d (%d)\nNew version: %d.%d Beta (%d)", SAVE_VERSION, MINOR_VERSION, BUILD_NUM, major, minor, buildnum);
-			}
-			else
-			{
-				sprintf(tmp, "Your version: %d.%d (%d)\nNew version: %d.%d (%d)", SAVE_VERSION, MINOR_VERSION, BUILD_NUM, major, minor, buildnum);
-			}
-#endif
-			if (confirm_ui(vid_buf, "Do you want to update The Powder Toy?", tmp, "Update"))
-			{
-				free(tmp);
-				tmp = download_ui(vid_buf, my_uri, &i);
-				if (tmp)
-				{
-					save_presets(1);
-					if (update_start(tmp, i))
-					{
-						update_cleanup();
-						save_presets(0);
-						error_ui(vid_buf, 0, "Update failed - try downloading a new version.");
-					}
-					else
-						return 0;
-				}
-			}
-			else
-			{
-				free(tmp);
+				// right click, dismiss
 				old_version = 0;
+			}
+			else
+			{
+				tmp = (char*)malloc(128);
+#ifdef BETA
+				if (is_beta)
+				{
+					sprintf(tmp, "Your version: %d.%d Beta (%d)\nNew version: %d.%d Beta (%d)", SAVE_VERSION, MINOR_VERSION, BUILD_NUM, major, minor, buildnum);
+				}
+				else
+				{
+					sprintf(tmp, "Your version: %d.%d Beta (%d)\nNew version: %d.%d (%d)", SAVE_VERSION, MINOR_VERSION, BUILD_NUM, major, minor, buildnum);
+				}
+#else
+				if (is_beta)
+				{
+					sprintf(tmp, "Your version: %d.%d (%d)\nNew version: %d.%d Beta (%d)", SAVE_VERSION, MINOR_VERSION, BUILD_NUM, major, minor, buildnum);
+				}
+				else
+				{
+					sprintf(tmp, "Your version: %d.%d (%d)\nNew version: %d.%d (%d)", SAVE_VERSION, MINOR_VERSION, BUILD_NUM, major, minor, buildnum);
+				}
+#endif
+				if (confirm_ui(vid_buf, "Do you want to update The Powder Toy?", tmp, "Update"))
+				{
+					free(tmp);
+					tmp = download_ui(vid_buf, my_uri, &i);
+					if (tmp)
+					{
+						save_presets(1);
+						if (update_start(tmp, i))
+						{
+							update_cleanup();
+							save_presets(0);
+							error_ui(vid_buf, 0, "Update failed - try downloading a new version.");
+						}
+						else
+							return 0;
+					}
+				}
+				else
+				{
+					free(tmp);
+					old_version = 0;
+				}
 			}
 		}
 		if (y>=(YRES+(MENUSIZE-20))) //mouse checks for buttons at the bottom, to draw mouseover texts
