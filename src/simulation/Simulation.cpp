@@ -492,19 +492,14 @@ bool Simulation::part_change_type(int i, int x, int y, int t)//changes the type 
 
 	parts[i].type = t;
 	if (t) elementCount[t]++;
-	// TODO: add stuff here if separating parts and energy parts in new linked list pmap
-	/*if (ptypes[t].properties & TYPE_ENERGY)
+
+	if ((elements[oldType].Properties&TYPE_ENERGY) != (elements[t].Properties&TYPE_ENERGY) || !t)
 	{
-		photons[y][x] = t|(i<<8);
-		if ((pmap[y][x]>>8)==i)
-			pmap[y][x] = 0;
+		pmap_remove(i, x, y, oldType);
+		if (t)
+			pmap_add(i, x, y, t);
 	}
-	else
-	{
-		pmap[y][x] = t|(i<<8);
-		if ((photons[y][x]>>8)==i)
-			photons[y][x] = 0;
-	}*/
+
 	if (elements[oldType].Func_ChangeType)
 	{
 		(*(elements[oldType].Func_ChangeType))(this, i, x, y, oldType, t);
