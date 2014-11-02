@@ -54,13 +54,41 @@ int contact_part(Simulation* sim, int i, int tp)
 	return -1;
 }
 
-void create_line_par(Simulation *sim, int x1, int y1, int x2, int y2, int c, int temp, int life, int tmp, int tmp2)
+// Create LIGH particle, or return true if it was eaten by void / black hole
+bool create_LIGH_line_part(Simulation * sim, int x, int y, int temp, int life, int tmp, int tmp2)
 {
-	int cp=abs(y2-y1)>abs(x2-x1), x, y, dx, dy, sy;
-	float e, de;
-	if (c==WL_EHOLE || c==WL_ALLOWGAS || c==WL_ALLOWALLELEC || c==WL_ALLOWSOLID || c==WL_ALLOWAIR || c==WL_WALL || c==WL_DESTROYALL || c==WL_ALLOWLIQUID || c==WL_FAN || c==WL_STREAM || c==WL_DETECT || c==WL_EWALL || c==WL_WALLELEC)
-		return; // this function only for particles, no walls
-	if (cp)
+	int p = sim->part_create(-1, x, y, PT_LIGH);
+	if (p != -1)
+	{
+		sim->parts[p].life = life;
+		sim->parts[p].temp = temp;
+		sim->parts[p].tmp = tmp;
+		sim->parts[p].tmp2 = tmp2;
+	}
+	else
+	{
+		int ri, rcount, rnext;
+		FOR_PMAP_POSITION_NOENERGY(sim, x, y, rcount, ri, rnext)
+		{
+			int rt = sim->parts[ri].type;
+			// Eaten by void if not excluded due to void ctype+tmp setting
+			if ((rt==PT_VOID || (rt==PT_PVOD && sim->parts[ri].life >= 10)) && (!sim->parts[ri].ctype || (sim->parts[ri].ctype==PT_LIGH)!=(sim->parts[ri].tmp&1)))
+				return true;
+			// Eaten by black hole
+			if (rt==PT_BHOL || rt==PT_NBHL)
+				return true;
+		}
+	}
+	return false;
+}
+
+
+void create_LIGH_line(Simulation *sim, int x1, int y1, int x2, int y2, int temp, int life, int tmp, int tmp2)
+{
+	bool reverseXY = abs(y2-y1) > abs(x2-x1), back = false;
+	int x, y, dx, dy, Ystep;
+	float e = 0.0f, de;
+	if (reverseXY)
 	{
 		y = x1;
 		x1 = y1;
@@ -70,42 +98,53 @@ void create_line_par(Simulation *sim, int x1, int y1, int x2, int y2, int c, int
 		y2 = y;
 	}
 	if (x1 > x2)
-	{
-		y = x1;
-		x1 = x2;
-		x2 = y;
-		y = y1;
-		y1 = y2;
-		y2 = y;
-	}
+		back = 1;
 	dx = x2 - x1;
 	dy = abs(y2 - y1);
-	e = 0.0f;
 	if (dx)
 		de = dy/(float)dx;
 	else
 		de = 0.0f;
 	y = y1;
-	sy = (y1<y2) ? 1 : -1;
-	for (x=x1; x<=x2; x++)
+	Ystep = (y1<y2) ? 1 : -1;
+	if (!back)
 	{
-		int p;
-		if (cp)
-			p=sim->part_create(-1, y, x, c);
-		else
-			p=sim->part_create(-1, x, y,c);
-		if (p!=-1)
+		for (x=x1; x<=x2; x++)
 		{
-			parts[p].life=life;
-			parts[p].temp=temp;
-			parts[p].tmp=tmp;
-			parts[p].tmp2=tmp2;
+			bool wasEaten;
+			if (reverseXY)
+				wasEaten = create_LIGH_line_part(sim, y, x, temp, life, tmp, tmp2);
+			else
+				wasEaten = create_LIGH_line_part(sim, x, y, temp, life, tmp, tmp2);
+			if (wasEaten)
+				return;
+
+			e += de;
+			if (e>=0.5f)
+			{
+				y += Ystep;
+				e -= 1.0f;
+			}
 		}
-		e += de;
-		if (e >= 0.5f)
+	}
+	else
+	{
+		for (x=x1; x>=x2; x--)
 		{
-			y += sy;
-			e -= 1.0f;
+			bool wasEaten;
+			if (reverseXY)
+				wasEaten = create_LIGH_line_part(sim, y, x, temp, life, tmp, tmp2);
+			else
+				wasEaten = create_LIGH_line_part(sim, x, y, temp, life, tmp, tmp2);
+			if (wasEaten)
+				return;
+
+			e += de;
+			if (e<=-0.5f)
+			{
+				y += Ystep;
+				e += 1.0f;
+			}
 		}
 	}
 }
@@ -131,7 +170,7 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 	int rcount, ri, rnext;
 	float angle, angle2=-1;
 	int near;
-	powderful = powderful=parts[i].temp*(1+parts[i].life/40)*LIGHTING_POWER;
+	powderful = parts[i].temp*(1+parts[i].life/40)*LIGHTING_POWER;
 	update_PYRO(UPDATE_FUNC_SUBCALL_ARGS);
 	if (aheat_enable)
 	{
@@ -231,7 +270,7 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 			angle_diff = M_PI*2 - angle_diff;
 		if (parts[i].life<5 || angle_diff<M_PI*0.8) // lightning strike
 		{
-			create_line_par(sim, x, y, x+rx, y+ry, PT_LIGH, parts[i].temp, parts[i].life, parts[i].tmp-90, 0);
+			create_LIGH_line(sim, x, y, x+rx, y+ry, parts[i].temp, parts[i].life, parts[i].tmp-90, 0);
 
 			if (t!=PT_TESC)
 			{
@@ -267,11 +306,11 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 	multipler=parts[i].life*1.5+rand()%((int)(parts[i].life+1));
 	rx=cos(angle*M_PI/180)*multipler;
 	ry=-sin(angle*M_PI/180)*multipler;
-	create_line_par(sim, x, y, x+rx, y+ry, PT_LIGH, parts[i].temp, parts[i].life, angle, 0);
+	create_LIGH_line(sim, x, y, x+rx, y+ry, parts[i].temp, parts[i].life, angle, 0);
 
 	if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 	{
-		// TODO: should create_line_par return the index of the last particle or something?
+		// TODO: should create_LIGH_line return the index of the last particle or something?
 		ri = sim->pmap_find_one(x+rx, y+ry, PT_LIGH);
 		if (ri>=0)
 		{
@@ -287,7 +326,7 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 		multipler=parts[i].life*1.5+rand()%((int)(parts[i].life+1));
 		rx=cos(angle2*M_PI/180)*multipler;
 		ry=-sin(angle2*M_PI/180)*multipler;
-		create_line_par(sim, x, y, x+rx, y+ry, PT_LIGH, parts[i].temp, parts[i].life, angle2, 0);
+		create_LIGH_line(sim, x, y, x+rx, y+ry, parts[i].temp, parts[i].life, angle2, 0);
 
 		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 		{
