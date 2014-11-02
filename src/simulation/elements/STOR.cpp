@@ -31,6 +31,8 @@ int STOR_update(UPDATE_FUNC_ARGS)
 					rt = parts[ri].type;
 					if (!parts[i].tmp && !parts[i].life && rt!=PT_STOR && !(ptypes[rt].properties&TYPE_SOLID) && (!parts[i].ctype || rt==parts[i].ctype))
 					{
+						if (rt == PT_SOAP)
+							detach(ri);
 						parts[i].tmp = parts[ri].type;
 						parts[i].temp = parts[ri].temp;
 						parts[i].tmp2 = parts[ri].life;
