@@ -74,7 +74,7 @@
 
 #include "simulation/ElementNumbers.h"
 #define OLD_PT_WIND 147
-#define PT_NUM  250
+#define PT_NUM  220
 
 #define R_TEMP 22
 #define MAX_TEMP 9999
