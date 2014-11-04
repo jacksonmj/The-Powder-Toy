@@ -1109,61 +1109,69 @@ void Simulation::UpdateParticles()
 			vx[y/CELL][x/CELL] = vx[y/CELL][x/CELL]*elements[t].AirLoss + elements[t].AirDrag*parts[i].vx;
 			vy[y/CELL][x/CELL] = vy[y/CELL][x/CELL]*elements[t].AirLoss + elements[t].AirDrag*parts[i].vy;
 
-			if (t==PT_GAS||t==PT_NBLE)
+			if (elements[t].PressureAdd_NoAmbHeat)
 			{
-				if (pv[y/CELL][x/CELL]<3.5f)
-					pv[y/CELL][x/CELL] += elements[t].PressureAdd_NoAmbHeat*(3.5f-pv[y/CELL][x/CELL]);
-				if (y+CELL<YRES && pv[y/CELL+1][x/CELL]<3.5f)
-					pv[y/CELL+1][x/CELL] += elements[t].PressureAdd_NoAmbHeat*(3.5f-pv[y/CELL+1][x/CELL]);
-				if (x+CELL<XRES)
+				if (t==PT_GAS||t==PT_NBLE)
 				{
-					if (pv[y/CELL][x/CELL+1]<3.5f)
-						pv[y/CELL][x/CELL+1] += elements[t].PressureAdd_NoAmbHeat*(3.5f-pv[y/CELL][x/CELL+1]);
-					if (y+CELL<YRES && pv[y/CELL+1][x/CELL+1]<3.5f)
-						pv[y/CELL+1][x/CELL+1] += elements[t].PressureAdd_NoAmbHeat*(3.5f-pv[y/CELL+1][x/CELL+1]);
+					if (pv[y/CELL][x/CELL]<3.5f)
+						pv[y/CELL][x/CELL] += elements[t].PressureAdd_NoAmbHeat*(3.5f-pv[y/CELL][x/CELL]);
+					if (y+CELL<YRES && pv[y/CELL+1][x/CELL]<3.5f)
+						pv[y/CELL+1][x/CELL] += elements[t].PressureAdd_NoAmbHeat*(3.5f-pv[y/CELL+1][x/CELL]);
+					if (x+CELL<XRES)
+					{
+						if (pv[y/CELL][x/CELL+1]<3.5f)
+							pv[y/CELL][x/CELL+1] += elements[t].PressureAdd_NoAmbHeat*(3.5f-pv[y/CELL][x/CELL+1]);
+						if (y+CELL<YRES && pv[y/CELL+1][x/CELL+1]<3.5f)
+							pv[y/CELL+1][x/CELL+1] += elements[t].PressureAdd_NoAmbHeat*(3.5f-pv[y/CELL+1][x/CELL+1]);
+					}
 				}
-			}
-			else//add the hotair variable to the pressure map, like black hole, or white hole.
-			{
-				pv[y/CELL][x/CELL] += elements[t].PressureAdd_NoAmbHeat;
-				if (y+CELL<YRES)
-					pv[y/CELL+1][x/CELL] += elements[t].PressureAdd_NoAmbHeat;
-				if (x+CELL<XRES)
+				else//add the hotair variable to the pressure map, like black hole, or white hole.
 				{
-					pv[y/CELL][x/CELL+1] += elements[t].PressureAdd_NoAmbHeat;
+					pv[y/CELL][x/CELL] += elements[t].PressureAdd_NoAmbHeat;
 					if (y+CELL<YRES)
-						pv[y/CELL+1][x/CELL+1] += elements[t].PressureAdd_NoAmbHeat;
+						pv[y/CELL+1][x/CELL] += elements[t].PressureAdd_NoAmbHeat;
+					if (x+CELL<XRES)
+					{
+						pv[y/CELL][x/CELL+1] += elements[t].PressureAdd_NoAmbHeat;
+						if (y+CELL<YRES)
+							pv[y/CELL+1][x/CELL+1] += elements[t].PressureAdd_NoAmbHeat;
+					}
 				}
 			}
 
-			//Gravity mode by Moach
-			switch (gravityMode)
+			if (elements[t].Gravity || !(elements[t].Properties & TYPE_SOLID))
 			{
-			default:
-			case 0:
-				pGravX = 0.0f;
-				pGravY = elements[t].Gravity;
-				break;
-			case 1:
-				pGravX = pGravY = 0.0f;
-				break;
-			case 2:
-				pGravD = 0.01f - hypotf((x - XCNTR), (y - YCNTR));
-				pGravX = elements[t].Gravity * ((float)(x - XCNTR) / pGravD);
-				pGravY = elements[t].Gravity * ((float)(y - YCNTR) / pGravD);
+				//Gravity mode by Moach
+				switch (gravityMode)
+				{
+				default:
+				case 0:
+					pGravX = 0.0f;
+					pGravY = elements[t].Gravity;
+					break;
+				case 1:
+					pGravX = pGravY = 0.0f;
+					break;
+				case 2:
+					pGravD = 0.01f - hypotf((x - XCNTR), (y - YCNTR));
+					pGravX = elements[t].Gravity * ((float)(x - XCNTR) / pGravD);
+					pGravY = elements[t].Gravity * ((float)(y - YCNTR) / pGravD);
+				}
+				//Get some gravity from the gravity map
+				if (t==PT_ANAR)
+				{
+					// perhaps we should have a ptypes variable for this
+					pGravX -= gravx[(y/CELL)*(XRES/CELL)+(x/CELL)];
+					pGravY -= gravy[(y/CELL)*(XRES/CELL)+(x/CELL)];
+				}
+				else if(t!=PT_STKM && t!=PT_STKM2 && t!=PT_FIGH && !(elements[t].Properties & TYPE_SOLID))
+				{
+					pGravX += gravx[(y/CELL)*(XRES/CELL)+(x/CELL)];
+					pGravY += gravy[(y/CELL)*(XRES/CELL)+(x/CELL)];
+				}
 			}
-			//Get some gravity from the gravity map
-			if (t==PT_ANAR)
-			{
-				// perhaps we should have a ptypes variable for this
-				pGravX -= gravx[(y/CELL)*(XRES/CELL)+(x/CELL)];
-				pGravY -= gravy[(y/CELL)*(XRES/CELL)+(x/CELL)];
-			}
-			else if(t!=PT_STKM && t!=PT_STKM2 && t!=PT_FIGH && !(elements[t].Properties & TYPE_SOLID))
-			{
-				pGravX += gravx[(y/CELL)*(XRES/CELL)+(x/CELL)];
-				pGravY += gravy[(y/CELL)*(XRES/CELL)+(x/CELL)];
-			}
+			else
+				pGravX = pGravY = 0;
 			//velocity updates for the particle
 			if (!(parts[i].flags&FLAG_MOVABLE))
 			{
