@@ -529,6 +529,39 @@ void Simulation::part_kill(int i)//kills particle number i
 	part_free(i);
 }
 
+int Simulation::delete_position(int x, int y, int only_type, int except_id)
+{
+	if (only_type>0 && !(elements[only_type].Properties&TYPE_ENERGY))
+		return delete_position_notEnergy(x, y, only_type, except_id);
+
+	int rcount, ri, rnext;
+	int deletedCount = 0;
+	FOR_PMAP_POSITION(this, x, y, rcount, ri, rnext)
+	{
+		if (ri!=except_id && (!only_type || parts[ri].type==only_type))
+		{
+			part_kill(ri);
+			deletedCount++;
+		}
+	}
+	return deletedCount;
+}
+
+int Simulation::delete_position_notEnergy(int x, int y, int only_type, int except_id)
+{
+	int rcount, ri, rnext;
+	int deletedCount = 0;
+	FOR_PMAP_POSITION_NOENERGY(this, x, y, rcount, ri, rnext)
+	{
+		if (ri!=except_id && (!only_type || parts[ri].type==only_type))
+		{
+			part_kill(ri);
+			deletedCount++;
+		}
+	}
+	return deletedCount;
+}
+
 /* spark_particle turns a particle into SPRK and sets ctype, life, and temperature. It first checks whether the particle can actually be sparked (is conductive or WIRE or INST, and has life of zero) first. Remember to check for INSL though. 
  * 
  * Returns true if the particle was successfully sparked.

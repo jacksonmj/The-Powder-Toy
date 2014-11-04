@@ -78,6 +78,10 @@ public:
 	int part_create(int p, int x, int y, int t);
 	void part_kill(int i);
 	bool part_change_type(int i, int x, int y, int t);
+
+	int delete_position(int x, int y, int only_type=0, int except_id=-1);
+	int delete_position_notEnergy(int x, int y, int only_type=0, int except_id=-1);
+
 	// Functions for changing particle temperature, respecting temperature caps.
 	// The _noLatent functions also set the stored transition energy of the particle to make it appear as though latent heat does not apply - the particles will change into the type that they should be at that temperature, instead of the temperature increase just contributing towards the stored transition energy
 	// set_temp sets the temperature to a specific value, add_temp changes the temperature by the given amount (can be positive or negative)

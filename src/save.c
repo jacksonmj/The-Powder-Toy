@@ -1522,6 +1522,15 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 							partsptr[newIndex].ctype = (((unsigned char)(firw_data[caddress]))<<16) | (((unsigned char)(firw_data[caddress+1]))<<8) | ((unsigned char)(firw_data[caddress+2]));
 						}
 					}
+					switch(partsptr[newIndex].type)
+					{
+					case PT_PSTN:
+						if (saved_version < 87 && partsptr[newIndex].ctype)
+							partsptr[newIndex].life = 1;
+						if (saved_version < 91)
+							partsptr[newIndex].temp = 283.15;
+						break;
+					}
 				}
 			}
 		}
