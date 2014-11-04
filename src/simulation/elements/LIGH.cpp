@@ -65,7 +65,7 @@ bool create_LIGH_line_part(Simulation * sim, int x, int y, int temp, int life, i
 		sim->parts[p].tmp = tmp;
 		sim->parts[p].tmp2 = tmp2;
 	}
-	else
+	else if (x >= 0 && x < XRES && y >= 0 && y < YRES)
 	{
 		int ri, rcount, rnext;
 		FOR_PMAP_POSITION_NOENERGY(sim, x, y, rcount, ri, rnext)
