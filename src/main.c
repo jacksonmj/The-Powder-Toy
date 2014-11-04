@@ -1916,7 +1916,10 @@ int main(int argc, char *argv[])
 			char nametext[50];
 			if (globalSim->pmap[y][x].count)
 			{
-				cri = globalSim->pmap[y][x].first;
+				if (globalSim->pmap[y][x].count > globalSim->pmap[y][x].count_notEnergy)
+					cri = globalSim->pmap[y][x].first_energy;
+				else
+					cri = globalSim->pmap[y][x].first;
 				crt = parts[cri].type;
 				if (crt==PT_LIFE && parts[cri].ctype>=0 && parts[cri].ctype<NGOLALT)
 				{
