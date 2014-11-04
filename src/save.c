@@ -842,6 +842,17 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 	}
 	
 	bson_init(&b);
+	bson_append_start_object(&b, "origin");
+	bson_append_int(&b, "majorVersion", SAVE_VERSION);
+	bson_append_int(&b, "minorVersion", MINOR_VERSION);
+	bson_append_int(&b, "buildNum", BUILD_NUM);
+	// TODO: 
+	//bson_append_int(&b, "snapshotId", 0);
+	//bson_append_string(&b, "releaseType", IDENT_RELTYPE);
+	//bson_append_string(&b, "platform", IDENT_PLATFORM);
+	//bson_append_string(&b, "builtType", IDENT_BUILD);
+	bson_append_finish_object(&b);
+
 	bson_append_bool(&b, "waterEEnabled", water_equal_test);
 	bson_append_bool(&b, "legacyEnable", legacy_enable);
 	bson_append_bool(&b, "gravityEnable", ngrav_enable);
