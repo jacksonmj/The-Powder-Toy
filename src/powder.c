@@ -886,7 +886,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 				pmaptype==PT_CLNE||
 				pmaptype==PT_BCLN||
 				pmaptype==PT_CONV||
-				pmaptype==PT_CRAY||
+				(pmaptype==PT_CRAY&&t!=PT_CRAY&&t!=PT_PSCN&&t!=PT_INST&&t!=PT_METL)||
 				(pmaptype==PT_PCLN&&t!=PT_PSCN&&t!=PT_NSCN)||
 				(pmaptype==PT_PBCN&&t!=PT_PSCN&&t!=PT_NSCN)
 			)&&(
@@ -900,7 +900,14 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 				parts[ri].ctype = t;
 				actionDone = true;
 				if (t==PT_LIFE && v<NGOLALT && pmaptype!=PT_STOR)
-					parts[ri].tmp = v;
+				{
+					if (pmaptype==PT_CRAY)
+						parts[ri].tmp2 = v;
+					else
+						parts[ri].tmp = v;
+				}
+				if (pmaptype==PT_CRAY)
+					parts[ri].temp = globalSim->elements[t].DefaultProperties.temp;
 			}
 			else if (pmaptype == PT_DTEC && pmaptype != t)
 			{
