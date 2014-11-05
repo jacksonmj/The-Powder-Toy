@@ -17,6 +17,16 @@
 
 int ACEL_update(UPDATE_FUNC_ARGS)
 {
+	float multiplier;
+	if (parts[i].life!=0)
+	{
+		float change = parts[i].life > 1000 ? 1000 : (parts[i].life < 0 ? 0 : parts[i].life);
+		multiplier = 1.0f+(change/100.0f);
+	}
+	else
+	{
+		multiplier = 1.1f;
+	}
 	int rx, ry;
 	int rcount, ri, rnext;
 	parts[i].tmp = 0;
@@ -28,8 +38,8 @@ int ACEL_update(UPDATE_FUNC_ARGS)
 				{
 					if(ptypes[parts[ri].type].properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY))
 					{
-						parts[ri].vx *= 1.1f;
-						parts[ri].vy *= 1.1f;
+						parts[ri].vx *= multiplier;
+						parts[ri].vy *= multiplier;
 						parts[i].tmp = 1;
 					}
 				}
