@@ -90,7 +90,7 @@ void BRMT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->LowTemperatureTransitionThreshold = ITL;
 	elem->LowTemperatureTransitionElement = NT;
 	elem->HighTemperatureTransitionThreshold = 1273.0f;
-	elem->HighTemperatureTransitionElement = PT_LAVA;
+	elem->HighTemperatureTransitionElement = ST;
 
 	elem->Update = &BRMT_update;
 	elem->Graphics = NULL;

@@ -1319,6 +1319,16 @@ void Simulation::UpdateParticles()
 							if (rand()%4==0) t = PT_SALT;
 							else t = PT_WTRV;
 						}
+						else if (t == PT_BRMT)
+						{
+							if (parts[i].ctype == PT_TUNG && ctemph <= 3695.0)
+								s = 0;
+							else
+							{
+								t = PT_LAVA;
+								parts[i].ctype = PT_TUNG;
+							}
+						}
 						else s = 0;
 					} else if (ctempl<elements[t].LowTemperatureTransitionThreshold && elements[t].LowTemperatureTransitionElement>-1) {
 						// particle type change due to low temperature
