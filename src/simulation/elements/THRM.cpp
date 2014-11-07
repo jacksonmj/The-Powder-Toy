@@ -15,37 +15,6 @@
 
 #include "simulation/ElementsCommon.h"
 
-int THRM_update(UPDATE_FUNC_ARGS)
-{
-	int rx, ry, rt;
-	int rcount, ri, rnext;
-	for (rx=-2; rx<3; rx++)
-		for (ry=-2; ry<3; ry++)
-			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
-			{
-				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
-				{
-					rt = parts[ri].type;
-					if ((rt==PT_FIRE || rt==PT_PLSM || rt==PT_LAVA)) // TODO: could this go in update_PYRO?
-					{
-						if (!(rand()%500)) {
-							part_change_type(i,x,y,PT_LAVA);
-							parts[i].ctype = PT_BMTL;
-							parts[i].temp = 3500.0f;
-							pv[y/CELL][x/CELL] += 50.0f;
-						} else {
-							part_change_type(i,x,y,PT_LAVA);
-							parts[i].life = 400;
-							parts[i].ctype = PT_THRM;
-							parts[i].temp = 3500.0f;
-							parts[i].tmp = 20;
-						}
-					}
-				}
-			}
-	return 0;
-}
-
 void THRM_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_THRM";
@@ -89,7 +58,7 @@ void THRM_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = &THRM_update;
+	elem->Update = NULL;
 	elem->Graphics = NULL;
 }
 

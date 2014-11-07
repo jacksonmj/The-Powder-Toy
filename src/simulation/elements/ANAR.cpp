@@ -21,13 +21,13 @@ int ANAR_update(UPDATE_FUNC_ARGS)
 	int rcount, ri, rnext;
 	//if (parts[i].temp >= 0.23)
 	// parts[i].temp --;
-	for (rx=-2; rx<3; rx++)
-		for (ry=-2; ry<3; ry++)
+	for (rx=-1; rx<2; rx++)
+		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if (parts[ri].type==PT_HFLM && !(rand()%22))
+					if (parts[ri].type==PT_HFLM && !(rand()%7))
 					{
 						part_change_type(i,x,y,PT_HFLM);
 						parts[i].life = rand()%150+50;

@@ -21,8 +21,8 @@ int GBMB_update(UPDATE_FUNC_ARGS)
 	int rcount, ri, rnext;
 	if (parts[i].life<=0)
 	{
-		for (rx=-2; rx<3; rx++)
-			for (ry=-2; ry<3; ry++)
+		for (rx=-1; rx<2; rx++)
+			for (ry=-1; ry<2; ry++)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{

@@ -19,13 +19,13 @@ int YEST_update(UPDATE_FUNC_ARGS)
 {
 	int rx, ry;
 	int rcount, ri, rnext;
-	for (rx=-2; rx<3; rx++)
-		for (ry=-2; ry<3; ry++)
+	for (rx=-1; rx<2; rx++)
+		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if (parts[ri].type==PT_DYST && !(rand()%30) && !legacy_enable)
+					if (parts[ri].type==PT_DYST && !(rand()%10) && !legacy_enable)
 					{
 						part_change_type(i,x,y,PT_DYST);
 					}

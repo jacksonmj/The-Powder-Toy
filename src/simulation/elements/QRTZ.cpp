@@ -31,13 +31,13 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 	}
 	// absorb SLTW
 	if (parts[i].ctype!=-1)
-		for (rx=-2; rx<3; rx++)
-			for (ry=-2; ry<3; ry++)
+		for (rx=-1; rx<2; rx++)
+			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
 					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
-						if (parts[ri].type==PT_SLTW && !(rand()%2500))
+						if (parts[ri].type==PT_SLTW && !(rand()%833))
 						{
 							kill_part(ri);
 							parts[i].ctype ++;

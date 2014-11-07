@@ -18,8 +18,8 @@
 int SLTW_update(UPDATE_FUNC_ARGS) {
 	int rx, ry, rt;
 	int rcount, ri, rnext;
-	for (rx=-2; rx<3; rx++)
-		for (ry=-2; ry<3; ry++)
+	for (rx=-1; rx<2; rx++)
+		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
@@ -28,16 +28,16 @@ int SLTW_update(UPDATE_FUNC_ARGS) {
 					switch (parts[ri].type)
 					{
 					case PT_SALT:
-						if (!(rand()%10000))
+						if (!(rand()%3333))
 							part_change_type(ri,x+rx,y+ry,PT_SLTW);
 						break;
 					case PT_PLNT:
-						if (!(rand()%200))
+						if (!(rand()%66))
 							kill_part(ri);
 						break;
 					case PT_RBDM:
 					case PT_LRBD:
-						if ((!sim->heat_mode || parts[i].temp>(273.15f+12.0f)) && !(rand()%500))
+						if ((!sim->heat_mode || parts[i].temp>(273.15f+12.0f)) && !(rand()%166))
 						{
 							part_change_type(i,x,y,PT_FIRE);
 							parts[i].life = 4;
@@ -47,7 +47,7 @@ int SLTW_update(UPDATE_FUNC_ARGS) {
 					case PT_FIRE:
 						if (parts[ri].ctype!=PT_WATR){
 							kill_part(ri);
-							if(!(rand()%150)){
+							if(!(rand()%50)){
 								kill_part(i);
 								return 1;
 							}

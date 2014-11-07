@@ -34,29 +34,6 @@ int COAL_update(UPDATE_FUNC_ARGS)
 		sim->part_create(i, x, y, PT_BCOL);
 		return 1;
 	}
-	for (rx=-2; rx<3; rx++)
-		for (ry=-2; ry<3; ry++)
-			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
-			{
-				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
-				{
-					int rt = parts[ri].type;
-					if (rt==PT_FIRE || rt==PT_PLSM)
-					{
-						if (parts[i].life>100 && !(rand()%500)) {
-							parts[i].life = 99;
-						}
-					}
-					if (rt==PT_LAVA)
-					{
-						if (parts[ri].ctype == PT_IRON && !(rand()%500)) {
-							parts[ri].ctype = PT_METL;
-							kill_part(i);
-							return 1;
-						}
-					}
-				}
-			}
 	/*if(100-parts[i].life > parts[i].tmp2)
 		parts[i].tmp2 = 100-parts[i].life;
 	if(parts[i].tmp2 < 0) parts[i].tmp2 = 0;
