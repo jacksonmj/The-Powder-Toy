@@ -131,7 +131,7 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 								// spread explosion
 								parts[ri].tmp += 10;
 							}
-							else if (parts[i].tmp2 && rand()%2)
+							else if (parts[i].tmp2 && parts[i].life > 75 && rand()%2)
 							{
 								// spread defuse
 								parts[ri].tmp2 = 1;
