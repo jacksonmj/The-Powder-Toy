@@ -198,7 +198,10 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 			((INBOND(playerp->legs[4], playerp->legs[5]) && !eval_move(t, playerp->legs[4], playerp->legs[5], NULL))
 			 || (INBOND(playerp->legs[12], playerp->legs[13]) && !eval_move(t, playerp->legs[12], playerp->legs[13], NULL))))
 	{
+		parts[i].vx -= 4*gvx;
 		parts[i].vy -= 4*gvy;
+		playerp->accs[2] -= gvx;
+		playerp->accs[6] -= gvx;
 		playerp->accs[3] -= gvy;
 		playerp->accs[7] -= gvy;
 	}
