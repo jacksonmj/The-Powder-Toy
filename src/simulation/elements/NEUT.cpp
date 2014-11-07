@@ -131,6 +131,7 @@ int NEUT_update(UPDATE_FUNC_ARGS)
 							sim->part_create(ri, x+rx, y+ry, PT_WOOD);
 						break;
 					case PT_DESL:
+					case PT_OIL:
 						if (3>(rand()%200))
 							part_change_type(ri,x+rx,y+ry,PT_GAS);
 						break;

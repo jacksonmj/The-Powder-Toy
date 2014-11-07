@@ -77,7 +77,7 @@ void ICEI_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Description = "Solid. Freezes water. Crushes under pressure. Cools down air.";
 
 	elem->State = ST_SOLID;
-	elem->Properties = TYPE_SOLID|PROP_LIFE_DEC;
+	elem->Properties = TYPE_SOLID | PROP_LIFE_DEC | PROP_NEUTPENETRATE;
 
 	elem->LowPressureTransitionThreshold = IPL;
 	elem->LowPressureTransitionElement = NT;

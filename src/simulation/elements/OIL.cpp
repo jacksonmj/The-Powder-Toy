@@ -47,7 +47,7 @@ void OIL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Description = "Liquid. Flammable.";
 
 	elem->State = ST_LIQUID;
-	elem->Properties = TYPE_LIQUID;
+	elem->Properties = TYPE_LIQUID | PROP_NEUTPENETRATE;
 
 	elem->LowPressureTransitionThreshold = IPL;
 	elem->LowPressureTransitionElement = NT;
