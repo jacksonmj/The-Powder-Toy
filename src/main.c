@@ -1605,7 +1605,7 @@ int main(int argc, char *argv[])
 						}
 					for (int i = 0; i < NPART; i++)
 					{
-						if (globalSim->parts[i].type == PT_QRTZ || globalSim->parts[i].type == PT_GLAS)
+						if (globalSim->parts[i].type == PT_QRTZ || globalSim->parts[i].type == PT_GLAS || globalSim->parts[i].type == PT_TUNG)
 						{
 							globalSim->parts[i].pavg[0] = globalSim->parts[i].pavg[1] = 0;
 						}

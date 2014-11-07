@@ -126,6 +126,11 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 					}
 				}
 		break;
+	case PT_TUNG:
+		if(parts[i].temp < 3595.0f){
+			parts[i].temp += (rand()%20)-4;
+		}
+		break;
 	default:
 		break;
 	}
