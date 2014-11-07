@@ -80,6 +80,7 @@ int BIZR_graphics(GRAPHICS_FUNC_ARGS) //BIZR, BIZRG, BIZRS
 		*firer = *colr/5 * fabs(cpart->vx)+fabs(cpart->vy);
 		*pixel_mode |= FIRE_ADD;
 	}
+	*pixel_mode |= PMODE_BLUR;
 	return 0;
 }
 

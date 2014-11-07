@@ -268,6 +268,12 @@ void SOAP_ChangeType(ELEMENT_CHANGETYPE_FUNC_ARGS)
 	}
 }
 
+int SOAP_graphics(GRAPHICS_FUNC_ARGS)
+{
+	*pixel_mode |= EFFECT_LINES|PMODE_BLUR;
+ 	return 1;
+}
+
 void SOAP_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
 	elem->Identifier = "DEFAULT_PT_SOAP";
@@ -315,7 +321,7 @@ void SOAP_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.tmp2 = -1;
 
 	elem->Update = &SOAP_update;
-	elem->Graphics = NULL;
+	elem->Graphics = &SOAP_graphics;
 	elem->Func_ChangeType = &SOAP_ChangeType;
 }
 
