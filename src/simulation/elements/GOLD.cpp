@@ -97,6 +97,7 @@ void GOLD_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Explosive = 0;
 	elem->Meltable = 1;
 	elem->Hardness = 0;
+	elem->PhotonReflectWavelengths = 0x3C038100;
 
 	elem->Weight = 100;
 
