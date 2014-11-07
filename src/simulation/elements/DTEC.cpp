@@ -79,7 +79,7 @@ void DTEC_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Creates a spark when something with its ctype is nearby";
+	elem->Description = "Detector, creates a spark when something with its ctype is nearby.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

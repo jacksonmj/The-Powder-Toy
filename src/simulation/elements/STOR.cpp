@@ -113,7 +113,7 @@ void STOR_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Solid. Stores a single particle, releases when charged with PSCN, also passes to PIPE";
+	elem->Description = "Stores a single particle, releases when charged with PSCN, also passes to PIPE.";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_SOLID;

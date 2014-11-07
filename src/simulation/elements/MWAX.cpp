@@ -44,7 +44,7 @@ void MWAX_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+28.0f+273.15f;
 	elem->HeatConduct = 44;
 	elem->Latent = 0;
-	elem->Description = "Liquid Wax.";
+	elem->Description = "Liquid Wax. Hardens into WAX at 45 degrees.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID;

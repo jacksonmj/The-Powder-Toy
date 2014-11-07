@@ -101,7 +101,7 @@ void CO2_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+273.15f;
 	elem->HeatConduct = 88;
 	elem->Latent = 0;
-	elem->Description = "Carbon Dioxide";
+	elem->Description = "Carbon Dioxide. Heavy gas, drifts downwards. Carbonates water and turns to dry ice when cold.";
 
 	elem->State = ST_GAS;
 	elem->Properties = TYPE_GAS;

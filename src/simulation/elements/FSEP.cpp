@@ -82,7 +82,7 @@ void FSEP_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 70;
 	elem->Latent = 0;
-	elem->Description = "Fuse Powder. See FUSE.";
+	elem->Description = "Fuse Powder. Burns slowly like FUSE.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART;

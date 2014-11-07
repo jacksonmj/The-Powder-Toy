@@ -44,7 +44,7 @@ void LNTG_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 70.15f;
 	elem->HeatConduct = 70;
 	elem->Latent = 0;
-	elem->Description = "Liquid Nitrogen. Very cold.";
+	elem->Description = "Liquid Nitrogen. Very cold, disappears whenever it touches anything warmer.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_LIQUID;

@@ -122,7 +122,7 @@ void COAL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 200;
 	elem->Latent = 0;
-	elem->Description = "Solid. Burns slowly.";
+	elem->Description = "Coal, Burns very slowly. Gets red when hot.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

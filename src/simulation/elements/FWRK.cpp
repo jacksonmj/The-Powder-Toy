@@ -113,7 +113,7 @@ void FWRK_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 100;
 	elem->Latent = 0;
-	elem->Description = "First fireworks made, activated by heat/neutrons.";
+	elem->Description = "Original version of fireworks, activated by heat/neutrons.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART|PROP_LIFE_DEC;

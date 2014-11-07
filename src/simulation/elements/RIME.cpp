@@ -69,7 +69,7 @@ void RIME_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 243.15f;
 	elem->HeatConduct = 100;
 	elem->Latent = 0;
-	elem->Description = "Not quite Ice";
+	elem->Description = "Solid, created when steam cools rapidly and goes through sublimation.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

@@ -50,7 +50,7 @@ void NWHL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 186;
 	elem->Latent = 0;
-	elem->Description = "White hole (Requires newtonian gravity)";
+	elem->Description = "White hole, pushes away other particles with gravity. (Requires Newtonian gravity)";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

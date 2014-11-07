@@ -66,7 +66,7 @@ void REPL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 20.0f+0.0f	+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Repel or attract particles based on temp value.";
+	elem->Description = "Repels or attracts particles based on its temp value.";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_SOLID;

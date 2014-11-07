@@ -83,7 +83,7 @@ void TSNS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f  +273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Creates a spark when there's a nearby particle with equal or greater temperature";
+	elem->Description = "Temperature sensor, creates a spark when there's a nearby particle with a greater temperature.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

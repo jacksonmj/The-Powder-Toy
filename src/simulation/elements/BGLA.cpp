@@ -44,7 +44,7 @@ void BGLA_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 150;
 	elem->Latent = 0;
-	elem->Description = "Broken Glass, Heavy particles. Meltable. Bagels.";
+	elem->Description = "Broken Glass, heavy particles formed when glass breaks under pressure. Meltable. Bagels.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART | PROP_HOT_GLOW;

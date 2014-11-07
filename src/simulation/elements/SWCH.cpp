@@ -108,7 +108,7 @@ void SWCH_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Solid. Only conducts when switched on. (PSCN switches on, NSCN switches off)";
+	elem->Description = "Only conducts when switched on. (PSCN switches on, NSCN switches off)";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

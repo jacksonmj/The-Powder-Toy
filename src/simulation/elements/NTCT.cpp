@@ -51,7 +51,7 @@ void NTCT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Semi-conductor. Only conducts electricity when hot (More than 100C)";
+	elem->Description = "Semi-conductor. Only conducts electricity when hot. (More than 100C)";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_CONDUCTS|PROP_LIFE_DEC;

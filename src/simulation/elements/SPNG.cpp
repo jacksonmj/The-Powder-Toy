@@ -204,7 +204,7 @@ void SPNG_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f +273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "A sponge, absorbs water.";
+	elem->Description = "Sponge, absorbs water. Is not a moving solid.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

@@ -86,7 +86,7 @@ void VINE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f +273.15f;
 	elem->HeatConduct = 65;
 	elem->Latent = 0;
-	elem->Description = "Vine, grows";
+	elem->Description = "Vine, can grow along WOOD.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

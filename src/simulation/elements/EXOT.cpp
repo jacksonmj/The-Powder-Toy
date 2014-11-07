@@ -203,7 +203,7 @@ void EXOT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP-2.0f	+273.15f;
 	elem->HeatConduct = 250;
 	elem->Latent = 0;
-	elem->Description = "Exotic matter. Explodes with excess exposure to electrons.";
+	elem->Description = "Exotic matter. Explodes with excess exposure to electrons. Has many other odd reactions.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID | PROP_NEUTPASS;

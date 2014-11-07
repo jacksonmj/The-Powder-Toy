@@ -47,7 +47,7 @@ void SNOW_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP-30.0f+273.15f;
 	elem->HeatConduct = 46;
 	elem->Latent = 1095;
-	elem->Description = "Light particles.";
+	elem->Description = "Light particles. Created when ICE breaks under pressure.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART | PROP_LIFE_DEC | PROP_NEUTPASS;

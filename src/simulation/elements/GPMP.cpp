@@ -88,7 +88,7 @@ void GPMP_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 0.0f		+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Changes gravity to its temp when activated. (use HEAT/COOL).";
+	elem->Description = "Gravity pump. Changes gravity to its temp when activated. (use HEAT/COOL)";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_SOLID;

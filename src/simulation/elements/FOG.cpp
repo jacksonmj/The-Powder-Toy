@@ -68,7 +68,7 @@ void FOG_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 243.15f;
 	elem->HeatConduct = 100;
 	elem->Latent = 0;
-	elem->Description = "Not quite Steam";
+	elem->Description = "Fog, created when an electric current is passed through RIME.";
 
 	elem->State = ST_GAS;
 	elem->Properties = TYPE_GAS|PROP_LIFE_DEC;

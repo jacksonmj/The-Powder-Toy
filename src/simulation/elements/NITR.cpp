@@ -45,7 +45,7 @@ void NITR_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 50;
 	elem->Latent = 0;
-	elem->Description = "Liquid. Pressure sensitive explosive.";
+	elem->Description = "Nitroglycerin. Pressure sensitive explosive. Mix with CLST to make TNT.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID;

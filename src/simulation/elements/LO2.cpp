@@ -44,7 +44,7 @@ void LO2_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 80.0f;
 	elem->HeatConduct = 70;
 	elem->Latent = 0;
-	elem->Description = "Liquid Oxygen. Very cold. Reacts with fire";
+	elem->Description = "Liquid Oxygen. Very cold. Reacts with fire.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID;

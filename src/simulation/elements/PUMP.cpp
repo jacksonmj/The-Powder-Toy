@@ -93,7 +93,7 @@ void PUMP_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Changes pressure to its temp when activated. (use HEAT/COOL).";
+	elem->Description = "Pressure pump. Changes pressure to its temp when activated. (use HEAT/COOL).";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

@@ -44,7 +44,7 @@ void DESL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 42;
 	elem->Latent = 0;
-	elem->Description = "Liquid. Explodes under high pressure and temperatures";
+	elem->Description = "Liquid diesel. Explodes under high pressure and temperatures.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID;
