@@ -20,8 +20,7 @@ void STKM_init_legs(playerst* playerp, int i);
 
 int STKM2_update(UPDATE_FUNC_ARGS)
 {
-	run_stickman(&player2, UPDATE_FUNC_SUBCALL_ARGS);
-	return 0;
+	return run_stickman(&player2, UPDATE_FUNC_SUBCALL_ARGS);
 }
 
 bool STKM2_create_allowed(ELEMENT_CREATE_ALLOWED_FUNC_ARGS)

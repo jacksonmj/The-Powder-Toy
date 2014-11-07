@@ -24,8 +24,7 @@ void STKM_interact(Simulation *sim, playerst* playerp, int i, int x, int y);
 
 int STKM_update(UPDATE_FUNC_ARGS)
 {
-	run_stickman(&player, UPDATE_FUNC_SUBCALL_ARGS);
-	return 0;
+	return run_stickman(&player, UPDATE_FUNC_SUBCALL_ARGS);
 }
 
 int STKM_graphics(GRAPHICS_FUNC_ARGS)

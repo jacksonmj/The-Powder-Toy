@@ -110,8 +110,7 @@ int FIGH_update(UPDATE_FUNC_ARGS)
 
 	figh->pcomm = figh->comm;
 
-	run_stickman(figh, UPDATE_FUNC_SUBCALL_ARGS);
-	return 0;
+	return run_stickman(figh, UPDATE_FUNC_SUBCALL_ARGS);
 }
 
 bool FIGH_create_allowed(ELEMENT_CREATE_ALLOWED_FUNC_ARGS)
