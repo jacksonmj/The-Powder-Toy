@@ -53,14 +53,6 @@ int BIZR_update(UPDATE_FUNC_ARGS)
 					}
 				}
 	}
-	FOR_PMAP_POSITION(sim, x, y, rcount, ri, rnext)
-	{
-		if (parts[ri].type==PT_PHOT)
-		{
-			part_change_type(ri, x, y, PT_ELEC);
-			parts[ri].ctype = 0;
-		}
-	}
 	return 0;
 }
 

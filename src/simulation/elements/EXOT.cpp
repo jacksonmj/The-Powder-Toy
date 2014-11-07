@@ -51,7 +51,7 @@ int EXOT_update(UPDATE_FUNC_ARGS)
 						if (rt!=PT_EXOT && rt!=PT_BREL && rt!=PT_DMND && rt!=PT_CLNE && rt!=PT_PRTI && rt!=PT_PRTO && rt!=PT_PCLN && rt!=PT_VOID && rt!=PT_NBHL && rt!=PT_WARP)
 						{
 							sim->part_create(i, x, y, rt);
-							return 0;
+							return 1;
 						}
 					}
 				}
@@ -68,7 +68,7 @@ int EXOT_update(UPDATE_FUNC_ARGS)
 		if (parts[i].life<1001)
 		{
 			part_change_type(i, x, y, PT_WARP);
-			return 0;
+			return 1;
 		}
 	}
 	else if (parts[i].life<1001)
@@ -77,7 +77,7 @@ int EXOT_update(UPDATE_FUNC_ARGS)
 	{
 		parts[i].tmp2 = 6000;
 		part_change_type(i, x, y, PT_WARP);
-		return 0;
+		return 1;
 	}		
 	if (parts[i].tmp2>100)
 	{

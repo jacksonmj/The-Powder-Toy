@@ -480,6 +480,10 @@ int try_move(int i, int x, int y, int nx, int ny)
 				if (rand() < RAND_MAX/10)
 					create_cherenkov_photon(i);
 			}
+			if (t==PT_ELEC && rt==PT_GLOW)
+			{
+				part_change_type(i, x, y, PT_PHOT);
+			}
 		}
 		return 1;
 	}

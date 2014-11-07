@@ -21,13 +21,6 @@ int ELEC_update(UPDATE_FUNC_ARGS)
 	int rcount, ri, rnext;
 	parts[i].pavg[0] = x;
 	parts[i].pavg[1] = y;
-	FOR_PMAP_POSITION_NOENERGY(sim, x, y, rcount, ri, rnext)
-	{
-		if(parts[ri].type==PT_GLOW)
-		{
-			part_change_type(i, x, y, PT_PHOT);
-		}
-	}
 	for (rx=-2; rx<=2; rx++)
 		for (ry=-2; ry<=2; ry++)
 			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES) {

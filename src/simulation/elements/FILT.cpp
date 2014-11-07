@@ -81,19 +81,16 @@ int FILT_interactWavelengths(particle *cpart, int origWl)
 
 int FILT_graphics(GRAPHICS_FUNC_ARGS)
 {
-	int x, temp_bin = (int)((cpart->temp-273.0f)*0.025f);
-	if (temp_bin < 0) temp_bin = 0;
-	if (temp_bin > 25) temp_bin = 25;
-	cpart->ctype = 0x1F << temp_bin;
+	int x, ctype = FILT_getWavelengths(cpart);
 	*colg = 0;
 	*colb = 0;
 	*colr = 0;
 	for (x=0; x<12; x++) {
-		*colr += (cpart->ctype >> (x+18)) & 1;
-		*colb += (cpart->ctype >>  x)     & 1;
+		*colr += (ctype >> (x+18)) & 1;
+		*colb += (ctype >>  x)     & 1;
 	}
 	for (x=0; x<12; x++)
-		*colg += (cpart->ctype >> (x+9))  & 1;
+		*colg += (ctype >> (x+9))  & 1;
 	x = 624/(*colr+*colg+*colb+1);
 	*cola = 127;
 	*colr *= x;

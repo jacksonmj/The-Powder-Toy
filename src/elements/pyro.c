@@ -80,13 +80,16 @@ int update_PYRO(UPDATE_FUNC_ARGS) {
 					}
 				}
 			}
-	if (legacy_enable) update_legacy_PYRO(UPDATE_FUNC_SUBCALL_ARGS);
+	if (legacy_enable && t!=PT_SPRK) // SPRK has no legacy reactions
+		update_legacy_PYRO(UPDATE_FUNC_SUBCALL_ARGS);
 	return 0;
 }
 
 int update_legacy_PYRO(UPDATE_FUNC_ARGS) {
 	int rx, ry, rt, lpv, t = parts[i].type;
 	int rcount, ri, rnext;
+	if (t==PT_SPRK)
+		return 0;
 	for (rx=-2; rx<3; rx++)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
@@ -98,13 +101,17 @@ int update_legacy_PYRO(UPDATE_FUNC_ARGS) {
 					rt = parts[ri].type;
 					lpv = (int)pv[(y+ry)/CELL][(x+rx)/CELL];
 					if (lpv < 1) lpv = 1;
-					if (t!=PT_SPRK && ptypes[rt].meltable  && ((rt!=PT_RBDM && rt!=PT_LRBD) || t!=PT_SPRK) && ((t!=PT_FIRE&&t!=PT_PLSM) || (rt!=PT_METL && rt!=PT_IRON && rt!=PT_ETRD && rt!=PT_PSCN && rt!=PT_NSCN && rt!=PT_NTCT && rt!=PT_PTCT && rt!=PT_BMTL && rt!=PT_BRMT && rt!=PT_SALT && rt!=PT_INWR)) &&
+					if (ptypes[rt].meltable  && ((rt!=PT_RBDM && rt!=PT_LRBD) || t!=PT_SPRK) && ((t!=PT_FIRE&&t!=PT_PLSM) || (rt!=PT_METL && rt!=PT_IRON && rt!=PT_ETRD && rt!=PT_PSCN && rt!=PT_NSCN && rt!=PT_NTCT && rt!=PT_PTCT && rt!=PT_BMTL && rt!=PT_BRMT && rt!=PT_SALT && rt!=PT_INWR)) &&
 							ptypes[rt].meltable*lpv>(rand()%1000))
 					{
 						if (t!=PT_LAVA || parts[i].life>0)
 						{
-							parts[ri].ctype = (rt==PT_BRMT)?PT_BMTL:rt;
-							parts[ri].ctype = (parts[ri].ctype==PT_SAND)?PT_GLAS:parts[ri].ctype;
+							if (rt==PT_BRMT)
+								parts[ri].ctype = PT_BMTL;
+							else if (rt==PT_SAND)
+								parts[ri].ctype = PT_GLAS;
+							else
+								parts[ri].ctype = rt;
 							part_change_type(ri,x+rx,y+ry,PT_LAVA);
 							parts[ri].life = rand()%120+240;
 						}
@@ -116,7 +123,7 @@ int update_legacy_PYRO(UPDATE_FUNC_ARGS) {
 							return 1;
 						}
 					}
-					if (t!=PT_SPRK && (rt==PT_ICEI || rt==PT_SNOW))
+					if (rt==PT_ICEI || rt==PT_SNOW)
 					{
 						part_change_type(ri,x+rx,y+ry,PT_WATR);
 						if (t==PT_FIRE)
@@ -130,7 +137,7 @@ int update_legacy_PYRO(UPDATE_FUNC_ARGS) {
 							part_change_type(i,x,y,PT_STNE);
 						}
 					}
-					if (t!=PT_SPRK && (rt==PT_WATR || rt==PT_DSTW || rt==PT_SLTW))
+					if (rt==PT_WATR || rt==PT_DSTW || rt==PT_SLTW)
 					{
 						kill_part(ri);
 						if (t==PT_FIRE)

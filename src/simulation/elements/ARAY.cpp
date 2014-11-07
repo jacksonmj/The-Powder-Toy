@@ -24,7 +24,7 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					FOR_PMAP_POSITION(sim, x+rx, y+ry, scount, si, snext)// TODO: not energy parts
+					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, scount, si, snext)
 					{
 						if (parts[si].type==PT_SPRK && parts[si].life==3) {
 							int destroy = (parts[si].ctype==PT_PSCN)?1:0;
@@ -48,7 +48,7 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 									}
 									parts[np].temp = parts[i].temp;
 								} else if (!destroy) {
-									FOR_PMAP_POSITION(sim, x+nxi+nxx, y+nyi+nyy, rcount, ri, rnext)// TODO: not energy parts
+									FOR_PMAP_POSITION_NOENERGY(sim, x+nxi+nxx, y+nyi+nyy, rcount, ri, rnext)
 									{
 										int rt = parts[ri].type;
 										if (rt==PT_BRAY)
@@ -105,7 +105,7 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 										}
 									}
 								} else if (destroy) {
-									FOR_PMAP_POSITION(sim, x+nxi+nxx, y+nyi+nyy, rcount, ri, rnext)// TODO: not energy parts
+									FOR_PMAP_POSITION_NOENERGY(sim, x+nxi+nxx, y+nyi+nyy, rcount, ri, rnext)
 									{
 										int rt = parts[ri].type;
 										if (rt==PT_BRAY) {
