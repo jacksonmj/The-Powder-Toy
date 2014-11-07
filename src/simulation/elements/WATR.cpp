@@ -105,7 +105,7 @@ void WATR_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Description = "Liquid. Conducts electricity. Freezes. Extinguishes fires.";
 
 	elem->State = ST_LIQUID;
-	elem->Properties = TYPE_LIQUID|PROP_CONDUCTS|PROP_LIFE_DEC|PROP_NEUTPENETRATE;
+	elem->Properties = TYPE_LIQUID|PROP_CONDUCTS|PROP_LIFE_DEC|PROP_NEUTPASS;
 
 	elem->LowPressureTransitionThreshold = IPL;
 	elem->LowPressureTransitionElement = NT;

@@ -47,7 +47,7 @@ void GAS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Description = "Gas. Diffuses. Flammable. Liquefies under pressure.";
 
 	elem->State = ST_GAS;
-	elem->Properties = TYPE_GAS | PROP_NEUTPENETRATE;
+	elem->Properties = TYPE_GAS | PROP_NEUTPASS;
 
 	elem->LowPressureTransitionThreshold = IPL;
 	elem->LowPressureTransitionElement = NT;

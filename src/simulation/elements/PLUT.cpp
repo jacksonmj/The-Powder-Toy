@@ -57,7 +57,7 @@ void PLUT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Description = "Heavy particles. Fissile. Generates neutrons under pressure.";
 
 	elem->State = ST_SOLID;
-	elem->Properties = TYPE_PART|PROP_NEUTPENETRATE|PROP_RADIOACTIVE;
+	elem->Properties = TYPE_PART|PROP_NEUTPASS|PROP_RADIOACTIVE;
 
 	elem->LowPressureTransitionThreshold = IPL;
 	elem->LowPressureTransitionElement = NT;
