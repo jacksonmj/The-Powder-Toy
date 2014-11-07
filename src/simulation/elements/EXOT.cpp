@@ -39,11 +39,22 @@ int EXOT_update(UPDATE_FUNC_ARGS)
 					}
 					else if (rt == PT_LAVA)
 					{
-						if ((parts[ri].ctype == PT_TTAN || parts[ri].ctype == PT_GOLD) && !(rand()%10))
+						if (parts[ri].ctype == PT_TTAN || parts[ri].ctype == PT_GOLD)
 						{
-							parts[ri].ctype = PT_VIBR;
-							kill_part(i);
-							return 1;
+							if (!(rand()%10))
+							{
+								parts[ri].ctype = PT_VIBR;
+								sim->part_kill(i);
+								return 1;
+							}
+						}
+						else if (parts[ri].ctype == PT_VIBR)
+						{
+							if (!(rand()%1000))
+							{
+								sim->part_kill(i);
+								return 1;
+							}
 						}
 					}
 					if ((parts[i].tmp>245) && (parts[i].life>1000))
