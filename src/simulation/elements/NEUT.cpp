@@ -15,7 +15,7 @@
 
 #include "simulation/ElementsCommon.h"
 
-int create_n_parts(Simulation *sim, int n, int x, int y, float vx, float vy, float temp, int t)//testing a new deut create part
+int NEUT_DeutExplosion(Simulation *sim, int n, int x, int y, float vx, float vy, float temp)
 {
 	int i, c;
 	n = (n/50);
@@ -25,7 +25,7 @@ int create_n_parts(Simulation *sim, int n, int x, int y, float vx, float vy, flo
 	if (n>340) {
 		n = 340;
 	}
-	if (x<0 || y<0 || x>=XRES || y>=YRES || t<0 || t>=PT_NUM || !ptypes[t].enabled)
+	if (x<0 || y<0 || x>=XRES || y>=YRES)
 		return -1;
 
 	for (c=0; c<n; c++) {
@@ -35,21 +35,19 @@ int create_n_parts(Simulation *sim, int n, int x, int y, float vx, float vy, flo
 		if (i<0)
 			return -1;
 
+		parts[i] = sim->elements[PT_NEUT].DefaultProperties;
 		parts[i].x = (float)x;
 		parts[i].y = (float)y;
 #ifdef OGLR
 		parts[i].lastX = (float)x;
 		parts[i].lastY = (float)y;
 #endif
-		parts[i].type = t;
+		parts[i].type = PT_NEUT;
 		parts[i].life = rand()%480+480;
 		parts[i].vx = r*cosf(a);
 		parts[i].vy = r*sinf(a);
-		parts[i].ctype = 0;
-		parts[i].temp = temp;
-		parts[i].tmp = 0;
-		sim->pmap_add(i, x, y, t);
-		sim->elementCount[t]++;
+		sim->pmap_add(i, x, y, PT_NEUT);
+		sim->elementCount[PT_NEUT]++;
 
 		pv[y/CELL][x/CELL] += 6.0f * CFDS;
 	}
@@ -103,7 +101,7 @@ int NEUT_update(UPDATE_FUNC_ARGS)
 					case PT_DEUT:
 						if ((pressureFactor+1+(parts[ri].life/100))>(rand()%1000))
 						{
-							create_n_parts(sim, parts[ri].life, x+rx, y+ry, parts[i].vx, parts[i].vy, restrict_flt(parts[ri].temp + parts[ri].life*500, MIN_TEMP, MAX_TEMP), PT_NEUT);
+							NEUT_DeutExplosion(sim, parts[ri].life, x+rx, y+ry, parts[i].vx, parts[i].vy, restrict_flt(parts[ri].temp + parts[ri].life*500, MIN_TEMP, MAX_TEMP));
 							kill_part(ri);
 						}
 						break;
