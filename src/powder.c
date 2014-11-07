@@ -913,11 +913,11 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 				if (pmaptype==PT_CRAY)
 					parts[ri].temp = globalSim->elements[t].DefaultProperties.temp;
 			}
-			else if (pmaptype == PT_DTEC && pmaptype != t)
+			else if (pmaptype == PT_DTEC && pmaptype != t || (pmaptype == PT_PSTN && t != PT_FRME))
 			{
 				parts[ri].ctype = t;
 				actionDone = true;
-				if (t==PT_LIFE && v<NGOLALT)
+				if (pmaptype == PT_DTEC && t==PT_LIFE && v<NGOLALT)
 					parts[ri].tmp = v;
 			}
 		}
