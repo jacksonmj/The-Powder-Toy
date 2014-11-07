@@ -28,7 +28,7 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 			parts[i].tmp++;
 			parts[i].temp -= 3;
 		}
-		if (parts[i].temp < 271.65f)
+		else if (parts[i].temp < 271.65f)
 		{
 			parts[i].tmp--;
 			parts[i].temp += 3;
@@ -39,7 +39,7 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 			parts[i].tmp += 7;
 			pv[y/CELL][x/CELL]--;
 		}
-		if (pv[y/CELL][x/CELL] < -2.5)
+		else if (pv[y/CELL][x/CELL] < -2.5)
 		{
 			parts[i].tmp -= 2;
 			pv[y/CELL][x/CELL]++;
@@ -87,58 +87,83 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 		//Explosion code
 		if (parts[i].life == 1)
 		{
-			int random = rand(), index;
-			sim->part_create(i, x, y, PT_EXOT);
-			parts[i].tmp2 = rand()%1000;
-			index = sim->part_create(-3,x+((random>>4)&3)-1,y+((random>>6)&3)-1,PT_ELEC);
-			if (index != -1)
-				parts[index].temp = 7000;
-			index = sim->part_create(-3,x+((random>>8)&3)-1,y+((random>>10)&3)-1,PT_PHOT);
-			if (index != -1)
-				parts[index].temp = 7000;
-			index = sim->part_create(-1,x+((random>>12)&3)-1,y+rand()%3-1,PT_BREL);
-			if (index != -1)
-				parts[index].temp = 7000;
-			parts[i].temp=9000;
-			pv[y/CELL][x/CELL] += 50;
+			if (!parts[i].tmp2)
+			{
+				int random = rand(), index;
+				sim->part_create(i, x, y, PT_EXOT);
+				parts[i].tmp2 = rand()%1000;
+				index = sim->part_create(-3,x+((random>>4)&3)-1,y+((random>>6)&3)-1,PT_ELEC);
+				if (index != -1)
+					parts[index].temp = 7000;
+				index = sim->part_create(-3,x+((random>>8)&3)-1,y+((random>>10)&3)-1,PT_PHOT);
+				if (index != -1)
+					parts[index].temp = 7000;
+				index = sim->part_create(-1,x+((random>>12)&3)-1,y+rand()%3-1,PT_BREL);
+				if (index != -1)
+					parts[index].temp = 7000;
+				parts[i].temp=9000;
+				pv[y/CELL][x/CELL] += 50;
 
-			return 1;
+				return 1;
+			}
+			else
+			{
+				parts[i].tmp2 = 0;
+				parts[i].temp = 273.15f;
+				parts[i].tmp = 0;
+			}
 		}
 	}
 	//Neighbor check loop
-	for (rx=-2; rx<3; rx++)
-		for (ry=-2; ry<3; ry++)
+	for (rx=-1; rx<2; rx++)
+		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
 				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
-					//Melts into EXOT
-					if (rt == PT_EXOT)
+					if (parts[i].life)
 					{
-						if (!parts[i].life && !(rand()%250))
-							sim->part_create(i, x, y, PT_EXOT);
-					}
-					else if (rt == PT_ANAR)
-					{
-						part_change_type(i,x,y,PT_BVBR);
-						pv[y/CELL][x/CELL] -= 1;
-					}
-					else if (rt==PT_VIBR  || rt==PT_BVBR)
-					{
-						if (parts[i].life && !parts[ri].life)
+						if (rt==PT_VIBR  || rt==PT_BVBR)
 						{
-							parts[ri].tmp += 10;
+							if (!parts[ri].life)
+							{
+								// spread explosion
+								parts[ri].tmp += 10;
+							}
+							else if (parts[i].tmp2 && rand()%2)
+							{
+								// spread defuse
+								parts[ri].tmp2 = 1;
+								parts[i].tmp = 0;
+							}
+						}
+						else if (rt==PT_HFLM)
+						{
+							parts[i].tmp2 = 1;
+							parts[i].tmp = 0;
 						}
 					}
-					//Absorbs energy particles
-					else if ((sim->elements[rt].Properties & TYPE_ENERGY))
+					else
 					{
-						if (!parts[i].life)
+						//Melts into EXOT
+						if (rt == PT_EXOT)
+						{
+							if (!(rand()%25))
+								sim->part_create(i, x, y, PT_EXOT);
+						}
+						//Absorbs energy particles
+						else if ((sim->elements[rt].Properties & TYPE_ENERGY))
 						{
 							parts[i].tmp += 20;
 							kill_part(ri);
 						}
+					}
+					//VIBR+ANAR=BVBR
+					if (rt == PT_ANAR && parts[i].type != PT_BVBR)
+					{
+						part_change_type(i,x,y,PT_BVBR);
+						pv[y/CELL][x/CELL] -= 1;
 					}
 				}
 			}
@@ -188,8 +213,16 @@ int VIBR_graphics(GRAPHICS_FUNC_ARGS)
 	if (gradient >= 100 || cpart->life)
 	{
 		*colr = (int)(fabs(sin(exp((750.0f-cpart->life)/170)))*200.0f);
-		*colg = 255;
-		*colb = (int)(fabs(sin(exp((750.0f-cpart->life)/170)))*200.0f);
+		if (cpart->tmp2)
+		{
+			*colg = (int)(fabs(sin(exp((750.0f-cpart->life)/170)))*200.0f);
+			*colb = 255;
+		}
+		else
+		{
+			*colg = 255;
+			*colb = (int)(fabs(sin(exp((750.0f-cpart->life)/170)))*200.0f);
+		}
 		*firea = 90;
 		*firer = *colr;
 		*fireg = *colg;
