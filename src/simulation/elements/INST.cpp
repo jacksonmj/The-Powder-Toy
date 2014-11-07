@@ -91,8 +91,8 @@ int INST_flood_spark(Simulation *sim, int x, int y)
 			{
 				for (x=x1; x<=x2; x++)
 				{
-					// if at the end of a horizontal section, or if it's a T junction
-					if (x==x1 || x==x2 || y>=YRES-CELL-1 || sim->pmap_find_one_conductive(x,y+1,cm)<0)
+					// if at the end of a horizontal section, or if it's a T junction or not a 1px wire crossing
+					if (x==x1 || x==x2 || y>=YRES-CELL-1 || sim->pmap_find_one_conductive(x,y+1,cm)<0 || sim->pmap_find_one_conductive(x+1,y+1,cm)>=0 || sim->pmap_find_one_conductive(x-1,y+1,cm)>=0)
 					{
 						if (pmap_contains_sparkable_INST(sim, x, y-1))
 							cs.push(x, y-1);
@@ -116,7 +116,8 @@ int INST_flood_spark(Simulation *sim, int x, int y)
 			{
 				for (x=x1; x<=x2; x++)
 				{
-					if (x==x1 || x==x2 || y<0 || sim->pmap_find_one_conductive(x,y-1,cm)<0)
+					// if at the end of a horizontal section, or if it's a T junction or not a 1px wire crossing
+					if (x==x1 || x==x2 || y<0 || sim->pmap_find_one_conductive(x,y-1,cm)<0 || sim->pmap_find_one_conductive(x+1,y-1,cm)>=0 || sim->pmap_find_one_conductive(x-1,y-1,cm)>=0)
 					{
 						if (pmap_contains_sparkable_INST(sim, x, y+1))
 							cs.push(x, y+1);
