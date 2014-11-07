@@ -54,12 +54,12 @@ int CBNW_update(UPDATE_FUNC_ARGS)
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					int rt = parts[ri].type;
-					if ((ptypes[rt].properties&TYPE_PART) && parts[i].tmp == 0 && !(rand()%83))
+					if ((ptypes[rt].properties&TYPE_PART) && parts[i].tmp == 0 && !(rand()%50))
 					{
 						//Start explode
 						parts[i].tmp = rand()%25;//(rand()%100)+50;
 					}
-					else if ((ptypes[rt].properties&TYPE_SOLID) && rt!=PT_DMND && rt!=PT_GLAS && parts[i].tmp == 0 && (2-pv[y/CELL][x/CELL])>(rand()%13333))
+					else if ((ptypes[rt].properties&TYPE_SOLID) && rt!=PT_DMND && rt!=PT_GLAS && parts[i].tmp == 0 && (2-pv[y/CELL][x/CELL])>(rand()%8000))
 					{
 						part_change_type(i,x,y,PT_CO2);
 						parts[i].ctype = 5;
@@ -85,7 +85,7 @@ int CBNW_update(UPDATE_FUNC_ARGS)
 					}
 					else if (rt==PT_RBDM||rt==PT_LRBD)
 					{
-						if ((legacy_enable||parts[i].temp>(285.15f)) && !(rand()%166))
+						if ((legacy_enable||parts[i].temp>(285.15f)) && !(rand()%100))
 						{
 							part_change_type(i,x,y,PT_FIRE);
 							parts[i].life = 4;
@@ -95,7 +95,7 @@ int CBNW_update(UPDATE_FUNC_ARGS)
 					else if (rt==PT_FIRE && parts[ri].ctype!=PT_WATR)
 					{
 						kill_part(ri);
-						if(!(rand()%50)){
+						if(!(rand()%30)){
 							kill_part(i);
 							return 1;
 						}

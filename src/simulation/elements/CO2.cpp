@@ -23,7 +23,7 @@ int CO2_update(UPDATE_FUNC_ARGS)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				if (parts[i].ctype==5 && !sim->pmap[y+ry][x+rx].count_notEnergy && !(rand()%667))
+				if (parts[i].ctype==5 && !sim->pmap[y+ry][x+rx].count_notEnergy && !(rand()%400))
 				{
 					if (sim->part_create(-1, x+rx, y+ry, PT_WATR)>=0)
 						parts[i].ctype = 0;
@@ -33,12 +33,12 @@ int CO2_update(UPDATE_FUNC_ARGS)
 					int rt = parts[ri].type;
 					if (rt==PT_FIRE){
 						kill_part(ri);
-						if(!(rand()%50)){
+						if(!(rand()%30)){
 							kill_part(i);
 							return 1;
 						}
 					}
-					if ((rt==PT_WATR || rt==PT_DSTW) && !(rand()%83))
+					if ((rt==PT_WATR || rt==PT_DSTW) && !(rand()%50))
 					{
 						part_change_type(ri, x+rx, y+ry, PT_CBNW);
 						if (parts[i].ctype==5) //conserve number of water particles - ctype=5 means this CO2 hasn't released the water particle from BUBW yet

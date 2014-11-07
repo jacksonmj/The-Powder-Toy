@@ -28,16 +28,16 @@ int SLTW_update(UPDATE_FUNC_ARGS) {
 					switch (parts[ri].type)
 					{
 					case PT_SALT:
-						if (!(rand()%3333))
+						if (!(rand()%2000))
 							part_change_type(ri,x+rx,y+ry,PT_SLTW);
 						break;
 					case PT_PLNT:
-						if (!(rand()%66))
+						if (!(rand()%40))
 							kill_part(ri);
 						break;
 					case PT_RBDM:
 					case PT_LRBD:
-						if ((!sim->heat_mode || parts[i].temp>(273.15f+12.0f)) && !(rand()%166))
+						if ((!sim->heat_mode || parts[i].temp>(273.15f+12.0f)) && !(rand()%100))
 						{
 							part_change_type(i,x,y,PT_FIRE);
 							parts[i].life = 4;
@@ -47,7 +47,7 @@ int SLTW_update(UPDATE_FUNC_ARGS) {
 					case PT_FIRE:
 						if (parts[ri].ctype!=PT_WATR){
 							kill_part(ri);
-							if(!(rand()%50)){
+							if(!(rand()%30)){
 								kill_part(i);
 								return 1;
 							}

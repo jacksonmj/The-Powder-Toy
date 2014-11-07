@@ -37,7 +37,7 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 				{
 					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
-						if (parts[ri].type==PT_SLTW && !(rand()%833))
+						if (parts[ri].type==PT_SLTW && !(rand()%500))
 						{
 							kill_part(ri);
 							parts[i].ctype ++;

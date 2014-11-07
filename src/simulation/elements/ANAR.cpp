@@ -27,7 +27,7 @@ int ANAR_update(UPDATE_FUNC_ARGS)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if (parts[ri].type==PT_HFLM && !(rand()%7))
+					if (parts[ri].type==PT_HFLM && !(rand()%4))
 					{
 						part_change_type(i,x,y,PT_HFLM);
 						parts[i].life = rand()%150+50;

@@ -28,7 +28,7 @@ int DSTW_update(UPDATE_FUNC_ARGS)
 					switch (parts[ri].type)
 					{
 					case PT_SALT:
-						if (!(rand()%83))
+						if (!(rand()%50))
 						{
 							part_change_type(i,x,y,PT_SLTW);
 							// on average, convert 3 DSTW to SLTW before SALT turns into SLTW
@@ -37,28 +37,28 @@ int DSTW_update(UPDATE_FUNC_ARGS)
 						}
 						break;
 					case PT_SLTW:
-						if (!(rand()%3333))
+						if (!(rand()%2000))
 						{
 							part_change_type(i,x,y,PT_SLTW);
 							break;
 						}
 					// fallthrough, following reaction applies to WATR and SLTW
 					case PT_WATR:
-						if (!(rand()%166))
+						if (!(rand()%100))
 						{
 							part_change_type(i,x,y,PT_WATR);
 						}
 						break;
 					case PT_RBDM:
 					case PT_LRBD:
-						if ((legacy_enable||parts[i].temp>12.0f) && !(rand()%166))
+						if ((legacy_enable||parts[i].temp>12.0f) && !(rand()%100))
 						{
 							part_change_type(i,x,y,PT_FIRE);
 							parts[i].life = 4;
 						}
 					case PT_FIRE:
 						kill_part(ri);
-						if(!(rand()%50)){
+						if(!(rand()%30)){
 							kill_part(i);
 							return 1;
 						}

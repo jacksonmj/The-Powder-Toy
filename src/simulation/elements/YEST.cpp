@@ -25,7 +25,7 @@ int YEST_update(UPDATE_FUNC_ARGS)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if (parts[ri].type==PT_DYST && !(rand()%10) && !legacy_enable)
+					if (parts[ri].type==PT_DYST && !(rand()%6) && !legacy_enable)
 					{
 						part_change_type(i,x,y,PT_DYST);
 					}

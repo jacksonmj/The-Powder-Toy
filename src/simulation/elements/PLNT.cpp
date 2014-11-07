@@ -31,13 +31,13 @@ int PLNT_update(UPDATE_FUNC_ARGS)
 					switch (parts[ri].type)
 					{
 					case PT_WATR:
-						if (!(rand()%83))
+						if (!(rand()%50))
 						{
 							np = sim->part_create(ri,x+rx,y+ry,PT_PLNT);
 						}
 						break;
 					case PT_LAVA:
-						if (!(rand()%83))
+						if (!(rand()%50))
 						{
 							part_change_type(i,x,y,PT_FIRE);
 							parts[i].life = 4;
@@ -45,14 +45,14 @@ int PLNT_update(UPDATE_FUNC_ARGS)
 						break;
 					case PT_SMKE:
 					case PT_CO2:
-						if (parts[i].life<=0 && !(rand()%83))
+						if (parts[i].life<=0 && !(rand()%50))
 						{
 							kill_part(ri);
 							parts[i].life = rand()%60 + 80;
 						}
 						break;
 					case PT_WOOD:
-						if (surround_space && !(rand()%7) && (abs(rx+ry)<=2) && (VINE_MODE || parts[i].tmp==1))
+						if (surround_space && !(rand()%4) && (abs(rx+ry)<=2) && (VINE_MODE || parts[i].tmp==1))
 						{
 							int nnx = rand()%3 -1;
 							int nny = rand()%3 -1;
