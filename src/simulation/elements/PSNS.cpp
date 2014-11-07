@@ -17,12 +17,11 @@
 
 int in_radius(int rd, int x, int y); //defined in DTEC.cpp
 
-int TSNS_update(UPDATE_FUNC_ARGS)
+int PSNS_update(UPDATE_FUNC_ARGS)
 {
-	int rx, ry, rt, rd = parts[i].tmp2;
+	int rx, ry, rt;
 	int rcount, ri, rnext;
-	if (rd > 25) parts[i].tmp2 = rd = 25;
-	if (parts[i].life)
+	if (pv[y/CELL][x/CELL] > parts[i].temp-273.15f)
 	{
 		parts[i].life = 0;
 		for (rx=-2; rx<3; rx++)
@@ -34,31 +33,21 @@ int TSNS_update(UPDATE_FUNC_ARGS)
 					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						rt = parts[ri].type;
-						if ((ptypes[rt].properties&PROP_CONDUCTS) && !(rt==PT_WATR||rt==PT_SLTW||rt==PT_NTCT||rt==PT_PTCT||rt==PT_INWR) && parts[ri].life==0)
+						if ((sim->elements[rt].Properties&PROP_CONDUCTS) && !(rt==PT_WATR||rt==PT_SLTW||rt==PT_NTCT||rt==PT_PTCT||rt==PT_INWR) && parts[ri].life==0)
 						{
-							sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
+							sim->spark_particle(ri, x+rx, y+ry);
 						}
 					}
 				}
 	}
-	for (rx=-rd; rx<rd+1; rx++)
-		for (ry=-rd; ry<rd+1; ry++)
-			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
-			{
-				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
-				{
-					if (parts[ri].type != PT_TSNS && parts[ri].type != PT_METL && parts[ri].temp >= parts[i].temp)
-						parts[i].life = 1;
-				}
-			}
 	return 0;
 }
 
-void TSNS_init_element(ELEMENT_INIT_FUNC_ARGS)
+void PSNS_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
-	elem->Identifier = "DEFAULT_PT_TSNS";
-	elem->Name = "TSNS";
-	elem->Colour = COLPACK(0xFD00D5);
+	elem->Identifier = "DEFAULT_PT_PSNS";
+	elem->Name = "PSNS";
+	elem->Colour = COLPACK(0xDB2020);
 	elem->MenuVisible = 1;
 	elem->MenuSection = SC_SENSOR;
 	elem->Enabled = 1;
@@ -80,10 +69,10 @@ void TSNS_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Weight = 100;
 
-	elem->DefaultProperties.temp = R_TEMP+0.0f  +273.15f;
+	elem->DefaultProperties.temp = 277.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Temperature sensor, creates a spark when there's a nearby particle with a greater temperature.";
+	elem->Description = "Pressure sensor, creates a spark when the pressure is greater than its temperature.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;
@@ -97,9 +86,7 @@ void TSNS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->DefaultProperties.tmp2 = 1;
-
-	elem->Update = &TSNS_update;
+	elem->Update = &PSNS_update;
 	elem->Graphics = NULL;
 }
 
