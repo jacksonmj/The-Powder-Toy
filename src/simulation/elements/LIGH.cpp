@@ -352,7 +352,7 @@ void LIGH_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Name = "LIGH";
 	elem->Colour = COLPACK(0xFFFFC0);
 	elem->MenuVisible = 1;
-	elem->MenuSection = SC_ELEC;
+	elem->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;

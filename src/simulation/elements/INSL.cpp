@@ -21,7 +21,7 @@ void INSL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Name = "INSL";
 	elem->Colour = COLPACK(0x9EA3B6);
 	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SPECIAL;
+	elem->MenuSection = SC_ELEC;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;

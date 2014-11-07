@@ -601,7 +601,7 @@ void PIPE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Name = "PIPE";
 	elem->Colour = COLPACK(0x444444);
 	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->MenuSection = SC_FORCE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;

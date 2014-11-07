@@ -21,7 +21,7 @@ void DMND_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Name = "DMND";
 	elem->Colour = COLPACK(0xCCFFFF);
 	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->MenuSection = SC_SPECIAL;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
