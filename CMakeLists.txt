@@ -170,11 +170,6 @@ if (LuaConsole)
 	endif (LUA51_FOUND)
 endif (LuaConsole)
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	find_package(ClockGettime REQUIRED)
-	include_directories(${CLOCK_GETTIME_INCLUDE_DIR})
-	target_link_libraries(powder ${CLOCK_GETTIME_LIBRARIES})
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	find_package(X11 REQUIRED)
@@ -218,6 +213,11 @@ if (Debug)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 	endif(CMAKE_COMPILER_IS_GNUCXX)
 endif(Debug)
+
+option(CheckPartsAlloc "Enable checking of particle allocation/freeing" OFF)
+if (CheckPartsAlloc)
+	add_definitions(-DDEBUG_PARTSALLOC=1)
+endif(CheckPartsAlloc)
 
 option(NoWarnings "Disable compiler warnings" OFF)
 if (NoWarnings)

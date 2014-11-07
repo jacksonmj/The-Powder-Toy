@@ -77,6 +77,7 @@ public:
 
 	int part_create(int p, int x, int y, int t);
 	void part_kill(int i);
+	void part_kill(int i, int x, int y);
 	bool part_change_type(int i, int x, int y, int t);
 
 	int delete_position(int x, int y, int only_type=0, int except_id=-1);
@@ -182,6 +183,12 @@ public:
 	void part_move(int i, int x, int y, float nxf, float nyf)
 	{
 		volatile float tmpx = nxf, tmpy = nyf;// volatile to hopefully force truncation of floats in x87 registers by storing and reloading from memory, so that rounding issues don't cause particles to appear in the wrong pmap list. If using -mfpmath=sse or an ARM CPU, this may be unnecessary.
+#ifdef DEBUG_PARTSALLOC
+		if (partsFree[i])
+			printf("Particle moved after free: %d\n", i);
+		if ((int)(parts[i].x+0.5f)!=x || (int)(parts[i].y+0.5f)!=y)
+			printf("Provided original coords wrong for part_move (particle %d): alleged %d,%d actual %d,%d\n", i, x, y, (int)(parts[i].x+0.5f), (int)(parts[i].y+0.5f));
+#endif
 		parts[i].x = tmpx;
 		parts[i].y = tmpy;
 		int nx = (int)(parts[i].x+0.5f), ny = (int)(parts[i].y+0.5f);
@@ -189,7 +196,8 @@ public:
 		{
 			if (nx<CELL || nx>=XRES-CELL || ny<CELL || ny>=YRES-CELL)
 			{
-				kill_part(i);
+				// part_kill removes the particle from pmap, so use the original coords so it's removed from the correct pmap location
+				part_kill(i, x, y);
 			}
 			else
 			{

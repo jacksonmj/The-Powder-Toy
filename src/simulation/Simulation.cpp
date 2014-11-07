@@ -524,6 +524,29 @@ void Simulation::part_kill(int i)//kills particle number i
 		(*(elements[t].Func_ChangeType))(this, i, x, y, t, PT_NONE);
 	}
 
+#ifdef DEBUG_PARTSALLOC
+	if (partsFree[i] || !t)
+		printf("Particle killed twice: %d\n", i);
+#endif
+
+	pmap_remove(i, x, y, t);
+	elementCount[t]--;
+	part_free(i);
+}
+
+void Simulation::part_kill(int i, int x, int y)//kills particle number i, with integer coords already known (or to override coords)
+{
+	int t = parts[i].type;
+	if (t && elements[t].Func_ChangeType)
+	{
+		(*(elements[t].Func_ChangeType))(this, i, x, y, t, PT_NONE);
+	}
+
+#ifdef DEBUG_PARTSALLOC
+	if (partsFree[i] || !t)
+		printf("Particle killed twice: %d\n", i);
+#endif
+
 	pmap_remove(i, x, y, t);
 	elementCount[t]--;
 	part_free(i);
