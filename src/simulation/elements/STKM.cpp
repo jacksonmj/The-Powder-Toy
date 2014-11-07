@@ -44,6 +44,10 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 	float dt = 0.9;///(FPSB*FPSB);  //Delta time in square
 	float gvx, gvy;
 	float gx, gy, dl, dr;
+	float rocketBootsHeadEffect = 0.35f;
+	float rocketBootsFeetEffect = 0.15f;
+	float rocketBootsHeadEffectV = 0.3f;// stronger acceleration vertically, to counteract gravity
+	float rocketBootsFeetEffectV = 0.45f;
 
 	if ((parts[i].ctype>0 && parts[i].ctype<PT_NUM && ptypes[parts[i].ctype].enabled && ptypes[parts[i].ctype].falldown>0) || parts[i].ctype==SPC_AIR || parts[i].ctype == PT_NEUT || parts[i].ctype == PT_PHOT || parts[i].ctype == PT_LIGH)
 		playerp->elem = parts[i].ctype;
@@ -92,6 +96,33 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 
 	gvx += gravx[((int)parts[i].y/CELL)*(XRES/CELL)+((int)parts[i].x/CELL)];
 	gvy += gravy[((int)parts[i].y/CELL)*(XRES/CELL)+((int)parts[i].x/CELL)];
+
+	float rbx = gvx;
+	float rby = gvy;
+	bool rbLowGrav = false;
+	float tmp = fmaxf(fabsf(rbx), fabsf(rby));
+	if (tmp < 0.001f)
+	{
+		rbLowGrav = true;
+		rbx = -parts[i].vx;
+		rby = -parts[i].vy;
+		tmp = fmaxf(fabsf(rbx), fabsf(rby));
+	}
+	if (tmp < 0.001f)
+	{
+		rbx = 0;
+		rby = 1.0f;
+		tmp = 1.0f;
+	}
+	float rbx1 = rbx/tmp, rby1 = rby/tmp;// scale so that the largest is 1.0
+	tmp = 1.0f/sqrtf(rbx*rbx+rby*rby);
+	rbx *= tmp;// scale to a unit vector
+	rby *= tmp;
+	if (rbLowGrav)
+	{
+		rocketBootsHeadEffectV = rocketBootsHeadEffect;
+		rocketBootsFeetEffectV = rocketBootsFeetEffect;
+	}
 
 	parts[i].vx -= gvx*dt;  //Head up!
 	parts[i].vy -= gvy*dt;
@@ -146,6 +177,7 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 	//Go left
 	if (((int)(playerp->comm)&0x01) == 0x01)
 	{
+		bool moved = false;
 		if (dl>dr)
 		{
 			if (INBOND(playerp->legs[4], playerp->legs[5]) && !eval_move(t, playerp->legs[4], playerp->legs[5], NULL))
@@ -154,6 +186,7 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 				playerp->accs[3] = 3*gvx-3*gvy;
 				playerp->accs[0] = -gvy;
 				playerp->accs[1] = gvx;
+				moved = true;
 			}
 		}
 		else
@@ -164,13 +197,37 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 				playerp->accs[7] = 3*gvx-3*gvy;
 				playerp->accs[0] = -gvy;
 				playerp->accs[1] = gvx;
+				moved = true;
 			}
 		}
+		if (!moved && playerp->rocketBoots)
+		{
+			parts[i].vx -= rocketBootsHeadEffect*rby;
+			parts[i].vy += rocketBootsHeadEffect*rbx;
+			playerp->accs[2] -= rocketBootsFeetEffect*rby;
+			playerp->accs[6] -= rocketBootsFeetEffect*rby;
+			playerp->accs[3] += rocketBootsFeetEffect*rbx;
+			playerp->accs[7] += rocketBootsFeetEffect*rbx;
+			for (int leg=0; leg<2; leg++)
+			{
+				if (leg==1 && (((int)(playerp->comm)&0x02) == 0x02))
+					continue;
+				int footX = playerp->legs[leg*8+4], footY = playerp->legs[leg*8+5];
+				int np = sim->part_create(-1, footX, footY, PT_PLSM);
+				if (np>=0)
+				{
+					parts[np].vx = parts[i].vx+rby*25;
+					parts[np].vy = parts[i].vy-rbx*25;
+					parts[np].life += 30;
+				}
+ 			}
+ 		}
 	}
 
 	//Go right
 	if (((int)(playerp->comm)&0x02) == 0x02)
 	{
+		bool moved = false;
 		if (dl<dr)
 		{
 			if (INBOND(playerp->legs[4], playerp->legs[5]) && !eval_move(t, playerp->legs[4], playerp->legs[5], NULL))
@@ -179,6 +236,7 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 				playerp->accs[3] = -3*gvx-3*gvy;
 				playerp->accs[0] = gvy;
 				playerp->accs[1] = -gvx;
+				moved = true;
 			}
 		}
 		else
@@ -189,22 +247,76 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 				playerp->accs[7] = -3*gvx-3*gvy;
 				playerp->accs[0] = gvy;
 				playerp->accs[1] = -gvx;
+				moved = true;
 			}
 		}
+		if (!moved && playerp->rocketBoots)
+		{
+			parts[i].vx += rocketBootsHeadEffect*rby;
+			parts[i].vy -= rocketBootsHeadEffect*rbx;
+			playerp->accs[2] += rocketBootsFeetEffect*rby;
+			playerp->accs[6] += rocketBootsFeetEffect*rby;
+			playerp->accs[3] -= rocketBootsFeetEffect*rbx;
+			playerp->accs[7] -= rocketBootsFeetEffect*rbx;
+			for (int leg=0; leg<2; leg++)
+			{
+				if (leg==0 && (((int)(playerp->comm)&0x01) == 0x01))
+					continue;
+				int footX = playerp->legs[leg*8+4], footY = playerp->legs[leg*8+5];
+				int np = sim->part_create(-1, footX, footY, PT_PLSM);
+				if (np>=0)
+				{
+					parts[np].vx = parts[i].vx-rby*25;
+					parts[np].vy = parts[i].vy+rbx*25;
+					parts[np].life += 30;
+				}
+ 			}
+ 		}
+	}
+
+	if (playerp->rocketBoots && ((int)(playerp->comm)&0x03) == 0x03)
+	{
+		// Pressing left and right simultaneously with rocket boots on slows the stickman down
+		// Particularly useful in zero gravity
+		parts[i].vx *= 0.5f;
+		parts[i].vy *= 0.5f;
+		playerp->accs[2] = playerp->accs[6] = 0;
+		playerp->accs[3] = playerp->accs[7] = 0;
 	}
 
 	//Jump
-	if (((int)(playerp->comm)&0x04) == 0x04 && 
-			((INBOND(playerp->legs[4], playerp->legs[5]) && !eval_move(t, playerp->legs[4], playerp->legs[5], NULL))
-			 || (INBOND(playerp->legs[12], playerp->legs[13]) && !eval_move(t, playerp->legs[12], playerp->legs[13], NULL))))
-	{
-		parts[i].vx -= 4*gvx;
-		parts[i].vy -= 4*gvy;
-		playerp->accs[2] -= gvx;
-		playerp->accs[6] -= gvx;
-		playerp->accs[3] -= gvy;
-		playerp->accs[7] -= gvy;
-	}
+	if (((int)(playerp->comm)&0x04) == 0x04)
+ 	{
+		if (playerp->rocketBoots)
+		{
+			parts[i].vx -= rocketBootsHeadEffectV*rbx;
+			parts[i].vy -= rocketBootsHeadEffectV*rby;
+			playerp->accs[2] -= rocketBootsFeetEffectV*rbx;
+			playerp->accs[6] -= rocketBootsFeetEffectV*rbx;
+			playerp->accs[3] -= rocketBootsFeetEffectV*rby;
+			playerp->accs[7] -= rocketBootsFeetEffectV*rby;
+			for (int leg=0; leg<2; leg++)
+			{
+				int footX = playerp->legs[leg*8+4], footY = playerp->legs[leg*8+5];
+				int np = sim->part_create(-1, footX, footY+1, PT_PLSM);
+				if (np>=0)
+				{
+					parts[np].vx = parts[i].vx+rbx*30;
+					parts[np].vy = parts[i].vy+rby*30;
+					parts[np].life += 10;
+				}
+			}
+		}
+		else if (!eval_move(t, playerp->legs[4], playerp->legs[5], NULL) || !eval_move(t, playerp->legs[12], playerp->legs[13], NULL))
+		{
+			parts[i].vx -= 4*gvx;
+			parts[i].vy -= 4*gvy;
+			playerp->accs[2] -= gvx;
+			playerp->accs[6] -= gvx;
+			playerp->accs[3] -= gvy;
+			playerp->accs[7] -= gvy;
+		}
+ 	}
 
 	//Charge detector wall if foot inside
 	if (bmap[(int)(playerp->legs[5]+0.5)/CELL][(int)(playerp->legs[4]+0.5)/CELL]==WL_DETECT)
@@ -219,6 +331,10 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 			{
 				if (bmap[(ry+y)/CELL][(rx+x)/CELL]==WL_FAN)
 					playerp->elem = SPC_AIR;
+				else if (bmap[(ry+y)/CELL][(rx+x)/CELL]==WL_EHOLE)
+					playerp->rocketBoots = false;
+				else if (bmap[(ry+y)/CELL][(rx+x)/CELL]==WL_GRAV)
+					playerp->rocketBoots = true;
 				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
@@ -227,7 +343,8 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 							|| (ptypes[rt].properties&TYPE_LIQUID)
 							|| rt == PT_NEUT || rt == PT_PHOT)
 					{
-						playerp->elem = rt;  //Current element
+						if (!playerp->rocketBoots || rt!=PT_PLSM)
+							playerp->elem = rt;  //Current element
 					}
 					if (rt==PT_TESC || rt==PT_LIGH)
 						playerp->elem = PT_LIGH;
@@ -445,7 +562,7 @@ void STKM_interact(Simulation *sim, playerst* playerp, int i, int x, int y)
 			parts[i].life -= (int)(rand()*20/RAND_MAX)+32;
 		}
 
-		if (ptypes[rt].hconduct && ((playerp->elem!=PT_LIGH && parts[ri].temp>=323) || parts[ri].temp<=243))
+		if (ptypes[rt].hconduct && ((playerp->elem!=PT_LIGH && parts[ri].temp>=323) || parts[ri].temp<=243) && (!playerp->rocketBoots || rt!=PT_PLSM))
 		{
 			parts[i].life -= 2;
 			playerp->accs[3] -= 1;
@@ -538,6 +655,7 @@ void STKM_ChangeType(ELEMENT_CHANGETYPE_FUNC_ARGS)
 	{
 		STKM_init_legs(&player, i);
 		player.spwn = 1;
+		player.rocketBoots = false;
 	}
 	else
 	{

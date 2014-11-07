@@ -44,6 +44,7 @@ public:
 		{
 			fighters[i].spwn = 1;
 			fighters[i].elem = PT_DUST;
+			fighters[i].rocketBoots = false;
 			usedCount++;
 			return i;
 		}

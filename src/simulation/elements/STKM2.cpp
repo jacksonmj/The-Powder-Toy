@@ -40,6 +40,7 @@ void STKM2_ChangeType(ELEMENT_CHANGETYPE_FUNC_ARGS)
 	{
 		STKM_init_legs(&player2, i);
 		player2.spwn = 1;
+		player2.rocketBoots = false;
 	}
 	else
 	{

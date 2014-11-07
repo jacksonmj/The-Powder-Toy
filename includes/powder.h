@@ -135,6 +135,7 @@ struct playerst
 	float accs[8];       //accelerations
 	char spwn;           //if stick man was spawned
 	unsigned int frames; //frames since last particle spawn - used when spawning LIGH
+	bool rocketBoots;
 };
 typedef struct playerst playerst;
 

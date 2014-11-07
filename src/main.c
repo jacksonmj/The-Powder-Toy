@@ -687,6 +687,7 @@ int main(int argc, char *argv[])
 	plasma_data = generate_gradient(plasma_data_colours, plasma_data_pos, plasma_data_points, 200);
 	
 	player.elem = player2.elem = PT_DUST;
+	player.rocketBoots = player2.rocketBoots = false
 	player.frames = player2.frames = 0;
 
 	sprintf(ppmfilename, "%s.ppm", argv[2]);
