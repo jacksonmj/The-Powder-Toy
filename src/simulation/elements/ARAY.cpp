@@ -53,20 +53,24 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 										int rt = parts[ri].type;
 										if (rt==PT_BRAY)
 										{
-											if (parts[ri].tmp==0)//if it hits another BRAY that isn't red
-											{
-												if (nyy!=0 || nxx!=0)
-												{
+											//cases for hitting different BRAY modes
+											switch(parts[ri].tmp) {
+											case 0://normal white
+												if (nyy!=0 || nxx!=0) {
 													parts[ri].life = 1020;//makes it last a while
 													parts[ri].tmp = 1;
 													if (!parts[ri].ctype)//and colors it if it isn't already
 														parts[ri].ctype = colored;
 												}
+												//fallthrough
+											case 2://red bray, stop
+											default://stop any other random tmp mode
 												docontinue = 0;//then stop it
-											}
-											else if (parts[ri].tmp==1)//if it hits one that already was a long life, reset it
-											{
+												break;
+											case 1://long life, reset it
 												parts[ri].life = 1020;
+												//docontinue = 1;
+												break;
 											}
 										} else if (rt==PT_FILT) {//get color if passed through FILT
 											colored = parts[ri].ctype;
