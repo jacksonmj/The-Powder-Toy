@@ -88,7 +88,7 @@ int SING_update(UPDATE_FUNC_ARGS) {
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if (parts[ri].type!=PT_DMND&&33>=rand()/(RAND_MAX/100)+1)
+					if (parts[ri].type!=PT_DMND && !(rand()%3))
 					{
 						if (parts[ri].type==PT_SING && parts[ri].life >10)
 						{
@@ -100,7 +100,7 @@ int SING_update(UPDATE_FUNC_ARGS) {
 						{
 							if (parts[i].life+3 > 255)
 							{
-								if (parts[ri].type!=PT_SING && 1>rand()%100)
+								if (parts[ri].type!=PT_SING && !(rand()%100))
 								{
 									int np;
 									np = sim->part_create(ri,x+rx,y+ry,PT_SING);

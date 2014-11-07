@@ -17,8 +17,9 @@
 
 int DEST_update(UPDATE_FUNC_ARGS)
 {
-	int rx,ry,topv;
+	int rx,ry;
 	int rcount, ri, rnext;
+	float topv = 40.0f;
 	rx=rand()%5-2;
 	ry=rand()%5-2;
 
@@ -32,22 +33,18 @@ int DEST_update(UPDATE_FUNC_ARGS)
 	if (parts[i].life<=0 || parts[i].life>37)
 	{
 		parts[i].life=30+rand()%20;
-		parts[i].temp+=20000;
 		pv[y/CELL][x/CELL]+=60.0f;
 	}
-	parts[i].temp+=10000;
 	FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 	{
 		int rt = parts[ri].type;
 		if (rt==PT_PLUT || rt==PT_DEUT)
 		{
 			pv[y/CELL][x/CELL]+=20.0f;
-			parts[i].temp+=18000;
-			if (rand()%2==0)
+			if (rand()%2)
 			{
-				float orig_temp = parts[ri].temp;
 				sim->part_create(ri, x+rx, y+ry, PT_NEUT);
-				parts[ri].temp = restrict_flt(orig_temp+40000.0f, MIN_TEMP, MAX_TEMP);
+				parts[ri].temp = MAX_TEMP;
 				pv[y/CELL][x/CELL] += 10.0f;
 				parts[i].life-=4;
 			}
@@ -56,24 +53,24 @@ int DEST_update(UPDATE_FUNC_ARGS)
 		{
 			sim->part_create(ri, x+rx, y+ry, PT_PLSM);
 		}
-		else if (rand()%3==0)
+		else if (!(rand()%3))
 		{
 			kill_part(ri);
 			parts[i].life -= 4*((ptypes[rt].properties&TYPE_SOLID)?3:1);
 			if (parts[i].life<=0)
 				parts[i].life=1;
-			parts[i].temp+=10000;
 		}
 		else
 		{
-			if (ptypes[rt].hconduct) parts[ri].temp = restrict_flt(parts[ri].temp+10000.0f, MIN_TEMP, MAX_TEMP);
+			if (ptypes[rt].hconduct)
+				parts[ri].temp = MAX_TEMP;
 		}
-		topv=pv[y/CELL][x/CELL]/9+parts[ri].temp/900;
+		topv += pv[y/CELL][x/CELL]/9+parts[ri].temp/900;
 	}
-	if (topv>40.0f)
-		topv=40.0f;
-	pv[y/CELL][x/CELL]+=40.0f+topv;
-	parts[i].temp = restrict_flt(parts[i].temp, MIN_TEMP, MAX_TEMP);
+	if (topv>80.0f)
+		topv = 80.0f;
+	pv[y/CELL][x/CELL]+=topv;
+	parts[i].temp = MAX_TEMP;
 	return 0;
 }
 

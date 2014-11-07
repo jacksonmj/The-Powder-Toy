@@ -47,7 +47,7 @@ int TSNS_update(UPDATE_FUNC_ARGS)
 			{
 				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if (parts[ri].temp >= parts[i].temp && parts[ri].type != PT_TSNS && parts[ri].type != PT_METL)
+					if (parts[ri].type != PT_TSNS && parts[ri].type != PT_METL && parts[ri].temp >= parts[i].temp)
 						parts[i].life = 1;
 				}
 			}

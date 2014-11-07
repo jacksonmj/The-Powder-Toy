@@ -28,11 +28,7 @@ int IGNT_update(UPDATE_FUNC_ARGS)
 					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						rt = parts[ri].type;
-						if (rt==PT_FIRE || rt==PT_PLSM)
-						{
-							parts[i].tmp = 1;
-						}
-						else if (rt==PT_SPRK || rt==PT_LIGH || (rt==PT_IGNT && parts[ri].life==1))
+						if (rt==PT_FIRE || rt==PT_PLSM || rt==PT_SPRK || rt==PT_LIGH || (rt==PT_IGNT && parts[ri].life==1))
 						{
 							parts[i].tmp = 1;
 						}
@@ -49,7 +45,7 @@ int IGNT_update(UPDATE_FUNC_ARGS)
 				parts[nb].life = 30;
 				parts[nb].vx = rand()%20-10;
 				parts[nb].vy = rand()%20-10;
-				parts[nb].temp = restrict_flt(400.0f+parts[i].temp-273.15, MIN_TEMP, MAX_TEMP);
+				parts[nb].temp = restrict_flt(parts[i].temp-273.15+400.0f, MIN_TEMP, MAX_TEMP);
 			}
 		}
 		else

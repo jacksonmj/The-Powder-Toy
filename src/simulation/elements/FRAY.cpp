@@ -17,7 +17,7 @@
 
 int FRAY_update(UPDATE_FUNC_ARGS)
 {
-	int nxx, nyy, docontinue, len, nxi, nyi, rx, ry, nr, ry1, rx1;
+	int nxx, nyy, len, nxi, nyi, rx, ry, nr, ry1, rx1;
 	int rcount, ri, rnext;
 	int ncount, ni, nnext;
 	for (rx=-1; rx<2; rx++)
@@ -28,7 +28,7 @@ int FRAY_update(UPDATE_FUNC_ARGS)
 				{
 					if (parts[ri].type==PT_SPRK)
 					{
-						for (docontinue = 1, nxx = 0, nyy = 0, nxi = rx*-1, nyi = ry*-1, len = 0; docontinue; nyy+=nyi, nxx+=nxi, len++) {
+						for (nxx = 0, nyy = 0, nxi = rx*-1, nyi = ry*-1, len = 0; ; nyy+=nyi, nxx+=nxi, len++) {
 							if (!(x+nxi+nxx<XRES && y+nyi+nyy<YRES && x+nxi+nxx >= 0 && y+nyi+nyy >= 0) || len>10) {
 								break;
 							}

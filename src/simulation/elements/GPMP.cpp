@@ -19,9 +19,12 @@ int GPMP_update(UPDATE_FUNC_ARGS)
 {
 	int rx, ry;
 	int rcount, ri, rnext;
-	if (parts[i].life>0 && parts[i].life!=10)
-		parts[i].life--;
-	if (parts[i].life==10)
+	if (parts[i].life!=10)
+	{
+		if (parts[i].life>0)
+			parts[i].life--;
+	}
+	else
 	{
 		if (parts[i].temp>=256.0+273.15)
 			parts[i].temp=256.0+273.15;
@@ -33,7 +36,7 @@ int GPMP_update(UPDATE_FUNC_ARGS)
 			for (ry=-2; ry<3; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)// TODO: not energy parts
+					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						if (parts[ri].type==PT_GPMP)
 						{

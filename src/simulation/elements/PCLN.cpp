@@ -28,14 +28,17 @@ int PCLN_update(UPDATE_FUNC_ARGS)
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
-					if (rt==PT_SPRK && parts[ri].life>0 && parts[ri].life<4)
+					if (rt==PT_SPRK)
 					{
-						if (parts[ri].ctype==PT_PSCN)
-							parts[i].life = 10;
-						else if (parts[ri].ctype==PT_NSCN)
-							parts[i].life = 9;
+						if (parts[ri].life>0 && parts[ri].life<4)
+						{
+							if (parts[ri].ctype==PT_PSCN)
+								parts[i].life = 10;
+							else if (parts[ri].ctype==PT_NSCN)
+								parts[i].life = 9;
+						}
 					}
-					if (rt==PT_PCLN)
+					else if (rt==PT_PCLN)
 					{
 						if (parts[i].life==10&&parts[ri].life<10&&parts[ri].life>0)
 							parts[i].life = 9;

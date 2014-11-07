@@ -19,8 +19,6 @@ int RIME_update(UPDATE_FUNC_ARGS)
 {
 	int rx, ry;
 	int rcount, ri, rnext;
-	parts[i].vx = 0;
-	parts[i].vy = 0;
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
@@ -54,7 +52,7 @@ void RIME_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Advection = 0.00f;
 	elem->AirDrag = 0.00f * CFDS;
 	elem->AirLoss = 0.00f;
-	elem->Loss = 1.00f;
+	elem->Loss = 0.00f;
 	elem->Collision = 0.00f;
 	elem->Gravity = 0.0f;
 	elem->Diffusion = 0.00f;

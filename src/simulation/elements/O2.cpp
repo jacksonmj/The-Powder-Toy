@@ -19,43 +19,53 @@ int O2_update(UPDATE_FUNC_ARGS)
 {
 	int rx,ry,rt;
 	int rcount, ri, rnext;
-	if (parts[i].temp < 9273.15)
-	{
-		for (rx=-2; rx<3; rx++)
-			for (ry=-2; ry<3; ry++)
-				if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+	for (rx=-2; rx<3; rx++)
+		for (ry=-2; ry<3; ry++)
+			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+			{
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
+					rt = parts[ri].type;
+					if (rt==PT_FIRE)
 					{
-						rt = parts[ri].type;
-						if (rt==PT_FIRE)
-						{
-							parts[ri].temp+=(rand()/(RAND_MAX/100));
-							if(parts[ri].tmp&0x01)
-							parts[ri].temp=3473;
-							parts[ri].tmp |= 2;
-						}
-						if (rt==PT_FIRE || rt==PT_PLSM)
-						{
-							sim->part_create(i,x,y,PT_FIRE);
-							parts[i].temp+=(rand()/(RAND_MAX/100));
-							parts[i].tmp |= 2;
-						}
+						parts[ri].temp+=(rand()%100);
+						if(parts[ri].tmp&0x01)
+						parts[ri].temp=3473;
+						parts[ri].tmp |= 2;
+
+						sim->part_create(i,x,y,PT_FIRE);
+						parts[i].temp+=(rand()%100);
+						parts[i].tmp |= 2;
+					}
+					else if (rt==PT_PLSM && !(parts[ri].tmp&4))
+					{
+						sim->part_create(i,x,y,PT_FIRE);
+						parts[i].temp += (rand()%100);
+						parts[i].tmp |= 2;
 					}
 				}
-	}
-	else if (parts[i].temp > 9973.15 && pv[y/CELL][x/CELL] > 250.0f && fabsf(gravx[((y/CELL)*(XRES/CELL))+(x/CELL)]) + fabsf(gravy[((y/CELL)*(XRES/CELL))+(x/CELL)]) > 20)
+			}
+	if (parts[i].temp > 9973.15 && pv[y/CELL][x/CELL] > 250.0f && fabsf(gravx[((y/CELL)*(XRES/CELL))+(x/CELL)]) + fabsf(gravy[((y/CELL)*(XRES/CELL))+(x/CELL)]) > 20)
 	{
-		if (rand()%5 < 1)
+		if (!(rand()%5))
 		{
 			int j;
 			sim->part_create(i,x,y,PT_BRMT);
 
-			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_NEUT); if (j != -1) parts[j].temp = 15000;
-			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_PHOT); if (j != -1) parts[j].temp = 15000;
-			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_PLSM); if (j != -1) parts[j].temp = 15000;
+			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_NEUT);
+			if (j >= 0)
+				parts[j].temp = MAX_TEMP;
+			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_PHOT);
+			if (j >= 0)
+				parts[j].temp = MAX_TEMP;
+			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_PLSM);
+			if (j >= 0)
+			{
+				parts[j].temp = MAX_TEMP;
+				parts[j].tmp |= 4;
+			}
 
-			parts[i].temp = 15000;
+			parts[i].temp = MAX_TEMP;
 			pv[y/CELL][x/CELL] += 300;
 		}
 	}

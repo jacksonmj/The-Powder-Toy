@@ -32,7 +32,7 @@ int THDR_update(UPDATE_FUNC_ARGS)
 						killPart = true;
 						sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
 					}
-					else if (rt!=PT_CLNE&&rt!=PT_THDR&&rt!=PT_SPRK&&rt!=PT_DMND&&rt!=PT_FIRE&&!(ptypes[rt].properties&TYPE_ENERGY))
+					else if (rt!=PT_CLNE&&rt!=PT_THDR&&rt!=PT_SPRK&&rt!=PT_DMND&&rt!=PT_FIRE)
 					{
 						pv[y/CELL][x/CELL] += 100.0f;
 						if (legacy_enable&&1>(rand()%200))

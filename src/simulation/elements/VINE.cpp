@@ -20,7 +20,7 @@ int VINE_update(UPDATE_FUNC_ARGS)
 	int r, np, rx =(rand()%3)-1, ry=(rand()%3)-1;
 	if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 	{
-		if (1>rand()%15)
+		if (!(rand()%15))
 			part_change_type(i,x,y,PT_PLNT);
 		else
 		{

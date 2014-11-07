@@ -27,15 +27,12 @@ int ANAR_update(UPDATE_FUNC_ARGS)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if (parts[ri].type==PT_HFLM)
+					if (parts[ri].type==PT_HFLM && !(rand()%22))
 					{
-						if (1>rand()%22)
-						{
-							part_change_type(i,x,y,PT_HFLM);
-							parts[i].life = rand()%150+50;
-							parts[ri].temp = parts[i].temp = 0;
-							pv[y/CELL][x/CELL] -= 0.5;
-						}
+						part_change_type(i,x,y,PT_HFLM);
+						parts[i].life = rand()%150+50;
+						parts[ri].temp = parts[i].temp = 0;
+						pv[y/CELL][x/CELL] -= 0.5;
 					}
 				}
 			}

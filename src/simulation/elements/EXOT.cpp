@@ -17,9 +17,8 @@
 
 int EXOT_update(UPDATE_FUNC_ARGS)
 {
-	int rt, rx, ry, nb, rrx, rry, trade, tym, t;
+	int rt, rx, ry, nb, rrx, rry, trade, tym;
 	int rcount, ri, rnext;
-	t = parts[i].type;
 	for (rx=-2; rx<=2; rx++)
 		for (ry=-2; ry<=2; ry++)
 			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES) {
@@ -28,33 +27,30 @@ int EXOT_update(UPDATE_FUNC_ARGS)
 					rt = parts[ri].type;
 					if (rt==PT_WARP)
 					{
-						if (parts[ri].tmp2>2000)
-							if (1>rand()%100)
-							{
-								parts[i].tmp2 += 100;
-							}
+						if (parts[ri].tmp2>2000 && !(rand()%100))
+						{
+							parts[i].tmp2 += 100;
+						}
 					}
-					else if (rt == PT_EXOT && parts[ri].life == 1500 && 1>rand()%1000)
-						parts[i].life = 1500;
+					else if (rt == PT_EXOT)
+					{
+						if (parts[ri].life == 1500 && !(rand()%1000))
+							parts[i].life = 1500;
+					}
 					else if (rt == PT_LAVA)
 					{
-						if (parts[ri].ctype == PT_TTAN && 1>rand()%10)
+						if (parts[ri].ctype == PT_TTAN && !(rand()%10))
 						{
 							parts[ri].ctype = PT_VIBR;
 							kill_part(i);
 							return 1;
 						}
-						/*else if (parts[r>>8].ctype == PT_VIBR && 1>rand()%1000)
-						{
-							kill_part(i);
-							return 1;
-						}*/
 					}
 					if ((parts[i].tmp>245) && (parts[i].life>1000))
 					{
-						if (rt!=PT_EXOT && rt!=PT_BREL && rt!=PT_DMND && rt!=PT_CLNE && rt!=PT_PRTI && rt!=PT_PRTO && rt!=PT_PCLN && rt!=PT_PHOT && rt!=PT_VOID && rt!=PT_NBHL && rt!=PT_WARP && rt!=PT_NEUT)
+						if (rt!=PT_EXOT && rt!=PT_BREL && rt!=PT_DMND && rt!=PT_CLNE && rt!=PT_PRTI && rt!=PT_PRTO && rt!=PT_PCLN && rt!=PT_VOID && rt!=PT_NBHL && rt!=PT_WARP)
 						{
-							sim->part_create(i, x, y, parts[ri].type);
+							sim->part_create(i, x, y, rt);
 							return 0;
 						}
 					}
@@ -93,7 +89,7 @@ int EXOT_update(UPDATE_FUNC_ARGS)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if (parts[ri].type==t && (parts[i].tmp2>parts[ri].tmp2) && parts[ri].tmp2>=0 )//diffusion
+					if (parts[ri].type==PT_EXOT && (parts[i].tmp2>parts[ri].tmp2) && parts[ri].tmp2>=0 )//diffusion
 					{
 						tym = parts[i].tmp2 - parts[ri].tmp2;
 						if (tym ==1)

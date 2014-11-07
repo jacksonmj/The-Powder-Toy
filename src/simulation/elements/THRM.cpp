@@ -28,7 +28,7 @@ int THRM_update(UPDATE_FUNC_ARGS)
 					rt = parts[ri].type;
 					if ((rt==PT_FIRE || rt==PT_PLSM || rt==PT_LAVA)) // TODO: could this go in update_PYRO?
 					{
-						if (1>(rand()%500)) {
+						if (!(rand()%500)) {
 							part_change_type(i,x,y,PT_LAVA);
 							parts[i].ctype = PT_BMTL;
 							parts[i].temp = 3500.0f;

@@ -28,42 +28,56 @@ int PLNT_update(UPDATE_FUNC_ARGS)
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
-					if (rt==PT_WATR && 1>(rand()%250))
+					switch (parts[ri].type)
 					{
-						np = sim->part_create(ri,x+rx,y+ry,PT_PLNT);
-					}
-					else if (rt==PT_LAVA && 1>(rand()%250))
-					{
-						part_change_type(i,x,y,PT_FIRE);
-						parts[i].life = 4;
-					}
-					else if ((rt==PT_SMKE || rt==PT_CO2) && parts[i].life<=0 && (1>rand()%250))
-					{
-						kill_part(ri);
-						parts[i].life = rand()%60 + 80;
-					}
-					else if (surround_space && rt==PT_WOOD && (1>rand()%20) && (abs(rx+ry)<=2) && (VINE_MODE || parts[i].tmp==1) )				
-					{
-						int nnx = rand()%3 -1;
-						int nny = rand()%3 -1;
-						if (x+rx+nnx>=0 && y+ry+nny>0 && x+rx+nnx<XRES && y+ry+nny<YRES && (nnx || nny))
+					case PT_WATR:
+						if (!(rand()%250))
 						{
-							np = sim->part_create(-1,x+rx+nnx,y+ry+nny,PT_VINE);
-							if (np>=0)
+							np = sim->part_create(ri,x+rx,y+ry,PT_PLNT);
+						}
+						break;
+					case PT_LAVA:
+						if (!(rand()%250))
+						{
+							part_change_type(i,x,y,PT_FIRE);
+							parts[i].life = 4;
+						}
+						break;
+					case PT_SMKE:
+					case PT_CO2:
+						if (parts[i].life<=0 && !(rand()%250))
+						{
+							kill_part(ri);
+							parts[i].life = rand()%60 + 80;
+						}
+						break;
+					case PT_WOOD:
+						if (surround_space && !(rand()%20) && (abs(rx+ry)<=2) && (VINE_MODE || parts[i].tmp==1))				
+						{
+							int nnx = rand()%3 -1;
+							int nny = rand()%3 -1;
+							if (x+rx+nnx>=0 && y+ry+nny>0 && x+rx+nnx<XRES && y+ry+nny<YRES && (nnx || nny))
 							{
-								parts[np].temp = parts[i].temp;
+								np = sim->part_create(-1,x+rx+nnx,y+ry+nny,PT_VINE);
+								if (np>=0)
+								{
+									parts[np].temp = parts[i].temp;
+								}
 							}
 						}
+						break;
+					default:
+						break;
 					}
 				}
 			}
-	if (parts[i].life<20)
+	if (parts[i].life && parts[i].life<20)
 	{
 		for (rx=-1; rx<2; rx++)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					if (parts[i].life && sim->part_create(-1,x+rx,y+ry,PT_O2)>=0)
+					if (sim->part_create(-1,x+rx,y+ry,PT_O2)>=0)
 						parts[i].life = 0;
 				}
 	}

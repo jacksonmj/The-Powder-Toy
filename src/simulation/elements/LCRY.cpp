@@ -19,60 +19,55 @@ int LCRY_update(UPDATE_FUNC_ARGS)
 {
 	int rx, ry;
 	int rcount, ri, rnext;
-	if(parts[i].tmp==1 || parts[i].tmp==0)
+	int check, setto;
+	switch (parts[i].tmp)
 	{
-		if(parts[i].tmp==1)
+	case 1:
+		if(parts[i].life<=0)
+			parts[i].tmp = 0;
+		else
 		{
-			if(parts[i].life<=0)
-				parts[i].tmp = 0;
-			else
-			{
-				parts[i].life-=2;
-				if(parts[i].life < 0)
-					parts[i].life = 0;
-				parts[i].tmp2 = parts[i].life;
-			}	
+			parts[i].life-=2;
+			if(parts[i].life < 0)
+				parts[i].life = 0;
+			parts[i].tmp2 = parts[i].life;
 		}
-		for (rx=-1; rx<2; rx++)
-			for (ry=-1; ry<2; ry++)
-				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+		// fallthrough
+	case 0:
+		check = 3;
+		setto = 1;
+		break;
+	case 2:
+		if(parts[i].life>=10)
+			parts[i].tmp = 3;
+		else
+		{
+			parts[i].life+=2;
+			if(parts[i].life > 10)
+				parts[i].life = 10;
+			parts[i].tmp2 = parts[i].life;
+		}
+		// fallthrough
+	case 3:
+		check = 0;
+		setto = 2;
+		break;
+	default:
+		return 0;
+	}
+	
+	for (rx=-1; rx<2; rx++)
+		for (ry=-1; ry<2; ry++)
+			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+			{
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
+					if (parts[ri].type==PT_LCRY && parts[ri].tmp == check)
 					{
-						if (parts[ri].type==PT_LCRY && parts[ri].tmp == 3)
-						{
-							parts[ri].tmp = 1;
-						}
+						parts[ri].tmp = setto;
 					}
 				}
-	}
-	else if(parts[i].tmp==2 || parts[i].tmp==3)
-	{
-		if(parts[i].tmp==2)
-		{
-			if(parts[i].life>=10)
-				parts[i].tmp = 3;
-			else
-			{
-				parts[i].life+=2;
-				if(parts[i].life > 10)
-					parts[i].life = 10;
-				parts[i].tmp2 = parts[i].life;
 			}
-		}
-		for (rx=-1; rx<2; rx++)
-			for (ry=-1; ry<2; ry++)
-				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
-				{
-					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
-					{
-						if (parts[ri].type==PT_LCRY && parts[ri].tmp == 0)
-						{
-							parts[ri].tmp = 2;
-						}
-					}
-				}
-	}
 	return 0;
 }
 

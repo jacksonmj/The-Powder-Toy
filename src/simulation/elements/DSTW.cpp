@@ -17,7 +17,7 @@
 
 int DSTW_update(UPDATE_FUNC_ARGS)
 {
-	int rx, ry, rt;
+	int rx, ry;
 	int rcount, ri, rnext;
 	for (rx=-2; rx<3; rx++)
 		for (ry=-2; ry<3; ry++)
@@ -25,33 +25,45 @@ int DSTW_update(UPDATE_FUNC_ARGS)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					rt = parts[ri].type; 
-					if (rt==PT_SALT && 1>(rand()%250))
+					switch (parts[ri].type)
 					{
-						part_change_type(i,x,y,PT_SLTW);
-						// on average, convert 3 DSTW to SLTW before SALT turns into SLTW
-						if (rand()%3==0)
-							part_change_type(ri,x+rx,y+ry,PT_SLTW);
-					}
-					if ((rt==PT_WATR||rt==PT_SLTW) && 1>(rand()%500))
-					{
-						part_change_type(i,x,y,PT_WATR);
-					}
-					if (rt==PT_SLTW && 1>(rand()%10000))
-					{
-						part_change_type(i,x,y,PT_SLTW);
-					}
-					if ((rt==PT_RBDM||rt==PT_LRBD) && (legacy_enable||parts[i].temp>12.0f) && 1>(rand()%500))
-					{
-						part_change_type(i,x,y,PT_FIRE);
-						parts[i].life = 4;
-					}
-					if (rt==PT_FIRE){
+					case PT_SALT:
+						if (!(rand()%250))
+						{
+							part_change_type(i,x,y,PT_SLTW);
+							// on average, convert 3 DSTW to SLTW before SALT turns into SLTW
+							if (!(rand()%3))
+								part_change_type(ri,x+rx,y+ry,PT_SLTW);
+						}
+						break;
+					case PT_SLTW:
+						if (!(rand()%10000))
+						{
+							part_change_type(i,x,y,PT_SLTW);
+							break;
+						}
+					// fallthrough, following reaction applies to WATR and SLTW
+					case PT_WATR:
+						if (!(rand()%500))
+						{
+							part_change_type(i,x,y,PT_WATR);
+						}
+						break;
+					case PT_RBDM:
+					case PT_LRBD:
+						if ((legacy_enable||parts[i].temp>12.0f) && 1>(rand()%500))
+						{
+							part_change_type(i,x,y,PT_FIRE);
+							parts[i].life = 4;
+						}
+					case PT_FIRE:
 						kill_part(ri);
-						if(1>(rand()%150)){
+						if(!(rand()%150)){
 							kill_part(i);
 							return 1;
 						}
+					default:
+						break;
 					}
 				}
 			}

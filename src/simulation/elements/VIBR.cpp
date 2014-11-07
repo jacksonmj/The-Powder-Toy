@@ -20,15 +20,7 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 	int rx, ry, rt;
 	int rcount, ri, rnext;
 	int trade, transfer;
-	if (parts[i].ctype == 1) //leaving in, just because
-	{
-		if (pv[y/CELL][x/CELL] > -2.5 || parts[i].tmp)
-		{
-			parts[i].ctype = 0;
-			part_change_type(i, x, y, PT_VIBR);
-		}
-	}
-	else if (!parts[i].life) //if not exploding
+	if (!parts[i].life) //if not exploding
 	{
 		//Heat absorption code
 		if (parts[i].temp > 274.65f)
@@ -122,24 +114,31 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 				{
 					rt = parts[ri].type;
 					//Melts into EXOT
-					if (rt == PT_EXOT && !(rand()%250) && !parts[i].life)
+					if (rt == PT_EXOT)
 					{
-						sim->part_create(i, x, y, PT_EXOT);
+						if (!parts[i].life && !(rand()%250))
+							sim->part_create(i, x, y, PT_EXOT);
 					}
 					else if (rt == PT_ANAR)
 					{
 						part_change_type(i,x,y,PT_BVBR);
 						pv[y/CELL][x/CELL] -= 1;
 					}
-					else if (parts[i].life && (rt==PT_VIBR  || rt==PT_BVBR) && !parts[ri].life)
+					else if (rt==PT_VIBR  || rt==PT_BVBR)
 					{
-						parts[ri].tmp += 10;
+						if (parts[i].life && !parts[ri].life)
+						{
+							parts[ri].tmp += 10;
+						}
 					}
 					//Absorbs energy particles
-					if ((sim->elements[rt].Properties & TYPE_ENERGY) && !parts[i].life)
+					else if ((sim->elements[rt].Properties & TYPE_ENERGY))
 					{
-						parts[i].tmp += 20;
-						kill_part(ri);
+						if (!parts[i].life)
+						{
+							parts[i].tmp += 20;
+							kill_part(ri);
+						}
 					}
 				}
 			}

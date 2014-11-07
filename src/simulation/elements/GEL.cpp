@@ -20,7 +20,6 @@ int GEL_update(UPDATE_FUNC_ARGS)
 	int rx, ry, rt;
 	int rcount, ri, rnext;
 	float dx, dy;
-	char gel;
 	int absorbChanceDenom;
 	if (parts[i].tmp>100) parts[i].tmp = 100;
 	if (parts[i].tmp<0) parts[i].tmp = 0;
@@ -33,58 +32,70 @@ int GEL_update(UPDATE_FUNC_ARGS)
 				{
 					rt = parts[ri].type;
 					//Desaturation
-					if ((rt==PT_WATR || rt==PT_DSTW || rt==PT_FRZW) && parts[i].tmp<100 && 500>rand()%absorbChanceDenom)
+					switch (rt)
 					{
-						parts[i].tmp++;
-						kill_part(ri);
-					}
-					if ((rt==PT_PSTE) && parts[i].tmp<100 && 20>rand()%absorbChanceDenom)
-					{
-						parts[i].tmp++;
-						sim->part_create(ri, x+rx, y+ry, PT_CLST);
-					}
-					if ((rt==PT_SLTW) && parts[i].tmp<100 && 50>rand()%absorbChanceDenom)
-					{
-						parts[i].tmp++;
-						if (rand()%4)
+					case PT_WATR:
+					case PT_DSTW:
+					case PT_FRZW:
+						if (parts[i].tmp<100 && 500>rand()%absorbChanceDenom)
+						{
+							parts[i].tmp++;
 							kill_part(ri);
-						else
-							part_change_type(ri, x+rx, y+ry, PT_SALT);
-					}
-					if ((rt==PT_CBNW) && parts[i].tmp<100 && 100>rand()%absorbChanceDenom)
-					{
-						parts[i].tmp++;
-						part_change_type(ri, x+rx, y+ry, PT_CO2);
-					}
-
-					if (rt==PT_SPNG && parts[i].tmp<100 && ((parts[ri].life+1)>parts[i].tmp))
-					{
-						parts[ri].life--;
-						parts[i].tmp++;
-					}
-
-					gel = 0;
-					if (rt==PT_GEL)
-						gel = 1;
-
-					//Concentration diffusion
-					if (gel && (parts[ri].tmp+1)<parts[i].tmp)
-					{
-						parts[ri].tmp++;
-						parts[i].tmp--;
-					}
-
-					if (rt==PT_SPNG && (parts[ri].life+1)<parts[i].tmp)
-					{
-						parts[ri].life++;
-						parts[i].tmp--;
+						}
+						break;
+					case PT_PSTE:
+						if (parts[i].tmp<100 && 20>rand()%absorbChanceDenom)
+						{
+							parts[i].tmp++;
+							sim->part_create(ri, x+rx, y+ry, PT_CLST);
+						}
+						break;
+					case PT_SLTW:
+						if (parts[i].tmp<100 && 50>rand()%absorbChanceDenom)
+						{
+							parts[i].tmp++;
+							if (rand()%4)
+								kill_part(ri);
+							else
+								part_change_type(ri, x+rx, y+ry, PT_SALT);
+						}
+						break;
+					case PT_CBNW:
+						if (parts[i].tmp<100 && 100>rand()%absorbChanceDenom)
+						{
+							parts[i].tmp++;
+							part_change_type(ri, x+rx, y+ry, PT_CO2);
+						}
+						break;
+					case PT_SPNG:
+						if (parts[i].tmp<100 && ((parts[ri].life+1)>parts[i].tmp))
+						{
+							parts[ri].life--;
+							parts[i].tmp++;
+						}
+						else if ((parts[ri].life+1)<parts[i].tmp)
+						{
+							parts[ri].life++;
+							parts[i].tmp--;
+						}
+						break;
+					case PT_GEL:
+						//Concentration diffusion
+						if ((parts[ri].tmp+1)<parts[i].tmp)
+						{
+							parts[ri].tmp++;
+							parts[i].tmp--;
+						}
+						break;
+					default:
+						break;
 					}
 
 					dx = parts[i].x - parts[ri].x;
 					dy = parts[i].y - parts[ri].y;
 
 					//Stickness
-					if ((dx*dx + dy*dy)>1.5 && (gel || !ptypes[rt].falldown || (fabs(rx)<2 && fabs(ry)<2)))
+					if ((dx*dx + dy*dy)>1.5 && (rt==PT_GEL || !ptypes[rt].falldown || (fabs(rx)<2 && fabs(ry)<2)))
 					{
 						float per, nd;
 						nd = dx*dx + dy*dy - 0.5;
@@ -97,7 +108,7 @@ int GEL_update(UPDATE_FUNC_ARGS)
 						parts[i].vx += dx; 
 						parts[i].vy += dy; 
 
-						if (ptypes[rt].properties&TYPE_PART || rt==PT_GOO)
+						if ((ptypes[rt].properties&TYPE_PART) || rt==PT_GOO)
 						{
 							parts[ri].vx -= dx;
 							parts[ri].vy -= dy;

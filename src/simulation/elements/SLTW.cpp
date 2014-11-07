@@ -25,22 +25,36 @@ int SLTW_update(UPDATE_FUNC_ARGS) {
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
-					if (rt==PT_SALT && 1>(rand()%10000))
-						part_change_type(ri,x+rx,y+ry,PT_SLTW);
-					if (rt==PT_PLNT&&5>(rand()%1000))
-						kill_part(ri);
-					if ((rt==PT_RBDM||rt==PT_LRBD) && (!sim->heat_mode || parts[i].temp>(273.15f+12.0f)) && 1>(rand()%500))
+					switch (parts[ri].type)
 					{
-						part_change_type(i,x,y,PT_FIRE);
-						parts[i].life = 4;
-						parts[i].ctype = PT_WATR;
-					}
-					if (rt==PT_FIRE && parts[ri].ctype!=PT_WATR){
-						kill_part(ri);
-						if(1>(rand()%150)){
-							kill_part(i);
-							return 1;
+					case PT_SALT:
+						if (!(rand()%10000))
+							part_change_type(ri,x+rx,y+ry,PT_SLTW);
+						break;
+					case PT_PLNT:
+						if (!(rand()%200))
+							kill_part(ri);
+						break;
+					case PT_RBDM:
+					case PT_LRBD:
+						if ((!sim->heat_mode || parts[i].temp>(273.15f+12.0f)) && !(rand()%500))
+						{
+							part_change_type(i,x,y,PT_FIRE);
+							parts[i].life = 4;
+							parts[i].ctype = PT_WATR;
 						}
+						break;
+					case PT_FIRE:
+						if (parts[ri].ctype!=PT_WATR){
+							kill_part(ri);
+							if(!(rand()%150)){
+								kill_part(i);
+								return 1;
+							}
+						}
+						break;
+					default:
+						break;
 					}
 				}
 			}

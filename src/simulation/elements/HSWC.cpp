@@ -19,9 +19,12 @@ int HSWC_update(UPDATE_FUNC_ARGS)
 {
 	int rx, ry;
 	int rcount, ri, rnext;
-	if (parts[i].life>0 && parts[i].life!=10)
-		parts[i].life--;
-	if (parts[i].life==10)
+	if (parts[i].life!=10)
+	{
+		if (parts[i].life>0)
+			parts[i].life--;
+	}
+	else
 	{
 		for (rx=-2; rx<3; rx++)
 			for (ry=-2; ry<3; ry++)

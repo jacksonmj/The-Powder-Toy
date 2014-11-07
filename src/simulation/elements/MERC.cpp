@@ -32,7 +32,7 @@ int MERC_update(UPDATE_FUNC_ARGS)
 					{
 						if (parts[i].tmp >=maxtmp)
 							break;
-						if (parts[ri].type==PT_MERC&&33>=rand()/(RAND_MAX/100)+1)
+						if (parts[ri].type==PT_MERC && !(rand()%3))
 						{
 							if ((parts[i].tmp + parts[ri].tmp + 1) <= maxtmp)
 							{

@@ -23,8 +23,6 @@ int DLAY_update(UPDATE_FUNC_ARGS)
 	if (parts[i].life>0)
 		parts[i].life--;
 
-	if (parts[i].temp>=MAX_TEMP+273.15f)
-		parts[i].temp = MAX_TEMP+273.15f;
 	if (parts[i].temp<= 1.0f+273.15f)
 		parts[i].temp = 1.0f+273.15f;
 
@@ -42,13 +40,16 @@ int DLAY_update(UPDATE_FUNC_ARGS)
 					}
 					else if (parts[ri].type==PT_DLAY)
 					{
-						if(!parts[i].life && parts[ri].life)
+						if(!parts[i].life)
 						{
-							parts[i].life = parts[ri].life;
-							if(ri>i) //If the other particle hasn't been life updated
-								parts[i].life--;
+							if (parts[ri].life)
+							{
+								parts[i].life = parts[ri].life;
+								if(ri>i) //If the other particle hasn't been life updated
+									parts[i].life--;
+							}
 						}
-						else if(parts[i].life && !parts[ri].life)
+						else if (!parts[ri].life)
 						{
 							parts[ri].life = parts[i].life;
 							if((ri)>i) //If the other particle hasn't been life updated

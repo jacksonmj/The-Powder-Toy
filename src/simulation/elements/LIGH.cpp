@@ -55,7 +55,7 @@ int contact_part(Simulation* sim, int i, int tp)
 }
 
 // Create LIGH particle, or return true if it was eaten by void / black hole
-bool create_LIGH_line_part(Simulation * sim, int x, int y, int temp, int life, int tmp, int tmp2)
+bool create_LIGH_line_part(Simulation * sim, int x, int y, int temp, int life, int tmp, int tmp2, bool last)
 {
 	int p = sim->part_create(-1, x, y, PT_LIGH);
 	if (p != -1)
@@ -63,7 +63,16 @@ bool create_LIGH_line_part(Simulation * sim, int x, int y, int temp, int life, i
 		sim->parts[p].life = life;
 		sim->parts[p].temp = temp;
 		sim->parts[p].tmp = tmp;
-		sim->parts[p].tmp2 = tmp2;
+		if (last)
+		{
+			sim->parts[p].tmp2=1+(rand()%200>tmp2*tmp2/10+60);
+			sim->parts[p].life=(int)(life/1.5-rand()%2);
+		}
+		else
+		{
+			sim->parts[p].life = life;
+			sim->parts[p].tmp2 = 0;
+		}
 	}
 	else if (x >= 0 && x < XRES && y >= 0 && y < YRES)
 	{
@@ -79,6 +88,7 @@ bool create_LIGH_line_part(Simulation * sim, int x, int y, int temp, int life, i
 				return true;
 		}
 	}
+	else return true;
 	return false;
 }
 
@@ -113,9 +123,9 @@ void create_LIGH_line(Simulation *sim, int x1, int y1, int x2, int y2, int temp,
 		{
 			bool wasEaten;
 			if (reverseXY)
-				wasEaten = create_LIGH_line_part(sim, y, x, temp, life, tmp, tmp2);
+				wasEaten = create_LIGH_line_part(sim, y, x, temp, life, tmp, tmp2, x==x2);
 			else
-				wasEaten = create_LIGH_line_part(sim, x, y, temp, life, tmp, tmp2);
+				wasEaten = create_LIGH_line_part(sim, x, y, temp, life, tmp, tmp2, x==x2);
 			if (wasEaten)
 				return;
 
@@ -133,9 +143,9 @@ void create_LIGH_line(Simulation *sim, int x1, int y1, int x2, int y2, int temp,
 		{
 			bool wasEaten;
 			if (reverseXY)
-				wasEaten = create_LIGH_line_part(sim, y, x, temp, life, tmp, tmp2);
+				wasEaten = create_LIGH_line_part(sim, y, x, temp, life, tmp, tmp2, x==x2);
 			else
-				wasEaten = create_LIGH_line_part(sim, x, y, temp, life, tmp, tmp2);
+				wasEaten = create_LIGH_line_part(sim, x, y, temp, life, tmp, tmp2, x==x2);
 			if (wasEaten)
 				return;
 
@@ -168,7 +178,7 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 	*/
 	int rx, ry, rt, multipler, powderful;
 	int rcount, ri, rnext;
-	float angle, angle2=-1;
+	int angle, angle2=-1;
 	int near;
 	powderful = parts[i].temp*(1+parts[i].life/40)*LIGHTING_POWER;
 	update_PYRO(UPDATE_FUNC_SUBCALL_ARGS);
@@ -186,42 +196,43 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
-
-					if (rt!=PT_LIGH && rt!=PT_TESC)
+					if (rt==PT_LIGH || rt==PT_TESC)
+						continue;
+					if (rt==PT_CLNE || rt==PT_THDR || rt==PT_DMND || rt==PT_FIRE)
 					{
-						if (rt!=PT_CLNE&&rt!=PT_THDR&&rt!=PT_DMND&&rt!=PT_FIRE&&rt!=PT_NEUT&&rt!=PT_PHOT)
+						parts[ri].temp = restrict_flt(parts[ri].temp+powderful/10, MIN_TEMP, MAX_TEMP);
+					}
+					else
+					{
+						if ((ptypes[rt].properties&PROP_CONDUCTS) && parts[ri].life==0)
 						{
-							if ((ptypes[rt].properties&PROP_CONDUCTS) && parts[ri].life==0)
-							{
-								sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
-							}
-							pv[y/CELL][x/CELL] += powderful/400;
-							if (ptypes[rt].hconduct) parts[ri].temp = restrict_flt(parts[ri].temp+powderful/1.5, MIN_TEMP, MAX_TEMP);
+							sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
 						}
-						if (rt==PT_DEUT || rt==PT_PLUT) // start nuclear reactions
-						{
-							parts[ri].temp = restrict_flt(parts[ri].temp+powderful, MIN_TEMP, MAX_TEMP);
-							pv[y/CELL][x/CELL] +=powderful/35;
-							if (rand()%3==0)
-							{
-								part_change_type(ri,x+rx,y+ry,PT_NEUT);
-								parts[ri].life = rand()%480+480;
-								parts[ri].vx=rand()%10-5;
-								parts[ri].vy=rand()%10-5;
-							}
-						}
-						if (rt==PT_COAL || rt==PT_BCOL) // ignite coal
-						{
-							if (parts[ri].life>=100) {
-								parts[ri].life = 99;
-							}
-						}
+						pv[y/CELL][x/CELL] += powderful/400;
 						if (ptypes[rt].hconduct)
-							parts[ri].temp = restrict_flt(parts[ri].temp+powderful/10, MIN_TEMP, MAX_TEMP);
-						if ((rt==PT_STKM && player.elem!=PT_LIGH) || (rt==PT_STKM2 && player2.elem!=PT_LIGH))
+							parts[ri].temp = restrict_flt(parts[ri].temp+powderful/1.3, MIN_TEMP, MAX_TEMP);
+					}
+					if (rt==PT_DEUT || rt==PT_PLUT) // start nuclear reactions
+					{
+						parts[ri].temp = restrict_flt(parts[ri].temp+powderful, MIN_TEMP, MAX_TEMP);
+						pv[y/CELL][x/CELL] +=powderful/35;
+						if (!(rand()%3))
 						{
-							parts[ri].life-=powderful/100;
+							part_change_type(ri,x+rx,y+ry,PT_NEUT);
+							parts[ri].life = rand()%480+480;
+							parts[ri].vx=rand()%10-5;
+							parts[ri].vy=rand()%10-5;
 						}
+					}
+					if (rt==PT_COAL || rt==PT_BCOL) // ignite coal
+					{
+						if (parts[ri].life>=100) {
+							parts[ri].life = 99;
+						}
+					}
+					if ((rt==PT_STKM && player.elem!=PT_LIGH) || (rt==PT_STKM2 && player2.elem!=PT_LIGH))
+					{
+						parts[ri].life-=powderful/100;
 					}
 				}
 			}
@@ -230,22 +241,16 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 		parts[i].tmp2=0;
 		return 1;
 	}
-
-	if (parts[i].tmp2==-1)
+	else if (parts[i].tmp2<=-1)
 	{
 		kill_part(i);
 		return 1;
 	}
-	if (parts[i].tmp2<=0 || parts[i].life<=1)
+	else if (parts[i].tmp2<=0 || parts[i].life<=1)
 	{
 		if (parts[i].tmp2>0)
 			parts[i].tmp2=0;
 		parts[i].tmp2--;
-		return 1;
-	}
-	if (parts[i].tmp2<=-2)
-	{
-		kill_part(i);
 		return 1;
 	}
 
@@ -289,57 +294,23 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 
 	//if (parts[i].tmp2==1/* || near!=-1*/)
 	//angle=0;//parts[i].tmp-30+rand()%60;
-	angle = parts[i].tmp-30+rand()%60;
-	if (angle<0)
-		angle+=360;
-	if (angle>=360)
-		angle-=360;
+	angle = (parts[i].tmp+330+rand()%60)%360;
 	if (parts[i].tmp2==2 && near==-1)
 	{
-		angle2=angle+100-rand()%200;
-		if (angle2<0)
-			angle2+=360;
-		if (angle2>=360)
-			angle-=360;
+		angle2=(angle+460-rand()%200)%360;
 	}
 
 	multipler=parts[i].life*1.5+rand()%((int)(parts[i].life+1));
 	rx=cos(angle*M_PI/180)*multipler;
 	ry=-sin(angle*M_PI/180)*multipler;
-	create_LIGH_line(sim, x, y, x+rx, y+ry, parts[i].temp, parts[i].life, angle, 0);
-
-	if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
-	{
-		// TODO: should create_LIGH_line return the index of the last particle or something?
-		ri = sim->pmap_find_one(x+rx, y+ry, PT_LIGH);
-		if (ri>=0)
-		{
-			parts[ri].tmp2=1+(rand()%200>parts[i].tmp2*parts[i].tmp2/10+60);
-			parts[ri].life=(int)(1.0*parts[i].life/1.5-rand()%2);
-			parts[ri].tmp=angle;
-			parts[ri].temp=parts[i].temp;
-		}
-	}
+	create_LIGH_line(sim, x, y, x+rx, y+ry, parts[i].temp, parts[i].life, angle, parts[i].tmp2);
 
 	if (angle2!=-1)
 	{
 		multipler=parts[i].life*1.5+rand()%((int)(parts[i].life+1));
 		rx=cos(angle2*M_PI/180)*multipler;
 		ry=-sin(angle2*M_PI/180)*multipler;
-		create_LIGH_line(sim, x, y, x+rx, y+ry, parts[i].temp, parts[i].life, angle2, 0);
-
-		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
-		{
-			// TODO: should create_line_par return the index of the last particle or something?
-			ri = sim->pmap_find_one(x+rx, y+ry, PT_LIGH);
-			if (ri>=0)
-			{
-				parts[ri].tmp2=1+(rand()%200>parts[i].tmp2*parts[i].tmp2/10+40);
-				parts[ri].life=(int)(1.0*parts[i].life/1.5-rand()%2);
-				parts[ri].tmp=angle;
-				parts[ri].temp=parts[i].temp;
-			}
-		}
+		create_LIGH_line(sim, x, y, x+rx, y+ry, parts[i].temp, parts[i].life, angle2, parts[i].tmp2);
 	}
 
 	parts[i].tmp2=-1;

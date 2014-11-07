@@ -26,29 +26,42 @@ int WATR_update(UPDATE_FUNC_ARGS)
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
-					if (rt==PT_SALT && 1>(rand()%250))
+					if (rt==PT_SALT)
 					{
-						part_change_type(i,x,y,PT_SLTW);
-						// on average, convert 3 WATR to SLTW before SALT turns into SLTW
-						if (rand()%3==0)
-							part_change_type(ri,x+rx,y+ry,PT_SLTW);
-					}
-					if ((rt==PT_RBDM||rt==PT_LRBD) && (legacy_enable||parts[i].temp>(273.15f+12.0f)) && 1>(rand()%500))
-					{
-						part_change_type(i,x,y,PT_FIRE);
-						parts[i].life = 4;
-						parts[i].ctype = PT_WATR;
-					}
-					if (rt==PT_FIRE && parts[ri].ctype!=PT_WATR){
-						kill_part(ri);
-						if(1>(rand()%150)){
-							kill_part(i);
-							return 1;
+						if (!(rand()%250))
+						{
+							part_change_type(i,x,y,PT_SLTW);
+							// on average, convert 3 WATR to SLTW before SALT turns into SLTW
+							if (!(rand()%3))
+								part_change_type(ri,x+rx,y+ry,PT_SLTW);
 						}
 					}
-					if (rt==PT_SLTW && 1>(rand()%10000))
+					else if (rt==PT_RBDM||rt==PT_LRBD)
 					{
-						part_change_type(i,x,y,PT_SLTW);
+						if ((legacy_enable||parts[i].temp>(273.15f+12.0f)) && !(rand()%500))
+						{
+							part_change_type(i,x,y,PT_FIRE);
+							parts[i].life = 4;
+							parts[i].ctype = PT_WATR;
+						}
+					}
+					else if (rt==PT_FIRE)
+					{
+						kill_part(ri);
+						if (parts[ri].ctype!=PT_WATR)
+						{
+							if(!(rand()%150)){
+								kill_part(i);
+								return 1;
+							}
+						}
+					}
+					else if (rt==PT_SLTW)
+					{
+						if (!(rand()%10000))
+						{
+							part_change_type(i,x,y,PT_SLTW);
+						}
 					}
 					/*if ((r&0xFF)==PT_CNCT && 1>(rand()%500))	Concrete+Water to paste, not very popular
 					{

@@ -26,7 +26,7 @@ int FOG_update(UPDATE_FUNC_ARGS)
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
-					if (ptypes[rt].state==ST_SOLID&&5>=rand()%50&&parts[i].life==0&&!(rt==PT_CLNE||rt==PT_PCLN)) // TODO: should this also exclude BCLN?
+					if (ptypes[rt].state==ST_SOLID && !(rand()%10) && parts[i].life==0 && !(rt==PT_CLNE||rt==PT_PCLN)) // TODO: should this also exclude BCLN?
 					{
 						part_change_type(i,x,y,PT_RIME);
 					}

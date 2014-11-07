@@ -17,7 +17,7 @@
 
 int PLUT_update(UPDATE_FUNC_ARGS)
 {
-	if (1>rand()%100 && ((int)(5.0f*pv[y/CELL][x/CELL]))>(rand()%1000))
+	if (!(rand()%100) && ((int)(5.0f*pv[y/CELL][x/CELL]))>(rand()%1000))
 	{
 		sim->part_create(i, x, y, PT_NEUT);
 	}

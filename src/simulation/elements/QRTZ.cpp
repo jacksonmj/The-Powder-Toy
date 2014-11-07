@@ -37,7 +37,7 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 				{
 					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
-						if (parts[ri].type==PT_SLTW && (1>rand()%2500))
+						if (parts[ri].type==PT_SLTW && !(rand()%2500))
 						{
 							kill_part(ri);
 							parts[i].ctype ++;
@@ -47,20 +47,26 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 	// grow if absorbed SLTW
 	if (parts[i].ctype>0)
 	{
-		for ( trade = 0; trade<5; trade ++)
+		bool stopgrow=false;
+		int rnd, sry, srx;
+		for ( trade = 0; trade<9; trade ++)
 		{
-			rx = rand()%3-1;
-			ry = rand()%3-1;
-			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+			rnd = rand()%0x3FF;
+			rx = (rnd%5)-2;
+			srx = (rnd%3)-1;
+			rnd = rnd>>3;
+			ry = (rnd%5)-2;
+			sry = (rnd%3)-1;
+			if (x+srx>=0 && y+sry>=0 && x+srx<XRES && y+sry<YRES && (srx || sry))
 			{
-				if (parts[i].ctype!=0)
+				if (!stopgrow && !sim->pmap[y+sry][x+srx].count_notEnergy && parts[i].ctype!=0)
 				{
-					np = sim->part_create(-1,x+rx,y+ry,PT_QRTZ);
+					np = sim->part_create(-1,x+srx,y+sry,PT_QRTZ);
 					if (np>-1)
 					{
 						parts[np].tmp = parts[i].tmp;
 						parts[i].ctype--;
-						if (5>rand()%10)
+						if (rand()%2)
 						{
 							parts[np].ctype=-1;//dead qrtz
 						}
@@ -68,25 +74,15 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 						{
 							parts[i].ctype=-1;
 						}
-
-						break;
+						stopgrow=true;
 					}
 				}
 			}
-		}
-	}
-	// diffuse absorbed SLTW
-	if (parts[i].ctype>0)
-	{
-		for ( trade = 0; trade<9; trade ++)
-		{
-			rx = rand()%5-2;
-			ry = rand()%5-2;
-			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if (parts[ri].type==t && (parts[i].ctype>parts[ri].ctype) && parts[ri].ctype>=0 )//diffusion
+					if ((parts[ri].type==PT_QRTZ || parts[ri].type==PT_PQRT) && (parts[i].ctype>parts[ri].ctype) && parts[ri].ctype>=0 )//diffusion
 					{
 						tmp = parts[i].ctype - parts[ri].ctype;
 						if (tmp ==1)

@@ -17,7 +17,7 @@
 
 int EMP_update(UPDATE_FUNC_ARGS)
 {
-	int r,rx,ry,rt,ok=0,t,nx,ny;
+	int r,rx,ry,rt,t,nx,ny;
 	int rcount, ri, rnext;
 	if (parts[i].life)
 		return 0;
@@ -29,13 +29,12 @@ int EMP_update(UPDATE_FUNC_ARGS)
 				{
 					if (parts[ri].type==PT_SPRK && parts[ri].life>0 && parts[ri].life<4)
 					{
-						ok=1;
-						break;
+						goto ok;
 					}
 				}
 			}
-	if (!ok)
-		return 0;
+	return 0;
+ok:
 	parts[i].life=220;
 	emp_decor+=3;
 	if (emp_decor>40)
@@ -48,15 +47,15 @@ int EMP_update(UPDATE_FUNC_ARGS)
 		if (t==PT_SPRK || (t==PT_SWCH && parts[r].life!=0 && parts[r].life!=10) || (t==PT_WIRE && parts[r].ctype>0))
 		{
 			int is_elec=0;
-			if ((parts[r].ctype==PT_PSCN || parts[r].ctype==PT_NSCN || parts[r].ctype==PT_PTCT ||
-			        parts[r].ctype==PT_NTCT || parts[r].ctype==PT_INST || parts[r].ctype==PT_SWCH) || t==PT_WIRE || t==PT_SWCH)
+			if (parts[r].ctype==PT_PSCN || parts[r].ctype==PT_NSCN || parts[r].ctype==PT_PTCT ||
+			        parts[r].ctype==PT_NTCT || parts[r].ctype==PT_INST || parts[r].ctype==PT_SWCH || t==PT_WIRE || t==PT_SWCH)
 			{
 				is_elec=1;
-				if (ptypes[t].hconduct && rand()%100==0)
+				if (!(rand()%100))
 					parts[r].temp = restrict_flt(parts[r].temp+3000.0f, MIN_TEMP, MAX_TEMP);
-				if (rand()%80==0)
+				if (!(rand()%80))
 					part_change_type(r, rx, ry, PT_BREL);
-				else if (rand()%120==0)
+				else if (!(rand()%120))
 					part_change_type(r, rx, ry, PT_NTCT);
 			}
 			
@@ -67,58 +66,68 @@ int EMP_update(UPDATE_FUNC_ARGS)
 						FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 						{
 							rt = parts[ri].type;
-							/*if ((n&0xFF)==PT_BTRY && rand()%60==0)
-							{
-								part_change_type(n>>8, rx+nx, ry+ny, PT_PLSM);
-								parts[n>>8].life=rand()%100+70;
-								parts[n>>8].temp+=3000;
-							}*/
 
 							//Some elements should only be affected by wire/swch, or by a spark on inst/semiconductor
 							//So not affected by spark on metl, watr etc
 							if (is_elec)
 							{
-								if ((rt==PT_METL || rt==PT_BMTL) && rand()%280==0)
+								switch (rt)
 								{
-									parts[ri].temp = restrict_flt(parts[ri].temp+3000.0f, MIN_TEMP, MAX_TEMP);
+								case PT_METL:
+									if (!(rand()%280))
+										parts[ri].temp = restrict_flt(parts[ri].temp+3000.0f, MIN_TEMP, MAX_TEMP);
+									if (!(rand()%300))
+										part_change_type(ri, rx+nx, ry+ny, PT_BMTL);
+									break;
+								case PT_BMTL:
+									if (!(rand()%280))
+										parts[ri].temp = restrict_flt(parts[ri].temp+3000.0f, MIN_TEMP, MAX_TEMP);
+									if (!(rand()%160))
+									{
+										part_change_type(ri, rx+nx, ry+ny, PT_BRMT);
+										parts[ri].temp = restrict_flt(parts[ri].temp+1000.0f, MIN_TEMP, MAX_TEMP);
+									}
+									break;
+								case PT_WIFI:
+									if (!(rand()%8))
+									{
+										//Randomise channel
+										parts[ri].temp = rand()%MAX_TEMP;
+									}
+									if (!(rand()%16))
+									{
+										sim->part_create(ri, rx+nx, ry+ny, PT_BREL);
+										parts[ri].temp = restrict_flt(parts[ri].temp+1000.0f, MIN_TEMP, MAX_TEMP);
+									}
+									break;
+								default:
+									break;
 								}
-								if (rt==PT_BMTL && rand()%160==0)
-								{
-									part_change_type(ri, rx+nx, ry+ny, PT_BMTL);//TODO: Redundant, was this meant to be BRMT or something?
-									parts[ri].temp = restrict_flt(parts[ri].temp+1000.0f, MIN_TEMP, MAX_TEMP);
-								}
-								if (rt==PT_METL && rand()%300==0)
-								{
-									part_change_type(ri, rx+nx, ry+ny, PT_BMTL);
-								}
-								if (rt==PT_WIFI && rand()%8==0)
-								{
-									//Randomise channel
-									parts[ri].temp = rand()%MAX_TEMP;
-								}
-								if (rt==PT_WIFI && rand()%16==0)
+							}
+							switch (rt)
+							{
+							case PT_SWCH:
+								if (!(rand()%100))
+									part_change_type(ri, rx+nx, ry+ny, PT_BREL);
+								if (!(rand()%100))
+									parts[ri].temp = restrict_flt(parts[ri].temp+2000.0f, MIN_TEMP, MAX_TEMP);
+								break;
+							case PT_ARAY:
+								if (rt==PT_ARAY && !(rand()%60))
 								{
 									sim->part_create(ri, rx+nx, ry+ny, PT_BREL);
 									parts[ri].temp = restrict_flt(parts[ri].temp+1000.0f, MIN_TEMP, MAX_TEMP);
 								}
-							}
-							if (rt==PT_SWCH && rand()%100==0)
-							{
-								part_change_type(ri, rx+nx, ry+ny, PT_BREL);
-							}
-							if (rt==PT_SWCH && rand()%100==0)
-							{
-								parts[ri].temp = restrict_flt(parts[ri].temp+2000.0f, MIN_TEMP, MAX_TEMP);
-							}
-							if (rt==PT_ARAY && rand()%60==0)
-							{
-								sim->part_create(ri, rx+nx, ry+ny, PT_BREL);
-								parts[ri].temp = restrict_flt(parts[ri].temp+1000.0f, MIN_TEMP, MAX_TEMP);
-							}
-							if (rt==PT_DLAY && rand()%70==0)
-							{
-								//Randomise delay
-								parts[ri].temp = (rand()%256) + 273.15f;
+								break;
+							case PT_DLAY:
+								if (rt==PT_DLAY && !(rand()%70))
+								{
+									//Randomise delay
+									parts[ri].temp = (rand()%256) + 273.15f;
+								}
+								break;
+							default:
+								break;
 							}
 						}
 					}

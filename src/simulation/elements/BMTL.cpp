@@ -17,7 +17,7 @@
 
 int BMTL_update(UPDATE_FUNC_ARGS)
 {
-	int rx, ry, rt, tempFactor;
+	int rx, ry, tempFactor;
 	int rcount, ri, rnext;
 	if (parts[i].tmp>1)
 	{
@@ -28,8 +28,7 @@ int BMTL_update(UPDATE_FUNC_ARGS)
 				{
 					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
-						rt = parts[ri].type;
-						if ((rt==PT_METL || rt==PT_IRON) && 1>(rand()/(RAND_MAX/100)))
+						if ((parts[ri].type==PT_METL || parts[ri].type==PT_IRON) && !(rand()%100))
 						{
 							part_change_type(ri,x+rx,y+ry,PT_BMTL);
 							parts[ri].tmp=(parts[i].tmp<=7)?parts[i].tmp=1:parts[i].tmp-(rand()%5);//rand()/(RAND_MAX/300)+100;
@@ -37,7 +36,7 @@ int BMTL_update(UPDATE_FUNC_ARGS)
 					}
 				}
 	}
-	else if (parts[i].tmp==1 && 1>rand()%1000)
+	else if (parts[i].tmp==1 && !(rand()%1000))
 	{
 		parts[i].tmp = 0;
 		part_change_type(i,x,y,PT_BRMT);

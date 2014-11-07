@@ -31,11 +31,7 @@ int BANG_update(UPDATE_FUNC_ARGS)
 						FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 						{
 							int rt = parts[ri].type;
-							if (rt==PT_FIRE || rt==PT_PLSM)
-							{
-								parts[i].tmp = 1;
-							}
-							else if (rt==PT_SPRK || rt==PT_LIGH)
+							if (rt==PT_FIRE || rt==PT_PLSM || rt==PT_SPRK || rt==PT_LIGH)
 							{
 								parts[i].tmp = 1;
 							}
@@ -53,9 +49,9 @@ int BANG_update(UPDATE_FUNC_ARGS)
 	{
 		parts[i].tmp = 3;
 	}
-	else if(parts[i].tmp>=3)
+	else
 	{
-		float otemp = parts[i].temp-275.13f;
+		float otemp = parts[i].temp-273.13f;
 		//Explode!!
 		pv[y/CELL][x/CELL] += 0.5f;
 		parts[i].tmp = 0;
@@ -64,14 +60,13 @@ int BANG_update(UPDATE_FUNC_ARGS)
 			if(!(rand()%2))
 			{
 				sim->part_create(i, x, y, PT_FIRE);
-				parts[i].temp = restrict_flt((MAX_TEMP/4)+otemp, MIN_TEMP, MAX_TEMP);
 			}
 			else
 			{
 				sim->part_create(i, x, y, PT_SMKE);
 				parts[i].life = rand()%50+500;
-				parts[i].temp = restrict_flt((MAX_TEMP/4)+otemp, MIN_TEMP, MAX_TEMP);
 			}
+			parts[i].temp = restrict_flt((MAX_TEMP/4)+otemp, MIN_TEMP, MAX_TEMP);
 		}
 		else
 		{

@@ -27,14 +27,17 @@ int PVOD_update(UPDATE_FUNC_ARGS)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if (parts[ri].type==PT_SPRK && parts[ri].life>0 && parts[ri].life<4)
+					if (parts[ri].type==PT_SPRK)
 					{
-						if (parts[ri].ctype==PT_PSCN)
-							parts[i].life = 10;
-						else if (parts[ri].ctype==PT_NSCN)
-							parts[i].life = 9;
+						if (parts[ri].life>0 && parts[ri].life<4)
+						{
+							if (parts[ri].ctype==PT_PSCN)
+								parts[i].life = 10;
+							else if (parts[ri].ctype==PT_NSCN)
+								parts[i].life = 9;
+						}
 					}
-					if (parts[ri].type==PT_PVOD)
+					else if (parts[ri].type==PT_PVOD)
 					{
 						if (parts[i].life==10&&parts[ri].life<10&&parts[ri].life>0)
 							parts[i].life = 9;

@@ -23,32 +23,38 @@ int SHLD2_update(UPDATE_FUNC_ARGS)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				if (!sim->pmap[y+ry][x+rx].count_notEnergy && parts[i].life>0)
-					sim->part_create(-1,x+rx,y+ry,PT_SHLD1);
-				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
+				if (!sim->pmap[y+ry][x+rx].count_notEnergy)
 				{
-					if (parts[ri].type==PT_SPRK&&parts[i].life==0)
+					if (parts[i].life>0)
+						sim->part_create(-1,x+rx,y+ry,PT_SHLD1);
+				}
+				else
+				{
+					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
-						if (25>rand()%200&&parts[i].life==0)
+						if (parts[ri].type==PT_SPRK&&parts[i].life==0)
+						{
+							if (!(rand()%8))
+							{
+								part_change_type(i,x,y,PT_SHLD3);
+								parts[i].life = 7;
+							}
+							for ( nnx=-1; nnx<2; nnx++)
+								for ( nny=-1; nny<2; nny++)
+								{
+									if (!sim->pmap[y+ry+nny][x+rx+nnx].count_notEnergy)
+									{
+										np = sim->part_create(-1,x+rx+nnx,y+ry+nny,PT_SHLD1);
+										if (np<0) continue;
+										parts[np].life=7;
+									}
+								}
+						}
+						else if (parts[ri].type==PT_SHLD4&&2>rand()%5)
 						{
 							part_change_type(i,x,y,PT_SHLD3);
 							parts[i].life = 7;
 						}
-						for ( nnx=-1; nnx<2; nnx++)
-							for ( nny=-1; nny<2; nny++)
-							{
-								if (!sim->pmap[y+ry+nny][x+rx+nnx].count_notEnergy)
-								{
-									np = sim->part_create(-1,x+rx+nnx,y+ry+nny,PT_SHLD1);
-									if (np<0) continue;
-									parts[np].life=7;
-								}
-							}
-					}
-					else if (parts[ri].type==PT_SHLD4&&4>rand()%10)
-					{
-						part_change_type(i,x,y,PT_SHLD3);
-						parts[i].life = 7;
 					}
 				}
 			}

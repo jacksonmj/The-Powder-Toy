@@ -32,7 +32,7 @@ int WIRE_update(UPDATE_FUNC_ARGS)
 	{
 		parts[i].ctype=2;
 	}
-	if(parts[i].tmp==2)
+	else if(parts[i].tmp==2)
 	{
 		parts[i].ctype=0;
 	}
@@ -52,10 +52,9 @@ int WIRE_update(UPDATE_FUNC_ARGS)
 							return 0;
 					}
 					else if(rt==PT_NSCN && parts[i].tmp==1)
-					{
 						sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
-					}
-					else if(rt==PT_WIRE && parts[ri].tmp==1 && !parts[i].tmp){count++;}
+					else if(rt==PT_WIRE && parts[ri].tmp==1 && !parts[i].tmp)
+						count++;
 				}
 			}
 		}

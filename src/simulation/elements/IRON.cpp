@@ -17,7 +17,9 @@
 
 int IRON_update(UPDATE_FUNC_ARGS)
 {
-	int rx, ry, rt;
+	if (!parts[i].life)
+		return 0;
+	int rx, ry;
 	int rcount, ri, rnext;
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
@@ -25,21 +27,36 @@ int IRON_update(UPDATE_FUNC_ARGS)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					rt = parts[ri].type;
-					if (((rt == PT_SALT && 15>(rand()/(RAND_MAX/700))) ||
-							(rt == PT_SLTW && 30>(rand()/(RAND_MAX/2000))) ||
-							(rt == PT_WATR && 5 >(rand()/(RAND_MAX/6000))) ||
-							(rt == PT_O2   && 2 >(rand()/(RAND_MAX/500))) ||
-							(rt == PT_LO2))&&
-							(!(parts[i].life))
-					   )
+					switch (parts[ri].type)
 					{
-						part_change_type(i,x,y,PT_BMTL);
-						parts[i].tmp=(rand()/(RAND_MAX/10))+20;
+					case PT_SALT:
+						if (!(rand()%47))
+							goto succ;
+						break;
+					case PT_SLTW:
+						if (!(rand()%67))
+							goto succ;
+						break;
+					case PT_WATR:
+						if (!(rand()%1200))
+							goto succ;
+						break;
+					case PT_O2:
+						if (!(rand()%250))
+							goto succ;
+						break;
+					case PT_LO2:
+						goto succ;
+					default:
+						break;
 					}
 				}
 			}
 	return 0;
+succ:
+	sim->part_change_type(i,x,y,PT_BMTL);
+	parts[i].tmp=(rand()%10)+20;				
+	return 1;
 }
 
 void IRON_init_element(ELEMENT_INIT_FUNC_ARGS)

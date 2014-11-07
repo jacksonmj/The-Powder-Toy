@@ -30,12 +30,15 @@ int ICE_update(UPDATE_FUNC_ARGS) //currently used for snow as well
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
-					if ((rt==PT_SALT || rt==PT_SLTW) && parts[i].temp > ptransitions[PT_SLTW].tlv && 1>(rand()%1000))
+					if (rt==PT_SALT || rt==PT_SLTW)
 					{
-						part_change_type(i,x,y,PT_SLTW);
-						part_change_type(ri,x+rx,y+ry,PT_SLTW);
+						if (parts[i].temp > ptransitions[PT_SLTW].tlv && !(rand()%1000))
+						{
+							part_change_type(i,x,y,PT_SLTW);
+							part_change_type(ri,x+rx,y+ry,PT_SLTW);
+						}
 					}
-					if ((rt==PT_FRZZ) && (parts[i].ctype=PT_FRZW) && 1>(rand()%1000))
+					else if ((rt==PT_FRZZ) && (parts[i].ctype=PT_FRZW) && !(rand()%1000))
 						part_change_type(ri,x+rx,y+ry,PT_ICEI);
 				}
 			}

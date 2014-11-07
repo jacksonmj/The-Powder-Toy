@@ -26,7 +26,7 @@ int GLOW_update(UPDATE_FUNC_ARGS)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if (parts[ri].type==PT_WATR&&5>(rand()%2000))
+					if (parts[ri].type==PT_WATR&&!(rand()%400))
 					{
 						killPart = true;
 						part_change_type(ri,x+rx,y+ry,PT_DEUT);
@@ -34,14 +34,13 @@ int GLOW_update(UPDATE_FUNC_ARGS)
 					}
 				}
 			}
-	parts[i].ctype = pv[y/CELL][x/CELL]*16;
-
-	parts[i].tmp = abs((int)((vx[y/CELL][x/CELL]+vy[y/CELL][x/CELL])*16.0f)) + abs((int)((parts[i].vx+parts[i].vy)*64.0f));
-	//printf("%f %f\n", parts[i].vx, parts[i].vy);
 	if (killPart) {
 		kill_part(i);
 		return 1;
 	}
+
+	parts[i].ctype = pv[y/CELL][x/CELL]*16;
+	parts[i].tmp = abs((int)((vx[y/CELL][x/CELL]+vy[y/CELL][x/CELL])*16.0f)) + abs((int)((parts[i].vx+parts[i].vy)*64.0f));
 	return 0;
 }
 

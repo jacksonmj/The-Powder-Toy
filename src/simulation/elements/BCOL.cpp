@@ -36,15 +36,15 @@ int BCOL_update(UPDATE_FUNC_ARGS)
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					int rt = parts[ri].type;
-					if ((rt==PT_FIRE || rt==PT_PLSM) && 1>(rand()%500))
+					if (rt==PT_FIRE || rt==PT_PLSM)
 					{
-						if (parts[i].life>100) {
+						if (parts[i].life>100 && !(rand()%500)) {
 							parts[i].life = 99;
 						}
 					}
-					else if (rt==PT_LAVA && 1>(rand()%500))
+					else if (rt==PT_LAVA)
 					{
-						if (parts[ri].ctype == PT_IRON) {
+						if (parts[ri].ctype == PT_IRON && !(rand()%500)) {
 							parts[ri].ctype = PT_METL;
 							kill_part(i);
 							return 1;

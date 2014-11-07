@@ -24,40 +24,42 @@ int SHLD3_update(UPDATE_FUNC_ARGS) {
 			{
 				if (!sim->pmap[y+ry][x+rx].count_notEnergy)
 				{
-					if (1>rand()%2500)
+					if (!(rand()%2500))
 					{
 						np = sim->part_create(-1,x+rx,y+ry,PT_SHLD1);
 						if (np<0) continue;
 						parts[np].life=7;
 						part_change_type(i,x,y,PT_SHLD2);
 					}
-
 				}
-				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
+				else
 				{
-					if (parts[ri].type==PT_SHLD1 && parts[i].life>3)
+					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
-						part_change_type(ri,x+rx,y+ry,PT_SHLD2);
-						parts[ri].life=7;
-					}
-					else if (parts[ri].type==PT_SPRK&&parts[i].life==0)
-					{
-						if (18>rand()%3000&&parts[i].life==0)
+						if (parts[ri].type==PT_SHLD1 && parts[i].life>3)
 						{
-							part_change_type(i,x,y,PT_SHLD4);
-							parts[i].life = 7;
+							part_change_type(ri,x+rx,y+ry,PT_SHLD2);
+							parts[ri].life=7;
 						}
-						for ( nnx=-1; nnx<2; nnx++)
-							for ( nny=-1; nny<2; nny++)
+						else if (parts[ri].type==PT_SPRK&&parts[i].life==0)
+						{
+							if (3>rand()%500)
 							{
-
-								if (!sim->pmap[y+ry+nny][x+rx+nnx].count_notEnergy)
-								{
-									np = sim->part_create(-1,x+rx+nnx,y+ry+nny,PT_SHLD1);
-									if (np<0) continue;
-									parts[np].life=7;
-								}
+								part_change_type(i,x,y,PT_SHLD4);
+								parts[i].life = 7;
 							}
+							for ( nnx=-1; nnx<2; nnx++)
+								for ( nny=-1; nny<2; nny++)
+								{
+
+									if (!sim->pmap[y+ry+nny][x+rx+nnx].count_notEnergy)
+									{
+										np = sim->part_create(-1,x+rx+nnx,y+ry+nny,PT_SHLD1);
+										if (np<0) continue;
+										parts[np].life=7;
+									}
+								}
+						}
 					}
 				}
 			}

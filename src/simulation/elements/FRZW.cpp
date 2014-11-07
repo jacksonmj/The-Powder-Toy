@@ -25,19 +25,13 @@ int FRZW_update(UPDATE_FUNC_ARGS)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if (parts[ri].type==PT_WATR&&5>rand()%70)
+					if (parts[ri].type==PT_WATR && !(rand()%14))
 					{
 						part_change_type(ri,x+rx,y+ry,PT_FRZW);
 					}
 				}
 			}
-	if (parts[i].life==0&&13>rand()%2500)
-	{
-		part_change_type(i,x,y,PT_ICEI);
-		parts[i].ctype=PT_FRZW;
-		parts[i].temp = restrict_flt(parts[i].temp-200.0f, MIN_TEMP, MAX_TEMP);
-	}
-	else if ((100-(parts[i].life))>rand()%50000)
+	if ((parts[i].life==0 && !(rand()%192)) || (100-(parts[i].life))>rand()%50000)
 	{
 		part_change_type(i,x,y,PT_ICEI);
 		parts[i].ctype=PT_FRZW;

@@ -18,35 +18,42 @@
 int update_PYRO(UPDATE_FUNC_ARGS) {
 	int rx, ry, rt, t = parts[i].type;
 	int rcount, ri, rnext;
-	if (t==PT_PLSM&&parts[i].ctype == PT_NBLE&&parts[i].life <=1)
+	switch (t)
 	{
-		t = PT_NBLE;
-		part_change_type(i,x,y,t);
-		parts[i].life = 0;
-	}
-	if(t==PT_FIRE && parts[i].life <=1)
-	{
-		if (parts[i].tmp==3){
-			t = PT_DSTW;
-			part_change_type(i,x,y,t);
-			parts[i].life = 0;
-			parts[i].ctype = PT_FIRE;
-		}
-		else if (parts[i].temp<625)
+	case PT_PLSM:
+		if (parts[i].life <= 1)
 		{
-			t = PT_SMKE;
-			part_change_type(i,x,y,t);
-			parts[i].life = rand()%20+250;
+			if (parts[i].ctype == PT_NBLE)
+			{
+				part_change_type(i,x,y,PT_NBLE);
+				parts[i].life = 0;
+			}
+			else if ((parts[i].tmp&3)==3)
+			{
+				part_change_type(i,x,y,PT_DSTW);
+				parts[i].life = 0;
+				parts[i].ctype = PT_FIRE;
+			}
 		}
-	}
-	if(t==PT_PLSM && parts[i].life <=1)
-	{
-		if (parts[i].tmp==3){
-			t = PT_DSTW;
-			part_change_type(i,x,y,t);
-			parts[i].life = 0;
-			parts[i].ctype = PT_FIRE;
+		break;
+	case PT_FIRE:
+		if(parts[i].life <= 1)
+		{
+			if ((parts[i].tmp&3)==3)
+			{
+				part_change_type(i,x,y,PT_DSTW);
+				parts[i].life = 0;
+				parts[i].ctype = PT_FIRE;
+			}
+			else if (parts[i].temp<625)
+			{
+				part_change_type(i,x,y,PT_SMKE);
+				parts[i].life = rand()%20+250;
+			}
 		}
+		break;
+	default:
+		break;
 	}
 	for (rx=-2; rx<3; rx++)
 		for (ry=-2; ry<3; ry++)
@@ -96,7 +103,7 @@ int update_legacy_PYRO(UPDATE_FUNC_ARGS) {
 					{
 						if (t!=PT_LAVA || parts[i].life>0)
 						{
-							parts[ri].ctype = (rt==PT_BRMT)?PT_BMTL:parts[ri].type;
+							parts[ri].ctype = (rt==PT_BRMT)?PT_BMTL:rt;
 							parts[ri].ctype = (parts[ri].ctype==PT_SAND)?PT_GLAS:parts[ri].ctype;
 							part_change_type(ri,x+rx,y+ry,PT_LAVA);
 							parts[ri].life = rand()%120+240;
@@ -104,9 +111,8 @@ int update_legacy_PYRO(UPDATE_FUNC_ARGS) {
 						else
 						{
 							parts[i].life = 0;
-							t = (parts[i].ctype)?parts[i].ctype:PT_STNE;
-							parts[i].ctype = PT_NONE;//rt;
-							part_change_type(i,x,y,t);
+							parts[i].ctype = PT_NONE;
+							part_change_type(i,x,y,(parts[i].ctype)?parts[i].ctype:PT_STNE);
 							return 1;
 						}
 					}
@@ -121,8 +127,7 @@ int update_legacy_PYRO(UPDATE_FUNC_ARGS) {
 						if (t==PT_LAVA)
 						{
 							parts[i].life = 0;
-							t = PT_STNE;
-							part_change_type(i,x,y,t);
+							part_change_type(i,x,y,PT_STNE);
 						}
 					}
 					if (t!=PT_SPRK && (rt==PT_WATR || rt==PT_DSTW || rt==PT_SLTW))
@@ -136,9 +141,8 @@ int update_legacy_PYRO(UPDATE_FUNC_ARGS) {
 						if (t==PT_LAVA)
 						{
 							parts[i].life = 0;
-							t = (parts[i].ctype)?parts[i].ctype:PT_STNE;
 							parts[i].ctype = PT_NONE;
-							part_change_type(i,x,y,t);
+							part_change_type(i,x,y,(parts[i].ctype)?parts[i].ctype:PT_STNE);
 						}
 					}
 				}

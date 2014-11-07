@@ -21,8 +21,8 @@ int REPL_update(UPDATE_FUNC_ARGS)
 	int rcount, ri, rnext;
 	for(loop = 0; loop <= 10; loop++)
 	{
-		rx = (rand()%20)-10;
-		ry = (rand()%20)-10;
+		rx = (rand()%21)-10;
+		ry = (rand()%21)-10;
 		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 		{
 			FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)

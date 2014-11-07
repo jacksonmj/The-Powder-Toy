@@ -36,7 +36,7 @@ int DEUT_update(UPDATE_FUNC_ARGS)
 					{
 						if (parts[i].life >=maxlife)
 							break;
-						if (parts[ri].type==PT_DEUT&&33>=rand()/(RAND_MAX/100)+1)
+						if (parts[ri].type==PT_DEUT && !(rand()%3))
 						{
 							if ((parts[i].life + parts[ri].life + 1) <= maxlife)
 							{

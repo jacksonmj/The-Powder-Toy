@@ -21,12 +21,12 @@ int BTRY_update(UPDATE_FUNC_ARGS)
 	int rcount, ri, rnext;
 	for (rx=-2; rx<3; rx++)
 		for (ry=-2; ry<3; ry++)
-			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry) && abs(rx)+abs(ry)<4)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
-					if ((ptypes[rt].properties&PROP_CONDUCTS) && !(rt==PT_WATR||rt==PT_SLTW||rt==PT_NTCT||rt==PT_PTCT||rt==PT_INWR) && parts[ri].life==0 && abs(rx)+abs(ry) < 4 && !sim->is_spark_blocked(x,y,x+rx,y+ry))
+					if ((ptypes[rt].properties&PROP_CONDUCTS) && !(rt==PT_WATR||rt==PT_SLTW||rt==PT_NTCT||rt==PT_PTCT||rt==PT_INWR) && parts[ri].life==0 && !sim->is_spark_blocked(x,y,x+rx,y+ry))
 					{
 						sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
 					}

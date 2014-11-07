@@ -99,9 +99,7 @@ int SOAP_update(UPDATE_FUNC_ARGS)
 					SOAP_detach(sim, i);
 			}
 
-			parts[i].vy -= 0.1f;
-
-			parts[i].vy *= 0.5f;
+			parts[i].vy = (parts[i].vy-0.1f)*0.5f;
 			parts[i].vx *= 0.5f;
 		}
 
@@ -144,25 +142,25 @@ int SOAP_update(UPDATE_FUNC_ARGS)
 									}
 								}
 
-								if (rt == PT_SOAP && parts[ri].ctype == 1)
+								if (rt == PT_SOAP)
 								{
-									int buf;
-
-									buf = parts[i].tmp;
-
-									parts[i].tmp = ri;
-									parts[buf].tmp2 = ri;
-									parts[ri].tmp2 = i;
-									parts[ri].tmp = buf;
-									parts[ri].ctype = 7;
-								}
-
-								if (rt == PT_SOAP && parts[ri].ctype == 7 && parts[i].tmp != ri && parts[i].tmp2 != ri)
-								{
-									parts[parts[i].tmp].tmp2 = parts[ri].tmp2;
-									parts[parts[ri].tmp2].tmp = parts[i].tmp;
-									parts[ri].tmp2 = i;
-									parts[i].tmp = ri;
+									if (parts[ri].ctype == 1)
+									{
+										int buf;
+										buf = parts[i].tmp;
+										parts[i].tmp = ri;
+										parts[buf].tmp2 = ri;
+										parts[ri].tmp2 = i;
+										parts[ri].tmp = buf;
+										parts[ri].ctype = 7;
+									}
+									else if (parts[ri].ctype == 7 && parts[i].tmp != ri && parts[i].tmp2 != ri)
+									{
+										parts[parts[i].tmp].tmp2 = parts[ri].tmp2;
+										parts[parts[ri].tmp2].tmp = parts[i].tmp;
+										parts[ri].tmp2 = i;
+										parts[i].tmp = ri;
+									}
 								}
 							}
 						}
@@ -221,18 +219,14 @@ int SOAP_update(UPDATE_FUNC_ARGS)
 						{
 							float ax, ay;
 
-							parts[i].vy -= 0.1f;
-
-							parts[i].vy *= 0.5f;
+							parts[i].vy = (parts[i].vy-0.1f)*0.5f;
 							parts[i].vx *= 0.5f;
 
 							ax = (parts[i].vx + parts[ri].vx)/2;
 							ay = (parts[i].vy + parts[ri].vy)/2;
 
-							parts[i].vx = ax;
-							parts[i].vy = ay;
-							parts[ri].vx = ax;
-							parts[ri].vy = ay;
+							parts[i].vx = parts[ri].vx = ax;
+							parts[i].vy = parts[ri].vy = ay;
 						}
 					}
 				}

@@ -19,7 +19,6 @@ int ELEC_update(UPDATE_FUNC_ARGS)
 {
 	int rt, rx, ry, nb, rrx, rry;
 	int rcount, ri, rnext;
-	float rr, rrr;
 	parts[i].pavg[0] = x;
 	parts[i].pavg[1] = y;
 	FOR_PMAP_POSITION_NOENERGY(sim, x, y, rcount, ri, rnext)
@@ -35,8 +34,9 @@ int ELEC_update(UPDATE_FUNC_ARGS)
 				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
-					if (rt==PT_GLAS)
+					switch (rt)
 					{
+					case PT_GLAS:
 						for (rrx=-1; rrx<=1; rrx++)
 						{
 							for (rry=-1; rry<=1; rry++)
@@ -64,48 +64,45 @@ int ELEC_update(UPDATE_FUNC_ARGS)
 						*/
 						kill_part(i);
 						return 1;
-					}
-					if (rt==PT_LCRY)
-					{
+					case PT_LCRY:
 						parts[ri].tmp2 = 5+rand()%5;
-					}
-					if (rt==PT_WATR || rt==PT_DSTW || rt==PT_SLTW || rt==PT_CBNW)
-					{
-						if(rand()<RAND_MAX/3)
-						{
+						break;
+					case PT_WATR:
+					case PT_DSTW:
+					case PT_SLTW:
+					case PT_CBNW:
+						if(!(rand()%3))
 							sim->part_create(ri, x+rx, y+ry, PT_O2);
-						}
 						else
-						{
 							sim->part_create(ri, x+rx, y+ry, PT_H2);
-						}
 						kill_part(i);
 						return 1;
-					}
-					if (rt==PT_NEUT && !sim->pmap[y+ry][x+rx].count_notEnergy)
-					{
-						part_change_type(ri, x+rx, y+ry, PT_H2);
-						parts[ri].life = 0;
-						parts[ri].ctype = 0;
-					}
-					if (rt==PT_DEUT)
-					{
+					case PT_NEUT:
+						if (!sim->pmap[y+ry][x+rx].count_notEnergy)
+						{
+							part_change_type(ri, x+rx, y+ry, PT_H2);
+							parts[ri].life = 0;
+							parts[ri].ctype = 0;
+						}
+						break;
+					case PT_DEUT:
 						if(parts[ri].life < 6000)
 							parts[ri].life += 1;
 						parts[ri].temp = 0;
 						kill_part(i);
 						return 1;
-					}
-					if (rt==PT_EXOT)
-					{
+					case PT_EXOT:
 						parts[ri].tmp2 += 5;
 						parts[ri].life = 1000;
-					}
-					if (ptypes[rt].properties & PROP_CONDUCTS && (rt!=PT_NBLE||parts[i].temp<2273.15))
-					{
-						sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
-						kill_part(i);
-						return 1;
+						break;
+					default:
+						if ((ptypes[rt].properties & PROP_CONDUCTS) && (rt!=PT_NBLE||parts[i].temp<2273.15))
+						{
+							sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
+							kill_part(i);
+							return 1;
+						}
+						break;
 					}
 				}
 			}

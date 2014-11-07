@@ -55,7 +55,8 @@ int FIRW_update(UPDATE_FUNC_ARGS)
 			parts[i].flags &= ~FLAG_STAGNANT;
 		}
 	}
-	else if (parts[i].tmp>=2) {
+	else
+	{
 		float angle, magnitude;
 		int caddress = (rand()%200)*3;
 		int n;

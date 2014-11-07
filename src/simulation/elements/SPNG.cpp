@@ -29,29 +29,43 @@ int SPNG_update(UPDATE_FUNC_ARGS)
 				{
 					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
-						rt = parts[ri].type;
-						if ((rt==PT_WATR || rt==PT_DSTW || rt==PT_FRZW) && parts[i].life<limit && 500>rand()%absorbChanceDenom)
+						switch (parts[ri].type)
 						{
-							parts[i].life++;
-							kill_part(ri);
-						}
-						if (rt==PT_SLTW && parts[i].life<limit && 50>rand()%absorbChanceDenom)
-						{
-							parts[i].life++;
-							if (rand()%4)
+						case PT_WATR:
+						case PT_DSTW:
+						case PT_FRZW:
+							if (parts[i].life<limit && 500>rand()%absorbChanceDenom)
+							{
+								parts[i].life++;
 								kill_part(ri);
-							else
-								part_change_type(ri, x+rx, y+ry, PT_SALT);
-						}
-						if (rt==PT_CBNW && parts[i].life<limit && 100>rand()%absorbChanceDenom)
-						{
-							parts[i].life++;
-							part_change_type(ri, x+rx, y+ry, PT_CO2);
-						}
-						if (rt==PT_PSTE && parts[i].life<limit && 20>rand()%absorbChanceDenom)
-						{
-							parts[i].life++;
-							sim->part_create(ri, x+rx, y+ry, PT_CLST);
+							}
+							break;
+						case PT_SLTW:
+							if (parts[i].life<limit && 50>rand()%absorbChanceDenom)
+							{
+								parts[i].life++;
+								if (rand()%4)
+									kill_part(ri);
+								else
+									part_change_type(ri, x+rx, y+ry, PT_SALT);
+							}
+							break;
+						case PT_CBNW:
+							if (parts[i].life<limit && 100>rand()%absorbChanceDenom)
+							{
+								parts[i].life++;
+								part_change_type(ri, x+rx, y+ry, PT_CO2);
+							}
+							break;
+						case PT_PSTE:
+							if (parts[i].life<limit && 20>rand()%absorbChanceDenom)
+							{
+								parts[i].life++;
+								sim->part_create(ri, x+rx, y+ry, PT_CLST);
+							}
+							break;
+						default:
+							break;
 						}
 					}
 				}
