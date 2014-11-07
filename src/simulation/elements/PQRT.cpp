@@ -52,7 +52,7 @@ void PQRT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 3;
 	elem->Latent = 0;
-	elem->Description = "Broken quartz.";
+	elem->Description = "Powdered quartz, broken form of QRTZ.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART| PROP_HOT_GLOW;

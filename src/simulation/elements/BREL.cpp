@@ -59,7 +59,7 @@ void BREL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 211;
 	elem->Latent = 0;
-	elem->Description = "Broken electronics";
+	elem->Description = "Broken electronics. Formed from EMP blasts, and when constantly sparked while under pressure, turns to EXOT.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART|PROP_CONDUCTS|PROP_LIFE_DEC|PROP_HOT_GLOW;

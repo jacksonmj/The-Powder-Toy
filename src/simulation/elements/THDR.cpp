@@ -93,7 +93,7 @@ void THDR_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 9000.0f		+273.15f;
 	elem->HeatConduct = 1;
 	elem->Latent = 0;
-	elem->Description = "Lightning! Very hot, inflicts damage upon most materials, transfers current to metals.";
+	elem->Description = "Lightning! Very hot, inflicts damage upon most materials, and transfers current to metals.";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_PART;

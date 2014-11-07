@@ -94,7 +94,7 @@ void BCOL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 150;
 	elem->Latent = 0;
-	elem->Description = "Broken Coal. Heavy particles. See COAL";
+	elem->Description = "Broken Coal. Heavy particles, burns slowly.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART;

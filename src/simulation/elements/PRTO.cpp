@@ -191,7 +191,7 @@ void PRTO_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Portal OUT. Things come out here, now with temperature dependent channels (same as WIFI)";
+	elem->Description = "Portal OUT. Particles come out here. Also has temperature dependent channels (same as WIFI)";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

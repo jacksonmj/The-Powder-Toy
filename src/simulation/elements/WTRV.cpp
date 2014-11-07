@@ -68,7 +68,7 @@ void WTRV_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+100.0f+273.15f;
 	elem->HeatConduct = 48;
 	elem->Latent = 0;
-	elem->Description = "Steam, heats up air, produced from hot water.";
+	elem->Description = "Steam. Produced from hot water.";
 
 	elem->State = ST_GAS;
 	elem->Properties = TYPE_GAS;

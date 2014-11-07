@@ -44,7 +44,7 @@ void GUNP_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 97;
 	elem->Latent = 0;
-	elem->Description = "Gunpowder. Light dust, explosive.";
+	elem->Description = "Gunpowder. Light dust, explodes on contact with fire or spark.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART;

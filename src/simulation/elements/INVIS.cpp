@@ -34,7 +34,7 @@ void INVIS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Name = "INVS";
 	elem->Colour = COLPACK(0x00CCCC);
 	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->MenuSection = SC_SENSOR;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
