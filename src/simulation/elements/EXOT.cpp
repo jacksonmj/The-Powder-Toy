@@ -39,7 +39,7 @@ int EXOT_update(UPDATE_FUNC_ARGS)
 					}
 					else if (rt == PT_LAVA)
 					{
-						if (parts[ri].ctype == PT_TTAN && !(rand()%10))
+						if ((parts[ri].ctype == PT_TTAN || parts[ri].ctype == PT_GOLD) && !(rand()%10))
 						{
 							parts[ri].ctype = PT_VIBR;
 							kill_part(i);
