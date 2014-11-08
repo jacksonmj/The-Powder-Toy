@@ -57,7 +57,7 @@ void PTCT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighPressureTransitionElement = NT;
 	elem->LowTemperatureTransitionThreshold = ITL;
 	elem->LowTemperatureTransitionElement = NT;
-	elem->HighTemperatureTransitionThreshold = 1414.0f;
+	elem->HighTemperatureTransitionThreshold = 1687.0f;
 	elem->HighTemperatureTransitionElement = PT_LAVA;
 
 	elem->Update = &NPTCT_update;
