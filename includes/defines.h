@@ -247,7 +247,6 @@ extern int console_mode;
 extern int REPLACE_MODE;
 extern int CURRENT_BRUSH;
 extern int GRID_MODE;
-extern int VINE_MODE;
 extern int DEBUG_MODE;
 extern int GENERATION;
 extern sign signs[MAXSIGNS];

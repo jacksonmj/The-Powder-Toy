@@ -1662,8 +1662,6 @@ int main(int argc, char *argv[])
 				}
 			}
 
-			if (sdl_key=='t')
-				VINE_MODE = !VINE_MODE;
 			if (sdl_key==SDLK_SPACE)
 				sys_pause = !sys_pause;
 			if (sdl_key=='u')

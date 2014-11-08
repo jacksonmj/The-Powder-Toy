@@ -70,7 +70,6 @@ int GRAV_B2;
 int GSPEED = 1;
 int GENERATION = 0;
 int CGOL = 0;
-int VINE_MODE = 0;
 
 int love[XRES/9][YRES/9];
 int lolz[XRES/9][YRES/9];
