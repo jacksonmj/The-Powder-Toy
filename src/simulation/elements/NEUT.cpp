@@ -61,7 +61,7 @@ int NEUT_update(UPDATE_FUNC_ARGS)
 	int pressureFactor = 3 + (int)pv[y/CELL][x/CELL];
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
-			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
