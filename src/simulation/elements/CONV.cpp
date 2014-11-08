@@ -93,7 +93,7 @@ void CONV_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Description = "Solid. Converts everything into whatever it first touches.";
 
 	elem->State = ST_NONE;
-	elem->Properties = TYPE_SOLID;
+	elem->Properties = TYPE_SOLID | PROP_DRAWONCTYPE | PROP_NOCTYPEDRAW;
 
 	elem->LowPressureTransitionThreshold = IPL;
 	elem->LowPressureTransitionElement = NT;

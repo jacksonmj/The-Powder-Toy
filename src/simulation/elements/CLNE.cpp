@@ -87,7 +87,7 @@ void CLNE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Description = "Solid. Duplicates any particles it touches.";
 
 	elem->State = ST_SOLID;
-	elem->Properties = TYPE_SOLID;
+	elem->Properties = TYPE_SOLID | PROP_DRAWONCTYPE | PROP_NOCTYPEDRAW;
 
 	elem->LowPressureTransitionThreshold = IPL;
 	elem->LowPressureTransitionElement = NT;

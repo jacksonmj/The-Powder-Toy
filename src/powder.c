@@ -243,6 +243,7 @@ void init_can_move()
 		}
 	}
 	//a list of lots of things PHOT can move through
+	// TODO: replace with property
 	for (movingType = 0; movingType < PT_NUM; movingType++)
 	{
 		if (movingType == PT_GLAS || movingType == PT_PHOT || movingType == PT_FILT || movingType == PT_INVIS
@@ -886,49 +887,40 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 		bool energyParticleFound = false;
 		bool normalParticleFound = false;
 		bool actionDone = false;
-		int pmaptype;
 		FOR_PMAP_POSITION(globalSim, x, y, rcount, ri, rnext)
 		{
-			pmaptype = parts[ri].type;
-			if (globalSim->elements[pmaptype].Properties&TYPE_ENERGY)
+			//If an element has the PROP_DRAWONCTYPE property, and the element being drawn to it does not have PROP_NOCTYPEDRAW (Also some special cases), set the element's ctype
+			int drawOn = parts[ri].type;
+			if (globalSim->elements[drawOn].Properties&TYPE_ENERGY)
 				energyParticleFound = true;
 			else
 				normalParticleFound = true;
 
-			if ((
-				(pmaptype==PT_STOR&&!(ptypes[t].properties&TYPE_SOLID))||
-				pmaptype==PT_CLNE||
-				pmaptype==PT_BCLN||
-				pmaptype==PT_CONV||
-				(pmaptype==PT_CRAY&&t!=PT_CRAY&&t!=PT_PSCN&&t!=PT_INST&&t!=PT_METL)||
-				(pmaptype==PT_PCLN&&t!=PT_PSCN&&t!=PT_NSCN)||
-				(pmaptype==PT_PBCN&&t!=PT_PSCN&&t!=PT_NSCN)
-			)&&(
-				t!=PT_CLNE&&t!=PT_PCLN&&
-				t!=PT_BCLN&&t!=PT_STKM&&
-				t!=PT_STKM2&&t!=PT_PBCN&&
-				t!=PT_STOR&&t!=PT_FIGH&&
-				t!=PT_CONV&&t!=PT_CRAY)
+			if (((globalSim->elements[drawOn].Properties & PROP_DRAWONCTYPE) ||
+				(drawOn==PT_STOR&&!(ptypes[t].properties&TYPE_SOLID))||
+				(drawOn==PT_PCLN&&t!=PT_PSCN&&t!=PT_NSCN)||
+				(drawOn==PT_PBCN&&t!=PT_PSCN&&t!=PT_NSCN)
+				) && !(globalSim->elements[t].Properties & PROP_NOCTYPEDRAW)
 			)
 			{
 				parts[ri].ctype = t;
 				actionDone = true;
-				if (t==PT_LIFE && v<NGOLALT && pmaptype!=PT_STOR)
-				{
-					if (pmaptype==PT_CRAY)
-						parts[ri].tmp2 = v;
-					else
-						parts[ri].tmp = v;
-				}
-				if (pmaptype==PT_CRAY)
-					parts[ri].temp = globalSim->elements[t].DefaultProperties.temp;
+				if (t==PT_LIFE && v<NGOLALT && drawOn!=PT_STOR)
+					parts[ri].tmp = v;
 			}
-			else if (pmaptype == PT_DTEC && pmaptype != t || (pmaptype == PT_PSTN && t != PT_FRME))
+			else if ((drawOn == PT_DTEC || (drawOn == PT_PSTN && t != PT_FRME)) && drawOn != t)
 			{
 				parts[ri].ctype = t;
 				actionDone = true;
-				if (pmaptype == PT_DTEC && t==PT_LIFE && v<NGOLALT)
+				if (drawOn == PT_DTEC && t==PT_LIFE && v<NGOLALT)
 					parts[ri].tmp = v;
+			}
+			else if (drawOn == PT_CRAY && drawOn != t && drawOn != PT_PSCN && drawOn != PT_INST && drawOn != PT_METL)
+			{
+				parts[ri].ctype = t;
+				if (t==PT_LIFE && v<NGOLALT)
+					parts[ri].tmp2 = v;
+				parts[ri].temp = globalSim->elements[t].DefaultProperties.temp;
 			}
 		}
 		if (actionDone)
