@@ -698,7 +698,7 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 				{
 					fieldDesc |= 1 << 1;
 					partsData[partsDataLen++] = partsptr[i].life;
-					if(partsptr[i].life > 255)
+					if(partsptr[i].life & 0xFF00)
 					{
 						fieldDesc |= 1 << 2;
 						partsData[partsDataLen++] = partsptr[i].life >> 8;
@@ -710,11 +710,11 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 				{
 					fieldDesc |= 1 << 3;
 					partsData[partsDataLen++] = partsptr[i].tmp;
-					if(partsptr[i].tmp > 255)
+					if(partsptr[i].tmp & 0xFFFFFF00)
 					{
 						fieldDesc |= 1 << 4;
 						partsData[partsDataLen++] = partsptr[i].tmp >> 8;
-						if(partsptr[i].tmp > 65535)
+						if(partsptr[i].tmp & 0xFFFF0000)
 						{
 							fieldDesc |= 1 << 12;
 							partsData[partsDataLen++] = (partsptr[i].tmp&0xFF000000)>>24;
@@ -728,7 +728,7 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 				{
 					fieldDesc |= 1 << 5;
 					partsData[partsDataLen++] = partsptr[i].ctype;
-					if(partsptr[i].ctype > 255)
+					if(partsptr[i].ctype & 0xFFFFFF00)
 					{
 						fieldDesc |= 1 << 9;
 						partsData[partsDataLen++] = (partsptr[i].ctype&0xFF000000)>>24;
@@ -772,7 +772,7 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 				{
 					fieldDesc |= 1 << 10;
 					partsData[partsDataLen++] = partsptr[i].tmp2;
-					if(partsptr[i].tmp2 > 255)
+					if(partsptr[i].tmp2 & 0xFF00)
 					{
 						fieldDesc |= 1 << 11;
 						partsData[partsDataLen++] = partsptr[i].tmp2 >> 8;
