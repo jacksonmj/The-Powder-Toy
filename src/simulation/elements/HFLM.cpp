@@ -56,7 +56,7 @@ void HFLM_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Gravity = -0.1f;
 	elem->Diffusion = 0.00f;
 	elem->PressureAdd_NoAmbHeat = 0.0005f	* CFDS;
-	elem->Falldown = 1;
+	elem->Falldown = 0;
 
 	elem->Flammable = 0;
 	elem->Explosive = 0;
@@ -70,7 +70,7 @@ void HFLM_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->Description = "Sub-zero flame.";
 
-	elem->State = ST_LIQUID;
+	elem->State = ST_GAS;
 	elem->Properties = TYPE_GAS|PROP_LIFE_DEC|PROP_LIFE_KILL;
 
 	elem->LowPressureTransitionThreshold = IPL;
