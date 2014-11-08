@@ -1344,13 +1344,18 @@ void Simulation::UpdateParticles()
 						}
 						else if (t == PT_BRMT)
 						{
-							if (parts[i].ctype == PT_TUNG && ctemph <= 3695.0)
-								s = 0;
-							else
+							if (parts[i].ctype == PT_TUNG)
 							{
-								t = PT_LAVA;
-								parts[i].ctype = PT_TUNG;
+								if (ctemph <= 3695.0)
+									s = 0;
+								else
+								{
+									t = PT_LAVA;
+									parts[i].ctype = PT_TUNG;
+								}
 							}
+							else
+								t = PT_LAVA;
 						}
 						else s = 0;
 					} else if (ctempl<elements[t].LowTemperatureTransitionThreshold && elements[t].LowTemperatureTransitionElement>-1) {
@@ -1393,7 +1398,9 @@ void Simulation::UpdateParticles()
 					}
 					else s = 0;
 					if (s) { // particle type change occurred
-						if (t==PT_ICEI||t==PT_LAVA||t==PT_SNOW)
+						if (t==PT_LAVA && parts[i].type==PT_BRMT && parts[i].ctype==PT_TUNG)
+						{}// ctype already set correctly
+						else if (t==PT_ICEI||t==PT_LAVA||t==PT_SNOW)
 							parts[i].ctype = parts[i].type;
 						if (!(t==PT_ICEI&&parts[i].ctype==PT_FRZW)) parts[i].life = 0;
 						if (elements[t].State==ST_GAS&&elements[parts[i].type].State!=ST_GAS)
