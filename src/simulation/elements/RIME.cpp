@@ -46,7 +46,7 @@ void RIME_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Name = "RIME";
 	elem->Colour = COLPACK(0xCCCCCC);
 	elem->MenuVisible = 1;
-	elem->MenuSection = SC_CRACKER2;
+	elem->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.00f;
