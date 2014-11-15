@@ -1589,7 +1589,7 @@ int main(int argc, char *argv[])
 							if (parts[i].ctype >= 0 && parts[i].ctype < PT_NUM && ptypes[parts[i].ctype].enabled)
 							{
 								parts[i].type = parts[i].ctype;
-								parts[i].life = 0;
+								parts[i].ctype = parts[i].life = 0;
 							}
 							else
 								kill_part(i);
