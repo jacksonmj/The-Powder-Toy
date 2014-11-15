@@ -1563,6 +1563,16 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 								partsptr[newIndex].tmp = 6;
 							partsptr[newIndex].ctype = 0;
 						}
+						break;
+					case PT_QRTZ:
+					case PT_PQRT:
+						if (saved_version < 89)
+						{
+							partsptr[newIndex].tmp2 = partsptr[newIndex].tmp;
+							partsptr[newIndex].tmp = partsptr[newIndex].ctype;
+							partsptr[newIndex].ctype = 0;
+						}
+						break;
 					}
 				}
 			}
@@ -2328,6 +2338,16 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned c
 						parts[i-1].tmp = 6;
 					parts[i-1].ctype = 0;
 				}
+				break;
+			case PT_QRTZ:
+			case PT_PQRT:
+				if (ver<89)
+				{
+					parts[i-1].tmp2 = parts[i-1].tmp;
+					parts[i-1].tmp = parts[i-1].ctype;
+					parts[i-1].ctype = 0;
+				}
+				break;
 			}
 		}
 	}

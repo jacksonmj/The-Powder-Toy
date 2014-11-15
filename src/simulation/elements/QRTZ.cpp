@@ -30,7 +30,7 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 		}
 	}
 	// absorb SLTW
-	if (parts[i].ctype!=-1)
+	if (parts[i].tmp!=-1)
 		for (rx=-1; rx<2; rx++)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
@@ -40,12 +40,12 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 						if (parts[ri].type==PT_SLTW && !(rand()%500))
 						{
 							kill_part(ri);
-							parts[i].ctype ++;
+							parts[i].tmp ++;
 						}
 					}
 				}
 	// grow if absorbed SLTW
-	if (parts[i].ctype>0)
+	if (parts[i].tmp>0)
 	{
 		bool stopgrow=false;
 		int rnd, sry, srx;
@@ -59,20 +59,20 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 			sry = (rnd%3)-1;
 			if (x+srx>=0 && y+sry>=0 && x+srx<XRES && y+sry<YRES && (srx || sry))
 			{
-				if (!stopgrow && !sim->pmap[y+sry][x+srx].count_notEnergy && parts[i].ctype!=0)
+				if (!stopgrow && !sim->pmap[y+sry][x+srx].count_notEnergy && parts[i].tmp!=0)
 				{
 					np = sim->part_create(-1,x+srx,y+sry,PT_QRTZ);
 					if (np>-1)
 					{
 						parts[np].tmp = parts[i].tmp;
-						parts[i].ctype--;
+						parts[i].tmp--;
 						if (rand()%2)
 						{
-							parts[np].ctype=-1;//dead qrtz
+							parts[np].tmp=-1;//dead qrtz
 						}
-						else if (!parts[i].ctype && 1>rand()%15)
+						else if (!parts[i].tmp && 1>rand()%15)
 						{
-							parts[i].ctype=-1;
+							parts[i].tmp=-1;
 						}
 						stopgrow=true;
 					}
@@ -82,19 +82,19 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if ((parts[ri].type==PT_QRTZ || parts[ri].type==PT_PQRT) && (parts[i].ctype>parts[ri].ctype) && parts[ri].ctype>=0 )//diffusion
+					if ((parts[ri].type==PT_QRTZ || parts[ri].type==PT_PQRT) && (parts[i].tmp>parts[ri].tmp) && parts[ri].tmp>=0 )//diffusion
 					{
-						tmp = parts[i].ctype - parts[ri].ctype;
+						tmp = parts[i].tmp - parts[ri].tmp;
 						if (tmp ==1)
 						{
-							parts[ri].ctype ++;
-							parts[i].ctype --;
+							parts[ri].tmp ++;
+							parts[i].tmp --;
 							break;
 						}
 						if (tmp>0)
 						{
-							parts[ri].ctype += tmp/2;
-							parts[i].ctype -= tmp/2;
+							parts[ri].tmp += tmp/2;
+							parts[i].tmp -= tmp/2;
 							break;
 						}
 					}
@@ -107,7 +107,7 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 
 int QRTZ_graphics(GRAPHICS_FUNC_ARGS) //QRTZ and PQRT
 {
-	int t = cpart->type, z = cpart->tmp - 5;//speckles!
+	int t = cpart->type, z = cpart->tmp2 - 5;//speckles!
 	if (cpart->temp>(ptransitions[t].thv-800.0f))//hotglow for quartz
 	{
 		float frequency = 3.1415/(2*ptransitions[t].thv-(ptransitions[t].thv-800.0f));
@@ -127,7 +127,7 @@ int QRTZ_graphics(GRAPHICS_FUNC_ARGS) //QRTZ and PQRT
 
 void QRTZ_create(ELEMENT_CREATE_FUNC_ARGS)
 {
-	sim->parts[i].tmp = (rand()%11);
+	sim->parts[i].tmp2 = (rand()%11);
 	sim->parts[i].pavg[1] = pv[y/CELL][x/CELL];
 }
 
