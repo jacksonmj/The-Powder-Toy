@@ -83,6 +83,14 @@ void Simulation::Clear()
 		pmap_flat[i].count_notEnergy = 0;
 	}
 
+	memset(parts, 0, sizeof(particle)*NPART);
+#ifdef DEBUG_PARTSALLOC
+	for (i=0; i<NPART; i++)
+		partsFree[i] = true;
+#endif
+	for (i=0; i<NPART-1; i++)
+		parts[i].life = i+1;
+	parts[NPART-1].life = -1;
 	pfree = 0;
 }
 

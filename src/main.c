@@ -332,10 +332,6 @@ void clear_sim(void)
 	memset(emap, 0, sizeof(emap));
 	memset(signs, 0, sizeof(signs));
 	MSIGN = -1;
-	memset(parts, 0, sizeof(particle)*NPART);
-	for (i=0; i<NPART-1; i++)
-		parts[i].life = i+1;
-	parts[NPART-1].life = -1;
 	parts_lastActiveIndex = 0;
 	memset(pmap, 0, sizeof(pmap));
 	memset(pv, 0, sizeof(pv));
