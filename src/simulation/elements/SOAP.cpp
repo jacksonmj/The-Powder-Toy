@@ -15,6 +15,8 @@
 
 #include "simulation/ElementsCommon.h"
 
+const float SOAP_freezetemp = 248.15f;
+
 void SOAP_attach(Simulation *sim, int i1, int i2)
 {
 	if (!(sim->parts[i2].ctype&4))
@@ -66,7 +68,7 @@ int SOAP_update(UPDATE_FUNC_ARGS)
 
 	if (parts[i].ctype&1)
 	{
-		if (parts[i].temp>0)
+		if (parts[i].temp>SOAP_freezetemp)
 		{
 			if (parts[i].life<=0)
 			{
@@ -123,7 +125,7 @@ int SOAP_update(UPDATE_FUNC_ARGS)
 					for (ry=-2; ry<3; ry++)
 						if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 						{
-							if (parts[i].temp>0 && bmap[(y+ry)/CELL][(x+rx)/CELL])
+							if (parts[i].temp>SOAP_freezetemp && bmap[(y+ry)/CELL][(x+rx)/CELL])
 							{
 								SOAP_detach(sim, i);
 								continue;
@@ -133,7 +135,7 @@ int SOAP_update(UPDATE_FUNC_ARGS)
 							{
 								rt = parts[ri].type;
 
-								if (parts[i].temp>0)
+								if (parts[i].temp>SOAP_freezetemp)
 								{
 									if (ptypes[rt].state != ST_GAS && rt != PT_SOAP && rt != PT_GLAS)
 									{
