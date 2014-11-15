@@ -427,7 +427,7 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 						angle = atan2(gvx, gvy)*180.0f/M_PI;
 					else
 						angle = rand()%360;
-					if (((int)playerp->comm)&0x01)
+					if (((int)playerp->pcomm)&0x01)
 						angle += 180;
 					if (angle>360)
 						angle-=360;
