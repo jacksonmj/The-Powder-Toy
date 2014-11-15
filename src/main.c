@@ -2421,7 +2421,7 @@ int main(int argc, char *argv[])
 				{
 					if (!bq)
 						for (signi=0; signi<MAXSIGNS; signi++)
-							if (sregexp(signs[signi].text, "^{[c|t]:[0-9]*|.*}$")==0)
+							if (sregexp(signs[signi].text, "^{[ct]:[0-9]*|.*}$")==0)
 							{
 								int signx, signy, signw, signh;
 								get_sign_pos(signi, &signx, &signy, &signw, &signh);

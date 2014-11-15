@@ -3682,7 +3682,7 @@ void render_signs(pixel *vid_buf)
 				drawtext(vid_buf, x+3, y+3, buff, 255, 255, 255, 255);
 			}
 
-			if (sregexp(signs[i].text, "^{[c|t]:[0-9]*|.*}$")==0)
+			if (sregexp(signs[i].text, "^{[ct]:[0-9]*|.*}$")==0)
 			{
 				int sldr, startm;
 				memset(buff, 0, sizeof(buff));
@@ -3698,7 +3698,7 @@ void render_signs(pixel *vid_buf)
 			}
 
 			//Usual text
-			if (strcmp(signs[i].text, "{p}") && strcmp(signs[i].text, "{t}") && sregexp(signs[i].text, "^{[c|t]:[0-9]*|.*}$"))
+			if (strcmp(signs[i].text, "{p}") && strcmp(signs[i].text, "{t}") && sregexp(signs[i].text, "^{[ct]:[0-9]*|.*}$"))
 				drawtext(vid_buf, x+3, y+3, signs[i].text, 255, 255, 255, 255);
 
 			x = signs[i].x;
