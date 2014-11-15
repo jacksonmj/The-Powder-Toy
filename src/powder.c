@@ -241,15 +241,18 @@ void init_can_move()
 			can_move[movingType][PT_BVBR] = 1;
 		}
 	}
-	//a list of lots of things PHOT can move through
-	// TODO: replace with property
-	for (movingType = 0; movingType < PT_NUM; movingType++)
+	for (destinationType = 0; destinationType < PT_NUM; destinationType++)
 	{
-		if (movingType == PT_GLAS || movingType == PT_PHOT || movingType == PT_FILT || movingType == PT_INVIS
-		 || movingType == PT_CLNE || movingType == PT_PCLN || movingType == PT_BCLN || movingType == PT_PBCN
-		 || movingType == PT_WATR || movingType == PT_DSTW || movingType == PT_SLTW || movingType == PT_GLOW
-		 || movingType == PT_ISOZ || movingType == PT_ISZS || movingType == PT_QRTZ || movingType == PT_PQRT)
-			can_move[PT_PHOT][movingType] = 2;
+		//a list of lots of things PHOT can move through
+		// TODO: replace with property
+		if (destinationType == PT_GLAS || destinationType == PT_PHOT || destinationType == PT_FILT || destinationType == PT_INVIS
+		 || destinationType == PT_CLNE || destinationType == PT_PCLN || destinationType == PT_BCLN || movingType == PT_PBCN
+		 || destinationType == PT_WATR || destinationType == PT_DSTW || destinationType == PT_SLTW || movingType == PT_GLOW
+		 || destinationType == PT_ISOZ || destinationType == PT_ISZS || destinationType == PT_QRTZ || movingType == PT_PQRT
+		 || destinationType == PT_H2)
+			can_move[PT_PHOT][destinationType] = 2;
+		if (destinationType != PT_DMND && destinationType != PT_INSL && destinationType != PT_VOID && destinationType != PT_PVOD)
+			can_move[PT_PROT][destinationType] = 2;
 	}
 	//other special cases that weren't covered above
 	can_move[PT_DEST][PT_DMND] = 0;
@@ -462,35 +465,62 @@ int try_move(int i, int x, int y, int nx, int ny)
 			if (t==PT_PHOT)
 			{
 				parts[i].ctype &= globalSim->elements[rt].PhotonReflectWavelengths;
-				if (rt==PT_GLOW && !parts[ri].life)
+				if (rt==PT_GLOW)
 				{
-					if (rand() < RAND_MAX/30)
+					if (!parts[ri].life && rand() < RAND_MAX/30)
 					{
 						parts[ri].life = 120;
 						create_gain_photon(i);
 					}
 				}
-				if (rt==PT_BIZR || rt==PT_BIZRG || rt==PT_BIZRS)
+				else if (rt==PT_FILT)
+				{
+					parts[i].ctype = Element_FILT::interactWavelengths(&parts[ri], parts[i].ctype);
+				}
+				else if (rt==PT_INVIS)
+				{
+					if (pv[ny/CELL][nx/CELL]<=4.0f && pv[ny/CELL][nx/CELL]>=-4.0f)
+					{
+						part_change_type(i,x,y,PT_NEUT);
+						parts[i].ctype = 0;
+					}
+				}
+				else if (rt==PT_BIZR || rt==PT_BIZRG || rt==PT_BIZRS)
 				{
 					part_change_type(i, x, y, PT_ELEC);
 					parts[i].ctype = 0;
 				}
-				if (rt==PT_INVIS && pv[ny/CELL][nx/CELL]<=4.0f && pv[ny/CELL][nx/CELL]>=-4.0f)
+				else if (rt == PT_H2 && !(parts[i].tmp&0x1))
 				{
-					part_change_type(i,x,y,PT_NEUT);
+					globalSim->part_change_type(i, x, y, PT_PROT);
 					parts[i].ctype = 0;
+					parts[i].tmp2 = 0x1;
+
+					globalSim->part_create(ri, x, y, PT_ELEC);
+					return 1;
 				}
 			}
-			if ((t==PT_BIZR||t==PT_BIZRG||t==PT_PHOT) && rt==PT_FILT)
+			else if (t == PT_NEUT)
 			{
-				parts[i].ctype = Element_FILT::interactWavelengths(&parts[ri], parts[i].ctype);
+				if (rt==PT_GLAS)
+				{
+					if (rand() < RAND_MAX/10)
+						create_cherenkov_photon(i);
+				}
 			}
-			if (t == PT_NEUT && rt==PT_GLAS)
+			else if (t == PT_PROT)
 			{
-				if (rand() < RAND_MAX/10)
-					create_cherenkov_photon(i);
+				if (rt == PT_INVIS)
+					globalSim->part_change_type(i, x, y, PT_NEUT);
 			}
-			if (t==PT_ELEC && rt==PT_GLOW)
+			else if (t==PT_BIZR || t==PT_BIZRG)
+			{
+				if (rt==PT_FILT)
+				{
+					parts[i].ctype = Element_FILT::interactWavelengths(&parts[ri], parts[i].ctype);
+				}
+			}
+			else if (t==PT_ELEC && rt==PT_GLOW)
 			{
 				part_change_type(i, x, y, PT_PHOT);
 			}
@@ -528,18 +558,13 @@ int try_move(int i, int x, int y, int nx, int ny)
 	FOR_PMAP_POSITION_NOENERGY(globalSim, nx, ny, rcount, ri, rnext)
 	{
 		rt = parts[ri].type;
-		if (t==PT_NEUT && (ptypes[rt].properties&PROP_NEUTABSORB))
-		{
-			kill_part(i);
-			return -1;
-		}
 		if (rt==PT_VOID || rt==PT_PVOD) //this is where void eats particles
 		{
 			//void ctype already checked in eval_move
 			kill_part(i);
 			return -1;
 		}
-		if (rt==PT_BHOL || rt==PT_NBHL) //this is where blackhole eats particles
+		else if (rt==PT_BHOL || rt==PT_NBHL) //this is where blackhole eats particles
 		{
 			if (!legacy_enable)
 			{
@@ -548,35 +573,51 @@ int try_move(int i, int x, int y, int nx, int ny)
 			kill_part(i);
 			return -1;
 		}
-		if ((rt==PT_WHOL||rt==PT_NWHL) && t==PT_ANAR) //whitehole eats anar
+		else if (rt==PT_WHOL||rt==PT_NWHL)
 		{
-			if (!legacy_enable)
+			if (t==PT_ANAR) //whitehole eats anar
 			{
-				parts[ri].temp = restrict_flt(parts[ri].temp- (MAX_TEMP-parts[i].temp)/2, MIN_TEMP, MAX_TEMP);
+				if (!legacy_enable)
+				{
+					parts[ri].temp = restrict_flt(parts[ri].temp- (MAX_TEMP-parts[i].temp)/2, MIN_TEMP, MAX_TEMP);
+				}
+				kill_part(i);
+				return -1;
 			}
-			kill_part(i);
-			return -1;
 		}
-		if (rt==PT_DEUT && t==PT_ELEC)
+		else if (rt==PT_DEUT)
 		{
-			if(parts[ri].life < 6000)
-				parts[ri].life += 1;
-			parts[ri].temp = 0;
-			kill_part(i);
-			return -1;
+			if (t==PT_ELEC)
+			{
+				if(parts[ri].life < 6000)
+					parts[ri].life += 1;
+				parts[ri].temp = 0;
+				kill_part(i);
+				return -1;
+			}
 		}
-		if ((rt==PT_VIBR || rt==PT_BVBR) && (ptypes[t].properties & TYPE_ENERGY))
+		else if (rt==PT_VIBR || rt==PT_BVBR)
 		{
-			parts[ri].tmp += 20;
-			kill_part(i);
-			return -1;
+			if (ptypes[t].properties & TYPE_ENERGY)
+			{
+				parts[ri].tmp += 20;
+				kill_part(i);
+				return -1;
+			}
 		}
+
+		if (t==PT_NEUT)
+		{
+			if (ptypes[rt].properties&PROP_NEUTABSORB)
+			{
+				kill_part(i);
+				return -1;
+			}
+		}
+
 		if ((bmap[y/CELL][x/CELL]==WL_EHOLE && !emap[y/CELL][x/CELL]) && !(bmap[ny/CELL][nx/CELL]==WL_EHOLE && !emap[ny/CELL][nx/CELL]))
 			return 0;
 
-		if(t==PT_GBMB&&parts[i].life>0)
-			return 0;
-		
 		if (t==PT_NEUT && destNeutPenetrate<0 && (globalSim->elements[rt].Properties&PROP_NEUTPENETRATE))
 			destNeutPenetrate = ri;
 
@@ -605,6 +646,9 @@ int try_move(int i, int x, int y, int nx, int ny)
 		parts[srcNeutPenetrate].x = nx;
 		parts[srcNeutPenetrate].y = ny;
 	}
+
+	if(t==PT_GBMB&&parts[i].life>0)
+		return 0;
 
 	return 1;
 }

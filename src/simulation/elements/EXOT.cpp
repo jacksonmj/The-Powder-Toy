@@ -34,11 +34,14 @@ int EXOT_update(UPDATE_FUNC_ARGS)
 					}
 					else if (rt == PT_EXOT)
 					{
+						if (parts[ri].ctype == PT_PROT)
+							parts[i].ctype = PT_PROT;
 						if (parts[ri].life == 1500 && !(rand()%1000))
 							parts[i].life = 1500;
 					}
 					else if (rt == PT_LAVA)
 					{
+						//turn molten TTAN or molten GOLD to molten VIBR
 						if (parts[ri].ctype == PT_TTAN || parts[ri].ctype == PT_GOLD)
 						{
 							if (!(rand()%10))
@@ -48,6 +51,7 @@ int EXOT_update(UPDATE_FUNC_ARGS)
 								return 1;
 							}
 						}
+						//molten VIBR will kill the leftover EXOT though, so the VIBR isn't killed later
 						else if (parts[ri].ctype == PT_VIBR)
 						{
 							if (!(rand()%1000))
@@ -57,7 +61,7 @@ int EXOT_update(UPDATE_FUNC_ARGS)
 							}
 						}
 					}
-					if ((parts[i].tmp>245) && (parts[i].life>1000))
+					if (parts[i].tmp>245 && parts[i].life>1000)
 					{
 						if (rt!=PT_EXOT && rt!=PT_BREL && rt!=PT_DMND && rt!=PT_CLNE && rt!=PT_PRTI && rt!=PT_PRTO && rt!=PT_PCLN && rt!=PT_VOID && rt!=PT_NBHL && rt!=PT_WARP)
 						{
@@ -67,8 +71,9 @@ int EXOT_update(UPDATE_FUNC_ARGS)
 					}
 				}
 			}
-	parts[i].tmp--;	
-	parts[i].tmp2--;	
+	parts[i].tmp--;
+	parts[i].tmp2--;
+	//reset tmp every 250 frames, gives EXOT it's slow flashing effect
 	if (parts[i].tmp<1 || parts[i].tmp>250) 
 		parts[i].tmp = 250;
 	if (parts[i].tmp2<1)
@@ -120,7 +125,17 @@ int EXOT_update(UPDATE_FUNC_ARGS)
 			}
 		}
 	}
-	if (parts[i].temp<273.15f)
+	if (parts[i].ctype == PT_PROT)
+	{
+		if (parts[i].temp < 50.0f)
+		{
+			sim->part_create(i, x, y, PT_HFLM);
+			return 1;
+		}
+		else
+			parts[i].temp -= 1.0f;
+	}
+	else if (parts[i].temp<273.15f)
 	{
 		parts[i].vx = 0;
 		parts[i].vy = 0;

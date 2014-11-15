@@ -71,6 +71,7 @@ int ELEC_update(UPDATE_FUNC_ARGS)
 						kill_part(i);
 						return 1;
 					case PT_NEUT:
+					case PT_PROT: // this is the correct reaction, not NEUT, but leaving NEUT in anyway
 						if (!sim->pmap[y+ry][x+rx].count_notEnergy)
 						{
 							part_change_type(ri, x+rx, y+ry, PT_H2);
