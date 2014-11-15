@@ -154,7 +154,7 @@ void PPIP_flood_trigger(Simulation* sim, int x, int y, int sparkedBy)
 	free(coord_stack);
 }
 
-void PIPE_transfer_pipe_to_part(particle *pipe, particle *part)
+void PIPE_transfer_pipe_to_part(Simulation *sim, particle *pipe, particle *part)
 {
 	part->type = (pipe->tmp & 0xFF);
 	part->temp = pipe->temp;
@@ -163,7 +163,7 @@ void PIPE_transfer_pipe_to_part(particle *pipe, particle *part)
 	part->ctype = pipe->pavg[1];
 	pipe->tmp &= ~0xFF;
 
-	if (!ptypes[part->type].properties & TYPE_ENERGY)
+	if (!sim->elements[part->type].Properties & TYPE_ENERGY)
 	{
 		part->vx = 0.0f;
 		part->vy = 0.0f;
@@ -175,7 +175,7 @@ void PIPE_transfer_pipe_to_part(particle *pipe, particle *part)
 	part->dcolour = 0;
 }
 
-void PIPE_transfer_part_to_pipe(particle *part, particle *pipe)
+void PIPE_transfer_part_to_pipe(Simulation *sim, particle *part, particle *pipe)
 {
 	pipe->tmp = (pipe->tmp&~0xFF) | part->type;
 	pipe->temp = part->temp;
@@ -184,7 +184,7 @@ void PIPE_transfer_part_to_pipe(particle *part, particle *pipe)
 	pipe->pavg[1] = part->ctype;
 }
 
-void PIPE_transfer_pipe_to_pipe(particle *src, particle *dest)
+void PIPE_transfer_pipe_to_pipe(Simulation *sim, particle *src, particle *dest)
 {
 	dest->tmp = (dest->tmp&~0xFF) | (src->tmp&0xFF);
 	dest->temp = src->temp;
@@ -221,7 +221,7 @@ void pushParticle(Simulation *sim, int i, int count, int original)
 					rt = parts[ri].type;
 					if ((rt==PT_PIPE || rt==PT_PPIP) && parts[ri].ctype!=notctype && (parts[ri].tmp&0xFF)==0)
 					{
-						PIPE_transfer_pipe_to_pipe(parts+i, parts+ri);
+						PIPE_transfer_pipe_to_pipe(sim, parts+i, parts+ri);
 						if (ri > original)
 							parts[ri].flags |= PFLAG_NORMALSPEED;//skip particle push, normalizes speed
 						count++;
@@ -234,7 +234,7 @@ void pushParticle(Simulation *sim, int i, int count, int original)
 						particle *storePart = channel->AllocParticle(slot);
 						if (storePart)
 						{
-							PIPE_transfer_pipe_to_part(parts+i, storePart);
+							PIPE_transfer_pipe_to_part(sim, parts+i, storePart);
 							count++;
 							break;
 						}
@@ -252,7 +252,7 @@ void pushParticle(Simulation *sim, int i, int count, int original)
 			rt = parts[ri].type;
 			if ((rt==PT_PIPE || rt==PT_PPIP) && parts[ri].ctype!=notctype && (parts[ri].tmp&0xFF)==0)
 			{
-				PIPE_transfer_pipe_to_pipe(parts+i, parts+ri);
+				PIPE_transfer_pipe_to_pipe(sim, parts+i, parts+ri);
 				if (ri > original)
 					parts[ri].flags |= PFLAG_NORMALSPEED;//skip particle push, normalizes speed
 				count++;
@@ -266,7 +266,7 @@ void pushParticle(Simulation *sim, int i, int count, int original)
 				particle *storePart = channel->AllocParticle(slot);
 				if (storePart)
 				{
-					PIPE_transfer_pipe_to_part(parts+i, storePart);
+					PIPE_transfer_pipe_to_part(sim, parts+i, storePart);
 					count++;
 					break;
 				}
@@ -281,7 +281,7 @@ void pushParticle(Simulation *sim, int i, int count, int original)
 			np = sim->part_create(-1,x+rx,y+ry,parts[i].tmp&0xFF);
 			if (np!=-1)
 			{
-				PIPE_transfer_pipe_to_part(parts+i, parts+np);
+				PIPE_transfer_pipe_to_part(sim, parts+i, parts+np);
 			}
 		}
 	}
@@ -415,7 +415,7 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 					// TODO: normal particles in pmap should block creation
 					if (surround_space && (parts[i].tmp&0xFF)!=0 && (np=sim->part_create(-1,x+rx,y+ry,parts[i].tmp&0xFF))>=0)  //creating at end
 					{
-						PIPE_transfer_pipe_to_part(parts+i, parts+np);
+						PIPE_transfer_pipe_to_part(sim, parts+i, parts+np);
 					}
 					else
 					{
@@ -426,13 +426,13 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 							{
 								if (parts[ri].type==PT_SOAP)
 									SOAP_detach(sim, ri);
-								PIPE_transfer_part_to_pipe(parts+ri, parts+i);
+								PIPE_transfer_part_to_pipe(sim, parts+ri, parts+i);
 								kill_part(ri);
 							}
 							else if ((parts[i].tmp&0xFF) == 0 && parts[ri].type==PT_STOR && parts[ri].tmp && (ptypes[parts[ri].tmp].properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY)))
 							{
 								// STOR stores properties in the same places as PIPE does
-								PIPE_transfer_pipe_to_pipe(parts+ri, parts+i);
+								PIPE_transfer_pipe_to_pipe(sim, parts+ri, parts+i);
 							}
 						}
 					}
