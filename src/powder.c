@@ -246,9 +246,9 @@ void init_can_move()
 		//a list of lots of things PHOT can move through
 		// TODO: replace with property
 		if (destinationType == PT_GLAS || destinationType == PT_PHOT || destinationType == PT_FILT || destinationType == PT_INVIS
-		 || destinationType == PT_CLNE || destinationType == PT_PCLN || destinationType == PT_BCLN || movingType == PT_PBCN
-		 || destinationType == PT_WATR || destinationType == PT_DSTW || destinationType == PT_SLTW || movingType == PT_GLOW
-		 || destinationType == PT_ISOZ || destinationType == PT_ISZS || destinationType == PT_QRTZ || movingType == PT_PQRT
+		 || destinationType == PT_CLNE || destinationType == PT_PCLN || destinationType == PT_BCLN || destinationType == PT_PBCN
+		 || destinationType == PT_WATR || destinationType == PT_DSTW || destinationType == PT_SLTW || destinationType == PT_GLOW
+		 || destinationType == PT_ISOZ || destinationType == PT_ISZS || destinationType == PT_QRTZ || destinationType == PT_PQRT
 		 || destinationType == PT_H2)
 			can_move[PT_PHOT][destinationType] = 2;
 		if (destinationType != PT_DMND && destinationType != PT_INSL && destinationType != PT_VOID && destinationType != PT_PVOD)
@@ -264,6 +264,7 @@ void init_can_move()
 	can_move[PT_NEUT][PT_INVIS] = 2;
 	can_move[PT_ELEC][PT_LCRY] = 2;
 	can_move[PT_ELEC][PT_EXOT] = 2;
+	can_move[PT_ELEC][PT_GLOW] = 2;
 	can_move[PT_PHOT][PT_LCRY] = 3; //varies according to LCRY life
 
 	can_move[PT_PHOT][PT_BIZR] = 2;
@@ -520,9 +521,13 @@ int try_move(int i, int x, int y, int nx, int ny)
 					parts[i].ctype = Element_FILT::interactWavelengths(&parts[ri], parts[i].ctype);
 				}
 			}
-			else if (t==PT_ELEC && rt==PT_GLOW)
+			else if (t==PT_ELEC)
 			{
-				part_change_type(i, x, y, PT_PHOT);
+				if (rt==PT_GLOW)
+				{
+					part_change_type(i, x, y, PT_PHOT);
+					parts[i].ctype = 0x3FFFFFFF;
+				}
 			}
 		}
 		return 1;
