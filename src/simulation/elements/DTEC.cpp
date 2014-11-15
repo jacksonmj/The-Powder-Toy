@@ -37,6 +37,7 @@ int DTEC_update(UPDATE_FUNC_ARGS)
 					}
 				}
 	}
+	int photonWl = 0;
 	for (rx=-rd; rx<rd+1; rx++)
 		for (ry=-rd; ry<rd+1; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
@@ -45,8 +46,41 @@ int DTEC_update(UPDATE_FUNC_ARGS)
 				{
 					if (parts[ri].type == parts[i].ctype && (parts[i].ctype != PT_LIFE || parts[i].tmp == parts[ri].ctype || !parts[i].tmp))
 						parts[i].life = 1;
+					if (parts[ri].type == PT_PHOT)
+						photonWl = parts[ri].ctype;
 				}
 			}
+	if (photonWl)
+	{
+		int nx, ny;
+		for (rx=-1; rx<2; rx++)
+			for (ry=-1; ry<2; ry++)
+				if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+				{
+					if (!sim->pmap[y+ry][x+rx].count_notEnergy)
+						continue;
+					nx = x+rx;
+					ny = y+ry;
+					while (true)
+					{
+						bool foundFILT = false;
+						FOR_PMAP_POSITION_NOENERGY(sim, nx, ny, rcount, ri, rnext)
+						{
+							if (parts[ri].type==PT_FILT)
+							{
+								parts[ri].ctype = photonWl;
+								foundFILT = true;
+							}
+						}
+						if (!foundFILT)
+							continue;
+						nx += rx;
+						ny += ry;
+						if (nx<0 || ny<0 || nx>=XRES || ny>=YRES)
+							break;
+					}
+				}
+	}
 	return 0;
 }
 

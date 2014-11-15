@@ -51,8 +51,13 @@ int PHOT_update(UPDATE_FUNC_ARGS)
 						parts[ri].vy = rr*sinf(rrr);
 						pv[y/CELL][x/CELL] -= 15.0f * CFDS;
 					}
-					if (rt==PT_QRTZ && !rx && !ry)
+					else if (rt==PT_QRTZ && !rx && !ry)
 						isQuartz = true;
+					else if (rt == PT_FILT && parts[ri].tmp==9)
+					{
+						parts[i].vx += ((float)(rand()%1000-500))/1000.0f;
+						parts[i].vy += ((float)(rand()%1000-500))/1000.0f;
+					}
 				}
 			}
 	if (isQuartz)

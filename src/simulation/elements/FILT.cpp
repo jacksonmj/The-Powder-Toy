@@ -16,72 +16,9 @@
 #include "simulation/ElementsCommon.h"
 #include "simulation/elements/FILT.h"
 
-// Returns the effective wavelengths value of a FILT particle
-// (ctype if set, otherwise temperature based wavelengths)
-int FILT_getWavelengths(particle* cpart)
-{
-	if (cpart->ctype&0x3FFFFFFF)
-	{
-		return cpart->ctype;
-	}
-	else
-	{
-		int temp_bin = (int)((cpart->temp-273.0f)*0.025f);
-		if (temp_bin < 0) temp_bin = 0;
-		if (temp_bin > 25) temp_bin = 25;
-		return (0x1F << temp_bin);
-	}
-}
-
-// Returns the wavelengths in a particle after FILT interacts with it (e.g. a photon)
-// cpart is the FILT particle, origWl the original wavelengths in the interacting particle
-int FILT_interactWavelengths(particle *cpart, int origWl)
-{
-	const int mask = 0x3FFFFFFF;
-	int filtWl = FILT_getWavelengths(cpart);
-	switch (cpart->tmp)
-	{
-		case 0:
-			return filtWl; //Assign Colour
-		case 1:
-			return origWl & filtWl; //Filter Colour
-		case 2:
-			return origWl | filtWl; //Add Colour
-		case 3:
-			return origWl & (~filtWl); //Subtract colour of filt from colour of photon
-		case 4:
-			{
-				int shift = int((cpart->temp-273.0f)*0.025f);
-				if (shift<=0) shift = 1;
-				return (origWl << shift) & mask; // red shift
-			}
-		case 5:
-			{
-				int shift = int((cpart->temp-273.0f)*0.025f);
-				if (shift<=0) shift = 1;
-				return (origWl >> shift) & mask; // blue shift
-			}
-		case 6:
-			return origWl; // No change
-		case 7:
-			return origWl ^ filtWl; // XOR colours
-		case 8:
-			return (~origWl) & mask; // Invert colours
-		case 9:
-		{
-			int t1 = (origWl & 0x0000FF)+(rand()%5)-2;
-			int t2 = ((origWl & 0x00FF00)>>8)+(rand()%5)-2;
-			int t3 = ((origWl & 0xFF0000)>>16)+(rand()%5)-2;
-			return (origWl & 0xFF000000) | (t3<<16) | (t2<<8) | t1;
-		}
-		default:
-			return filtWl;
-	}
-}
-
 int FILT_graphics(GRAPHICS_FUNC_ARGS)
 {
-	int x, ctype = FILT_getWavelengths(cpart);
+	int x, ctype = Element_FILT::getWavelengths(cpart);
 	*colg = 0;
 	*colb = 0;
 	*colr = 0;

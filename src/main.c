@@ -1924,6 +1924,14 @@ int main(int argc, char *argv[])
 				{
 					sprintf(nametext, "%s (%s)", ptypes[crt].name, gmenu[parts[cri].ctype].name);
 				}
+				else if (crt==PT_FILT)
+				{
+					const char* filtModes[] = {"set colour", "AND", "OR", "subtract colour", "red shift", "blue shift", "no effect", "XOR", "NOT", "old QRTZ scattering"};
+					if (parts[cri].tmp>=0 && parts[cri].tmp<=9)
+						sprintf(nametext, "%s (%s)", ptypes[crt].name, filtModes[parts[cri].tmp]);
+					else
+						sprintf(nametext, "%s (unknown mode)", ptypes[crt].name);
+				}
 				else if (crt==PT_LAVA && parts[cri].ctype > 0 && parts[cri].ctype < PT_NUM )
 				{
 					char lowername[6];
@@ -1972,7 +1980,10 @@ int main(int argc, char *argv[])
 					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C", nametext, pv[y/CELL][x/CELL], parts[cri].temp-273.15f);
 #endif
 				}
-				if (crt==PT_PHOT) wavelength_gfx = parts[cri].ctype;
+				if (crt==PT_PHOT || crt==PT_BIZR || crt==PT_BIZRG || crt==PT_BIZRS || crt==PT_BRAY)
+					wavelength_gfx = parts[cri].ctype;
+				if (crt==PT_FILT && (parts[cri].ctype&0x3FFFFFFF))
+					wavelength_gfx = parts[cri].ctype;
 			}
 			else
 			{

@@ -483,7 +483,7 @@ int try_move(int i, int x, int y, int nx, int ny)
 			}
 			if ((t==PT_BIZR||t==PT_BIZRG||t==PT_PHOT) && rt==PT_FILT)
 			{
-				parts[i].ctype = FILT_interactWavelengths(&parts[ri], parts[i].ctype);
+				parts[i].ctype = Element_FILT::interactWavelengths(&parts[ri], parts[i].ctype);
 			}
 			if (t == PT_NEUT && rt==PT_GLAS)
 			{
