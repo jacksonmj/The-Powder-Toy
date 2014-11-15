@@ -15,6 +15,7 @@
 
 #include "simulation/ElementsCommon.h"
 #include "simulation/ElementDataContainer.h"
+#include "simulation/elements/WIFI.h"
 
 class WIFI_ElementDataContainer : public ElementDataContainer
 {
@@ -59,9 +60,7 @@ int WIFI_update(UPDATE_FUNC_ARGS)
 {
 	int rx, ry, rt;
 	int rcount, ri, rnext;
-	parts[i].tmp = (int)((parts[i].temp-73.15f)/100+1);
-	if (parts[i].tmp>=CHANNELS) parts[i].tmp = CHANNELS-1;
-	else if (parts[i].tmp<0) parts[i].tmp = 0;
+	parts[i].tmp = Element_WIFI::get_channel(&parts[i]);
 	int (*channel) = ((WIFI_ElementDataContainer*)sim->elementData[PT_WIFI])->wireless[parts[i].tmp];
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
@@ -94,7 +93,7 @@ int WIFI_update(UPDATE_FUNC_ARGS)
 int WIFI_graphics(GRAPHICS_FUNC_ARGS)
 {
 	float frequency = 0.0628;
-	int q = cpart->tmp;
+	int q = Element_WIFI::get_channel(cpart);
 	*colr = sin(frequency*q + 0) * 127 + 128;
 	*colg = sin(frequency*q + 2) * 127 + 128;
 	*colb = sin(frequency*q + 4) * 127 + 128;

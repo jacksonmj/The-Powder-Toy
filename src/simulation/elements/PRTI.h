@@ -22,6 +22,21 @@
 extern const int portal_rx[8];
 extern const int portal_ry[8];
 
+class Element_PRTI
+{
+public:
+	static int get_channel(particle *cpart)
+	{
+		int q = (int)((cpart->temp-73.15f)/100+1);
+		if (q>=CHANNELS)
+			return CHANNELS-1;
+		else if (q<0)
+			return 0;
+		return q;
+	}
+};
+
+
 class PortalChannel
 {
 public:

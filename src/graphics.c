@@ -71,6 +71,8 @@
 #endif
 #endif
 
+#include "simulation/elements/PRTI.h"
+#include "simulation/elements/WIFI.h"
 
 //unsigned cmode = CM_FIRE;
 unsigned int *render_modes;
@@ -2819,7 +2821,7 @@ void render_parts(pixel *vid)
 							addpixel(vid, nx+nxo, ny+nyo, colr, colg, colb, 255-orbd[r]);
 					}
 				}
-				if ((pixel_mode & EFFECT_LINES) && DEBUG_MODE)
+				if ((pixel_mode & EFFECT_LINES) && DEBUG_MODE && !(display_mode&DISPLAY_PERS))
 				{
 					if (mousex==(nx) && mousey==(ny))//draw lines connecting wifi/portal channels
 					{
@@ -2829,10 +2831,19 @@ void render_parts(pixel *vid)
 							type = PT_PRTO;
 						else if (type == PT_PRTO)
 							type = PT_PRTI;
+						int channel, otherchannel;
+						if (type==PT_WIFI)
+							channel = Element_WIFI::get_channel(&parts[i]);
+						else
+							channel = Element_PRTI::get_channel(&parts[i]);
 						for (z = 0; z<NPART; z++) {
-							if (parts[z].type)
+							if (parts[z].type==type)
 							{
-								if (parts[z].type==type&&parts[z].tmp==parts[i].tmp)
+								if (type==PT_WIFI)
+									otherchannel = Element_WIFI::get_channel(&parts[z]);
+								else
+									otherchannel = Element_PRTI::get_channel(&parts[z]);
+								if (otherchannel==channel)
 									xor_line(nx,ny,(int)(parts[z].x+0.5f),(int)(parts[z].y+0.5f),vid);
 							}
 						}
