@@ -919,16 +919,22 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 
 	if (t==PT_SPRK)
 	{
-		int index, type, lastSparkedIndex=-1;
+		int index, type, lastIndex=-1;
 		FOR_PMAP_POSITION_NOENERGY(globalSim, x, y, rcount, index, rnext)
 		{
-			if (p == -2 || parts[index].type != PT_INST)
+			type = parts[index].type;
+			if (p == -2 || type != PT_INST)
 			{
 				if (globalSim->spark_particle(index, x, y))
-					lastSparkedIndex = index;
+					lastIndex = index;
+			}
+			if (p==-2 && ((globalSim->elements[type].Properties & PROP_DRAWONCTYPE) || type==PT_CRAY))
+			{
+				parts[index].ctype = PT_SPRK;
+				lastIndex = index;
 			}
 		}
-		return lastSparkedIndex;
+		return lastIndex;
 	}
 	if (p==-2)//creating from brush
 	{
