@@ -217,9 +217,22 @@ void get_sign_pos(int i, int *x0, int *y0, int *w, int *h)
 		}
 		*w = textwidth(buff) + 5;
 	}
+	if (sregexp(signs[i].text, "^{b|.*}$")==0)
+	{
+		int sldr, startm;
+		sldr = startm = 3;
+		char buff[256];
+		memset(buff, 0, sizeof(buff));
+		while (signs[i].text[sldr] != '}')
+		{
+			buff[sldr - startm] = signs[i].text[sldr];
+			sldr++;
+		}
+		*w = textwidth(buff) + 5;
+	}
 
 	//Ususal width
-	if (strcmp(signs[i].text, "{p}") && strcmp(signs[i].text, "{t}") && sregexp(signs[i].text, "^{[ct]:[0-9]*|.*}$"))
+	if (strcmp(signs[i].text, "{p}") && strcmp(signs[i].text, "{t}") && sregexp(signs[i].text, "^{[ct]:[0-9]*|.*}$") && sregexp(signs[i].text, "^{b|.*}$"))
 		*w = textwidth(signs[i].text) + 5;
 	*h = 14;
 	*x0 = (signs[i].ju == 2) ? signs[i].x - *w :

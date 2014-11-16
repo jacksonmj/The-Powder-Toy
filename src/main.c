@@ -2432,12 +2432,18 @@ int main(int argc, char *argv[])
 				{
 					if (!bq)
 						for (signi=0; signi<MAXSIGNS; signi++)
-							if (sregexp(signs[signi].text, "^{[ct]:[0-9]*|.*}$")==0)
+							if (sregexp(signs[signi].text, "^{[ct]:[0-9]*|.*}$")==0 || sregexp(signs[signi].text, "^{b|.*}$")==0)
 							{
 								int signx, signy, signw, signh;
 								get_sign_pos(signi, &signx, &signy, &signw, &signh);
 								if (x>=signx && x<=signx+signw && y>=signy && y<=signy+signh)
 								{
+									if (signs[signi].text[1] == 'b')
+									{
+										globalSim->spark_position(signs[signi].x, signs[signi].y);
+										break;
+									}
+
 									char buff[256];
 									int sldr;
 
