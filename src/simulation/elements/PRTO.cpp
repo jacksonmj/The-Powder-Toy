@@ -33,8 +33,8 @@ int PRTO_update(UPDATE_FUNC_ARGS)
 	PortalChannel *channel = ((PRTI_ElementDataContainer*)sim->elementData[PT_PRTI])->GetParticleChannel(sim, i);
 	for (count=0; count<8; count++)
 	{
-		rx = portal_rx[(count + 4)%8];
-		ry = portal_ry[(count + 4)%8];
+		rx = portal_rx[count];
+		ry = portal_ry[count];
 		if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 		{
 			if (!sim->pmap[y+ry][x+rx].count_notEnergy)
