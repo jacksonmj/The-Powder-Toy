@@ -101,6 +101,13 @@ int goltype[NGOL] =
 	GT_BRAN,
 };
 
+int LIFE_update(UPDATE_FUNC_ARGS)
+{
+	if (parts[i].tmp <= 0 || parts[i].ctype<0 || parts[i].ctype >= NGOLALT)
+		sim->part_kill(i);
+	return 0;
+}
+
 int LIFE_graphics(GRAPHICS_FUNC_ARGS)
 {
 	pixel pc;
@@ -146,8 +153,14 @@ int LIFE_graphics(GRAPHICS_FUNC_ARGS)
 			pc = PIXRGB(150, 150, 0);
 		else
 			pc = PIXRGB(255, 255, 0);
-	} else {
+	}
+	else if (cpart->ctype >= 0 && cpart->ctype < NGOLALT)
+	{
 		pc = gmenu[cpart->ctype].colour;
+	}
+	else
+	{
+		pc = ren->sim->elements[cpart->type].Colour;
 	}
 	*colr = PIXR(pc);
 	*colg = PIXG(pc);
@@ -198,7 +211,7 @@ void LIFE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = NULL;
+	elem->Update = NULL;//&LIFE_update //TODO:???
 	elem->Graphics = &LIFE_graphics;
 }
 
