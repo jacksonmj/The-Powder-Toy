@@ -1327,7 +1327,7 @@ void Simulation::UpdateParticles()
 					s = 1;
 
 					//A fix for ice with ctype = 0
-					if ((t==PT_ICEI || t==PT_SNOW) && (parts[i].ctype==0 || parts[i].ctype>=PT_NUM || parts[i].ctype==PT_ICEI || parts[i].ctype==PT_SNOW))
+					if ((t==PT_ICEI || t==PT_SNOW) && (!IsValidElement(parts[i].ctype) || parts[i].ctype==PT_ICEI || parts[i].ctype==PT_SNOW))
 						parts[i].ctype = PT_WATR;
 
 					if (ctemph>elements[t].HighTemperatureTransitionThreshold && elements[t].HighTemperatureTransitionElement>-1) {
@@ -1336,7 +1336,7 @@ void Simulation::UpdateParticles()
 						if (elements[t].HighTemperatureTransitionElement!=PT_NUM)
 							t = elements[t].HighTemperatureTransitionElement;
 						else if (t==PT_ICEI || t==PT_SNOW) {
-							if (parts[i].ctype<PT_NUM&&parts[i].ctype!=t) {
+							if (IsValidElement(parts[i].ctype) && parts[i].ctype!=t) {
 								if (elements[parts[i].ctype].LowTemperatureTransitionElement==t && pt<=elements[parts[i].ctype].LowTemperatureTransitionThreshold) s = 0;
 								else {
 									t = parts[i].ctype;
@@ -1375,7 +1375,7 @@ void Simulation::UpdateParticles()
 							else t = PT_DSTW;
 						}
 						else if (t==PT_LAVA) {
-							if (parts[i].ctype>0 && parts[i].ctype<PT_NUM && parts[i].ctype!=PT_LAVA) {
+							if (IsValidElement(parts[i].ctype) && parts[i].ctype!=PT_LAVA) {
 								if (parts[i].ctype==PT_THRM && pt>=elements[PT_BMTL].HighTemperatureTransitionThreshold) s = 0;
 								else if ((parts[i].ctype==PT_VIBR || parts[i].ctype==PT_BVBR) && pt>=273.15f) s = 0;
 								else if (parts[i].ctype==PT_TUNG) {

@@ -104,7 +104,7 @@ public:
 	// Functions defined here should hopefully be inlined
 	// Don't put anything that will change often here, since changes cause a lot of recompiling
 
-	bool IsElement(int t) const
+	bool IsValidElement(int t) const
 	{
 		return (t>=0 && t<PT_NUM && elements[t].Enabled);
 	}

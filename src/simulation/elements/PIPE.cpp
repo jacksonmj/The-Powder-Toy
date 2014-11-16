@@ -293,6 +293,8 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 	int rx, ry, np;
 	int rnd, rndstore;
 	int rcount, ri, rnext;
+	if (!sim->IsValidElement(parts[i].tmp&0xFF))
+		parts[i].tmp &= ~0xFF;
 	if (parts[i].tmp & PPIP_TMPFLAG_TRIGGERS)
 	{
 		int pause_changed = 0;
@@ -506,7 +508,7 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 int PIPE_graphics(GRAPHICS_FUNC_ARGS)
 {
 
-	if ((cpart->tmp&0xFF)>0 && (cpart->tmp&0xFF)<PT_NUM)
+	if (sim->IsValidElement(cpart->tmp&0xFF))
 	{
 		//Create a temp. particle and do a subcall.
 		particle tpart;

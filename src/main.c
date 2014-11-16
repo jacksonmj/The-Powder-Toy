@@ -1932,7 +1932,7 @@ int main(int argc, char *argv[])
 					else
 						sprintf(nametext, "%s (unknown mode)", ptypes[crt].name);
 				}
-				else if (crt==PT_LAVA && parts[cri].ctype > 0 && parts[cri].ctype < PT_NUM )
+				else if (crt==PT_LAVA && globalSim->IsValidElement(parts[cri].ctype))
 				{
 					char lowername[6];
 					int ix;
@@ -1942,7 +1942,7 @@ int main(int argc, char *argv[])
 
 					sprintf(nametext, "Molten %s", lowername);
 				}
-				else if ((crt==PT_PIPE || crt == PT_PPIP) && (parts[cri].tmp&0xFF) > 0 && (parts[cri].tmp&0xFF) < PT_NUM )
+				else if ((crt==PT_PIPE || crt == PT_PPIP) && globalSim->IsValidElement((parts[cri].tmp&0xFF)))
 				{
 					char lowername[6];
 					int ix;
@@ -1959,7 +1959,7 @@ int main(int argc, char *argv[])
 					{
 						tctype = parts[cri].tmp&0xFF;
 					}
-					if (tctype>=PT_NUM || tctype<0 || crt==PT_PHOT)
+					if (!globalSim->IsValidElement(tctype) || crt==PT_PHOT)
 						tctype = 0;
 					sprintf(nametext, "%s (%s)", ptypes[crt].name, ptypes[tctype].name);
 				}
