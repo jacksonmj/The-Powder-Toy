@@ -101,7 +101,7 @@ int NEUT_update(UPDATE_FUNC_ARGS)
 					case PT_DEUT:
 						if ((pressureFactor+1+(parts[ri].life/100))>(rand()%1000))
 						{
-							NEUT_DeutExplosion(sim, parts[ri].life, x+rx, y+ry, parts[i].vx, parts[i].vy, restrict_flt(parts[ri].temp + parts[ri].life*500, MIN_TEMP, MAX_TEMP));
+							NEUT_DeutExplosion(sim, parts[ri].life, x+rx, y+ry, parts[i].vx, parts[i].vy, restrict_flt(parts[ri].temp + parts[ri].life*500.0f, MIN_TEMP, MAX_TEMP));
 							kill_part(ri);
 						}
 						break;

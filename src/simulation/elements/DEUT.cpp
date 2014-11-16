@@ -38,7 +38,9 @@ int DEUT_update(UPDATE_FUNC_ARGS)
 							break;
 						if (parts[ri].type==PT_DEUT && !(rand()%3))
 						{
-							if ((parts[i].life + parts[ri].life + 1) <= maxlife)
+							// If neighbour life+1 fits in the free capacity for this particle, absorb neighbour
+							// Condition is written in this way so that large neighbour life values don't cause integer overflow (life assumed to be positive)
+							if (parts[ri].life <= maxlife - parts[i].life - 1)
 							{
 								parts[i].life += parts[ri].life + 1;
 								kill_part(ri);
@@ -96,16 +98,20 @@ int DEUT_graphics(GRAPHICS_FUNC_ARGS)
 	if(cpart->life>=240)
 	{
 		*firea = 60;
-		*firer = *colr += cpart->life*1;
-		*fireg = *colg += cpart->life*2;
-		*fireb = *colb += cpart->life*3;
+		*firer = *colr += 255;
+		*fireg = *colg += 255;
+		*fireb = *colb += 255;
 		*pixel_mode |= PMODE_GLOW | FIRE_ADD;
 	}
-	else
+	else if(cpart->life>0)
 	{
 		*colr += cpart->life*1;
 		*colg += cpart->life*2;
 		*colb += cpart->life*3;
+		*pixel_mode |= PMODE_BLUR;
+	}
+	else
+	{
 		*pixel_mode |= PMODE_BLUR;
 	}
 	return 0;
