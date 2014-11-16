@@ -40,7 +40,7 @@ int PROT_update(UPDATE_FUNC_ARGS)
 	pv[y/CELL][x/CELL] -= .003f;
 	int rcount, ri, rnext, rt;
 	//slowly kill it if it's not inside an element
-	if (!sim->pmap[y][x].count && parts[i].life)
+	if (!sim->pmap[y][x].count_notEnergy && parts[i].life)
 	{
 		if (!--parts[i].life)
 		{
