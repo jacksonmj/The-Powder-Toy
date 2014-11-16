@@ -19,8 +19,6 @@ int ELEC_update(UPDATE_FUNC_ARGS)
 {
 	int rt, rx, ry, nb, rrx, rry;
 	int rcount, ri, rnext;
-	parts[i].pavg[0] = x;
-	parts[i].pavg[1] = y;
 	for (rx=-2; rx<=2; rx++)
 		for (ry=-2; ry<=2; ry++)
 			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES) {

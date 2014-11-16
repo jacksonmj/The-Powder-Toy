@@ -638,7 +638,7 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 	//Copy parts data
 	/* Field descriptor format:
 	|		0		|		0		|		0		|		0		|		0		|		0		|		0		|		0		|		0		|		0		|		0		|		0		|		0		|		0		|		0		|		0		|
-														tmp[3+4]	|		tmp2[2]	|		tmp2[1]	|	ctype[2]	|		vy		|		vx		|	dcololour	|	ctype[1]	|		tmp[2]	|		tmp[1]	|		life[2]	|		life[1]	|	temp dbl len|
+									|		pavg	|	tmp[3+4]	|		tmp2[2]	|		tmp2[1]	|	ctype[2]	|		vy		|		vx		|	dcololour	|	ctype[1]	|		tmp[2]	|		tmp[1]	|		life[2]	|		life[1]	|	temp dbl len|
 	life[2] means a second byte (for a 16 bit field) if life[1] is present
 	*/
 	partsData = (unsigned char*)malloc(NPART * (sizeof(particle)+1));
@@ -778,7 +778,17 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 						partsData[partsDataLen++] = partsptr[i].tmp2 >> 8;
 					}
 				}
-				
+
+				//Don't save pavg for things that break under pressure, because then they will break when the save is loaded, since pressure isn't also loaded
+				if ((partsptr[i].pavg[0] || partsptr[i].pavg[1]) && !(partsptr[i].type == PT_QRTZ || partsptr[i].type == PT_GLAS || partsptr[i].type == PT_TUNG))
+				{
+					fieldDesc |= 1 << 13;
+					partsData[partsDataLen++] = (int)partsptr[i].pavg[0];
+					partsData[partsDataLen++] = ((int)partsptr[i].pavg[0])>>8;
+					partsData[partsDataLen++] = (int)partsptr[i].pavg[1];
+					partsData[partsDataLen++] = ((int)partsptr[i].pavg[1])>>8;
+				}
+
 				//Write the field descriptor;
 				partsData[fieldDescLoc] = fieldDesc;
 				partsData[fieldDescLoc+1] = fieldDesc>>8;
@@ -1480,7 +1490,20 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 							partsptr[newIndex].tmp2 |= (((unsigned)partsData[i++]) << 8);
 						}
 					}
-					
+
+					//Read pavg
+					if(fieldDescriptor & 0x2000)
+					{
+						if(i+3 >= partsDataLen) goto fail;
+						int pavg;
+						pavg = partsData[i++];
+						pavg |= (((unsigned)partsData[i++]) << 8);
+						partsptr[newIndex].pavg[0] = (float)pavg;
+						pavg = partsData[i++];
+						pavg |= (((unsigned)partsData[i++]) << 8);
+						partsptr[newIndex].pavg[1] = (float)pavg;
+					}
+
 #ifdef OGLR
 					partsptr[newIndex].lastX = partsptr[newIndex].x - partsptr[newIndex].vx;
 					partsptr[newIndex].lastY = partsptr[newIndex].y - partsptr[newIndex].vy;

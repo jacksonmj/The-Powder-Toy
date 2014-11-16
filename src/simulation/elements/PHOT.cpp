@@ -20,8 +20,6 @@ int PHOT_update(UPDATE_FUNC_ARGS)
 	int rt, rx, ry;
 	int rcount, ri, rnext;
 	float rr, rrr;
-	parts[i].pavg[0] = x;
-	parts[i].pavg[1] = y;
 	if (!(parts[i].ctype&0x3FFFFFFF)) {
 		kill_part(i);
 		return 1;
