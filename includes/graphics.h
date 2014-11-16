@@ -36,7 +36,7 @@
 #define PIXRGB(r,g,b) (((b)<<16)|((g)<<8)|((r)))// (((b)<<16)|((g)<<8)|(r))
 #define PIXR(x) ((x)&0xFF)
 #define PIXG(x) (((x)>>8)&0xFF)
-#define PIXB(x) ((x)>>16)
+#define PIXB(x) (((x)>>16)&0xFF)
 #define PIXELBYTES 1
 #else
 #ifdef PIX32BGRA
@@ -44,7 +44,7 @@
 #define PIXRGB(r,g,b) (((b)<<24)|((g)<<16)|((r)<<8))
 #define PIXR(x) (((x)>>8)&0xFF)
 #define PIXG(x) (((x)>>16)&0xFF)
-#define PIXB(x) (((x)>>24))
+#define PIXB(x) (((x)>>24)&0xFF)
 #define PIXELBYTES 1
 #elif defined(PIX32OGL)
 #define PIXELCHANNELS 4
@@ -59,7 +59,7 @@
 #else
 #define PIXPACK(x) (x)
 #define PIXRGB(r,g,b) (((r)<<16)|((g)<<8)|(b))
-#define PIXR(x) ((x)>>16)
+#define PIXR(x) (((x)>>16)&0xFF)
 #define PIXG(x) (((x)>>8)&0xFF)
 #define PIXB(x) ((x)&0xFF)
 #define PIXELBYTES 1
