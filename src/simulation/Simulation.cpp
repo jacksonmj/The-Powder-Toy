@@ -425,6 +425,7 @@ int Simulation::part_create(int p, int x, int y, int t)
 		{
 			(*(elements[oldType].Func_ChangeType))(this, p, oldX, oldY, oldType, t);
 		}
+		if (oldType) elementCount[oldType]--;
 		pmap_remove(p, oldX, oldY, oldType);
 		i = p;
 	}
