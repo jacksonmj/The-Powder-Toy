@@ -141,11 +141,15 @@ typedef unsigned int pixel;
 #ifdef WIN32
 #define strcasecmp stricmp
 #endif
-#if defined(WIN32) && !defined(__GNUC__)
+#if defined(_MSC_VER)
+#if _MSC_VER < 1800
 #define fmin min
 #define fminf min
 #define fmax max
 #define fmaxf max
+#else
+#include <algorithm>
+#endif
 #endif
 
 #ifdef __cplusplus
