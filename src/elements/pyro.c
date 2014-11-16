@@ -101,11 +101,12 @@ int update_PYRO(UPDATE_FUNC_ARGS) {
 					}
 
 					if ((surround_space || ptypes[rt].explosive) &&
+						sim->elements[rt].Flammable && (sim->elements[rt].Flammable + (int)(pv[(y+ry)/CELL][(x+rx)/CELL] * 10.0f)) > (rand()%1000) &&
+						//exceptions, t is the thing causing the spark and rt is what's burning
 						(t!=PT_SPRK || (rt!=PT_RBDM && rt!=PT_LRBD && rt!=PT_INSL)) &&
 						(t!=PT_PHOT || rt!=PT_INSL) &&
 						(rt!=PT_SPNG || parts[ri].life==0) &&
-						(rt!=PT_H2 || parts[ri].temp < 2273.15) &&
-						ptypes[rt].flammable && (ptypes[rt].flammable + (int)(pv[(y+ry)/CELL][(x+rx)/CELL]*10.0f))>(rand()%1000))
+						(rt!=PT_H2 || parts[ri].temp < 2273.15))
 					{
 						part_change_type(ri,x+rx,y+ry,PT_FIRE);
 						parts[ri].temp = restrict_flt(ptypes[PT_FIRE].heat + (ptypes[rt].flammable/2), MIN_TEMP, MAX_TEMP);
