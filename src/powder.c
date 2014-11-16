@@ -1292,7 +1292,7 @@ void clear_area(int area_x, int area_y, int area_w, int area_h)
 		for (cx=0; cx<area_w; cx++)
 		{
 			bmap[(cy+area_y)/CELL][(cx+area_x)/CELL] = 0;
-			delete_part(cx+area_x, cy+area_y, 0);
+			globalSim->delete_position(cx+area_x, cy+area_y);
 		}
 	}
 	for (i=0; i<MAXSIGNS; i++)
