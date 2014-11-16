@@ -183,23 +183,24 @@ int SOAP_update(UPDATE_FUNC_ARGS)
 			parts[i].vx += dx*d;
 			parts[i].vy += dy*d;
 
-			if ((parts[parts[i].tmp].ctype&2) && (parts[parts[i].tmp].ctype&1) 
+			if ((parts[parts[i].tmp].ctype&2) && (parts[parts[i].tmp].ctype&1)
+					&& (parts[parts[i].tmp].tmp >= 0 && parts[parts[i].tmp].tmp < NPART)
 					&& (parts[parts[parts[i].tmp].tmp].ctype&2) && (parts[parts[parts[i].tmp].tmp].ctype&1))
 			{
-				int ii;
+				int ii = parts[parts[parts[i].tmp].tmp].tmp;
+				if (ii >= 0 && ii < NPART)
+				{
+					dx = parts[ii].x - parts[parts[i].tmp].x;
+					dy = parts[ii].y - parts[parts[i].tmp].y;
 
-				ii = parts[parts[parts[i].tmp].tmp].tmp;
+					d = 81/(pow(dx, 2)+pow(dy, 2)+81)-0.5;
 
-				dx = parts[ii].x - parts[parts[i].tmp].x;
-				dy = parts[ii].y - parts[parts[i].tmp].y;
+					parts[parts[i].tmp].vx -= dx*d*0.5f;
+					parts[parts[i].tmp].vy -= dy*d*0.5f;
 
-				d = 81/(pow(dx, 2)+pow(dy, 2)+81)-0.5;
-
-				parts[parts[i].tmp].vx -= dx*d*0.5f;
-				parts[parts[i].tmp].vy -= dy*d*0.5f;
-
-				parts[ii].vx += dx*d*0.5f;
-				parts[ii].vy += dy*d*0.5f;
+					parts[ii].vx += dx*d*0.5f;
+					parts[ii].vy += dy*d*0.5f;
+				}
 			}
 		}
 	}

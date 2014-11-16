@@ -696,12 +696,17 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 				//Life (optional), 1 to 2 bytes
 				if(partsptr[i].life)
 				{
+					int life = partsptr[i].life;
+					if (life > 0xFFFF)
+						life = 0xFFFF;
+					else if (life < 0)
+						life = 0;
 					fieldDesc |= 1 << 1;
-					partsData[partsDataLen++] = partsptr[i].life;
-					if(partsptr[i].life & 0xFF00)
+					partsData[partsDataLen++] = life;
+					if(life & 0xFF00)
 					{
 						fieldDesc |= 1 << 2;
-						partsData[partsDataLen++] = partsptr[i].life >> 8;
+						partsData[partsDataLen++] = life >> 8;
 					}
 				}
 				
@@ -779,7 +784,8 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 					}
 				}
 
-				//Don't save pavg for things that break under pressure, because then they will break when the save is loaded, since pressure isn't also loaded
+				//Pavg, 4 bytes
+ 				//Don't save pavg for things that break under pressure, because then they will break when the save is loaded, since pressure isn't also loaded
 				if ((partsptr[i].pavg[0] || partsptr[i].pavg[1]) && !(partsptr[i].type == PT_QRTZ || partsptr[i].type == PT_GLAS || partsptr[i].type == PT_TUNG))
 				{
 					fieldDesc |= 1 << 13;
@@ -789,7 +795,7 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 					partsData[partsDataLen++] = ((int)partsptr[i].pavg[1])>>8;
 				}
 
-				//Write the field descriptor;
+				//Write the field descriptor
 				partsData[fieldDescLoc] = fieldDesc;
 				partsData[fieldDescLoc+1] = fieldDesc>>8;
 
