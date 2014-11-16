@@ -2431,7 +2431,7 @@ int main(int argc, char *argv[])
 				if (c!=WL_SIGN+100 && c!=PT_FIGH)
 				{
 					if (!bq)
-						for (signi=0; signi<MAXSIGNS; signi++)
+						for (signi=MAXSIGNS-1; signi>=0; signi--)
 							if (sregexp(signs[signi].text, "^{[ct]:[0-9]*|.*}$")==0 || sregexp(signs[signi].text, "^{b|.*}$")==0)
 							{
 								int signx, signy, signw, signh;
