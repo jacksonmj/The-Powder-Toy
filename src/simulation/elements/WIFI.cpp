@@ -80,7 +80,7 @@ int WIFI_update(UPDATE_FUNC_ARGS)
 					}
 					else
 					{
-						if (rt==PT_SPRK && parts[ri].ctype!=PT_NSCN && parts[ri].life>=3)
+						if (rt==PT_SPRK && parts[ri].ctype!=PT_NSCN && parts[ri].life==3)
 						{
 							channel[1] = 1;
 						}
