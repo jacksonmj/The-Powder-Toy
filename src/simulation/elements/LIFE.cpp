@@ -160,7 +160,7 @@ int LIFE_graphics(GRAPHICS_FUNC_ARGS)
 	}
 	else
 	{
-		pc = ren->sim->elements[cpart->type].Colour;
+		pc = sim->elements[cpart->type].Colour;
 	}
 	*colr = PIXR(pc);
 	*colg = PIXG(pc);
