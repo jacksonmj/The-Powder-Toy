@@ -1060,7 +1060,13 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 	bsonDataLen |= ((unsigned)inputData[9]) << 8;
 	bsonDataLen |= ((unsigned)inputData[10]) << 16;
 	bsonDataLen |= ((unsigned)inputData[11]) << 24;
-	
+
+	if (bsonDataLen<1 || bsonDataLen > 209715200-1)
+	{
+		fprintf(stderr, "Save data too large, refusing\n");
+		return 3;
+	}
+
 	bsonData = (unsigned char*)malloc(bsonDataLen+1);
 	if(!bsonData)
 	{
@@ -1929,6 +1935,11 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned c
 	i |= ((unsigned)c[9])<<8;
 	i |= ((unsigned)c[10])<<16;
 	i |= ((unsigned)c[11])<<24;
+	if (i<0 || i > 209715200)
+	{
+		fprintf(stderr, "Save data too large, refusing\n");
+		return 3;
+	}
 	d = (unsigned char*)malloc(i);
 	if (!d)
 		return 1;
