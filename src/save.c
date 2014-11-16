@@ -27,7 +27,8 @@
 #include "simulation/Simulation.h"
 #include "simulation/elements/FIGH.h"
 
-int change_wallpp(int wt)
+// Convert wall number from the one used by TPT++ to the current (legacy) number
+int change_wall_pp_current(int wt)
 {
 	if (wt == 1)
 		return WL_WALLELEC;
@@ -59,6 +60,74 @@ int change_wallpp(int wt)
 		return WL_GRAV;
 	else if (wt == 15)
 		return WL_ALLOWENERGY;
+	return wt;
+}
+
+// Convert wall number from the current (legacy) number to the one used by TPT++
+int change_wall_current_pp(int wt)
+{
+	if (wt == WL_WALLELEC)
+		return 1;
+	else if (wt == WL_EWALL)
+		return 2;
+	else if (wt == WL_DETECT)
+		return 3;
+	else if (wt == WL_STREAM)
+		return 4;
+	else if (wt == WL_FAN)
+		return 5;
+	else if (wt == WL_ALLOWLIQUID)
+		return 6;
+	else if (wt == WL_DESTROYALL)
+		return 7;
+	else if (wt == WL_WALL)
+		return 8;
+	else if (wt == WL_ALLOWAIR)
+		return 9;
+	else if (wt == WL_ALLOWSOLID)
+		return 10;
+	else if (wt == WL_ALLOWALLELEC)
+		return 11;
+	else if (wt == WL_EHOLE)
+		return 12;
+	else if (wt == WL_ALLOWGAS)
+		return 13;
+	else if (wt == WL_GRAV)
+		return 14;
+	else if (wt == WL_ALLOWENERGY)
+		return 15;
+	return wt;
+}
+
+// Convert wall number from the one used by saves from v44 or earlier to the current (legacy) number
+int change_wall_44_current(int wt)
+{
+	if (wt == 1)
+		return WL_WALL;
+	else if (wt == 2)
+		return WL_DESTROYALL;
+	else if (wt == 3)
+		return WL_ALLOWLIQUID;
+	else if (wt == 4)
+		return WL_FAN;
+	else if (wt == 5)
+		return WL_STREAM;
+	else if (wt == 6)
+		return WL_DETECT;
+	else if (wt == 7)
+		return WL_EWALL;
+	else if (wt == 8)
+		return WL_WALLELEC;
+	else if (wt == 9)
+		return WL_ALLOWAIR;
+	else if (wt == 10)
+		return WL_ALLOWSOLID;
+	else if (wt == 11)
+		return WL_ALLOWALLELEC;
+	else if (wt == 12)
+		return WL_EHOLE;
+	else if (wt == 13)
+		return WL_ALLOWGAS;
 	return wt;
 }
 
@@ -107,37 +176,6 @@ int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char 
 	globalSim->pmap_reset();
 	globalSim->RecalcElementCounts();
 	return result;
-}
-
-int change_wall(int wt)
-{
-	if (wt == 1)
-		return WL_WALL;
-	else if (wt == 2)
-		return WL_DESTROYALL;
-	else if (wt == 3)
-		return WL_ALLOWLIQUID;
-	else if (wt == 4)
-		return WL_FAN;
-	else if (wt == 5)
-		return WL_STREAM;
-	else if (wt == 6)
-		return WL_DETECT;
-	else if (wt == 7)
-		return WL_EWALL;
-	else if (wt == 8)
-		return WL_WALLELEC;
-	else if (wt == 9)
-		return WL_ALLOWAIR;
-	else if (wt == 10)
-		return WL_ALLOWSOLID;
-	else if (wt == 11)
-		return WL_ALLOWALLELEC;
-	else if (wt == 12)
-		return WL_EHOLE;
-	else if (wt == 13)
-		return WL_ALLOWGAS;
-	return wt;
 }
 
 pixel *prerender_save_OPS(void *save, int size, int *width, int *height)
@@ -265,7 +303,7 @@ pixel *prerender_save_OPS(void *save, int size, int *width, int *height)
 			{
 				if(wallData[y*blockW+x])
 				{
-					wt = change_wallpp(wallData[y*blockW+x]);
+					wt = change_wall_pp_current(wallData[y*blockW+x]);
 					pc = wtypes[wt-UI_ACTUALSTART].colour;
 					gc = wtypes[wt-UI_ACTUALSTART].eglow;
 					if (wtypes[wt-UI_ACTUALSTART].drawstyle==1)
@@ -545,7 +583,7 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 	{
 		for(y = blockY; y < blockY+blockH; y++)
 		{
-			wallData[(y-blockY)*blockW+(x-blockX)] = bmap[y][x];
+			wallData[(y-blockY)*blockW+(x-blockX)] = change_wall_current_pp(bmap[y][x]);
 			if(bmap[y][x] && !wallDataFound)
 				wallDataFound = 1;
 			if(bmap[y][x]==WL_FAN)
@@ -1296,7 +1334,7 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 			for(y = 0; y < blockH; y++)
 			{
 				if (wallData[y*blockW+x])
-					bmap[blockY+y][blockX+x] = change_wallpp(wallData[y*blockW+x]);
+					bmap[blockY+y][blockX+x] = change_wall_pp_current(wallData[y*blockW+x]);
 				if (wallData[y*blockW+x] == WL_FAN && fanData)
 				{
 					if(j+1 >= fanDataLen)
@@ -1698,7 +1736,7 @@ pixel *prerender_save_PSv(void *save, int size, int *width, int *height)
 	for (y=0; y<bh; y++)
 		for (x=0; x<bw; x++)
 		{
-			int wt = change_wall(d[p]);
+			int wt = change_wall_44_current(d[p]);
 			rx = x*CELL;
 			ry = y*CELL;
 			pc = wtypes[wt-UI_ACTUALSTART].colour;
@@ -1941,20 +1979,32 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned c
 			{
 				//In old saves, ignore walls created by sign tool bug
 				//Not ignoring other invalid walls or invalid walls in new saves, so that any other bugs causing them are easier to notice, find and fix
-				if (ver<71 && d[p]==WL_SIGN)
+				if (ver>=44 && ver<71 && d[p]==WL_SIGN)
 				{
 					p++;
 					continue;
 				}
-
-				bmap[y][x] = change_wall(d[p]);
+				if (ver>=44)
+				{
+					/* The numbers used to save walls were changed, starting in v44.
+					 * The new numbers are ignored for older versions due to some corruption of bmap in saves from older versions. 
+					 */
+					// TODO: once wall numbers are changed to match TPT++, add conversion code here
+				}
+				else
+				{
+					bmap[y][x] = change_wall_44_current(d[p]);
+				}
+				// TODO: uncomment once wall numbers are changed to match TPT++
+				/*if (bmap[y][x] < 0 || blockMap[y][x] >= UI_WALLCOUNT)
+					bmap[y][x] = 0;*/
 			}
 
 			p++;
 		}
 	for (y=by0; y<by0+bh; y++)
 		for (x=bx0; x<bx0+bw; x++)
-			if (d[(y-by0)*bw+(x-bx0)]==4||d[(y-by0)*bw+(x-bx0)]==WL_FAN)
+			if (d[(y-by0)*bw+(x-bx0)]==4||(ver>=44 && d[(y-by0)*bw+(x-bx0)]==WL_FAN))
 			{
 				if (p >= size)
 					goto corrupt;
@@ -1962,7 +2012,7 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned c
 			}
 	for (y=by0; y<by0+bh; y++)
 		for (x=bx0; x<bx0+bw; x++)
-			if (d[(y-by0)*bw+(x-bx0)]==4||d[(y-by0)*bw+(x-bx0)]==WL_FAN)
+			if (d[(y-by0)*bw+(x-bx0)]==4||(ver>=44 && d[(y-by0)*bw+(x-bx0)]==WL_FAN))
 			{
 				if (p >= size)
 					goto corrupt;
