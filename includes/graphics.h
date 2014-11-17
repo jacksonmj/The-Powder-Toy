@@ -78,9 +78,7 @@ extern unsigned int display_mode;
 extern SDL_Surface *sdl_scrn;
 extern int sdl_scale;
 
-extern int sandcolour_r;
-extern int sandcolour_g;
-extern int sandcolour_b;
+extern int sandcolour;
 extern int sandcolour_frame;
 
 extern unsigned char fire_r[YRES/CELL][XRES/CELL];

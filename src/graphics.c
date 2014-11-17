@@ -193,9 +193,7 @@ void main(void)\
 #endif
 
 int emp_decor = 0;
-int sandcolour_r = 0;
-int sandcolour_g = 0;
-int sandcolour_b = 0;
+int sandcolour = 0;
 int sandcolour_frame = 0;
 
 unsigned char fire_r[YRES/CELL][XRES/CELL];

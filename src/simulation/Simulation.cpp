@@ -451,15 +451,14 @@ int Simulation::part_create(int p, int x, int y, int t)
 	// Fancy dust effects for powder types
 	if((elements[t].Properties & TYPE_PART) && pretty_powder)
 	{
-		int colr, colg, colb, randa;
-		randa = (rand()%30)-15;
-		colr = (COLR(elements[t].Colour)+sandcolour_r+(rand()%20)-10+randa);
-		colg = (COLG(elements[t].Colour)+sandcolour_g+(rand()%20)-10+randa);
-		colb = (COLB(elements[t].Colour)+sandcolour_b+(rand()%20)-10+randa);
-		colr = colr>255 ? 255 : (colr<0 ? 0 : colr);
-		colg = colg>255 ? 255 : (colg<0 ? 0 : colg);
-		colb = colb>255 ? 255 : (colb<0 ? 0 : colb);
-		parts[i].dcolour = COLRGB(colr, colg, colb);
+		int colr, colg, colb;
+		colr = PIXR(elements[t].Colour)+sandcolour*1.3+(rand()%40)-20+(rand()%30)-15;
+		colg = PIXG(elements[t].Colour)+sandcolour*1.3+(rand()%40)-20+(rand()%30)-15;
+		colb = PIXB(elements[t].Colour)+sandcolour*1.3+(rand()%40)-20+(rand()%30)-15;
+ 		colr = colr>255 ? 255 : (colr<0 ? 0 : colr);
+ 		colg = colg>255 ? 255 : (colg<0 ? 0 : colg);
+ 		colb = colb>255 ? 255 : (colb<0 ? 0 : colb);
+		parts[i].dcolour = COLARGB(rand()%150, colr, colg, colb);
 	}
 
 	// Set non-static properties (such as randomly generated ones)

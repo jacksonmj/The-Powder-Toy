@@ -1044,9 +1044,7 @@ int main(int argc, char *argv[])
 			bsy = 0;
 			
 		//Pretty powders, colour cycle
-		//sandcolour_r = 0;
-		//sandcolour_g = 0;
-		sandcolour_b = sandcolour_r = sandcolour_g = (int)(20.0f*sin((float)sandcolour_frame*(M_PI/180.0f)));
+		sandcolour = (int)(20.0f*sin((float)sandcolour_frame*(M_PI/180.0f)));
 		sandcolour_frame++;
 		sandcolour_frame%=360;
 
