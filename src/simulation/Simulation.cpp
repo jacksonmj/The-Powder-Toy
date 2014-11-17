@@ -1445,7 +1445,12 @@ void Simulation::UpdateParticles()
 						}
 					}
 				}
-				else parts[i].temp = restrict_flt(parts[i].temp, MIN_TEMP, MAX_TEMP);
+				else
+				{
+					if (!(bmap_blockairh[y/CELL][x/CELL]&0x8))
+						bmap_blockairh[y/CELL][x/CELL]++;
+					parts[i].temp = restrict_flt(parts[i].temp, MIN_TEMP, MAX_TEMP);
+				}
 			}
 
 			if (t==PT_LIFE)
