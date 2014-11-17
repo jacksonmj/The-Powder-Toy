@@ -562,7 +562,7 @@ void STKM_interact(Simulation *sim, playerst* playerp, int i, int x, int y)
 			parts[i].life -= (int)(rand()*20/RAND_MAX)+32;
 		}
 
-		if (ptypes[rt].hconduct && ((playerp->elem!=PT_LIGH && parts[ri].temp>=323) || parts[ri].temp<=243) && (!playerp->rocketBoots || rt!=PT_PLSM))
+		if (ptypes[rt].hconduct && (rt!=PT_HSWC||sim->parts[ri].life==10) && ((playerp->elem!=PT_LIGH && parts[ri].temp>=323) || parts[ri].temp<=243) && (!playerp->rocketBoots || rt!=PT_PLSM))
 		{
 			parts[i].life -= 2;
 			playerp->accs[3] -= 1;
