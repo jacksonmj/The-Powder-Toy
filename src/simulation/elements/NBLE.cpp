@@ -39,6 +39,7 @@ int NBLE_update(UPDATE_FUNC_ARGS)
 			{
 				parts[j].ctype = 0xF800000;
 				parts[j].temp = temp;
+				parts[j].tmp = 0x1;
 			}
 
 			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_PLSM);

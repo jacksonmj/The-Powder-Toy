@@ -57,7 +57,10 @@ int O2_update(UPDATE_FUNC_ARGS)
 				parts[j].temp = MAX_TEMP;
 			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_PHOT);
 			if (j >= 0)
+			{
 				parts[j].temp = MAX_TEMP;
+				parts[j].tmp = 0x1;
+			}
 			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_PLSM);
 			if (j >= 0)
 			{
