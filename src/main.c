@@ -1918,6 +1918,12 @@ int main(int argc, char *argv[])
 				else
 					cri = globalSim->pmap[y][x].first;
 				crt = parts[cri].type;
+
+				if (crt==PT_PHOT || crt==PT_BIZR || crt==PT_BIZRG || crt==PT_BIZRS || crt==PT_BRAY)
+					wavelength_gfx = parts[cri].ctype;
+				if (crt==PT_FILT && (parts[cri].ctype&0x3FFFFFFF))
+					wavelength_gfx = parts[cri].ctype;
+
 				if (crt==PT_LIFE && parts[cri].ctype>=0 && parts[cri].ctype<NGOLALT)
 				{
 					sprintf(nametext, "%s (%s)", ptypes[crt].name, gmenu[parts[cri].ctype].name);
@@ -1957,9 +1963,12 @@ int main(int argc, char *argv[])
 					{
 						tctype = parts[cri].tmp&0xFF;
 					}
-					if (!globalSim->IsValidElement(tctype) || crt==PT_PHOT)
+					if (!globalSim->IsValidElement(tctype))
 						tctype = 0;
-					sprintf(nametext, "%s (%s)", ptypes[crt].name, ptypes[tctype].name);
+					if (wavelength_gfx)
+						sprintf(nametext, "%s (%d)", ptypes[crt].name, (parts[cri].ctype&0x3FFFFFFF));
+					else
+						sprintf(nametext, "%s (%s)", ptypes[crt].name, ptypes[tctype].name);
 				}
 				else
 				{
@@ -1978,10 +1987,6 @@ int main(int argc, char *argv[])
 					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C", nametext, pv[y/CELL][x/CELL], parts[cri].temp-273.15f);
 #endif
 				}
-				if (crt==PT_PHOT || crt==PT_BIZR || crt==PT_BIZRG || crt==PT_BIZRS || crt==PT_BRAY)
-					wavelength_gfx = parts[cri].ctype;
-				if (crt==PT_FILT && (parts[cri].ctype&0x3FFFFFFF))
-					wavelength_gfx = parts[cri].ctype;
 			}
 			else
 			{
