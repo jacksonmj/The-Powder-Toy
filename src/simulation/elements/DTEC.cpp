@@ -37,6 +37,7 @@ int DTEC_update(UPDATE_FUNC_ARGS)
 					}
 				}
 	}
+	bool setFilt = false;
 	int photonWl = 0;
 	for (rx=-rd; rx<rd+1; rx++)
 		for (ry=-rd; ry<rd+1; ry++)
@@ -46,11 +47,14 @@ int DTEC_update(UPDATE_FUNC_ARGS)
 				{
 					if (parts[ri].type == parts[i].ctype && (parts[i].ctype != PT_LIFE || parts[i].tmp == parts[ri].ctype || !parts[i].tmp))
 						parts[i].life = 1;
-					if (parts[ri].type == PT_PHOT)
+					if (parts[ri].type == PT_PHOT || parts[ri].type == PT_BRAY)
+					{
+						setFilt = true;
 						photonWl = parts[ri].ctype;
+					}
 				}
 			}
-	if (photonWl)
+	if (setFilt)
 	{
 		int nx, ny;
 		for (rx=-1; rx<2; rx++)

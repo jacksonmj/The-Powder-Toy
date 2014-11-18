@@ -14,6 +14,7 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/elements/FILT.h"
 
 int PHOT_update(UPDATE_FUNC_ARGS)
 {
@@ -101,6 +102,12 @@ void PHOT_create(ELEMENT_CREATE_FUNC_ARGS)
 	float a = (rand()%8) * 0.78540f;
 	sim->parts[i].vx = 3.0f*cosf(a);
 	sim->parts[i].vy = 3.0f*sinf(a);
+	int rcount, ri, rnext;
+	FOR_PMAP_POSITION_NOENERGY(sim, x, y, rcount, ri, rnext)
+	{
+		if (parts[ri].type==PT_FILT)
+			sim->parts[i].ctype = Element_FILT::interactWavelengths(&(sim->parts[ri]), sim->parts[i].ctype);
+	}
 }
 
 void PHOT_init_element(ELEMENT_INIT_FUNC_ARGS)
