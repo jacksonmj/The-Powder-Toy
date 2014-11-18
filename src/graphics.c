@@ -1322,8 +1322,30 @@ void clearrect(pixel *vid, int x, int y, int w, int h)
 	fillrect(vid, x, y, w, h, 0, 0, 0, 255);
 #else
 	int i;
-	for (i=1; i<h; i++)
-		memset(vid+(x+1+(XRES+BARSIZE)*(y+i)), 0, PIXELSIZE*(w-1));
+
+	// TODO: change calls to clearrect to use sensible meanings of x, y, w, h then remove these 4 lines
+	x += 1;
+	y += 1;
+	w -= 1;
+	h -= 1;
+
+	if (x+w > XRES+BARSIZE) w = XRES+BARSIZE-x;
+	if (y+h > YRES+MENUSIZE) h = YRES+MENUSIZE-y;
+	if (x<0)
+	{
+		w += x;
+		x = 0;
+	}
+	if (y<0)
+	{
+		h += y;
+		y = 0;
+	}
+	if (w<0 || h<0)
+		return;
+
+	for (i=0; i<h; i++)
+		memset(vid+(x+(XRES+BARSIZE)*(y+i)), 0, PIXELSIZE*w);
 #endif
 }
 //draws a line of dots, where h is the height. (why is this even here)
