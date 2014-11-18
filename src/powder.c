@@ -538,12 +538,11 @@ int try_move(int i, int x, int y, int nx, int ny)
 		return 0;
 			
 	int srcNeutPenetrate = -1;
-	int destNeutPenetrate = -1;
 	bool srcPartFound = false;
 
 	// e=1 for neutron means that target material is NEUTPENETRATE, meaning it gets moved around when neutron passes
 	// First, look for NEUTPENETRATE or empty space at x,y
-	if (t==PT_NEUT && destNeutPenetrate>=0)
+	if (t==PT_NEUT)
 	{
 		FOR_PMAP_POSITION_NOENERGY(globalSim, x, y, rcount, ri, rnext)
 		{
@@ -623,39 +622,27 @@ int try_move(int i, int x, int y, int nx, int ny)
 		if ((bmap[y/CELL][x/CELL]==WL_EHOLE && !emap[y/CELL][x/CELL]) && !(bmap[ny/CELL][nx/CELL]==WL_EHOLE && !emap[ny/CELL][nx/CELL]))
 			return 0;
 
-		if (t==PT_NEUT && destNeutPenetrate<0 && (globalSim->elements[rt].Properties&PROP_NEUTPENETRATE))
-			destNeutPenetrate = ri;
-
 		// Move all particles at the destination position that can be displaced by this particle
 		// For NEUTPENETRATE particles being displaced by a neutron, only move ones at nx,ny to x,y if there's currently a NEUTPENETRATE particle or empty space at x,y
 		if (t!=PT_NEUT || srcNeutPenetrate>=0 || !srcPartFound)
 		{
-			int tmpResult = can_move[t][rt];
-			if (tmpResult==3)
-				tmpResult = eval_move_special(t, nx, ny, ri, tmpResult);
-			if (tmpResult==1)
+			if (t!=PT_NEUT || eval_move(rt, x, y, NULL))
 			{
-				globalSim->pmap_remove(ri, nx, ny, rt);
-				parts[ri].x += x-nx;
-				parts[ri].y += y-ny;
-				globalSim->pmap_add(ri, (int)(parts[ri].x+0.5f), (int)(parts[ri].y+0.5f), rt);
+				globalSim->part_move(ri, nx, ny, x, y);
 			}
 		}
 	}
 	
 
-	if (t==PT_NEUT && srcNeutPenetrate>=0)
+	if (t==PT_NEUT && srcNeutPenetrate>=0 && eval_move(parts[srcNeutPenetrate].type, nx, ny, NULL))
 	{
-		globalSim->pmap_remove(srcNeutPenetrate, x, y, parts[srcNeutPenetrate].type);
-		globalSim->pmap_add(srcNeutPenetrate, nx, ny, parts[srcNeutPenetrate].type);
-		parts[srcNeutPenetrate].x = nx;
-		parts[srcNeutPenetrate].y = ny;
+		globalSim->part_move(srcNeutPenetrate, x, y, nx, ny);
 	}
 
 	if(t==PT_GBMB&&parts[i].life>0)
 		return 0;
 
-	return 1;
+	return eval_move(t, nx, ny, NULL);
 }
 
 // try to move particle, and if successful update pmap and parts[i].x,y
