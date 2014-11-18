@@ -1598,6 +1598,12 @@ killed:
 			}
 			else
 			{
+				if (mv > maxVelocity)
+				{
+					parts[i].vx *= maxVelocity/mv;
+					parts[i].vy *= maxVelocity/mv;
+					mv = maxVelocity;
+				}
 				// interpolate to see if there is anything in the way
 				dx = parts[i].vx*ISTP/mv;
 				dy = parts[i].vy*ISTP/mv;

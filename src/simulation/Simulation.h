@@ -63,6 +63,8 @@ public:
 	pmap_entry pmap[YRES][XRES];
 	int pfree;
 
+	static const float maxVelocity = 1e4f;
+
 	short heat_mode;//Will be a replacement for legacy_enable at some point. 0=heat sim off, 1=heat sim on, 2=realistic heat on (todo)
 
 	Simulation();
