@@ -134,7 +134,10 @@ void update_air(void)
 {
 	int x, y, i, j;
 	float dp, dx, dy, f, tx, ty;
-	
+	const float advDistanceMult = 0.7f;
+	float stepX, stepY;
+	int stepLimit, step;
+
 	if (airMode != 4) { //airMode 4 is no air/pressure update
 
 		for (i=0; i<YRES/CELL; i++) //reduces pressure/velocity on the edges every frame
@@ -235,14 +238,48 @@ void update_air(void)
 							dp += pv[y][x]*f;
 						}
 
-				tx = x - dx*0.7f;
-				ty = y - dy*0.7f;
+				tx = x - dx*advDistanceMult;
+				ty = y - dy*advDistanceMult;
+				if ((dx*advDistanceMult>1.0f || dy*advDistanceMult>1.0f) && (tx>=2 && tx<XRES/CELL-2 && ty>=2 && ty<YRES/CELL-2))
+				{
+					// Trying to take velocity from far away, check whether there is an intervening wall. Step from current position to desired source location, looking for walls, with either the x or y step size being 1 cell
+					if (fabsf(dx)>fabsf(dy))
+					{
+						stepX = (dx<0.0f) ? 1 : -1;
+						stepY = -dy/fabsf(dx);
+						stepLimit = (int)(fabsf(dx*advDistanceMult));
+					}
+					else
+					{
+						stepY = (dy<0.0f) ? 1 : -1;
+						stepX = -dx/fabsf(dy);
+						stepLimit = (int)(fabsf(dy*advDistanceMult));
+					}
+					tx = x;
+					ty = y;
+					for (step=0; step<stepLimit; ++step)
+					{
+						tx += stepX;
+						ty += stepY;
+						if (bmap_blockair[(int)(ty+0.5f)][(int)(tx+0.5f)])
+						{
+							tx -= stepX;
+							ty -= stepY;
+							break;
+						}
+					}
+					if (step==stepLimit)
+					{
+						// No wall found
+						tx = x - dx*advDistanceMult;
+						ty = y - dy*advDistanceMult;
+					}
+				}
 				i = (int)tx;
 				j = (int)ty;
 				tx -= i;
 				ty -= j;
-				if (i>=2 && i<XRES/CELL-3 &&
-				        j>=2 && j<YRES/CELL-3)
+				if (!bmap_blockair[y][x] && i>=2 && i<=XRES/CELL-3 && j>=2 && j<=YRES/CELL-3)
 				{
 					dx *= 1.0f - AIR_VADV;
 					dy *= 1.0f - AIR_VADV;
