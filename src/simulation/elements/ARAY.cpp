@@ -116,6 +116,7 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 									{
 										int rt = parts[ri].type;
 										if (rt==PT_BRAY) {
+											parts[ri].tmp = 2;
 											parts[ri].life = 1;
 											//this if prevents red BRAY from stopping on certain materials
 										} else if (rt==PT_STOR || sim->part_cmp_conductive(parts[ri], PT_INWR) || rt==PT_ARAY || rt==PT_WIFI || rt==PT_FILT || (rt==PT_SWCH && parts[ri].life>=10)) {

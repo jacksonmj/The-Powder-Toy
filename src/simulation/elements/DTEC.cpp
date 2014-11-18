@@ -47,7 +47,7 @@ int DTEC_update(UPDATE_FUNC_ARGS)
 				{
 					if (parts[ri].type == parts[i].ctype && (parts[i].ctype != PT_LIFE || parts[i].tmp == parts[ri].ctype || !parts[i].tmp))
 						parts[i].life = 1;
-					if (parts[ri].type == PT_PHOT || parts[ri].type == PT_BRAY)
+					if (parts[ri].type == PT_PHOT || (parts[ri].type == PT_BRAY && parts[ri].tmp!=2))
 					{
 						setFilt = true;
 						photonWl = parts[ri].ctype;
