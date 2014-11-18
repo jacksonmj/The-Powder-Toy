@@ -61,7 +61,7 @@ int EXOT_update(UPDATE_FUNC_ARGS)
 							}
 						}
 					}
-					if (parts[i].tmp>245 && parts[i].life>1000)
+					if (parts[i].tmp>245 && parts[i].life>1337)
 					{
 						if (rt!=PT_EXOT && rt!=PT_BREL && rt!=PT_DMND && rt!=PT_CLNE && rt!=PT_PRTI && rt!=PT_PRTO && rt!=PT_PCLN && rt!=PT_VOID && rt!=PT_NBHL && rt!=PT_WARP)
 						{
