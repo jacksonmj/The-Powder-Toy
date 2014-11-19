@@ -316,10 +316,10 @@ void update_grav()
 	int i, fft_tsize = (xblock2/2+1)*yblock2;
 	float mr, mc, pr, pc, gr, gc;
 	float *tmp;
+	if (!grav_fft_status) grav_fft_init();
 	if (memcmp(th_ogravmap, th_gravmap, sizeof(float)*(XRES/CELL)*(YRES/CELL))!=0)
 	{
 		th_gravchanged = 1;
-		if (!grav_fft_status) grav_fft_init();
 
 		//copy gravmap into padded gravmap array
 		for (y=0; y<YRES/CELL; y++)

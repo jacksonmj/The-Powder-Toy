@@ -1629,7 +1629,7 @@ killed:
 						clear_y = (int)(clear_yf+0.5f);
 						break;
 					}
-					if (fin_x<CELL || fin_y<CELL || fin_x>=XRES-CELL || fin_y>=YRES-CELL || pmap[fin_y][fin_x].count_notEnergy || (bmap[fin_y/CELL][fin_x/CELL] && (bmap[fin_y/CELL][fin_x/CELL]==WL_DESTROYALL || !eval_move(t,fin_x,fin_y,NULL))))
+					if (!eval_move(t, fin_x, fin_y, NULL) || (t == PT_PHOT && pmap[fin_y][fin_x].count_notEnergy))
 					{
 						// found an obstacle
 						clear_xf = fin_xf-dx;
