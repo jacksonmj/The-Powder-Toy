@@ -69,6 +69,7 @@ int H2_update(UPDATE_FUNC_ARGS)
 			int j;
 			float temp = parts[i].temp;
 			sim->part_create(i,x,y,PT_NBLE);
+			parts[i].tmp = 0x1;
 			typeChanged = true;
 
 			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_NEUT);

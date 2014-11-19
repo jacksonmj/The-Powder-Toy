@@ -19,6 +19,7 @@ int NBLE_update(UPDATE_FUNC_ARGS)
 {
 	if (parts[i].temp > 5273.15 && pv[y/CELL][x/CELL] > 100.0f)
 	{
+		parts[i].tmp |= 0x1;
 		if (!(rand()%5))
 		{
 			int j;

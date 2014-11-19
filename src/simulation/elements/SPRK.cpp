@@ -65,13 +65,13 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 		}
 		break;
 	case PT_NBLE:
-		if (parts[i].life<=1&&parts[i].temp<5273.15)
+		if (parts[i].life<=1 && !(parts[i].tmp&0x1))
 		{
 			parts[i].life = rand()%150+50;
 			part_change_type(i,x,y,PT_PLSM);
 			parts[i].ctype = PT_NBLE;
 			if (parts[i].temp > 5273.15)
-				parts[i].tmp |= 4;
+				parts[i].tmp |= 0x4;
 			parts[i].temp = 3500;
 			pv[y/CELL][x/CELL] += 1;
 		}
@@ -279,7 +279,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 							goto conduct;
 						continue;
 					case PT_NBLE:
-						if (!(parts[ri].temp > 5273.15))
+						if (!(parts[i].tmp&0x1))
 							goto conduct;
 						continue;
 					case PT_PSCN:
