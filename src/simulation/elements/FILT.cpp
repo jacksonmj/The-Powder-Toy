@@ -29,7 +29,10 @@ int FILT_graphics(GRAPHICS_FUNC_ARGS)
 	for (x=0; x<12; x++)
 		*colg += (ctype >> (x+9))  & 1;
 	x = 624/(*colr+*colg+*colb+1);
-	*cola = 127;
+	if (cpart->life>0 && cpart->life<=4)
+		*cola = 127+cpart->life*30;
+	else
+		*cola = 127;
 	*colr *= x;
 	*colg *= x;
 	*colb *= x;
@@ -70,7 +73,7 @@ void FILT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Description = "Filter for photons, changes the color.";
 
 	elem->State = ST_SOLID;
-	elem->Properties = TYPE_SOLID | PROP_NOAMBHEAT;
+	elem->Properties = TYPE_SOLID | PROP_NOAMBHEAT | PROP_LIFE_DEC;
 
 	elem->LowPressureTransitionThreshold = IPL;
 	elem->LowPressureTransitionElement = NT;
