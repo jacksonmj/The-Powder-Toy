@@ -40,13 +40,13 @@ void SOAP_attach(Simulation *sim, int i1, int i2)
 
 void SOAP_detach(Simulation *sim, int i)
 {
-	if ((sim->parts[i].ctype&2) == 2)
+	if ((sim->parts[i].ctype&2) == 2 && sim->parts[sim->parts[i].tmp].type == PT_SOAP)
 	{
 		if ((sim->parts[sim->parts[i].tmp].ctype&4) == 4)
 			sim->parts[sim->parts[i].tmp].ctype ^= 4;
 	}
 
-	if ((sim->parts[i].ctype&4) == 4)
+	if ((sim->parts[i].ctype&4) == 4 && sim->parts[sim->parts[i].tmp2].type == PT_SOAP)
 	{
 		if ((sim->parts[sim->parts[i].tmp2].ctype&2) == 2)
 			sim->parts[sim->parts[i].tmp2].ctype ^= 2;
