@@ -93,7 +93,7 @@ int PHOT_graphics(GRAPHICS_FUNC_ARGS)
 	*fireb = *colb;
 
 	*pixel_mode &= ~PMODE_FLAT;
-	*pixel_mode |= FIRE_ADD | PMODE_ADD;
+	*pixel_mode |= FIRE_ADD | PMODE_ADD | NO_DECO;
 	return 0;
 }
 
