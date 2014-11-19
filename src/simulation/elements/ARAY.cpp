@@ -28,6 +28,7 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, scount, si, snext)
 					{
 						if (parts[si].type==PT_SPRK && parts[si].life==3) {
+							bool isBlackDeco = false;
 							int destroy = (parts[si].ctype==PT_PSCN)?1:0;
 							int nostop = (parts[si].ctype==PT_INST)?1:0;
 							int colored = 0;
@@ -48,6 +49,8 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 										parts[np].ctype = colored;
 									}
 									parts[np].temp = parts[i].temp;
+									if (isBlackDeco)
+										parts[np].dcolour = 0xFF000000;
 								} else if (!destroy) {
 									FOR_PMAP_POSITION_NOENERGY(sim, x+nxi+nxx, y+nyi+nyy, rcount, ri, rnext)
 									{
@@ -73,6 +76,8 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 												//docontinue = 1;
 												break;
 											}
+											if (isBlackDeco)
+												parts[ri].dcolour = 0xFF000000;
 										} else if (rt==PT_FILT) {//get color if passed through FILT
 											if (parts[ri].tmp != 6)
 											{
@@ -80,6 +85,7 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 												if (!colored)
 													break;
 											}
+											isBlackDeco = (parts[ri].dcolour==0xFF000000);
 											parts[ri].life = 4;
 										//this if prevents BRAY from stopping on certain materials
 										} else if (rt!=PT_STOR && !sim->part_cmp_conductive(parts[ri], PT_INWR) && rt!=PT_ARAY && rt!=PT_WIFI && rt!=PT_INST && !(rt==PT_SWCH && parts[ri].life>=10)) {
@@ -122,6 +128,8 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 										if (rt==PT_BRAY) {
 											parts[ri].tmp = 2;
 											parts[ri].life = 1;
+											if (isBlackDeco)
+												parts[ri].dcolour = 0xFF000000;
 											//this if prevents red BRAY from stopping on certain materials
 										} else if (rt==PT_STOR || sim->part_cmp_conductive(parts[ri], PT_INWR) || rt==PT_ARAY || rt==PT_WIFI || rt==PT_FILT || (rt==PT_SWCH && parts[ri].life>=10)) {
 											if(rt==PT_STOR)
@@ -131,6 +139,7 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 											}
 											else if (rt==PT_FILT)
 											{
+												isBlackDeco = (parts[ri].dcolour==0xFF000000);
 												parts[ri].life = 2;
 											}
 										} else {
