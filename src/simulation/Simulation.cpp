@@ -1794,7 +1794,7 @@ killed:
 					else
 					{
 						s = 1;
-						r = (rand()%2)*2-1;
+						r = (rand()%2)*2-1;// position search direction (left/right first)
 						if ((clear_x!=x || clear_y!=y || nt || surround_space) &&
 							(fabsf(parts[i].vx)>0.01f || fabsf(parts[i].vy)>0.01f))
 						{
@@ -1903,10 +1903,15 @@ killed:
 								rt = 30;//slight less water lag, although it changes how it moves a lot
 							else
 								rt = 10;
+							// clear_xf, clear_yf is the last known position that the particle should almost certainly be able to move to
 							nxf = clear_xf;
 							nyf = clear_yf;
+							nx = clear_x;
+							ny = clear_y;
+							// Look for spaces to move horizontally (perpendicular to gravity direction), keep going until a space is found or the number of positions examined = rt
 							for (j=0;j<rt;j++)
 							{
+								// Calculate overall gravity direction
 								switch (gravityMode)
 								{
 									default:
@@ -1924,6 +1929,7 @@ killed:
 								}
 								pGravX += gravx[(ny/CELL)*(XRES/CELL)+(nx/CELL)];
 								pGravY += gravy[(ny/CELL)*(XRES/CELL)+(nx/CELL)];
+								// Scale gravity vector so that the largest component is 1 pixel
 								if (fabsf(pGravY)>fabsf(pGravX))
 									mv = fabsf(pGravY);
 								else
@@ -1931,8 +1937,13 @@ killed:
 								if (mv<0.0001f) break;
 								pGravX /= mv;
 								pGravY /= mv;
+								// Move 1 pixel perpendicularly to gravity
+								// r is +1/-1, to try moving left or right at random
 								if (j)
 								{
+									// Not quite the gravity direction
+									// Gravity direction + last change in gravity direction
+									// This makes liquid movement a bit less frothy, particularly for balls of liquid in radial gravity. With radial gravity, instead of just moving along a tangent, the attempted movement will follow the curvature a bit better.
 									nxf += r*(pGravY*2.0f-prev_pGravY);
 									nyf += -r*(pGravX*2.0f-prev_pGravX);
 								}
@@ -1943,6 +1954,7 @@ killed:
 								}
 								prev_pGravX = pGravX;
 								prev_pGravY = pGravY;
+								// Check whether movement is allowed
 								nx = (int)(nxf+0.5f);
 								ny = (int)(nyf+0.5f);
 								if (nx<0 || ny<0 || nx>=XRES || ny >=YRES)
@@ -1952,6 +1964,7 @@ killed:
 									s = do_move(i, x, y, nxf, nyf);
 									if (s!=0)
 									{
+										// Movement was successful
 										if (s>0)
 										{
 											nx = (int)(parts[i].x+0.5f);
@@ -1959,6 +1972,7 @@ killed:
 										}
 										break;
 									}
+									// A particle of a different type, or a wall, was found. Stop trying to move any further horizontally unless the wall should be completely invisible to particles.
 									if (bmap[ny/CELL][nx/CELL]!=WL_STREAM)
 										break;
 								}
@@ -1970,10 +1984,13 @@ killed:
 							}
 							if (s==1)
 							{
+								// The particle managed to move horizontally, now try to move vertically (parallel to gravity direction)
+								// Keep going until the particle is blocked (by something that isn't the same element) or the number of positions examined = rt
 								clear_x = nx;
 								clear_y = ny;
 								for (j=0;j<rt;j++)
 								{
+									// Calculate overall gravity direction
 									switch (gravityMode)
 									{
 										default:
@@ -1991,11 +2008,13 @@ killed:
 									}
 									pGravX += gravx[(ny/CELL)*(XRES/CELL)+(nx/CELL)];
 									pGravY += gravy[(ny/CELL)*(XRES/CELL)+(nx/CELL)];
+									// Scale gravity vector so that the largest component is 1 pixel
 									if (fabsf(pGravY)>fabsf(pGravX))
 										mv = fabsf(pGravY);
 									else
 										mv = fabsf(pGravX);
 									if (mv<0.0001f) break;
+									// Move 1 pixel in the direction of gravity
 									pGravX /= mv;
 									pGravY /= mv;
 									nxf += pGravX;
@@ -2004,16 +2023,17 @@ killed:
 									ny = (int)(nyf+0.5f);
 									if (nx<0 || ny<0 || nx>=XRES || ny>=YRES)
 										break;
+									// If the space is anything except the same element (so is a wall, empty space, or occupied by a particle of a different element), try to move into it
 									if (pmap_find_one(nx,ny,t)<0 || bmap[ny/CELL][nx/CELL])
 									{
 										s = do_move(i, clear_x, clear_y, nxf, nyf);
 										if (s!=0 || bmap[ny/CELL][nx/CELL]!=WL_STREAM)
-											break;
+											break;// found the edge of the liquid and movement into it succeeded, so stop moving down
 									}
 								}
 							}
 							else if (s<0) {} // particle has been killed
-							else if ((clear_x!=x||clear_y!=y) && do_move(i, x, y, clear_xf, clear_yf)) {}
+							else if ((clear_x!=x||clear_y!=y) && do_move(i, x, y, clear_xf, clear_yf)) {} // try moving to the last clear position
 							else parts[i].flags |= FLAG_STAGNANT;
 						}
 						else
