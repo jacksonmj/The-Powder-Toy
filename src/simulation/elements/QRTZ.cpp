@@ -27,8 +27,11 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 		if (parts[i].pavg[1]-parts[i].pavg[0] > 0.05*(parts[i].temp/3) || parts[i].pavg[1]-parts[i].pavg[0] < -0.05*(parts[i].temp/3))
 		{
 			part_change_type(i,x,y,PT_PQRT);
+			parts[i].life = 5; //timer before it can grow or diffuse again
 		}
 	}
+	if (parts[i].life>5)
+		parts[i].life = 5;
 	// absorb SLTW
 	if (parts[i].tmp!=-1)
 		for (rx=-1; rx<2; rx++)
@@ -45,7 +48,7 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 					}
 				}
 	// grow if absorbed SLTW
-	if (parts[i].tmp>0)
+	if (parts[i].tmp > 0 && (parts[i].vx*parts[i].vx + parts[i].vy*parts[i].vy)<0.2f && parts[i].life<=0)
 	{
 		bool stopgrow=false;
 		int rnd, sry, srx;
@@ -64,8 +67,14 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 					np = sim->part_create(-1,x+srx,y+sry,PT_QRTZ);
 					if (np>-1)
 					{
-						parts[np].tmp = parts[i].tmp;
+						parts[np].temp = parts[i].temp;
+						parts[np].tmp2 = parts[i].tmp2;
 						parts[i].tmp--;
+						if (t == PT_PQRT)
+						{
+							// If PQRT is stationary and has started growing particles of QRTZ, the PQRT is basically part of a new QRTZ crystal. So turn it back into QRTZ so that it behaves more like part of the crystal.
+							sim->part_change_type(i,x,y,PT_QRTZ);
+						}
 						if (rand()%2)
 						{
 							parts[np].tmp=-1;//dead qrtz
