@@ -58,7 +58,7 @@ void SNOW_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighPressureTransitionElement = NT;
 	elem->LowTemperatureTransitionThreshold = ITL;
 	elem->LowTemperatureTransitionElement = NT;
-	elem->HighTemperatureTransitionThreshold = 273.0f;
+	elem->HighTemperatureTransitionThreshold = 252.05f;
 	elem->HighTemperatureTransitionElement = ST;
 
 	elem->Update = &ICE_update;
