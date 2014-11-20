@@ -2772,7 +2772,7 @@ void menu_ui_v3(pixel *vid_buf, int i, int *sl, int *sr, int *su, int *dae, int 
 	{
 		drawtext(vid_buf, XRES-textwidth((char *)gmenu[(h>>8)&0xFF].description)-BARSIZE, sy-10, (char *)gmenu[(h>>8)&0xFF].description, 255, 255, 255, 255);
 	}
-	else
+	else if (h<PT_NUM)
 	{
 		drawtext(vid_buf, XRES-textwidth((char *)ptypes[h].descs)-BARSIZE, sy-10, (char *)ptypes[h].descs, 255, 255, 255, 255);
 	}
