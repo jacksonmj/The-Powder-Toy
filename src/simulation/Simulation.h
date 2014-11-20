@@ -114,6 +114,19 @@ public:
 	{
 		return (x>=0 && y>=0 && x<XRES && y<YRES);
 	}
+	// Copy particle properties, except for position and pmap list links
+	static void part_copy_properties(const particle& src, particle& dest)
+	{
+		float tmp_x = dest.x, tmp_y = dest.y;
+		int tmp_pmap_prev = dest.pmap_prev, tmp_pmap_next = dest.pmap_next;
+
+		dest = src;
+
+		dest.x = tmp_x;
+		dest.y = tmp_y;
+		dest.pmap_prev = tmp_pmap_prev;
+		dest.pmap_next = tmp_pmap_next;
+	}
 	// Is this particle an element of type t, ignoring the current SPRKed status of this particle?
 	bool part_cmp_conductive(const particle& p, int t) const
 	{
