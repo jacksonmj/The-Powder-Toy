@@ -2260,11 +2260,6 @@ void render_parts(pixel *vid)
 	#endif
 					
 				//Pixel rendering
-				if (t==PT_SOAP)
-				{
-					if ((parts[i].ctype&3) == 3 && parts[i].tmp >= 0 && parts[i].tmp < NPART)
-						draw_line(vid, nx, ny, (int)(parts[parts[i].tmp].x+0.5f), (int)(parts[parts[i].tmp].y+0.5f), colr, colg, colb, XRES+BARSIZE);
-				}
 				if(pixel_mode & PSPEC_STICKMAN)
 				{
 					char buff[20];  //Buffer for HP
@@ -2839,7 +2834,12 @@ void render_parts(pixel *vid)
 							addpixel(vid, nx+nxo, ny+nyo, colr, colg, colb, 255-orbd[r]);
 					}
 				}
-				if ((pixel_mode & EFFECT_LINES) && DEBUG_MODE && !(display_mode&DISPLAY_PERS))
+				if ((pixel_mode & EFFECT_LINES) && t==PT_SOAP)
+				{
+					if ((parts[i].ctype&3) == 3 && parts[i].tmp >= 0 && parts[i].tmp < NPART)
+						draw_line(vid, nx, ny, (int)(parts[parts[i].tmp].x+0.5f), (int)(parts[parts[i].tmp].y+0.5f), colr, colg, colb, XRES+BARSIZE);
+				}
+				else if ((pixel_mode & EFFECT_LINES) && DEBUG_MODE && !(display_mode&DISPLAY_PERS))
 				{
 					if (mousex==(nx) && mousey==(ny))//draw lines connecting wifi/portal channels
 					{
