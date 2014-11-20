@@ -92,26 +92,19 @@ int PRTO_update(UPDATE_FUNC_ARGS)
 							((FIGH_ElementDataContainer*)sim->elementData[PT_FIGH])->AllocSpecific(storedPart->tmp);
 						}
 
-						// Don't overwrite pmap links with old values from the stored particle in the portal, otherwise crashes are likely
-						int pmap_next = parts[np].pmap_next;
-						int pmap_prev = parts[np].pmap_prev;
 						if (storedPart->vx == 0.0f && storedPart->vy == 0.0f)
 						{
 							// particles that have passed from PIPE into PRTI have lost their velocity, so use the velocity of the newly created particle if the particle in the portal has no velocity
 							float tmp_vx = parts[np].vx;
 							float tmp_vy = parts[np].vy;
-							parts[np] = *storedPart;
+							sim->part_copy_properties(*storedPart, parts[np]);
 							parts[np].vx = tmp_vx;
 							parts[np].vy = tmp_vy;
 						}
 						else
 						{
-							parts[np] = *storedPart;
+							sim->part_copy_properties(*storedPart, parts[np]);
 						}
-						parts[np].pmap_next = pmap_next;
-						parts[np].pmap_prev = pmap_prev;
-						parts[np].x = x+rx;
-						parts[np].y = y+ry;
 						storedPart->type = 0;
 						channel->particleCount[randomness]--;
 						break;
