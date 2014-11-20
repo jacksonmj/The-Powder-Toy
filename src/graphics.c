@@ -2029,9 +2029,7 @@ void render_parts(pixel *vid)
 		for (ny=0; ny<YRES; ny++)
 			for (nx=0; nx<XRES; nx++)
 			{
-				if (ny%(4*GRID_MODE)==0)
-					blendpixel(vid, nx, ny, 100, 100, 100, 80);
-				if (nx%(4*GRID_MODE)==0)
+				if (ny%(4*GRID_MODE)==0 || nx%(4*GRID_MODE)==0)
 					blendpixel(vid, nx, ny, 100, 100, 100, 80);
 			}
 	}
