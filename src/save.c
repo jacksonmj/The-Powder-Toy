@@ -527,6 +527,13 @@ pixel *prerender_save_OPS(void *save, int size, int *width, int *height)
 							if(i++ >= partsDataLen) goto fail;
 						}
 					}
+
+					//Skip pavg
+					if(fieldDescriptor & 0x2000)
+					{
+						i += 4;
+						if(i > partsDataLen) goto fail;
+					}
 				}
 			}
 		}
