@@ -15,7 +15,7 @@
 
 #include "simulation/ElementsCommon.h"
 
-int REPL_update(UPDATE_FUNC_ARGS)
+int RPEL_update(UPDATE_FUNC_ARGS)
 {
 	int rx, ry, loop;
 	int rcount, ri, rnext;
@@ -37,9 +37,9 @@ int REPL_update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-void REPL_init_element(ELEMENT_INIT_FUNC_ARGS)
+void RPEL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
-	elem->Identifier = "DEFAULT_PT_REPL";
+	elem->Identifier = "DEFAULT_PT_RPEL";
 	elem->Name = "RPEL";
 	elem->Colour = COLPACK(0x99CC00);
 	elem->MenuVisible = 1;
@@ -80,7 +80,7 @@ void REPL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = &REPL_update;
+	elem->Update = &RPEL_update;
 	elem->Graphics = NULL;
 }
 
