@@ -2915,6 +2915,23 @@ void render_parts(pixel *vid)
 					fire_b[ny/CELL][nx/CELL] = fireb;
 #endif
 				}
+				if(firea && (pixel_mode & FIRE_SPARK))
+				{
+#ifdef OGLR
+					smokeV[csmokeV++] = nx;
+					smokeV[csmokeV++] = ny;
+					smokeC[csmokeC++] = ((float)firer)/255.0f;
+					smokeC[csmokeC++] = ((float)fireg)/255.0f;
+					smokeC[csmokeC++] = ((float)fireb)/255.0f;
+					smokeC[csmokeC++] = ((float)firea)/255.0f;
+					csmoke++;
+#else
+					firea /= 4;
+					fire_r[ny/CELL][nx/CELL] = (firea*firer + (255-firea)*fire_r[ny/CELL][nx/CELL]) >> 8;
+					fire_g[ny/CELL][nx/CELL] = (firea*fireg + (255-firea)*fire_g[ny/CELL][nx/CELL]) >> 8;
+					fire_b[ny/CELL][nx/CELL] = (firea*fireb + (255-firea)*fire_b[ny/CELL][nx/CELL]) >> 8;
+#endif
+				}
 			}
 		}
 	}

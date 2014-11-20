@@ -323,13 +323,11 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 
 int SPRK_graphics(GRAPHICS_FUNC_ARGS)
 {
-	*firea = 80;
-	
-	*firer = 170;
-	*fireg = 200;
-	*fireb = 220;
-	//*pixel_mode |= FIRE_ADD;
-	*pixel_mode |= FIRE_ADD;
+	*firea = 60;
+	*firer = *colr/2;
+	*fireg = *colg/2;
+	*fireb = *colb/2;
+	*pixel_mode |= FIRE_SPARK;
 	return 1;
 }
 
