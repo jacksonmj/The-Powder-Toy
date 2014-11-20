@@ -2262,7 +2262,7 @@ void render_parts(pixel *vid)
 				//Pixel rendering
 				if (t==PT_SOAP)
 				{
-					if ((parts[i].ctype&7) == 7)
+					if ((parts[i].ctype&3) == 3 && parts[i].tmp >= 0 && parts[i].tmp < NPART)
 						draw_line(vid, nx, ny, (int)(parts[parts[i].tmp].x+0.5f), (int)(parts[parts[i].tmp].y+0.5f), colr, colg, colb, XRES+BARSIZE);
 				}
 				if(pixel_mode & PSPEC_STICKMAN)
