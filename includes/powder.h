@@ -41,7 +41,7 @@
 
 #define UI_WALLSTART 222
 #define UI_ACTUALSTART 122
-#define UI_WALLCOUNT 25
+#define UI_WALLCOUNT 27
 
 #define WL_WALLELEC	122
 #define WL_EWALL	123
@@ -71,6 +71,7 @@
 #define WL_ALLOWGAS	140
 #define WL_GRAV		142
 #define WL_ALLOWENERGY 145
+#define WL_BLOCKAIR 147
 
 #include "simulation/ElementNumbers.h"
 #define OLD_PT_WIND 147

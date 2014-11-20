@@ -103,6 +103,7 @@ wall_type wtypes[] =
 	{PIXPACK(0x000099), PIXPACK(0x000000), -1, "Negative gravity tool."},
 	{PIXPACK(0xFFAA00), PIXPACK(0xAA5500), 4, "Allows energy particles, blocks all other particles."},
 	{PIXPACK(0xFFAA00), PIXPACK(0xAA5500), -1, "Property edit tool"},
+	{PIXPACK(0xDCDCDC), PIXPACK(0x000000), 1, "Allows all particles, but blocks air."},
 };
 
 void get_gravity_field(int x, int y, float particleGrav, float newtonGrav, float *pGravX, float *pGravY)
@@ -1267,8 +1268,8 @@ void update_wallmaps()
 			{
 				if (emap[y][x])
 					emap[y][x] --;
-				bmap_blockair[y][x] = (bmap[y][x]==WL_WALL || bmap[y][x]==WL_WALLELEC || (bmap[y][x]==WL_EWALL && !emap[y][x]));
-				bmap_blockairh[y][x] = (bmap[y][x]==WL_WALL || bmap[y][x]==WL_WALLELEC || bmap[y][x]==WL_GRAV || (bmap[y][x]==WL_EWALL && !emap[y][x])) ? 0x8:0;
+				bmap_blockair[y][x] = (bmap[y][x]==WL_WALL || bmap[y][x]==WL_WALLELEC || bmap[y][x]==WL_BLOCKAIR || (bmap[y][x]==WL_EWALL && !emap[y][x]));
+				bmap_blockairh[y][x] = (bmap[y][x]==WL_WALL || bmap[y][x]==WL_WALLELEC || bmap[y][x]==WL_BLOCKAIR || bmap[y][x]==WL_GRAV || (bmap[y][x]==WL_EWALL && !emap[y][x])) ? 0x8:0;
 			}
 		}
 	}

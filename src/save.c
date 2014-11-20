@@ -60,6 +60,8 @@ int change_wall_pp_current(int wt)
 		return WL_GRAV;
 	else if (wt == 15)
 		return WL_ALLOWENERGY;
+	else if (wt == 16)
+		return WL_BLOCKAIR;
 	return wt;
 }
 
@@ -96,6 +98,8 @@ int change_wall_current_pp(int wt)
 		return 14;
 	else if (wt == WL_ALLOWENERGY)
 		return 15;
+	else if (wt == WL_BLOCKAIR)
+		return 16;
 	return wt;
 }
 
