@@ -1657,6 +1657,12 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 							partsptr[newIndex].ctype = 0;
 						}
 						break;
+					case PT_PHOT:
+						if (saved_version < 90)
+						{
+							partsptr[newIndex].flags |= FLAG_PHOTDECO;
+						}
+						break;
 					}
 				}
 			}
@@ -2447,6 +2453,12 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned c
 					parts[i-1].tmp2 = parts[i-1].tmp;
 					parts[i-1].tmp = parts[i-1].ctype;
 					parts[i-1].ctype = 0;
+				}
+				break;
+			case PT_PHOT:
+				if (ver<90)
+				{
+					parts[i-1].flags |= FLAG_PHOTDECO;
 				}
 				break;
 			}
