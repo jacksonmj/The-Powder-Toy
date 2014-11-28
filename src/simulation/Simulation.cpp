@@ -31,6 +31,9 @@
 #include "simulation/ElementNumbers.h"
 
 
+#include "simulation/elements/FIGH.h"
+
+
 Simulation *globalSim = NULL; // TODO: remove this global variable
 
 Simulation::Simulation() :
@@ -65,7 +68,10 @@ void Simulation::InitElements()
 
 void Simulation::Clear()
 {
-	int t;
+	int t,i;
+
+	option_edgeMode(0);
+
 	for (t=0; t<PT_NUM; t++)
 	{
 		if (elementData[t])
@@ -75,7 +81,6 @@ void Simulation::Clear()
 	}
 	memset(elementCount, 0, sizeof(elementCount));
 
-	int i;
 	pmap_entry *pmap_flat = (pmap_entry*)pmap;
 	for (i=0; i<XRES*YRES; i++)
 	{
@@ -1617,6 +1622,19 @@ killed:
 					fin_yf += dy;
 					fin_x = (int)(fin_xf+0.5f);
 					fin_y = (int)(fin_yf+0.5f);
+					if (edgeMode == 2)
+					{
+						if (fin_x < CELL)
+							fin_xf += XRES-CELL*2;
+						if (fin_x >= XRES-CELL)
+							fin_xf -= XRES-CELL*2;
+						if (fin_y < CELL)
+							fin_yf += YRES-CELL*2;
+						if (fin_y >= YRES-CELL)
+							fin_yf -= YRES-CELL*2;
+						fin_x = (int)(fin_xf+0.5f);
+						fin_y = (int)(fin_yf+0.5f);
+					}
 					if (mv <= 0.0f)
 					{
 						// nothing found
@@ -1650,7 +1668,44 @@ killed:
 			if (t==PT_STKM || t==PT_STKM2 || t==PT_FIGH)
 			{
 				//head movement, let head pass through anything
-				part_move(i, x, y, parts[i].x+parts[i].vx, parts[i].y+parts[i].vy);
+				if (edgeMode != 2)
+				{
+					part_move(i, x, y, parts[i].x+parts[i].vx, parts[i].y+parts[i].vy);;
+				}
+				else
+				{
+					int nx = (int)((float)parts[i].x+parts[i].vx+0.5f);
+					int ny = (int)((float)parts[i].y+parts[i].vy+0.5f);
+					int diffx = 0, diffy = 0;
+					if (nx < CELL)
+						diffx = XRES-CELL*2;
+					if (nx >= XRES-CELL)
+						diffx = -(XRES-CELL*2);
+					if (ny < CELL)
+						diffy = YRES-CELL*2;
+					if (ny >= YRES-CELL)
+						diffy = -(YRES-CELL*2);
+					if (diffx || diffy) //when moving from left to right stickmen might be able to fall through solid things, fix with "eval_move(t, nx+diffx, ny+diffy, NULL)" but then they die instead
+					{
+						//adjust stickmen legs
+						playerst* stickman = NULL;
+						int t = parts[i].type;
+						if (t == PT_STKM)
+							stickman = &player;
+						else if (t == PT_STKM2)
+							stickman = &player2;
+						else if (t == PT_FIGH && parts[i].tmp >= 0 && parts[i].tmp < 256)
+							stickman = ((FIGH_ElementDataContainer*)(elementData[PT_FIGH]))->Get(parts[i].tmp);
+
+						if (stickman)
+							for (int i = 0; i < 16; i+=2)
+							{
+								stickman->legs[i] += diffx;
+								stickman->legs[i+1] += diffy;
+							}
+					}
+					part_move(i, x, y, parts[i].x+parts[i].vx+diffx, parts[i].y+parts[i].vy+diffy);
+				}
 				continue;
 			}
 			else if (elements[t].Properties & TYPE_ENERGY)
@@ -2054,6 +2109,42 @@ movedone:
 }
 
 
+
+void Simulation::option_edgeMode(short newMode)
+{
+	edgeMode = newMode;
+	switch(edgeMode)
+	{
+	case 0:
+	case 2:
+		for(int i = 0; i<(XRES/CELL); i++)
+		{
+			bmap[0][i] = 0;
+			bmap[YRES/CELL-1][i] = 0;
+		}
+		for(int i = 1; i<((YRES/CELL)-1); i++)
+		{
+			bmap[i][0] = 0;
+			bmap[i][XRES/CELL-1] = 0;
+		}
+		break;
+	case 1:
+		int i;
+		for(i=0; i<(XRES/CELL); i++)
+		{
+			bmap[0][i] = WL_WALL;
+			bmap[YRES/CELL-1][i] = WL_WALL;
+		}
+		for(i=1; i<((YRES/CELL)-1); i++)
+		{
+			bmap[i][0] = WL_WALL;
+			bmap[i][XRES/CELL-1] = WL_WALL;
+		}
+		break;
+	default:
+		option_edgeMode(0);
+	}
+}
 
 void Simulation_Compat_CopyData(Simulation* sim)
 {

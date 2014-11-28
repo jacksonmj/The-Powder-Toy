@@ -7120,13 +7120,15 @@ void simulation_ui(pixel * vid_buf)
 	ui_checkbox cb4;
 	ui_checkbox cb5;
 	ui_checkbox cb6;
-	ui_checkbox cb7;
 	char * airModeList[] = {"On", "Pressure Off", "Velocity Off", "Off", "No Update"};
 	int airModeListCount = 5;
 	char * gravityModeList[] = {"Vertical", "Off", "Radial"};
 	int gravityModeListCount = 3;
+	char * edgeModeList[] = {"Void", "Solid", "Loop"};
+	int edgeModeListCount = 3;
 	ui_list list;
 	ui_list list2;
+	ui_list list3;
 
 	cb.x = x0+xsize-16;		//Heat simulation
 	cb.y = y0+23;
@@ -7157,11 +7159,6 @@ void simulation_ui(pixel * vid_buf)
 	cb6.y = y0+107;
 	cb6.focus = 0;
 	cb6.checked = water_equal_test;
-
-	cb7.x = x0+xsize-16;	//Block frame
-	cb7.y = y0+227;
-	cb7.focus = 0;
-	cb7.checked = bframe;
 	
 	list.x = x0+xsize-76;	//Air Mode
 	list.y = y0+135;
@@ -7180,6 +7177,15 @@ void simulation_ui(pixel * vid_buf)
 	list2.selected = gravityMode;
 	list2.items = gravityModeList;
 	list2.count = gravityModeListCount;
+
+	list3.x = x0+xsize-76;	//Edge Mode
+	list3.y = y0+227;
+	list3.w = 72;
+	list3.h = 16;
+	list3.def = "[edge mode]";
+	list3.selected = globalSim->option_edgeMode();
+	list3.items = edgeModeList;
+	list3.count = edgeModeListCount;
 
 	while (!sdl_poll())
 	{
@@ -7227,8 +7233,7 @@ void simulation_ui(pixel * vid_buf)
 		drawtext(vid_buf, x0+8, y0+214, "Fullscreen", 255, 255, 255, 255);
 		drawtext(vid_buf, x0+12+textwidth("Fullscreen"), y0+214, "Fill the entire screen", 255, 255, 255, 180);
 
-		drawtext(vid_buf, x0+8, y0+228, "Block frame", 255, 255, 255, 255);
-		drawtext(vid_buf, x0+12+textwidth("Block frame"), y0+228, "Draws a wall frame around screen", 255, 255, 255, 180);
+		drawtext(vid_buf, x0+8, y0+228, "Edge mode", 255, 255, 255, 255);
 
 		//TODO: Options for Air and Normal gravity
 		//Maybe save/load defaults too.
@@ -7242,9 +7247,9 @@ void simulation_ui(pixel * vid_buf)
 		ui_checkbox_draw(vid_buf, &cb4);
 		ui_checkbox_draw(vid_buf, &cb5);
 		ui_checkbox_draw(vid_buf, &cb6);
-		ui_checkbox_draw(vid_buf, &cb7);
 		ui_list_draw(vid_buf, &list);
 		ui_list_draw(vid_buf, &list2);
+		ui_list_draw(vid_buf, &list3);
 #ifdef OGLR
 		clearScreen(1.0f);
 #endif
@@ -7255,9 +7260,9 @@ void simulation_ui(pixel * vid_buf)
 		ui_checkbox_process(mx, my, b, bq, &cb4);
 		ui_checkbox_process(mx, my, b, bq, &cb5);
 		ui_checkbox_process(mx, my, b, bq, &cb6);
-		ui_checkbox_process(mx, my, b, bq, &cb7);
 		ui_list_process(vid_buf, mx, my, b, &list);
 		ui_list_process(vid_buf, mx, my, b, &list2);
+		ui_list_process(vid_buf, mx, my, b, &list3);
 
 		if (b && !bq && mx>=x0 && mx<x0+xsize && my>=y0+ysize-16 && my<=y0+ysize)
 			break;
@@ -7277,6 +7282,8 @@ void simulation_ui(pixel * vid_buf)
 		airMode = list.selected;
 	if(list2.selected>=0 && list2.selected<=2)
 		gravityMode = list2.selected;
+	if(list3.selected>=0 && list3.selected<=2)
+		globalSim->option_edgeMode(list3.selected);
 	if(new_scale!=sdl_scale || new_kiosk!=kiosk_enable)
 	{
 		if (!set_scale(new_scale, new_kiosk))
@@ -7289,11 +7296,6 @@ void simulation_ui(pixel * vid_buf)
 		else
 			stop_grav_async();
 	}
-	if(cb7.checked && !bframe)
-		draw_bframe();
-	if(!cb7.checked && bframe)
-		erase_bframe();
-	bframe = cb7.checked;
 
 	while (!sdl_poll())
 	{

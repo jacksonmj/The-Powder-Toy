@@ -1098,7 +1098,6 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 	{
 		//Remove everything
 		clear_sim();
-		erase_bframe();
 	}
 	
 	bson_init_data(&b, (char*)bsonData);
@@ -1981,7 +1980,6 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned c
 			airMode = 0;
 		}
 		clear_sim();
-		erase_bframe();
 	}
 	parts_lastActiveIndex = NPART-1;
 	m = (int*)calloc(XRES*YRES, sizeof(int));
@@ -2526,7 +2524,6 @@ corrupt:
 	{
 		legacy_enable = 0;
 		clear_sim();
-		erase_bframe();
 	}
 	return 1;
 }

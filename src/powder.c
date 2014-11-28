@@ -652,11 +652,40 @@ int try_move(int i, int x, int y, int nx, int ny)
 // try to move particle, and if successful update pmap and parts[i].x,y
 int do_move(int i, int x, int y, float nxf, float nyf)
 {
+	int nx, ny, result;
 	// volatile to hopefully force truncation of floats in x87 registers by storing and reloading from memory, so that rounding issues don't cause particles to appear in the wrong pmap list. If using -mfpmath=sse or an ARM CPU, this may be unnecessary.
 	volatile float tmpx = nxf, tmpy = nyf;
-	int nx = (int)(tmpx+0.5f), ny = (int)(tmpy+0.5f), result;
+	nxf = tmpx;
+	nyf = tmpy;
+	nx = (int)(nxf+0.5f);
+	ny = (int)(nyf+0.5f);
 	if (parts[i].type == PT_NONE)
 		return 0;
+	if (globalSim->edgeMode == 2)
+	{
+		float diffx = 0.0f, diffy = 0.0f;
+		if (nx < CELL)
+			diffx = XRES-CELL*2;
+		if (nx >= XRES-CELL)
+			diffx = -(XRES-CELL*2);
+		if (ny < CELL)
+			diffy = YRES-CELL*2;
+		if (ny >= YRES-CELL)
+			diffy = -(YRES-CELL*2);
+		if (diffx || diffy)
+		{
+			volatile float tmpx = nxf+diffx, tmpy = nyf+diffy;
+			nxf = tmpx;
+			nyf = tmpy;
+			nx = (int)(nxf+0.5f);
+			ny = (int)(nyf+0.5f);
+
+			//make sure there isn't something blocking it on the other side
+			//only needed if this if statement is moved after the try_move (like in jacob1's mod)
+			//if (!eval_move(t, nx, ny, NULL) || (t == PT_PHOT && pmap[ny][nx]))
+			//	return -1;
+		}
+	}
 	result = try_move(i, x, y, nx, ny);
 	if (result>0)
 	{
@@ -672,8 +701,8 @@ int do_move(int i, int x, int y, float nxf, float nyf)
 			globalSim->pmap_add(i, nx, ny, t);
 		}
 		// Assign coords after the out of bounds check which might kill the particle, because kill_part > pmap_remove uses the current particle coords
-		parts[i].x = tmpx;
-		parts[i].y = tmpy;
+		parts[i].x = nxf;
+		parts[i].y = nyf;
 	}
 	return result;
 }

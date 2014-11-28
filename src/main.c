@@ -322,8 +322,6 @@ void dump_frame(pixel *src, int w, int h, int pitch)
  *                    STATE MANAGEMENT                     *
  ***********************************************************/
 
-char bframe = 0;
-
 void clear_sim(void)
 {
 	int i, x, y;
@@ -362,8 +360,6 @@ void clear_sim(void)
 			hv[y][x] = 273.15f+22.0f; //Set to room temperature
 		}
 	}
-	if(bframe)
-		draw_bframe();
 }
 
 // stamps library

@@ -67,6 +67,10 @@ public:
 
 	short heat_mode;//Will be a replacement for legacy_enable at some point. 0=heat sim off, 1=heat sim on, 2=realistic heat on (todo)
 
+	short edgeMode;
+	short option_edgeMode() { return edgeMode; }
+	void option_edgeMode(short newMode);
+
 	Simulation();
 	~Simulation();
 	void InitElements();

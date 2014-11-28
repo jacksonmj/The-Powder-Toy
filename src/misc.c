@@ -42,6 +42,9 @@
 #endif
 #include "cJSON.h"
 
+#include "simulation/Simulation.h"
+
+
 char *clipboard_text = NULL;
 
 char hex[] = "0123456789ABCDEF";
@@ -127,36 +130,6 @@ void clean_text(char *text, int vwidth)
 	}
 }
 
-void draw_bframe()
-{
-	int i;
-	for(i=0; i<(XRES/CELL); i++)
-	{
-		bmap[0][i]=WL_WALL;
-		bmap[YRES/CELL-1][i]=WL_WALL;
-	}
-	for(i=1; i<((YRES/CELL)-1); i++)
-	{
-		bmap[i][0]=WL_WALL;
-		bmap[i][XRES/CELL-1]=WL_WALL;
-	}
-}
-
-void erase_bframe()
-{
-	int i;
-	for(i=0; i<(XRES/CELL); i++)
-	{
-		bmap[0][i]=0;
-		bmap[YRES/CELL-1][i]=0;
-	}
-	for(i=1; i<((YRES/CELL)-1); i++)
-	{
-		bmap[i][0]=0;
-		bmap[i][XRES/CELL-1]=0;
-	}
-}
-
 void save_presets(int do_update)
 {
 	char * outputdata;
@@ -208,7 +181,7 @@ void save_presets(int do_update)
 	//General settings
 	cJSON_AddStringToObject(root, "proxy", http_proxy_string);
 	cJSON_AddNumberToObject(root, "scale", sdl_scale);
-	cJSON_AddNumberToObject(root, "bframe", bframe);
+	cJSON_AddNumberToObject(root, "bframe", globalSim->option_edgeMode());
 	cJSON_AddNumberToObject(root, "Debug mode", DEBUG_MODE);
 	cJSON_AddNumberToObject(root, "decorations_enable", decorations_enable);
 	cJSON_AddNumberToObject(root, "ngrav_enable", ngrav_enable);
@@ -352,7 +325,7 @@ void load_presets(void)
 		if((tmpobj = cJSON_GetObjectItem(root, "proxy")) && tmpobj->type == cJSON_String) strncpy(http_proxy_string, tmpobj->valuestring, 255); else http_proxy_string[0] = 0;
 		//TODO: Translate old cmode value into new *_mode values
 		if(tmpobj = cJSON_GetObjectItem(root, "scale")) sdl_scale = tmpobj->valueint;
-		if(tmpobj = cJSON_GetObjectItem(root, "bframe")) bframe = tmpobj->valueint;
+		if(tmpobj = cJSON_GetObjectItem(root, "bframe")) globalSim->option_edgeMode(tmpobj->valueint);
 		if(tmpobj = cJSON_GetObjectItem(root, "Debug mode")) DEBUG_MODE = tmpobj->valueint;
 		if(tmpobj = cJSON_GetObjectItem(root, "decorations_enable")) decorations_enable = tmpobj->valueint;
 		if(tmpobj = cJSON_GetObjectItem(root, "ngrav_enable")) { if (tmpobj->valueint) start_grav_async(); };
