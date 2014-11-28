@@ -1342,9 +1342,16 @@ void Simulation::UpdateParticles()
 							t = elements[t].HighTemperatureTransitionElement;
 						else if (t==PT_ICEI || t==PT_SNOW) {
 							if (IsValidElement(parts[i].ctype) && parts[i].ctype!=t) {
-								if ((elements[parts[i].ctype].LowTemperatureTransitionElement==PT_ICEI || elements[parts[i].ctype].LowTemperatureTransitionElement==PT_SNOW) && pt<elements[parts[i].ctype].LowTemperatureTransitionThreshold)
-									s = 0;
-								else {
+								if (elements[parts[i].ctype].LowTemperatureTransitionElement==PT_ICEI || elements[parts[i].ctype].LowTemperatureTransitionElement==PT_SNOW)
+								{
+									if (pt<elements[parts[i].ctype].LowTemperatureTransitionThreshold)
+										s = 0;
+								}
+								else if (pt<273.15f)
+ 									s = 0;
+
+								if (s)
+								{
 									t = parts[i].ctype;
 									parts[i].ctype = PT_NONE;
 									parts[i].life = 0;
