@@ -65,7 +65,7 @@ void GRVT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->PressureAdd_NoAmbHeat = 0.000f	* CFDS;
 	elem->Falldown = 0;
 
-	elem->Flammable = 40;
+	elem->Flammable = 0;
 	elem->Explosive = 0;
 	elem->Meltable = 0;
 	elem->Hardness = 1;
