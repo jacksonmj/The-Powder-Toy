@@ -30,7 +30,7 @@ int FWRK_update(UPDATE_FUNC_ARGS)
 			gy += cosf(angle)*ptypes[PT_FWRK].gravity*0.5f;
 		}
 		gmax = fmaxf(fabsf(gx), fabsf(gy));
-		if (eval_move(PT_FWRK, (int)(x-(gx/gmax)+0.5f), (int)(y-(gy/gmax)+0.5f), NULL))
+		if (eval_move(PT_FWRK, (int)(x-(gx/gmax)+0.5f), (int)(y-(gy/gmax)+0.5f)))
 		{
 			multiplier = 15.0f/sqrtf(gx*gx+gy*gy);
 

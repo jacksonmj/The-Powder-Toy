@@ -411,7 +411,7 @@ int Simulation::part_create(int p, int x, int y, int t)
 		// If there is a particle, only allow creation if the new particle can occupy the same space as the existing particle
 		// If there isn't a particle but there is a wall, check whether the new particle is allowed to be in it
 		// If there's no particle and no wall, assume creation is allowed
-		if (pmap[y][x].count ? (eval_move(t, x, y, NULL)!=2) : (bmap[y/CELL][x/CELL] && eval_move(t, x, y, NULL)!=2))
+		if (pmap[y][x].count ? (eval_move(t, x, y)!=2) : (bmap[y/CELL][x/CELL] && eval_move(t, x, y)!=2))
 		{
 			return -1;
 		}
@@ -1663,7 +1663,7 @@ killed:
 						clear_y = (int)(clear_yf+0.5f);
 						break;
 					}
-					if (!eval_move(t, fin_x, fin_y, NULL) || (t == PT_PHOT && pmap[fin_y][fin_x].count_notEnergy) || bmap[fin_y/CELL][fin_x/CELL]==WL_DESTROYALL)
+					if (eval_move(t, fin_x, fin_y)!=2 || (t == PT_PHOT && pmap[fin_y][fin_x].count_notEnergy) || bmap[fin_y/CELL][fin_x/CELL]==WL_DESTROYALL)
 					{
 						// found an obstacle
 						clear_xf = fin_xf-dx;
@@ -1700,7 +1700,7 @@ killed:
 						diffy = YRES-CELL*2;
 					if (ny >= YRES-CELL)
 						diffy = -(YRES-CELL*2);
-					if (diffx || diffy) //when moving from left to right stickmen might be able to fall through solid things, fix with "eval_move(t, nx+diffx, ny+diffy, NULL)" but then they die instead
+					if (diffx || diffy) //when moving from left to right stickmen might be able to fall through solid things, fix with "eval_move(t, nx+diffx, ny+diffy)" but then they die instead
 					{
 						//adjust stickmen legs
 						playerst* stickman = NULL;
@@ -1738,7 +1738,7 @@ killed:
 					int ri = pmap_find_one(fin_x, fin_y, PT_GLAS);
 					int li = pmap_find_one(x, y, PT_GLAS);
 
-					r = eval_move(PT_PHOT, fin_x, fin_y, NULL);
+					r = eval_move(PT_PHOT, fin_x, fin_y);
 					if (r && ((ri>=0 && li<0) || (ri<0 && li>=0))) {
 						if (!get_normal_interp(REFRACT|t, parts[i].x, parts[i].y, parts[i].vx, parts[i].vy, &nrx, &nry)) {
 							kill_part(i);

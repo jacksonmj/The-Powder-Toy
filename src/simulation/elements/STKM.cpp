@@ -179,7 +179,7 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 		bool moved = false;
 		if (dl>dr)
 		{
-			if (INBOND(playerp->legs[4], playerp->legs[5]) && !eval_move(t, playerp->legs[4], playerp->legs[5], NULL))
+			if (INBOND(playerp->legs[4], playerp->legs[5]) && !eval_move(t, playerp->legs[4], playerp->legs[5]))
 			{
 				playerp->accs[2] = -3*gvy-3*gvx;
 				playerp->accs[3] = 3*gvx-3*gvy;
@@ -190,7 +190,7 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 		}
 		else
 		{
-			if (INBOND(playerp->legs[12], playerp->legs[13]) && !eval_move(t, playerp->legs[12], playerp->legs[13], NULL))
+			if (INBOND(playerp->legs[12], playerp->legs[13]) && !eval_move(t, playerp->legs[12], playerp->legs[13]))
 			{
 				playerp->accs[6] = -3*gvy-3*gvx;
 				playerp->accs[7] = 3*gvx-3*gvy;
@@ -229,7 +229,7 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 		bool moved = false;
 		if (dl<dr)
 		{
-			if (INBOND(playerp->legs[4], playerp->legs[5]) && !eval_move(t, playerp->legs[4], playerp->legs[5], NULL))
+			if (INBOND(playerp->legs[4], playerp->legs[5]) && !eval_move(t, playerp->legs[4], playerp->legs[5]))
 			{
 				playerp->accs[2] = 3*gvy-3*gvx;
 				playerp->accs[3] = -3*gvx-3*gvy;
@@ -240,7 +240,7 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 		}
 		else
 		{
-			if (INBOND(playerp->legs[12], playerp->legs[13]) && !eval_move(t, playerp->legs[12], playerp->legs[13], NULL))
+			if (INBOND(playerp->legs[12], playerp->legs[13]) && !eval_move(t, playerp->legs[12], playerp->legs[13]))
 			{
 				playerp->accs[6] = 3*gvy-3*gvx;
 				playerp->accs[7] = -3*gvx-3*gvy;
@@ -306,8 +306,8 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 				}
 			}
 		}
-		else if ((INBOND(playerp->legs[4], playerp->legs[5]) && !eval_move(t, playerp->legs[4], playerp->legs[5], NULL)) || 
-			(INBOND(playerp->legs[12], playerp->legs[13]) && !eval_move(t, playerp->legs[12], playerp->legs[13], NULL)))
+		else if ((INBOND(playerp->legs[4], playerp->legs[5]) && !eval_move(t, playerp->legs[4], playerp->legs[5])) || 
+			(INBOND(playerp->legs[12], playerp->legs[13]) && !eval_move(t, playerp->legs[12], playerp->legs[13])))
 		{
 			parts[i].vx -= 4*gvx;
 			parts[i].vy -= 4*gvy;
@@ -475,27 +475,27 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 	playerp->legs[8] += (playerp->legs[8]-parts[i].x)*d;
 	playerp->legs[9] += (playerp->legs[9]-parts[i].y)*d;
 
-	if (INBOND(playerp->legs[4], playerp->legs[5]) && !eval_move(t, playerp->legs[4], playerp->legs[5], NULL))
+	if (INBOND(playerp->legs[4], playerp->legs[5]) && !eval_move(t, playerp->legs[4], playerp->legs[5]))
 	{
 		playerp->legs[4] = playerp->legs[6];
 		playerp->legs[5] = playerp->legs[7];
 	}
 
-	if (INBOND(playerp->legs[12], playerp->legs[13]) && !eval_move(t, playerp->legs[12], playerp->legs[13], NULL))
+	if (INBOND(playerp->legs[12], playerp->legs[13]) && !eval_move(t, playerp->legs[12], playerp->legs[13]))
 	{
 		playerp->legs[12] = playerp->legs[14];
 		playerp->legs[13] = playerp->legs[15];
 	}
 
 	//This makes stick man "pop" from obstacles
-	if (INBOND(playerp->legs[4], playerp->legs[5]) && !eval_move(t, playerp->legs[4], playerp->legs[5], NULL))
+	if (INBOND(playerp->legs[4], playerp->legs[5]) && !eval_move(t, playerp->legs[4], playerp->legs[5]))
 	{
 		float t;
 		t = playerp->legs[4]; playerp->legs[4] = playerp->legs[6]; playerp->legs[6] = t;
 		t = playerp->legs[5]; playerp->legs[5] = playerp->legs[7]; playerp->legs[7] = t;
 	}
 
-	if (INBOND(playerp->legs[12], playerp->legs[13]) && !eval_move(t, playerp->legs[12], playerp->legs[13], NULL))
+	if (INBOND(playerp->legs[12], playerp->legs[13]) && !eval_move(t, playerp->legs[12], playerp->legs[13]))
 	{
 		float t;
 		t = playerp->legs[12]; playerp->legs[12] = playerp->legs[14]; playerp->legs[14] = t;

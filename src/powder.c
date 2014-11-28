@@ -166,16 +166,19 @@ void init_can_move()
 	// can_move[moving type][type at destination]
 	//  0 = No move/Bounce
 	//  1 = Swap
-	//  2 = Both particles occupy the same space.
+	//  2 = Both particles occupy the same space, or moving into empty space
 	//  3 = Varies, go run some extra checks
 
 	// particles that don't exist shouldn't move...
 	for (destinationType=0; destinationType < PT_NUM; destinationType++)
 		can_move[0][destinationType] = 0;
+	// movement into empty space
+	for (movingType=0; movingType < PT_NUM; movingType++)
+		can_move[movingType][0] = 2;
 
 	//initialize everything else to swapping by default
 	for (movingType=1; movingType < PT_NUM; movingType++)
-		for (destinationType=0; destinationType < PT_NUM; destinationType++)
+		for (destinationType=1; destinationType < PT_NUM; destinationType++)
 			can_move[movingType][destinationType] = 1;
 
 	//photons go through everything by default
@@ -333,7 +336,7 @@ int eval_move_special(int pt, int nx, int ny, int ri, int result)
 2 = Both particles occupy the same space. This is also returned for a particle moving into empty space.
  */
 // TODO: add a return value for particle will be killed? Though for some materials, like PRTI, this won't be known until we try to do it.
-int eval_move(int pt, int nx, int ny, unsigned *rr)
+int eval_move(int pt, int nx, int ny)
 {
 	int result = 2;
 	int rcount, ri, rnext;
@@ -352,13 +355,6 @@ int eval_move(int pt, int nx, int ny, unsigned *rr)
 			if (tmpResult<result)
 				result = tmpResult;
 		}
-	}
-
-	if (rr)
-	{
-		// TODO: remove this
-		if (globalSim->pmap[ny][nx].count_notEnergy)
-			*rr = (globalSim->pmap[ny][nx].first<<8) | parts[globalSim->pmap[ny][nx].first].type;
 	}
 
 	if (bmap[ny/CELL][nx/CELL])
@@ -411,7 +407,7 @@ int try_move(int i, int x, int y, int nx, int ny)
 		return 1;
 
 	int t = parts[i].type;
-	e = eval_move(t, nx, ny, NULL);
+	e = eval_move(t, nx, ny);
 
 	/* half-silvered mirror */
 	if (!e && t==PT_PHOT &&
@@ -630,7 +626,7 @@ int try_move(int i, int x, int y, int nx, int ny)
 		// For NEUTPENETRATE particles being displaced by a neutron, only move ones at nx,ny to x,y if there's currently a NEUTPENETRATE particle or empty space at x,y
 		if (t!=PT_NEUT || srcNeutPenetrate>=0 || !srcPartFound)
 		{
-			if (t!=PT_NEUT || eval_move(rt, x, y, NULL))
+			if (t!=PT_NEUT || eval_move(rt, x, y))
 			{
 				globalSim->part_move(ri, nx, ny, x, y);
 			}
@@ -638,7 +634,7 @@ int try_move(int i, int x, int y, int nx, int ny)
 	}
 	
 
-	if (t==PT_NEUT && srcNeutPenetrate>=0 && eval_move(parts[srcNeutPenetrate].type, nx, ny, NULL))
+	if (t==PT_NEUT && srcNeutPenetrate>=0 && eval_move(parts[srcNeutPenetrate].type, nx, ny))
 	{
 		globalSim->part_move(srcNeutPenetrate, x, y, nx, ny);
 	}
@@ -646,7 +642,7 @@ int try_move(int i, int x, int y, int nx, int ny)
 	if(t==PT_GBMB&&parts[i].life>0)
 		return 0;
 
-	return eval_move(t, nx, ny, NULL);
+	return eval_move(t, nx, ny);
 }
 
 // try to move particle, and if successful update pmap and parts[i].x,y
@@ -682,7 +678,7 @@ int do_move(int i, int x, int y, float nxf, float nyf)
 
 			//make sure there isn't something blocking it on the other side
 			//only needed if this if statement is moved after the try_move (like in jacob1's mod)
-			//if (!eval_move(t, nx, ny, NULL) || (t == PT_PHOT && pmap[ny][nx]))
+			//if (!eval_move(t, nx, ny) || (t == PT_PHOT && pmap[ny][nx]))
 			//	return -1;
 		}
 	}
@@ -747,7 +743,7 @@ static int is_blocking(int t, int x, int y)
 		return 0;
 	}
 
-	return !eval_move(t, x, y, NULL);
+	return !eval_move(t, x, y);
 }
 
 static int is_boundary(int pt, int x, int y)
@@ -1581,7 +1577,7 @@ int flood_water(int x, int y, int i, int originaly, int check)
 					}
 				}
 				//check above, maybe around other sides too?
-				if ( ((y-1) > originaly) && !pmap[y-1][x] && eval_move(parts[i].type, x, y-1, NULL))
+				if ( ((y-1) > originaly) && !pmap[y-1][x] && eval_move(parts[i].type, x, y-1))
 				{
 					sim->part_move(i, (int)(parts[i].x + 0.5f), (int)(parts[i].y + 0.5f), x, y-1);
 					return 0;
