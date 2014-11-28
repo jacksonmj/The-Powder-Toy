@@ -723,6 +723,7 @@ void Simulation::UpdateParticles()
 	unsigned int elem_properties;
 	float pGravX, pGravY, pGravD;
 	int excessive_stacking_found = 0;
+	bool transitionOccurred;
 
 	RecalcFreeParticles();
 	update_wallmaps();
@@ -1249,6 +1250,8 @@ void Simulation::UpdateParticles()
 				}
 			}
 
+			transitionOccurred = false;
+
 			j = surround_space = nt = 0;//if nt is greater than 1 after this, then there is a particle around the current particle, that is NOT the current particle's type, for water movement.
 
 			for (nx=-1; nx<2; nx++)
@@ -1441,6 +1444,7 @@ void Simulation::UpdateParticles()
 							else if (parts[i].ctype==PT_PQRT) parts[i].ctype = PT_QRTZ;
 							parts[i].life = rand()%120+240;
 						}
+						transitionOccurred = true;
 					}
 
 					pt = parts[i].temp = restrict_flt(parts[i].temp, MIN_TEMP, MAX_TEMP);
@@ -1555,6 +1559,7 @@ void Simulation::UpdateParticles()
 				part_change_type(i,x,y,t);
 				if (t==PT_FIRE)
 					parts[i].life = rand()%50+120;
+				transitionOccurred = true;
 			}
 
 			//call the particle update function, if there is one
@@ -1588,6 +1593,9 @@ void Simulation::UpdateParticles()
 
 killed:
 			if (parts[i].type == PT_NONE)//if its dead, skip to next particle
+				continue;
+
+			if (transitionOccurred)
 				continue;
 
 			if (!parts[i].vx&&!parts[i].vy)//if its not moving, skip to next particle, movement code it next
