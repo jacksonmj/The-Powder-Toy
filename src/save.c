@@ -925,6 +925,7 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 	bson_append_bool(&b, "paused", sys_pause);
 	bson_append_int(&b, "gravityMode", gravityMode);
 	bson_append_int(&b, "airMode", airMode);
+	bson_append_int(&b, "edgeMode", airMode);
 	
 	//bson_append_int(&b, "leftSelectedElement", sl);
 	//bson_append_int(&b, "rightSelectedElement", sr);
@@ -1299,6 +1300,17 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 			if(bson_iterator_type(&iter)==BSON_INT)
 			{
 				airMode = bson_iterator_int(&iter);
+			}
+			else
+			{
+				fprintf(stderr, "Wrong type for %s\n", bson_iterator_key(&iter));
+			}
+		}
+		else if(strcmp(bson_iterator_key(&iter), "edgeMode")==0 && replace)
+		{
+			if(bson_iterator_type(&iter)==BSON_INT)
+			{
+				globalSim->option_edgeMode(bson_iterator_int(&iter));
 			}
 			else
 			{
