@@ -1343,7 +1343,7 @@ void create_box(int x1, int y1, int x2, int y2, int c, int flags)
 		y2 = y1;
 		y1 = j;
 	}
-	for (j=y1; j<=y2; j++)
+	for (j=y2; j>=y1; j--)
 		for (i=x1; i<=x2; i++)
 			create_parts(i, j, 0, 0, c, flags, 1);
 }
@@ -1770,7 +1770,7 @@ int create_parts(int x, int y, int rx, int ry, int c, int flags, int fill)
 
 	if (rx<=0) //workaround for rx == 0 crashing. todo: find a better fix later.
 	{
-		for (j = y - ry; j <= y + ry; j++)
+		for (j = y + ry; j >= y - ry; j--)
 			if (create_parts2(fn,x,j,c,rx,ry,flags))
 				f = 1;
 	}
@@ -1794,7 +1794,7 @@ int create_parts(int x, int y, int rx, int ry, int c, int flags, int fill)
 				jmax = 2*y - tempy;
 				if (CURRENT_BRUSH == TRI_BRUSH)
 					jmax = y + ry;
-				for (j = tempy; j <= jmax; j++) {
+				for (j = jmax; j >= tempy; j--) {
 					if (create_parts2(fn,i,j,c,rx,ry,flags))
 						f = 1;
 					if (i!=x && create_parts2(fn,2*x-i,j,c,rx,ry,flags))
@@ -1807,7 +1807,7 @@ int create_parts(int x, int y, int rx, int ry, int c, int flags, int fill)
 					oldy--;
 				//if (CURRENT_BRUSH == TRI_BRUSH)
 				//	oldy = tempy;
-				for (j = tempy; j <= oldy+1; j++) {
+				for (j = oldy+1; j >= tempy; j--) {
 					int i2 = 2*x-i, j2 = 2*y-j;
 					if (CURRENT_BRUSH == TRI_BRUSH)
 						j2 = y+ry;
