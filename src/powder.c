@@ -991,7 +991,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 				if (drawOn == PT_DTEC && t==PT_LIFE && v<NGOLALT)
 					parts[ri].tmp = v;
 			}
-			else if (drawOn == PT_CRAY && drawOn != t && drawOn != PT_PSCN && drawOn != PT_INST && drawOn != PT_METL)
+			else if (drawOn == PT_CRAY && drawOn != t)
 			{
 				parts[ri].ctype = t;
 				if (t==PT_LIFE && v<NGOLALT)
