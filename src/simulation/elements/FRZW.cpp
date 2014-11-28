@@ -78,10 +78,10 @@ void FRZW_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->LowPressureTransitionElement = NT;
 	elem->HighPressureTransitionThreshold = IPH;
 	elem->HighPressureTransitionElement = NT;
-	elem->LowTemperatureTransitionThreshold = ITL;
-	elem->LowTemperatureTransitionElement = NT;
-	elem->HighTemperatureTransitionThreshold = 53.0f;
-	elem->HighTemperatureTransitionElement = PT_ICEI;
+	elem->LowTemperatureTransitionThreshold = 53.0f;
+	elem->LowTemperatureTransitionElement = PT_ICEI;
+	elem->HighTemperatureTransitionThreshold = ITH;
+	elem->HighTemperatureTransitionElement = NT;
 
 	elem->DefaultProperties.life = 100;
 

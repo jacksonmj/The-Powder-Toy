@@ -82,7 +82,7 @@ void FRZZ_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->LowTemperatureTransitionThreshold = 50.0f;
 	elem->LowTemperatureTransitionElement = PT_ICEI;
 	elem->HighTemperatureTransitionThreshold = 273.15f;
-	elem->HighTemperatureTransitionElement = PT_WATR;
+	elem->HighTemperatureTransitionElement = PT_FRZW;
 
 	elem->Update = &FRZZ_update;
 	elem->Graphics = NULL;

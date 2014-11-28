@@ -38,8 +38,11 @@ int ICE_update(UPDATE_FUNC_ARGS) //currently used for snow as well
 							part_change_type(ri,x+rx,y+ry,PT_SLTW);
 						}
 					}
-					else if ((rt==PT_FRZZ) && (parts[i].ctype=PT_FRZW) && !(rand()%200))
+					else if (rt==PT_FRZZ && !(rand()%200))
+					{
 						part_change_type(ri,x+rx,y+ry,PT_ICEI);
+						parts[ri].ctype = PT_FRZW;
+					}
 				}
 			}
 	return 0;
