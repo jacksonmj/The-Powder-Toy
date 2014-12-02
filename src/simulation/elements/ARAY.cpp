@@ -131,7 +131,7 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 											parts[ri].life = 1;
 											if (isBlackDeco)
 												parts[ri].dcolour = 0xFF000000;
-											//this if prevents red BRAY from stopping on certain materials
+										//this if prevents red BRAY from stopping on certain materials
 										} else if (rt==PT_STOR || sim->part_cmp_conductive(parts[ri], PT_INWR) || rt==PT_ARAY || rt==PT_WIFI || rt==PT_FILT || (rt==PT_SWCH && parts[ri].life>=10)) {
 											if(rt==PT_STOR)
 											{
@@ -149,9 +149,8 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 									}
 								}
 							}
+							break;//break out of FOR_PMAP_POSITION loop, so that stacked sparks don't cause multiple activation
 						}
-						//parts[i].life = 4;
-						break;//break out of FOR_PMAP_POSITION loop, so that stacked sparks don't cause multiple activation
 					}
 				}
 	}
