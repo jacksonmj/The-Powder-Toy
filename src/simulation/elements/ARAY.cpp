@@ -88,11 +88,12 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 											isBlackDeco = (parts[ri].dcolour==0xFF000000);
 											parts[ri].life = 4;
 										//this if prevents BRAY from stopping on certain materials
-										} else if (rt!=PT_STOR && !sim->part_cmp_conductive(parts[ri], PT_INWR) && rt!=PT_ARAY && rt!=PT_WIFI && rt!=PT_INST && !(rt==PT_SWCH && parts[ri].life>=10)) {
+										} else if (rt!=PT_STOR && !sim->part_cmp_conductive(parts[ri], PT_INWR) && rt!=PT_ARAY && rt!=PT_WIFI && !(rt==PT_SWCH && parts[ri].life>=10)) {
 											if (nyy!=0 || nxx!=0) {
 												sim->spark_particle(ri, x+nxi+nxx, y+nyi+nyy);
 											}
-											if (!(nostop && sim->part_is_sparkable(parts[ri]))) {
+											if (!(nostop && parts[ri].type==PT_SPRK && parts[ri].ctype >= 0 && parts[ri].ctype < PT_NUM && (sim->elements[parts[ri].ctype].Properties&PROP_CONDUCTS))) {
+											// TODO: when breaking compatibility, sim->part_is_sparkable(parts[ri]) instead
 												docontinue = 0;
 											}
 										} else if(rt==PT_STOR) {
