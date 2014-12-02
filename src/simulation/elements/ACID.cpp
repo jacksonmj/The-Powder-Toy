@@ -44,17 +44,17 @@ int ACID_update(UPDATE_FUNC_ARGS)
 								kill_part(ri);
 							}
 						}
-						else if ((rt!=PT_CLNE && rt!=PT_PCLN && ptypes[rt].hardness>(rand()%1000))&&parts[i].life>=50)
+						else if ((rt!=PT_CLNE && rt!=PT_PCLN && sim->elements[rt].Hardness>(rand()%1000))&&parts[i].life>=50)
 						{
 							if (!sim->check_middle_particle_type(i, ri, PT_GLAS))//GLAS protects stuff from acid
 							{
-								float newtemp = ((60.0f-(float)ptypes[ri].hardness))*7.0f;
+								float newtemp = ((60.0f-(float)sim->elements[rt].Hardness))*7.0f;
 								if(newtemp < 0){
 									newtemp = 0;
 								}
 								parts[i].temp += newtemp;
 								parts[i].life--;
-								kill_part(ri);
+								sim->part_kill(ri);
 							}
 						}
 						else if (parts[i].life<=50)
@@ -96,7 +96,7 @@ int ACID_update(UPDATE_FUNC_ARGS)
 int ACID_graphics(GRAPHICS_FUNC_ARGS)
 {
 	int s = cpart->life;
-	if (s>75) s = 75; //These two should not be here.
+	if (s>75) s = 75;
 	if (s<49) s = 49;
 	s = (s-49)*3;
 	if (s==0) s = 1;
