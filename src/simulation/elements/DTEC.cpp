@@ -77,7 +77,7 @@ int DTEC_update(UPDATE_FUNC_ARGS)
 							}
 						}
 						if (!foundFILT)
-							continue;
+							break;
 						nx += rx;
 						ny += ry;
 						if (nx<0 || ny<0 || nx>=XRES || ny>=YRES)
