@@ -72,7 +72,7 @@ void FRZW_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Description = "Freeze water. Hybrid liquid formed when Freeze powder melts.";
 
 	elem->State = ST_LIQUID;
-	elem->Properties = TYPE_LIQUID||PROP_LIFE_DEC;
+	elem->Properties = TYPE_LIQUID | PROP_LIFE_DEC;
 
 	elem->LowPressureTransitionThreshold = IPL;
 	elem->LowPressureTransitionElement = NT;
