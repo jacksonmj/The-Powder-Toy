@@ -150,7 +150,10 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 						if (rt == PT_EXOT)
 						{
 							if (!(rand()%25))
+							{
 								sim->part_create(i, x, y, PT_EXOT);
+								return 1;
+							}
 						}
 						//Absorbs energy particles
 						else if ((sim->elements[rt].Properties & TYPE_ENERGY))
@@ -169,11 +172,15 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 			}
 	if (parts[i].tmp>0)
 	{
+		int random;
 		for (trade = 0; trade < 9; trade++)
 		{
-			int random = rand();
+			if (!(trade%2))
+				random = rand();
 			rx = random%7-3;
-			ry = (random>>3)%7-3;
+			random >>= 3;
+			ry = random%7-3;
+			random >>= 3;
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
@@ -215,13 +222,13 @@ int VIBR_graphics(GRAPHICS_FUNC_ARGS)
 		*colr = (int)(fabs(sin(exp((750.0f-cpart->life)/170)))*200.0f);
 		if (cpart->tmp2)
 		{
-			*colg = (int)(fabs(sin(exp((750.0f-cpart->life)/170)))*200.0f);
+			*colg = *colr;
 			*colb = 255;
 		}
 		else
 		{
 			*colg = 255;
-			*colb = (int)(fabs(sin(exp((750.0f-cpart->life)/170)))*200.0f);
+			*colb = *colr;
 		}
 		*firea = 90;
 		*firer = *colr;

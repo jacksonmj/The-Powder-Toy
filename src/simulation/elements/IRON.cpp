@@ -17,7 +17,7 @@
 
 int IRON_update(UPDATE_FUNC_ARGS)
 {
-	if (!parts[i].life)
+	if (parts[i].life)
 		return 0;
 	int rx, ry;
 	int rcount, ri, rnext;

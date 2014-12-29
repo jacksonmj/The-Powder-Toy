@@ -17,14 +17,16 @@
 
 int GOLD_update(UPDATE_FUNC_ARGS)
 {
-	int rx, ry, blocking = 0;
+	int rx, ry, rndstore, blocking = 0;
 	static int checkCoordsX[] = { -4, 4, 0, 0 };
 	static int checkCoordsY[] = { 0, 0, -4, 4 };
 	int rcount, ri, rnext;
 	//Find nearby rusted iron (BMTL with tmp 1+)
 	for(int j = 0; j < 8; j++){
-		rx = (rand()%9)-4;
-		ry = (rand()%9)-4;
+		rndstore = rand();
+		rx = (rndstore % 9)-4;
+		rndstore >>= 4;
+		ry = (rndstore % 9)-4;
 		if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (!rx != !ry)) {
 			FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 			{
@@ -68,9 +70,12 @@ int GOLD_update(UPDATE_FUNC_ARGS)
 
 int GOLD_graphics(GRAPHICS_FUNC_ARGS)
 {
-	*colr += rand()%10-5;
-	*colg += rand()%10-5;
-	*colb += rand()%10-5;
+	int rndstore = rand();
+	*colr += (rndstore % 10) - 5;
+	rndstore >>= 4;
+	*colg += (rndstore % 10)- 5;
+	rndstore >>= 4;
+	*colb += (rndstore % 10) - 5;
 	return 0;
 }
 

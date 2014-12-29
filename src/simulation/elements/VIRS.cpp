@@ -30,27 +30,25 @@ int VIRS_update(UPDATE_FUNC_ARGS)
 			parts[i].tmp2 = 0;
 			parts[i].pavg[0] = 0;
 			parts[i].pavg[1] = 0;
-			return 0;
 		}
+		return 0;
+		//cured virus is never in below code
 	}
 	//decrease pavg[1] so it slowly dies
 	if (parts[i].pavg[1] > 0)
 	{
-		if (((rndstore>>1)&0xD) < 1)
+		if (!(rndstore & 0x7))
 		{
 			parts[i].pavg[1]--;
-			//if pavg[1] is now 0 and it's not in the process of being cured, kill it
-			if (!parts[i].pavg[1] && !parts[i].pavg[0])
+			//if pavg[1] is now 0, kill it
+			if (parts[i].pavg[1]<=0)
 			{
 				sim->part_kill(i);
 				return 1;
 			}
 		}
+		rndstore >>= 3;
 	}
-
-	//none of the things in the below loop happen while virus is being cured
-	if (parts[i].pavg[0])
-		return 0;
 
 	int rcount, ri, rnext, rt;
 	for (rx=-1; rx<2; rx++)
@@ -67,15 +65,14 @@ int VIRS_update(UPDATE_FUNC_ARGS)
 					//spread "being cured" state
 					if ((rt == PT_VIRS || rt == PT_VRSS || rt == PT_VRSG) && parts[ri].pavg[0])
 					{
-						parts[i].pavg[0] = parts[ri].pavg[0] + (((rndstore&0x7)>>1) ? 2:1);
-						rndstore = rndstore >> 3;
+						parts[i].pavg[0] = parts[ri].pavg[0] + ((rndstore & 0x3) ? 2:1);
 						return 0;
 					}
 					//soap cures virus
 					else if (rt == PT_SOAP)
 					{
 						parts[i].pavg[0] += 10;
-						if (!((rndstore&0x7)>>1))
+						if (!(rndstore & 0x3))
 							sim->part_kill(ri);
 						return 0;
 					}
@@ -88,14 +85,18 @@ int VIRS_update(UPDATE_FUNC_ARGS)
 						}
 					}
 					//transforms things into virus here
-					else if (rt != PT_VIRS && rt != PT_VRSS && rt != PT_VRSG && rt != PT_DMND)
+					else if (rt != PT_VIRS && rt != PT_VRSS && rt != PT_VRSG && rt != PT_DMND && !(sim->elements[rt].Properties&TYPE_ENERGY))
 					{
-						if (!((rndstore&0xF)>>1))
+						if (!(rndstore & 0x7))
 						{
+							rndstore >>= 3;
 							parts[ri].tmp2 = rt;
 							parts[ri].pavg[0] = 0;
 							if (parts[i].pavg[1])
-								parts[ri].pavg[1] = parts[i].pavg[1] + ((rndstore>>4) ? 1:0);
+							{
+								parts[ri].pavg[1] = parts[i].pavg[1] + ((rndstore % 3) ? 1 : 0);
+								rndstore >>= 2;
+							}
 							else
 								parts[ri].pavg[1] = 0;
 							if (parts[ri].temp < 305.0f)
@@ -105,7 +106,8 @@ int VIRS_update(UPDATE_FUNC_ARGS)
 							else
 								sim->part_change_type(ri, x+rx, y+ry, PT_VIRS);
 						}
-						rndstore = rndstore >> 5;
+						else
+							rndstore >>= 3;
 					}
 					//protons make VIRS last forever
 					else if (rt == PT_PROT)

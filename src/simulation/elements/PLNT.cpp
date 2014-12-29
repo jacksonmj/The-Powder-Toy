@@ -17,7 +17,7 @@
 
 int PLNT_update(UPDATE_FUNC_ARGS)
 {
-	int rx, ry, rt, np;
+	int rx, ry, rt, np, rndstore;
 	int rcount, ri, rnext;
 	if (parts[i].temp > 350 && parts[i].temp > parts[i].tmp2)
 		parts[i].tmp2 = (int)parts[i].temp;
@@ -52,11 +52,14 @@ int PLNT_update(UPDATE_FUNC_ARGS)
 						}
 						break;
 					case PT_WOOD:
-						if (surround_space && !(rand()%4) && (abs(rx+ry)<=2) && parts[i].tmp==1)
+						rndstore = rand();
+						if (surround_space && !(rndstore%4) && (abs(rx+ry)<=2) && parts[i].tmp==1)
 						{
-							int nnx = rand()%3 -1;
-							int nny = rand()%3 -1;
-							if (x+rx+nnx>=0 && y+ry+nny>0 && x+rx+nnx<XRES && y+ry+nny<YRES && (nnx || nny))
+							rndstore >>= 3;
+							int nnx = (rndstore%3) -1;
+							rndstore >>= 2;
+							int nny = (rndstore%3) -1;
+							if (x+rx+nnx>=0 && y+ry+nny>=0 && x+rx+nnx<XRES && y+ry+nny<YRES && (nnx || nny))
 							{
 								np = sim->part_create(-1,x+rx+nnx,y+ry+nny,PT_VINE);
 								if (np>=0)

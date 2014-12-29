@@ -17,10 +17,14 @@
 
 int VINE_update(UPDATE_FUNC_ARGS)
 {
-	int r, np, rx =(rand()%3)-1, ry=(rand()%3)-1;
+	int r, np, rx, ry, rndstore = rand();
+	rx = (rndstore % 3) - 1;
+	rndstore >>= 2;
+	ry = (rndstore % 3) - 1;
+	rndstore >>= 2;
 	if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 	{
-		if (!(rand()%15))
+		if (!(rndstore % 15))
 			part_change_type(i,x,y,PT_PLNT);
 		else
 		{
@@ -99,6 +103,8 @@ void VINE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->LowTemperatureTransitionElement = NT;
 	elem->HighTemperatureTransitionThreshold = 573.0f;
 	elem->HighTemperatureTransitionElement = PT_FIRE;
+
+	elem->DefaultProperties.tmp = 1;
 
 	elem->Update = &VINE_update;
 	elem->Graphics = &VINE_graphics;
