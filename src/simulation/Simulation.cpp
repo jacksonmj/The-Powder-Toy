@@ -491,6 +491,15 @@ bool Simulation::part_change_type(int i, int x, int y, int t)//changes the type 
 	if (t==parts[i].type)
 		return true;
 
+	if (!t)
+	{
+#ifdef DEBUG_PARTSALLOC
+		printf("Particle %d killed using part_change_type - part_kill should be used instead (to make it clear that particle properties should not be changed afterwards in the calling code)\n", i);
+#endif
+		part_kill(i);
+		return true;
+	}
+
 	if (elements[t].Func_Create_Allowed)
 	{
 		if (!(*(elements[t].Func_Create_Allowed))(this, i, x, y, t))

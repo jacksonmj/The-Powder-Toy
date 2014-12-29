@@ -26,10 +26,18 @@ int VIRS_update(UPDATE_FUNC_ARGS)
 		//has been cured, so change back into the original element
 		if (!parts[i].pavg[0])
 		{
-			sim->part_change_type(i,x,y,parts[i].tmp2);
-			parts[i].tmp2 = 0;
-			parts[i].pavg[0] = 0;
-			parts[i].pavg[1] = 0;
+			if (parts[i].tmp2)
+			{
+				sim->part_change_type(i,x,y,parts[i].tmp2);
+				parts[i].tmp2 = 0;
+				parts[i].pavg[0] = 0;
+				parts[i].pavg[1] = 0;
+			}
+			else
+			{
+				sim->part_kill(i);
+			}
+			return 1;
 		}
 		return 0;
 		//cured virus is never in below code
