@@ -45,8 +45,11 @@ class MoveResult
 {
 public:
 	typedef enum {
-		// Movement result codes, to indicate whether a particle can move and what happened to it when it did move.
+		// Movement result codes, to indicate whether a particle can move and what happened to it when it did move
+
 		// In general, lower values mean less movement is possible.
+		// There are some values with similar meanings (e.g. DESTROY and DESTROYED) - these are for before and after movement, to keep some of the checks here and in Simulation::part_canMove simpler.
+		// Note that the Simulation::part_canMove return value does not indicate whether a particle will change type. (Since you might want to swap and change type, or occupy same space and change type (with or without causing interpolation to be blocked) - so in this case part_canMove is used to indicate movement behaviour only).
 
 		DESTROYED = -3,
 		STORED = -2,
