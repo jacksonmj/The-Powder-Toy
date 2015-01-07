@@ -158,9 +158,7 @@ static void photoelectric_effect(int nx, int ny)//create sparks from PHOT when h
 	}
 }
 
-unsigned char can_move[PT_NUM][PT_NUM];
-
-void init_can_move()
+void Simulation::InitCanMove()
 {
 	int movingType, destinationType;
 	// can_move[moving type][type at destination]
@@ -171,186 +169,198 @@ void init_can_move()
 
 	// particles that don't exist shouldn't move...
 	for (destinationType=0; destinationType < PT_NUM; destinationType++)
-		can_move[0][destinationType] = 0;
+		can_move[0][destinationType] = MoveResult::BLOCK;
 	// movement into empty space
 	for (movingType=0; movingType < PT_NUM; movingType++)
-		can_move[movingType][0] = 2;
+		can_move[movingType][0] = MoveResult::ALLOW;
 
 	//initialize everything else to swapping by default
 	for (movingType=1; movingType < PT_NUM; movingType++)
 		for (destinationType=1; destinationType < PT_NUM; destinationType++)
-			can_move[movingType][destinationType] = 1;
-
-	//photons go through everything by default
-	for (destinationType=1; destinationType < PT_NUM; destinationType++)
-		can_move[PT_PHOT][destinationType] = 2;
+			can_move[movingType][destinationType] = MoveResult::DISPLACE;
 
 	for (movingType=1; movingType < PT_NUM; movingType++)
 	{
 		for (destinationType=1; destinationType < PT_NUM; destinationType++)
 		{
 			// weight check, also prevents particles of same type displacing each other
-			if (ptypes[movingType].weight <= ptypes[destinationType].weight || destinationType==PT_GEL) can_move[movingType][destinationType] = 0;
+			if (ptypes[movingType].weight <= ptypes[destinationType].weight || destinationType==PT_GEL)
+				can_move[movingType][destinationType] = MoveResult::BLOCK;
 
 			//other checks for NEUT and energy particles
 			if (movingType==PT_NEUT && ptypes[destinationType].properties&PROP_NEUTPASS)
-				can_move[movingType][destinationType] = 2;
+				can_move[movingType][destinationType] = MoveResult::ALLOW;
 			if (movingType==PT_NEUT && ptypes[destinationType].properties&PROP_NEUTABSORB)
-				can_move[movingType][destinationType] = 1;
+				can_move[movingType][destinationType] = MoveResult::DESTROY;
 			if (movingType==PT_NEUT && ptypes[destinationType].properties&PROP_NEUTPENETRATE)
-				can_move[movingType][destinationType] = 1;
+				can_move[movingType][destinationType] = MoveResult::DISPLACE;
 			if (destinationType==PT_NEUT && ptypes[movingType].properties&PROP_NEUTPENETRATE)
-				can_move[movingType][destinationType] = 0;
+				can_move[movingType][destinationType] = MoveResult::BLOCK;
 			if (ptypes[movingType].properties&TYPE_ENERGY && ptypes[destinationType].properties&TYPE_ENERGY)
-				can_move[movingType][destinationType] = 2;
+				can_move[movingType][destinationType] = MoveResult::ALLOW;
 		}
 	}
 	for (destinationType = 0; destinationType < PT_NUM; destinationType++)
 	{
-		int stkm_move = 0;
+		MoveResult::Code stkm_move = MoveResult::BLOCK;
 		if (ptypes[destinationType].properties & (TYPE_LIQUID | TYPE_GAS))
-			stkm_move = 2;
-		if (!destinationType || destinationType==PT_PRTO || destinationType==PT_SPAWN || destinationType==PT_SPAWN2)
-			stkm_move = 2;
+			stkm_move = MoveResult::ALLOW; // TODO: when breaking compatibility, maybe make STKM slow down when moving through these?
+		if (!destinationType || destinationType==PT_SPAWN || destinationType==PT_SPAWN2)
+			stkm_move = MoveResult::ALLOW;
+		if (destinationType==PT_PRTO)
+			stkm_move = MoveResult::ALLOW_BUT_SLOW;
 		can_move[PT_STKM][destinationType] = stkm_move;
 		can_move[PT_STKM2][destinationType] = stkm_move;
 		can_move[PT_FIGH][destinationType] = stkm_move;
 
 		//spark shouldn't move
-		can_move[PT_SPRK][destinationType] = 0;
+		can_move[PT_SPRK][destinationType] = MoveResult::BLOCK;
 	}
 	for (movingType = 1; movingType < PT_NUM; movingType++)
 	{
-		// everything "swaps" with VACU and BHOL to make them eat things
-		can_move[movingType][PT_BHOL] = 1;
-		can_move[movingType][PT_NBHL] = 1;
+		// VACU and BHOL eat everyhing
+		can_move[movingType][PT_BHOL] = MoveResult::DESTROY;
+		can_move[movingType][PT_NBHL] = MoveResult::DESTROY;
 		//nothing goes through stickmen
-		can_move[movingType][PT_STKM] = 0;
-		can_move[movingType][PT_STKM2] = 0;
-		can_move[movingType][PT_FIGH] = 0;
+		// TODO: linked list pmap makes this redundant, since particles stacked underneath stickmen now block movement
+		can_move[movingType][PT_STKM] = MoveResult::BLOCK;
+		can_move[movingType][PT_STKM2] = MoveResult::BLOCK;
+		can_move[movingType][PT_FIGH] = MoveResult::BLOCK;
 		//INVS behaviour varies with pressure
-		can_move[movingType][PT_INVIS] = 3;
+		can_move[movingType][PT_INVIS] = MoveResult::DYNAMIC;
 		//stop CNCT being displaced by other particles
-		can_move[movingType][PT_CNCT] = 0;
+		can_move[movingType][PT_CNCT] = MoveResult::BLOCK;
 		//VOID and PVOD behaviour varies with powered state and ctype
-		can_move[movingType][PT_PVOD] = 3;
-		can_move[movingType][PT_VOID] = 3;
-		//nothing moves through EMBR (not sure why, but it's killed when it touches anything)
-		can_move[movingType][PT_EMBR] = 0;
-		can_move[PT_EMBR][movingType] = 0;
-		//Energy particles move through VIBR and BVBR, so it can absorb them
+		can_move[movingType][PT_PVOD] = MoveResult::DYNAMIC;
+		can_move[movingType][PT_VOID] = MoveResult::DYNAMIC;
+		//nothing moves through EMBR (although it's killed when it touches anything)
+		can_move[movingType][PT_EMBR] = MoveResult::BLOCK;
+		can_move[PT_EMBR][movingType] = MoveResult::BLOCK;
 		if (ptypes[movingType].properties&TYPE_ENERGY)
 		{
-			can_move[movingType][PT_VIBR] = 1;
-			can_move[movingType][PT_BVBR] = 1;
+			//VIBR and BVBR absorb energy particles
+			can_move[movingType][PT_VIBR] = MoveResult::DESTROY;
+			can_move[movingType][PT_BVBR] = MoveResult::DESTROY;
+
+			// Energy particles are absorbed by pipe/portal during movement. TODO: do this for other particles too?
+			can_move[movingType][PT_PIPE] = MoveResult::DYNAMIC;
+			can_move[movingType][PT_PPIP] = MoveResult::DYNAMIC;
+			can_move[movingType][PT_PRTI] = MoveResult::STORE;
 		}
 	}
 	for (destinationType = 0; destinationType < PT_NUM; destinationType++)
 	{
 		//a list of lots of things PHOT can move through
-		// TODO: replace with property
+		// TODO: replace with property?
 		if (destinationType == PT_GLAS || destinationType == PT_PHOT || destinationType == PT_FILT || destinationType == PT_INVIS
 		 || destinationType == PT_CLNE || destinationType == PT_PCLN || destinationType == PT_BCLN || destinationType == PT_PBCN
 		 || destinationType == PT_WATR || destinationType == PT_DSTW || destinationType == PT_SLTW || destinationType == PT_GLOW
 		 || destinationType == PT_ISOZ || destinationType == PT_ISZS || destinationType == PT_QRTZ || destinationType == PT_PQRT
-		 || destinationType == PT_H2)
-			can_move[PT_PHOT][destinationType] = 2;
+		 || destinationType == PT_H2 || destinationType == PT_BIZR || destinationType == PT_BIZRG || destinationType == PT_BIZRS)
+			can_move[PT_PHOT][destinationType] = MoveResult::ALLOW_BUT_SLOW;
 		if (destinationType != PT_DMND && destinationType != PT_INSL && destinationType != PT_VOID && destinationType != PT_PVOD && destinationType != PT_VIBR && destinationType != PT_BVBR && destinationType != PT_PRTI && destinationType != PT_PRTO)
 		{
-			can_move[PT_PROT][destinationType] = 2;
-			can_move[PT_GRVT][destinationType] = 2;
+			can_move[PT_PROT][destinationType] = MoveResult::ALLOW;
+			can_move[PT_GRVT][destinationType] = MoveResult::ALLOW;
 		}
 	}
 	//other special cases that weren't covered above
-	can_move[PT_DEST][PT_DMND] = 0;
-	can_move[PT_DEST][PT_CLNE] = 0;
-	can_move[PT_DEST][PT_PCLN] = 0;
-	can_move[PT_DEST][PT_BCLN] = 0;
-	can_move[PT_DEST][PT_PBCN] = 0;
+	can_move[PT_DEST][PT_DMND] = MoveResult::BLOCK;
+	can_move[PT_DEST][PT_CLNE] = MoveResult::BLOCK;
+	can_move[PT_DEST][PT_PCLN] = MoveResult::BLOCK;
+	can_move[PT_DEST][PT_BCLN] = MoveResult::BLOCK;
+	can_move[PT_DEST][PT_PBCN] = MoveResult::BLOCK;
 
-	can_move[PT_NEUT][PT_INVIS] = 2;
-	can_move[PT_ELEC][PT_LCRY] = 2;
-	can_move[PT_ELEC][PT_EXOT] = 2;
-	can_move[PT_ELEC][PT_GLOW] = 2;
-	can_move[PT_PHOT][PT_LCRY] = 3; //varies according to LCRY life
+	// TODO: some of these should really be MoveResult::ALLOW_BUT_SLOW to ensure reactions occur
+	can_move[PT_NEUT][PT_INVIS] = MoveResult::ALLOW;
+	can_move[PT_ELEC][PT_LCRY] = MoveResult::ALLOW;
+	can_move[PT_ELEC][PT_EXOT] = MoveResult::ALLOW;
+	can_move[PT_ELEC][PT_GLOW] = MoveResult::ALLOW;
+	can_move[PT_PHOT][PT_LCRY] = MoveResult::DYNAMIC; //varies according to LCRY life
 
-	can_move[PT_PHOT][PT_BIZR] = 2;
-	can_move[PT_ELEC][PT_BIZR] = 2;
-	can_move[PT_PHOT][PT_BIZRG] = 2;
-	can_move[PT_ELEC][PT_BIZRG] = 2;
-	can_move[PT_PHOT][PT_BIZRS] = 2;
-	can_move[PT_ELEC][PT_BIZRS] = 2;
-	can_move[PT_BIZR][PT_FILT] = 2;
-	can_move[PT_BIZRG][PT_FILT] = 2;
+	can_move[PT_ELEC][PT_BIZR] = MoveResult::ALLOW;
+	can_move[PT_ELEC][PT_BIZRG] = MoveResult::ALLOW;
+	can_move[PT_ELEC][PT_BIZRS] = MoveResult::ALLOW;
+	can_move[PT_BIZR][PT_FILT] = MoveResult::ALLOW;
+	can_move[PT_BIZRG][PT_FILT] = MoveResult::ALLOW;
 
-	can_move[PT_ANAR][PT_WHOL] = 1; //WHOL eats ANAR
-	can_move[PT_ANAR][PT_NWHL] = 1;
-	can_move[PT_ELEC][PT_DEUT] = 1;
-	can_move[PT_THDR][PT_THDR] = 2;
-	can_move[PT_EMBR][PT_EMBR] = 2;
-	can_move[PT_TRON][PT_SWCH] = 3;
+	can_move[PT_ANAR][PT_WHOL] = MoveResult::DESTROY; //WHOL eats ANAR
+	can_move[PT_ANAR][PT_NWHL] = MoveResult::DESTROY;
+	can_move[PT_ELEC][PT_DEUT] = MoveResult::DESTROY;
+	can_move[PT_THDR][PT_THDR] = MoveResult::ALLOW;
+	can_move[PT_EMBR][PT_EMBR] = MoveResult::ALLOW;
+	can_move[PT_TRON][PT_SWCH] = MoveResult::DYNAMIC;
 }
 
-int eval_move_special(int pt, int nx, int ny, int ri, int result)
+MoveResult::Code Simulation::part_canMove_dynamic(int pt, int nx, int ny, int ri, MoveResult::Code result)
 {
 	int rt = parts[ri].type;
-	if ((pt==PT_PHOT || pt==PT_ELEC) && rt==PT_LCRY)
-		result = (parts[ri].life > 5)? 2 : 0;
-	if (rt==PT_INVIS)
+	if (rt==PT_LCRY)
 	{
-		if (pv[ny/CELL][nx/CELL]>4.0f || pv[ny/CELL][nx/CELL]<-4.0f) result = 2;
-		else result = 0;
+		if (pt==PT_PHOT)
+			result = (parts[ri].life > 5)? MoveResult::ALLOW_BUT_SLOW : MoveResult::BLOCK;
+	}
+	else if (rt==PT_INVIS)
+	{
+		if (pv[ny/CELL][nx/CELL]>4.0f || pv[ny/CELL][nx/CELL]<-4.0f) result = MoveResult::ALLOW;
+		else result = MoveResult::BLOCK;
 	}
 	else if (rt==PT_PVOD)
 	{
 		if (parts[ri].life == 10)
 		{
 			if(!parts[ri].ctype || (parts[ri].ctype==pt)!=(parts[ri].tmp&1))
-				result = 1;
+				result = MoveResult::DESTROY;
 			else
-				result = 0;
+				result = MoveResult::BLOCK;
 		}
-		else result = 0;
+		else result = MoveResult::BLOCK;
 	}
 	else if (rt==PT_VOID)
 	{
 		if(!parts[ri].ctype || (parts[ri].ctype==pt)!=(parts[ri].tmp&1))
-			result = 1;
+			result = MoveResult::DESTROY;
 		else
-			result = 0;
+			result = MoveResult::BLOCK;
 	}
 	else if (pt == PT_TRON && rt == PT_SWCH)
 	{
 		if (parts[ri].life >= 10)
-			result = 2;
+			result = MoveResult::ALLOW;
 		else
-			result = 0;
+			result = MoveResult::BLOCK;
+	}
+	else if (rt == PT_PIPE || rt == PT_PPIP)
+	{
+		if (!(parts[ri].tmp&0xFF))
+			result = MoveResult::STORE;
+		else
+			result = MoveResult::BLOCK;
 	}
 	return result;
 }
 
-/*
-   RETURN-value explanation
-1 = Swap
-0 = No move/Bounce
-2 = Both particles occupy the same space. This is also returned for a particle moving into empty space.
- */
-// TODO: add a return value for particle will be killed? Though for some materials, like PRTI, this won't be known until we try to do it.
-int eval_move(int pt, int nx, int ny)
+MoveResult::Code Simulation::part_canMove(int pt, int nx, int ny, bool coordCheckDone)
 {
-	int result = 2;
+	MoveResult::Code result = MoveResult::ALLOW;
 	int rcount, ri, rnext;
 
-	if (nx<0 || ny<0 || nx>=XRES || ny>=YRES)
-		return 0;
-
-	if (globalSim->pmap[ny][nx].count_notEnergy)
+	if (!coordCheckDone)
 	{
-		FOR_PMAP_POSITION_NOENERGY(globalSim, nx, ny, rcount, ri, rnext)
+		TranslateCoords(nx, ny);
+		if (nx<0 || nx>=XRES || ny<0 || ny>=YRES)
 		{
-			int tmpResult = can_move[pt][parts[ri].type];
-			if (tmpResult==3)
-				tmpResult = eval_move_special(pt, nx, ny, ri, tmpResult);
+			return MoveResult::DESTROY;
+		}
+	}
+
+	if (pmap[ny][nx].count_notEnergy)
+	{
+		FOR_PMAP_POSITION_NOENERGY(this, nx, ny, rcount, ri, rnext)
+		{
+			MoveResult::Code tmpResult = can_move[pt][parts[ri].type];
+			if (tmpResult==MoveResult::DYNAMIC)
+				tmpResult = part_canMove_dynamic(pt, nx, ny, ri, tmpResult);
 			// Find the particle which restricts movement the most
 			if (tmpResult<result)
 				result = tmpResult;
@@ -359,67 +369,85 @@ int eval_move(int pt, int nx, int ny)
 
 	if (bmap[ny/CELL][nx/CELL])
 	{
-		if (bmap[ny/CELL][nx/CELL]==WL_ALLOWGAS && !(ptypes[pt].properties&TYPE_GAS))// && ptypes[pt].falldown!=0 && pt!=PT_FIRE && pt!=PT_SMKE)
-			return 0;
-		if (bmap[ny/CELL][nx/CELL]==WL_ALLOWENERGY && !(ptypes[pt].properties&TYPE_ENERGY))// && ptypes[pt].falldown!=0 && pt!=PT_FIRE && pt!=PT_SMKE)
-			return 0;
-		if (bmap[ny/CELL][nx/CELL]==WL_ALLOWLIQUID && ptypes[pt].falldown!=2)
-			return 0;
-		if (bmap[ny/CELL][nx/CELL]==WL_ALLOWSOLID && ptypes[pt].falldown!=1)
-			return 0;
+		if (bmap[ny/CELL][nx/CELL]==WL_ALLOWGAS && !(elements[pt].Properties&TYPE_GAS))
+			return MoveResult::BLOCK;
+		if (bmap[ny/CELL][nx/CELL]==WL_ALLOWENERGY && !(elements[pt].Properties&TYPE_ENERGY))
+			return MoveResult::BLOCK;
+		if (bmap[ny/CELL][nx/CELL]==WL_ALLOWLIQUID && elements[pt].Falldown!=2)
+			return MoveResult::BLOCK;
+		if (bmap[ny/CELL][nx/CELL]==WL_ALLOWSOLID && elements[pt].Falldown!=1)
+			return MoveResult::BLOCK;
 		if (bmap[ny/CELL][nx/CELL]==WL_ALLOWAIR || bmap[ny/CELL][nx/CELL]==WL_WALL || bmap[ny/CELL][nx/CELL]==WL_WALLELEC)
-			return 0;
+			return MoveResult::BLOCK;
 		if (bmap[ny/CELL][nx/CELL]==WL_EWALL && !emap[ny/CELL][nx/CELL])
-			return 0;
-		if (bmap[ny/CELL][nx/CELL]==WL_EHOLE && !emap[ny/CELL][nx/CELL] && !(ptypes[pt].properties&TYPE_SOLID))
+			return MoveResult::BLOCK;
+		if (bmap[ny/CELL][nx/CELL]==WL_EHOLE && !emap[ny/CELL][nx/CELL] && !(elements[pt].Properties&TYPE_SOLID))
 		{
 			bool foundSolid = false;
-			FOR_PMAP_POSITION_NOENERGY(globalSim, nx, ny, rcount, ri, rnext)
+			FOR_PMAP_POSITION_NOENERGY(this, nx, ny, rcount, ri, rnext)
 			{
-				if (ptypes[parts[ri].type].properties&TYPE_SOLID)
+				if (elements[parts[ri].type].Properties&TYPE_SOLID)
 				{
 					foundSolid = true;
 					break;
 				}
 			}
 			if (!foundSolid)
-				return 2;
+				return MoveResult::ALLOW;
 		}
+		if (bmap[ny/CELL][nx/CELL]==WL_DESTROYALL && result==MoveResult::ALLOW)
+			return MoveResult::ALLOW_BUT_SLOW;
 	}
 	return result;
 }
 
-/*
-   return value
--1 = moving particle was killed
-0 = No move/Bounce
-1 = Swap
-2 = Both particles occupy the same space. This is also returned for a particle moving into empty space.
- */
-int try_move(int i, int x, int y, int nx, int ny)
+MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf)
 {
-	int e;
-	int rcount, ri, rnext, rt;
+	int nx, ny;
+	FloatTruncCoords(nxf, nyf);
+	TranslateCoords(nxf, nyf);
+	nx = (int)(nxf+0.5f);
+	ny = (int)(nyf+0.5f);
+	if (parts[i].type == PT_NONE)
+		return MoveResult::DESTROYED;
 
-	if (x==nx && y==ny)
-		return 1;
-	if (nx<0 || ny<0 || nx>=XRES || ny>=YRES)
-		return 1;
-
-	int t = parts[i].type;
-	e = eval_move(t, nx, ny);
-
-	/* half-silvered mirror */
-	if (!e && t==PT_PHOT &&
-	        ((globalSim->pmap_find_one(nx,ny,PT_BMTL)>=0 && rand()<RAND_MAX/2) ||
-	         globalSim->pmap_find_one(x,y,PT_BMTL)>=0))
-		e = 2;
-
-	if (!e) //if no movement
+	if (nx<CELL || nx>=XRES-CELL || ny<CELL || ny>=YRES-CELL)
 	{
-		if (globalSim->elements[t].Properties & TYPE_ENERGY)
+		kill_part(i);
+		return MoveResult::DESTROYED;
+	}
+	if (x==nx && y==ny)
+	{
+		part_set_pos(i, x,y, nxf,nyf);
+		return MoveResult::ALLOW;
+	}
+
+	int rcount, ri, rnext, rt;
+	int t = parts[i].type;
+	MoveResult::Code moveCode = part_canMove(t, nx, ny, true);
+
+
+	// Some checks which can't be done in part_canMove because source coords  and properties of the moving particle properties are unknown:
+	// half-silvered mirror
+	if (moveCode==MoveResult::BLOCK && t==PT_PHOT &&
+	        ((pmap_find_one(nx,ny,PT_BMTL)>=0 && rand()<RAND_MAX/2) ||
+	         pmap_find_one(x,y,PT_BMTL)>=0))
+		moveCode = MoveResult::ALLOW_BUT_SLOW;
+	// block moving out of unpowered ehole
+	if ((bmap[y/CELL][x/CELL]==WL_EHOLE && !emap[y/CELL][x/CELL]) && !(bmap[ny/CELL][nx/CELL]==WL_EHOLE && !emap[ny/CELL][nx/CELL]))
+		return MoveResult::BLOCK;
+	// exploding GBMB does not move
+	if(t==PT_GBMB&&parts[i].life>0)
+		return MoveResult::BLOCK;
+	//check below CNCT for another CNCT
+	if (t==PT_CNCT && y<ny && pmap_find_one(x, y+1, PT_CNCT)>=0)
+		return MoveResult::BLOCK;
+
+	if (moveCode==MoveResult::BLOCK) //if no movement
+	{
+		if (elements[t].Properties & TYPE_ENERGY)
 		{
-			FOR_PMAP_POSITION_NOENERGY(globalSim, nx, ny, rcount, ri, rnext)
+			FOR_PMAP_POSITION_NOENERGY(this, nx, ny, rcount, ri, rnext)
 			{
 				rt = parts[ri].type;
 				if (!legacy_enable && t==PT_PHOT)//PHOT heat conduction
@@ -427,45 +455,27 @@ int try_move(int i, int x, int y, int nx, int ny)
 					if (rt == PT_COAL || rt == PT_BCOL)
 						parts[ri].temp = parts[i].temp;
 
-					if (rt < PT_NUM && ptypes[rt].hconduct && (rt!=PT_HSWC||parts[ri].life==10) && rt!=PT_FILT)
+					if (rt < PT_NUM && elements[rt].HeatConduct && (rt!=PT_HSWC||parts[ri].life==10) && rt!=PT_FILT)
 						parts[i].temp = parts[ri].temp = restrict_flt((parts[ri].temp+parts[i].temp)/2, MIN_TEMP, MAX_TEMP);
 				}
 				if (rt==PT_CLNE || rt==PT_PCLN || rt==PT_BCLN || rt==PT_PBCN) {
 					if (!parts[ri].ctype)
 						parts[ri].ctype = t;
 				}
-				if (rt==PT_PRTI)
-				{
-					PortalChannel *channel = ((PRTI_ElementDataContainer*)globalSim->elementData[PT_PRTI])->GetParticleChannel(globalSim, ri);
-					int slot = PRTI_ElementDataContainer::GetSlot(x-nx,y-ny);
-					if (channel->StoreParticle(globalSim, i, slot))
-						return -1;
-				}
-				if ((rt==PT_PIPE || rt == PT_PPIP) && !(parts[ri].tmp&0xFF))
-				{
-					parts[ri].tmp =  (parts[ri].tmp&~0xFF) | t;
-					parts[ri].temp = parts[i].temp;
-					parts[ri].tmp2 = parts[i].life;
-					parts[ri].pavg[0] = parts[i].tmp;
-					parts[ri].pavg[1] = parts[i].ctype;
-					kill_part(i);
-					return -1;
-				}
 				if (t==PT_PHOT)
-					parts[i].ctype &= globalSim->elements[rt].PhotonReflectWavelengths;
+					parts[i].ctype &= elements[rt].PhotonReflectWavelengths;
 			}
 		}
-		return 0;
+		return MoveResult::BLOCK;
 	}
-
-	if (e == 2) //if occupy same space
+	else if (moveCode == MoveResult::ALLOW_BUT_SLOW || moveCode == MoveResult::ALLOW) //if occupy same space
 	{
-		FOR_PMAP_POSITION_NOENERGY(globalSim, nx, ny, rcount, ri, rnext)
+		FOR_PMAP_POSITION_NOENERGY(this, nx, ny, rcount, ri, rnext)
 		{
 			rt = parts[ri].type;
 			if (t==PT_PHOT)
 			{
-				parts[i].ctype &= globalSim->elements[rt].PhotonReflectWavelengths;
+				parts[i].ctype &= elements[rt].PhotonReflectWavelengths;
 				if (rt==PT_GLOW)
 				{
 					if (!parts[ri].life && rand() < RAND_MAX/30)
@@ -484,21 +494,26 @@ int try_move(int i, int x, int y, int nx, int ny)
 					{
 						part_change_type(i,x,y,PT_NEUT);
 						parts[i].ctype = 0;
+						part_set_pos(i, x,y, nxf,nyf);
+						return MoveResult::CHANGED_TYPE;
 					}
 				}
 				else if (rt==PT_BIZR || rt==PT_BIZRG || rt==PT_BIZRS)
 				{
 					part_change_type(i, x, y, PT_ELEC);
 					parts[i].ctype = 0;
+					part_set_pos(i, x,y, nxf,nyf);
+					return MoveResult::CHANGED_TYPE;
 				}
 				else if (rt == PT_H2 && !(parts[i].tmp&0x1))
 				{
-					globalSim->part_change_type(i, x, y, PT_PROT);
+					part_change_type(i, x, y, PT_PROT);
 					parts[i].ctype = 0;
 					parts[i].tmp2 = 0x1;
 
-					globalSim->part_create(ri, x, y, PT_ELEC);
-					return 1;
+					part_create(ri, x, y, PT_ELEC);
+					part_set_pos(i, x,y, nxf,nyf);
+					return MoveResult::CHANGED_TYPE;
 				}
 			}
 			else if (t == PT_NEUT)
@@ -512,7 +527,11 @@ int try_move(int i, int x, int y, int nx, int ny)
 			else if (t == PT_PROT)
 			{
 				if (rt == PT_INVIS)
-					globalSim->part_change_type(i, x, y, PT_NEUT);
+				{
+					part_change_type(i, x, y, PT_NEUT);
+					part_set_pos(i, x,y, nxf,nyf);
+					return MoveResult::CHANGED_TYPE;
+				}
 			}
 			else if (t==PT_BIZR || t==PT_BIZRG)
 			{
@@ -530,177 +549,151 @@ int try_move(int i, int x, int y, int nx, int ny)
 				}
 			}
 		}
-		return 1;
+		part_set_pos(i, x,y, nxf,nyf);
+		return moveCode;
 	}
-	//else e=1 , we are trying to swap the particles
-
-	if (t==PT_CNCT && y<ny && globalSim->pmap_find_one(x, y+1, PT_CNCT)>=0)//check below CNCT for another CNCT
-		return 0;
-			
-	int srcNeutPenetrate = -1;
-	bool srcPartFound = false;
-
-	// e=1 for neutron means that target material is NEUTPENETRATE, meaning it gets moved around when neutron passes
-	// First, look for NEUTPENETRATE or empty space at x,y
-	if (t==PT_NEUT)
+	else if (moveCode == MoveResult::DESTROY)
 	{
-		FOR_PMAP_POSITION_NOENERGY(globalSim, x, y, rcount, ri, rnext)
+		// moving particle gets destroyed
+		FOR_PMAP_POSITION_NOENERGY(this, nx, ny, rcount, ri, rnext)
 		{
-			if (globalSim->elements[parts[ri].type].Properties&PROP_NEUTPENETRATE)
+			rt = parts[ri].type;
+			if (rt==PT_BHOL || rt==PT_NBHL)
 			{
-				srcNeutPenetrate = ri;
-				break;
-			}
-			else
-			{
-				srcPartFound = true;
-				break;
-			}
-		}
-	}
-
-	FOR_PMAP_POSITION_NOENERGY(globalSim, nx, ny, rcount, ri, rnext)
-	{
-		rt = parts[ri].type;
-		if (rt==PT_VOID || rt==PT_PVOD) //this is where void eats particles
-		{
-			//void ctype already checked in eval_move
-			kill_part(i);
-			return -1;
-		}
-		else if (rt==PT_BHOL || rt==PT_NBHL) //this is where blackhole eats particles
-		{
-			if (!legacy_enable)
-			{
-				parts[ri].temp = restrict_flt(parts[ri].temp+parts[i].temp/2, MIN_TEMP, MAX_TEMP);//3.0f;
-			}
-			kill_part(i);
-			return -1;
-		}
-		else if (rt==PT_WHOL||rt==PT_NWHL)
-		{
-			if (t==PT_ANAR) //whitehole eats anar
-			{
+				// blackhole heats up when it eats particles
 				if (!legacy_enable)
 				{
-					parts[ri].temp = restrict_flt(parts[ri].temp- (MAX_TEMP-parts[i].temp)/2, MIN_TEMP, MAX_TEMP);
+					parts[ri].temp = restrict_flt(parts[ri].temp+parts[i].temp/2, MIN_TEMP, MAX_TEMP);
 				}
 				kill_part(i);
-				return -1;
+				return MoveResult::DESTROYED;
 			}
-		}
-		else if (rt==PT_DEUT)
-		{
-			if (t==PT_ELEC)
+			else if (rt==PT_WHOL||rt==PT_NWHL)
 			{
-				if(parts[ri].life < 6000)
-					parts[ri].life += 1;
-				parts[ri].temp = 0;
-				kill_part(i);
-				return -1;
+				if (t==PT_ANAR)
+				{
+					// whitehole heats up when it eats ANAR
+					if (!legacy_enable)
+					{
+						parts[ri].temp = restrict_flt(parts[ri].temp- (MAX_TEMP-parts[i].temp)/2, MIN_TEMP, MAX_TEMP);
+					}
+					kill_part(i);
+					return MoveResult::DESTROYED;
+				}
 			}
-		}
-		else if (rt==PT_VIBR || rt==PT_BVBR)
-		{
-			if (ptypes[t].properties & TYPE_ENERGY)
+			else if (rt==PT_DEUT)
 			{
-				parts[ri].tmp += 20;
-				kill_part(i);
-				return -1;
+				if (t==PT_ELEC)
+				{
+					if(parts[ri].life < 6000)
+						parts[ri].life += 1;
+					parts[ri].temp = 0;
+					kill_part(i);
+					return MoveResult::DESTROYED;
+				}
 			}
-		}
-
-		if (t==PT_NEUT)
-		{
-			if (ptypes[rt].properties&PROP_NEUTABSORB)
+			else if (rt==PT_VIBR || rt==PT_BVBR)
 			{
-				kill_part(i);
-				return -1;
+				if (elements[t].Properties & TYPE_ENERGY)
+				{
+					parts[ri].tmp += 20;
+					kill_part(i);
+					return MoveResult::DESTROYED;
+				}
 			}
 		}
-
-		if ((bmap[y/CELL][x/CELL]==WL_EHOLE && !emap[y/CELL][x/CELL]) && !(bmap[ny/CELL][nx/CELL]==WL_EHOLE && !emap[ny/CELL][nx/CELL]))
-			return 0;
-
-		// Move all particles at the destination position that can be displaced by this particle
-		// For NEUTPENETRATE particles being displaced by a neutron, only move ones at nx,ny to x,y if there's currently a NEUTPENETRATE particle or empty space at x,y
-		if (t!=PT_NEUT || srcNeutPenetrate>=0 || !srcPartFound)
-		{
-			if (t!=PT_NEUT || eval_move(rt, x, y))
-			{
-				globalSim->part_move(ri, nx, ny, x, y);
-			}
-		}
+		kill_part(i);
+		return MoveResult::DESTROYED;
 	}
-	
-
-	if (t==PT_NEUT && srcNeutPenetrate>=0 && eval_move(parts[srcNeutPenetrate].type, nx, ny))
+	else if (moveCode==MoveResult::STORE)
 	{
-		globalSim->part_move(srcNeutPenetrate, x, y, nx, ny);
-	}
-
-	if(t==PT_GBMB&&parts[i].life>0)
-		return 0;
-
-	return eval_move(t, nx, ny);
-}
-
-// try to move particle, and if successful update pmap and parts[i].x,y
-int do_move(int i, int x, int y, float nxf, float nyf)
-{
-	int nx, ny, result;
-	// volatile to hopefully force truncation of floats in x87 registers by storing and reloading from memory, so that rounding issues don't cause particles to appear in the wrong pmap list. If using -mfpmath=sse or an ARM CPU, this may be unnecessary.
-	volatile float tmpx = nxf, tmpy = nyf;
-	nxf = tmpx;
-	nyf = tmpy;
-	nx = (int)(nxf+0.5f);
-	ny = (int)(nyf+0.5f);
-	if (parts[i].type == PT_NONE)
-		return 0;
-	if (globalSim->edgeMode == 2)
-	{
-		float diffx = 0.0f, diffy = 0.0f;
-		if (nx < CELL)
-			diffx = XRES-CELL*2;
-		if (nx >= XRES-CELL)
-			diffx = -(XRES-CELL*2);
-		if (ny < CELL)
-			diffy = YRES-CELL*2;
-		if (ny >= YRES-CELL)
-			diffy = -(YRES-CELL*2);
-		if (diffx || diffy)
+		// moving particle will be stored in a particle at the destination
+		FOR_PMAP_POSITION_NOENERGY(this, nx, ny, rcount, ri, rnext)
 		{
-			volatile float tmpx = nxf+diffx, tmpy = nyf+diffy;
-			nxf = tmpx;
-			nyf = tmpy;
-			nx = (int)(nxf+0.5f);
-			ny = (int)(nyf+0.5f);
-
-			//make sure there isn't something blocking it on the other side
-			//only needed if this if statement is moved after the try_move (like in jacob1's mod)
-			//if (!eval_move(t, nx, ny) || (t == PT_PHOT && pmap[ny][nx]))
-			//	return -1;
-		}
-	}
-	result = try_move(i, x, y, nx, ny);
-	if (result>0)
-	{
-		int t = parts[i].type;
-		if (ny!=y || nx!=x)
-		{
-			if (nx<CELL || nx>=XRES-CELL || ny<CELL || ny>=YRES-CELL)//kill_part if particle is out of bounds
+			rt = parts[ri].type;
+			if (rt==PT_PRTI)
 			{
-				kill_part(i);
-				return -1;
+				PortalChannel *channel = ((PRTI_ElementDataContainer*)elementData[PT_PRTI])->GetParticleChannel(this, ri);
+				int slot = PRTI_ElementDataContainer::GetSlot(x-nx,y-ny);
+				if (channel->StoreParticle(this, i, slot))
+					return MoveResult::STORED;
 			}
-			globalSim->pmap_remove(i, x, y, t);
-			globalSim->pmap_add(i, nx, ny, t);
+			else if (rt==PT_PIPE || rt == PT_PPIP)
+			{
+				if (!(parts[ri].tmp&0xFF))
+				{
+					parts[ri].tmp =  (parts[ri].tmp&~0xFF) | t;
+					parts[ri].temp = parts[i].temp;
+					parts[ri].tmp2 = parts[i].life;
+					parts[ri].pavg[0] = parts[i].tmp;
+					parts[ri].pavg[1] = parts[i].ctype;
+					kill_part(i);
+					return MoveResult::STORED;
+				}
+			}
 		}
-		// Assign coords after the out of bounds check which might kill the particle, because kill_part > pmap_remove uses the current particle coords
-		parts[i].x = nxf;
-		parts[i].y = nyf;
+		return MoveResult::BLOCK;
 	}
-	return result;
+	else if (moveCode == MoveResult::DISPLACE)
+	{
+		//trying to swap the particles
+		if (t!=PT_NEUT)
+		{
+			FOR_PMAP_POSITION_NOENERGY(this, nx, ny, rcount, ri, rnext)
+			{
+				rt = parts[ri].type;
+				// Move all particles which are displaced by this particle from the destination position
+				// TODO: when breaking compatibility, add "if (part_canMove(rt, x, y)==MoveResult::DISPLACE)" here
+				part_set_pos(ri, nx, ny, x, y);
+			}
+		}
+		else // t==PT_NEUT
+		{
+			int srcNeutPenetrate = -1;
+			bool srcPartFound = false;
+
+			// e=MoveResult::DISPLACE for neutron means that target material is NEUTPENETRATE, meaning it gets moved around when neutron passes
+			// First, look for NEUTPENETRATE or empty space at x,y
+			FOR_PMAP_POSITION_NOENERGY(this, x, y, rcount, ri, rnext)
+			{
+				if (elements[parts[ri].type].Properties&PROP_NEUTPENETRATE)
+				{
+					srcNeutPenetrate = ri;
+					break;
+				}
+				else
+				{
+					srcPartFound = true;
+					break;
+				}
+			}
+			// Move NEUTPENETRATE particles at nx,ny to x,y if there's currently a NEUTPENETRATE particle or empty space at x,y
+			if (srcNeutPenetrate>=0 || !srcPartFound)
+			{
+				FOR_PMAP_POSITION_NOENERGY(this, nx, ny, rcount, ri, rnext)
+				{
+					rt = parts[ri].type;
+					// Move all particles which are displaced by this particle from the destination position
+					if (part_canMove(rt, x, y)==MoveResult::DISPLACE)
+					{
+						part_set_pos(ri, nx, ny, x, y);
+					}
+				}
+			}
+			if (srcNeutPenetrate>=0 && part_canMove(parts[srcNeutPenetrate].type, nx, ny, true))
+			{
+				part_set_pos(srcNeutPenetrate, x, y, nx, ny);
+			}
+		}
+		part_set_pos(i, x,y, nxf,nyf);
+		return moveCode;
+	}
+
+	// All MoveResult::Codes should be handled above, except negative codes (which should never be returned by part_canMove)
+	// Print warning if there's one that wasn't handled above
+	printf("try_move: unhandled movement result %d (t=%d from %d,%d to %f,%f)\n", moveCode, t, x,y, nxf,nyf);
+	// Assume the worst and stop further movement if we have no idea what the moveCode means
+	return MoveResult::DESTROYED;
 }
 
 
@@ -743,7 +736,7 @@ static int is_blocking(int t, int x, int y)
 		return 0;
 	}
 
-	return !eval_move(t, x, y);
+	return !globalSim->part_canMove(t, x, y);
 }
 
 static int is_boundary(int pt, int x, int y)
@@ -1577,9 +1570,9 @@ int flood_water(int x, int y, int i, int originaly, int check)
 					}
 				}
 				//check above, maybe around other sides too?
-				if ( ((y-1) > originaly) && !pmap[y-1][x] && eval_move(parts[i].type, x, y-1))
+				if ( ((y-1) > originaly) && !pmap[y-1][x] && globalSim->part_canMove(parts[i].type, x, y-1))
 				{
-					sim->part_move(i, (int)(parts[i].x + 0.5f), (int)(parts[i].y + 0.5f), x, y-1);
+					sim->part_set_pos(i, (int)(parts[i].x + 0.5f), (int)(parts[i].y + 0.5f), x, y-1);
 					return 0;
 				}
 			}

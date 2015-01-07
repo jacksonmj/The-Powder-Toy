@@ -68,8 +68,7 @@ int FIGH_update(UPDATE_FUNC_ARGS)
 			}
 			else if (tarx<x)
 			{
-				if(figh->rocketBoots || !(eval_move(PT_FIGH, figh->legs[4]-10, figh->legs[5]+6) 
-				  && eval_move(PT_FIGH, figh->legs[4]-10, figh->legs[5]+3)))
+				if(figh->rocketBoots || MoveResult::WillBlock(sim->part_canMove(PT_FIGH, figh->legs[4]-10, figh->legs[5]+6)) || MoveResult::WillBlock(sim->part_canMove(PT_FIGH, figh->legs[4]-10, figh->legs[5]+3)))
 					figh->comm = 0x01;
 				else
 					figh->comm = 0x02;
@@ -79,15 +78,14 @@ int FIGH_update(UPDATE_FUNC_ARGS)
 					if (tary<y)
 						figh->comm = (int)figh->comm | 0x04;
 				}
-				else if (!eval_move(PT_FIGH, figh->legs[4]-4, figh->legs[5]-1) 
-						|| !eval_move(PT_FIGH, figh->legs[12]-4, figh->legs[13]-1)
-						|| eval_move(PT_FIGH, 2*figh->legs[4]-figh->legs[6], figh->legs[5]+5))
+				else if (MoveResult::WillBlock(sim->part_canMove(PT_FIGH, figh->legs[4]-4, figh->legs[5]-1))
+						|| MoveResult::WillBlock(sim->part_canMove(PT_FIGH, figh->legs[12]-4, figh->legs[13]-1))
+						|| !MoveResult::WillBlock(sim->part_canMove(PT_FIGH, 2*figh->legs[4]-figh->legs[6], figh->legs[5]+5)))
 					figh->comm = (int)figh->comm | 0x04;
 			}
 			else
 			{ 
-				if (figh->rocketBoots || !(eval_move(PT_FIGH, figh->legs[12]+10, figh->legs[13]+6)
-				   && eval_move(PT_FIGH, figh->legs[12]+10, figh->legs[13]+3)))
+				if (figh->rocketBoots || MoveResult::WillBlock(sim->part_canMove(PT_FIGH, figh->legs[12]+10, figh->legs[13]+6)) || MoveResult::WillBlock(sim->part_canMove(PT_FIGH, figh->legs[12]+10, figh->legs[13]+3)))
 					figh->comm = 0x02;
 				else
 					figh->comm = 0x01;
@@ -97,9 +95,9 @@ int FIGH_update(UPDATE_FUNC_ARGS)
 					if (tary<y)
 						figh->comm = (int)figh->comm | 0x04;
 				}
-				else if (!eval_move(PT_FIGH, figh->legs[4]+4, figh->legs[5]-1) 
-						|| !eval_move(PT_FIGH, figh->legs[4]+4, figh->legs[5]-1)
-						|| eval_move(PT_FIGH, 2*figh->legs[12]-figh->legs[14], figh->legs[13]+5))
+				else if (MoveResult::WillBlock(sim->part_canMove(PT_FIGH, figh->legs[4]+4, figh->legs[5]-1))
+						|| MoveResult::WillBlock(sim->part_canMove(PT_FIGH, figh->legs[4]+4, figh->legs[5]-1))
+						|| !MoveResult::WillBlock(sim->part_canMove(PT_FIGH, 2*figh->legs[12]-figh->legs[14], figh->legs[13]+5)))
 					figh->comm = (int)figh->comm | 0x04;
 			}
 			break;

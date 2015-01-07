@@ -355,13 +355,6 @@ extern int lighting_recreate;
 int get_normal_interp(int pt, float x0, float y0, float dx, float dy, float *nx, float *ny);
 int get_wavelength_bin(int *wm);
 
-int do_move(int i, int x, int y, float nxf, float nyf);
-int try_move(int i, int x, int y, int nx, int ny);
-int eval_move(int pt, int nx, int ny);
-int eval_move_special(int pt, int nx, int ny, int ri, int result);
-void init_can_move();
-extern unsigned char can_move[PT_NUM][PT_NUM];
-
 void create_cherenkov_photon(int pp);
 void create_gain_photon(int pp);
 

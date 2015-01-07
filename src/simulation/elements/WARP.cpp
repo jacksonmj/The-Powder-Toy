@@ -39,8 +39,8 @@ int WARP_update(UPDATE_FUNC_ARGS)
 				if (rt!=PT_WARP&&rt!=PT_STKM&&rt!=PT_STKM2&&rt!=PT_DMND&&rt!=PT_CLNE&&rt!=PT_BCLN&&rt!=PT_PCLN)
 				{
 					float tmpx = parts[i].x, tmpy = parts[i].y;
-					sim->part_move(i, x, y, parts[ri].x, parts[ri].y);
-					sim->part_move(ri, x+rx, y+ry, tmpx, tmpy);
+					sim->part_set_pos(i, x, y, parts[ri].x, parts[ri].y);
+					sim->part_set_pos(ri, x+rx, y+ry, tmpx, tmpy);
 					parts[ri].vx = (rand()%4)-1.5;
 					parts[ri].vy = (rand()%4)-2;
 					parts[i].life += 4;

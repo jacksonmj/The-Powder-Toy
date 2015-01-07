@@ -758,6 +758,7 @@ int main(int argc, char *argv[])
 {
 	Simulation *mainSim = new Simulation();
 	mainSim->InitElements();
+	mainSim->InitCanMove();
 	globalSim = mainSim;
 
 	pixel *part_vbuf; //Extra video buffer
@@ -814,7 +815,6 @@ int main(int argc, char *argv[])
 //TODO: Move out version stuff
 	menu_count();
 	cb_parts = (particle*)calloc(sizeof(particle), NPART);
-	init_can_move();
 	
 #ifdef LUACONSOLE
 	luacon_open();

@@ -138,7 +138,7 @@ int PSTN_MoveStack(Simulation * sim, int stackX, int stackY, int directionX, int
 			float moveX = -directionX*amount, moveY = -directionY*amount;
 			FOR_PMAP_POSITION_NOENERGY(sim, posX, posY, rcount, ri, rnext)
 			{
-				sim->part_move(ri, posX, posY, parts[ri].x+moveX, parts[ri].y+moveY);
+				sim->part_set_pos(ri, posX, posY, parts[ri].x+moveX, parts[ri].y+moveY);
 			}
 		}
 		return amount;
@@ -162,7 +162,7 @@ int PSTN_MoveStack(Simulation * sim, int stackX, int stackY, int directionX, int
 					moveY = directionY*(destPos-srcPos);
 					FOR_PMAP_POSITION_NOENERGY(sim, srcPosX, srcPosY, rcount, ri, rnext)
 					{
-						sim->part_move(ri, srcPosX, srcPosY, parts[ri].x+moveX, parts[ri].y+moveY);
+						sim->part_set_pos(ri, srcPosX, srcPosY, parts[ri].x+moveX, parts[ri].y+moveY);
 					}
 					destPos--;
 				}

@@ -17,8 +17,9 @@
 #define Simulation_h
 
 #include "simulation/Element.h"
-
+#include <cmath>
 #include "powder.h"
+#include "gravity.h"
 
 // Defines for element transitions
 #define IPL -257.0f
@@ -39,6 +40,84 @@
 #define FOR_PMAP_POSITION_NOENERGY(sim, x, y, r_count, r_i, r_next) for (r_count=(sim)->pmap[(y)][(x)].count_notEnergy, r_next = (sim)->pmap[(y)][(x)].first; r_count ? (r_i=r_next, r_next=(sim)->parts[r_i].pmap_next, true):false; r_count--)
 #define FOR_PMAP_POSITION_ONLYENERGY(sim, x, y, r_count, r_i, r_next) for (r_count=(sim)->pmap[(y)][(x)].count-(sim)->pmap[(y)][(x)].count_notEnergy, r_next = (sim)->pmap[(y)][(x)].first_energy; r_count ? (r_i=r_next, r_next=(sim)->parts[r_i].pmap_next, true):false; r_count--)
 
+
+class MoveResult
+{
+public:
+	typedef enum {
+		// Movement result codes, to indicate whether a particle can move and what happened to it when it did move.
+		// In general, lower values mean less movement is possible.
+
+		DESTROYED = -3,
+		STORED = -2,
+		CHANGED_TYPE = -1,
+
+		// movement is blocked
+		BLOCK = 0,
+		// movement will cause the destruction of the moving particle
+		DESTROY = 1,
+		// the particle at the destination will be displaced
+		DISPLACE = 2,
+		// movement will cause the moving particle to be stored (distinct from DESTROY to allow placement with brush into PIPE/PRTI, and if it doesn't get stored movement is blocked by try_move instead of destroying the particle)
+		STORE = 3,
+		// movement is allowed, but interpolation is not, to stop the particle skipping through this location. Used when there is a reaction that occurs when a particle is moving through something, and for photons inside other substances
+		ALLOW_BUT_SLOW = 4,
+		// movement is allowed
+		ALLOW = 5,
+		// movement varies, run further checks in part_canMove_dynamic
+		DYNAMIC = 6
+	} Code;
+
+	//*** Functions to use on part_move return values, but not with part_canMove return values ***
+	static bool Succeeded_MaybeKilled(Code c) {
+		// Moved somewhere, but particle may have been destroyed
+		// (do not try to move again)
+		return (c!=BLOCK);
+	}
+	static bool Succeeded(Code c) {
+		// Moved somewhere (DESTROY and STORE are never returned by try_move, only by part_canMove)
+		// (can try to move again)
+		return (c>0);
+	}
+	static bool WasBlocked(Code c) {
+		// Didn't move, but didn't get destroyed either
+		// (can try to move again)
+		return (c==BLOCK);
+	}
+	static bool WasKilled(Code c) {
+		// destroyed
+		// (do not try to move again)
+		return (c<0);
+	}
+
+	//*** Functions to use on part_canMove return values, but not with part_move return values ***
+	static bool AllowInterpolation(Code c) {
+		// TODO: when breaking compatibility, make displacement slow particles down?
+		if (c==MoveResult::DISPLACE || c==MoveResult::ALLOW)
+			return true;
+		return false;
+	}
+	static bool WillSucceed_MaybeDie(Code c) {
+		// part_canMove predicts that Succeeded_MaybeKilled(try_move())==true
+		// (will move somewhere, but particle may get destroyed)
+		return (c!=BLOCK);
+	}
+	static bool WillSucceed(Code c) {
+		// part_canMove predicts that Succeeded(try_move())==true
+		// (will move somewhere, and will not get destroyed)
+		return (c==DISPLACE || c==ALLOW_BUT_SLOW || c==ALLOW);
+	}
+	static bool WillDie(Code c) {
+		// part_canMove predicts that WasKilled(try_move())==true
+		// (will get destroyed)
+		return (c==DESTROY || c==STORE);
+	}
+	static bool WillBlock(Code c) {
+		// part_canMove predicts that WasBlocked(try_move())==true
+		// (will not move)
+		return (c==BLOCK);
+	}
+};
 
 class ElementDataContainer;
 struct pmap_entry
@@ -61,6 +140,7 @@ public:
 	Element elements[PT_NUM];
 	ElementDataContainer *elementData[PT_NUM];
 	pmap_entry pmap[YRES][XRES];
+	MoveResult::Code can_move[PT_NUM][PT_NUM];
 	int pfree;
 
 	static const float maxVelocity = 1e4f;
@@ -106,6 +186,13 @@ public:
 	int spark_position_conductiveOnly(int x, int y);
 
 	bool IsWallBlocking(int x, int y, int type);
+	MoveResult::Code part_move(int i, int x,int y, float nxf,float nyf);
+	MoveResult::Code part_canMove(int pt, int nx,int ny, bool coordCheckDone=false);
+	MoveResult::Code part_canMove_dynamic(int pt, int nx,int ny, int ri, MoveResult::Code result);
+	void InitCanMove();
+	MoveResult::Code part_move(int i, float nxf,float nyf) {
+		return part_move(i, (int)(parts[i].x+0.5f),(int)(parts[i].y+0.5f), nxf,nyf);
+	}
 
 	// Functions defined here should hopefully be inlined
 	// Don't put anything that will change often here, since changes cause a lot of recompiling
@@ -199,17 +286,26 @@ public:
 		partsFree[i] = true;
 #endif
 	}
-	void part_move(int i, int x, int y, float nxf, float nyf)
+	void FloatTruncCoords(float & xf, float & yf)
 	{
-		volatile float tmpx = nxf, tmpy = nyf;// volatile to hopefully force truncation of floats in x87 registers by storing and reloading from memory, so that rounding issues don't cause particles to appear in the wrong pmap list. If using -mfpmath=sse or an ARM CPU, this may be unnecessary.
+		// hopefully force truncation of floats in x87 registers by storing and reloading from memory, so that rounding issues don't cause particles to appear in the wrong pmap list. If using -mfpmath=sse or an ARM CPU, this may be unnecessary.
+		volatile float tmpx = xf, tmpy = yf;
+		xf = tmpx, yf = tmpy;
+	}
+	// Move particle #i to nxf,nyf without any checks or reacting with particles it collides with
+	void part_set_pos(int i, int x, int y, float nxf, float nyf)
+	{
+		FloatTruncCoords(nxf, nyf);
+		TranslateCoords(nxf, nyf);
+
 #ifdef DEBUG_PARTSALLOC
 		if (partsFree[i])
 			printf("Particle moved after free: %d\n", i);
 		if ((int)(parts[i].x+0.5f)!=x || (int)(parts[i].y+0.5f)!=y)
-			printf("Provided original coords wrong for part_move (particle %d): alleged %d,%d actual %d,%d\n", i, x, y, (int)(parts[i].x+0.5f), (int)(parts[i].y+0.5f));
+			printf("Provided original coords wrong for part_set_pos (particle %d): alleged %d,%d actual %d,%d\n", i, x, y, (int)(parts[i].x+0.5f), (int)(parts[i].y+0.5f));
 #endif
-		parts[i].x = tmpx;
-		parts[i].y = tmpy;
+
+		parts[i].x = nxf, parts[i].y = nyf;
 		int nx = (int)(parts[i].x+0.5f), ny = (int)(parts[i].y+0.5f);
 		if (ny!=y || nx!=x)
 		{
@@ -223,6 +319,76 @@ public:
 				pmap_remove(i, x, y, parts[i].type);
 				pmap_add(i, nx, ny, parts[i].type);
 			}
+		}
+	}
+	
+	// Adjust coords to take account of edgeMode setting
+	// Returns true if coords were changed
+	bool TranslateCoords(int & x, int & y) const
+	{
+		if (edgeMode == 2)
+		{
+			int diffx = 0.0f, diffy = 0.0f;
+			if (x < CELL)
+				diffx = XRES-CELL*2;
+			if (x >= XRES-CELL)
+				diffx = -(XRES-CELL*2);
+			if (y < CELL)
+				diffy = YRES-CELL*2;
+			if (y >= YRES-CELL)
+				diffy = -(YRES-CELL*2);
+			if (diffx || diffy)
+			{
+				x = x+diffx;
+				y = y+diffy;
+				return true;
+			}
+		}
+		return false;
+	}
+	bool TranslateCoords(float & xf, float & yf) const
+	{
+		if (edgeMode == 2)
+		{
+			int x = (int)(xf+0.5f), y = (int)(yf+0.5f);
+			float diffx = 0.0f, diffy = 0.0f;
+			if (x < CELL)
+				diffx = XRES-CELL*2;
+			if (x >= XRES-CELL)
+				diffx = -(XRES-CELL*2);
+			if (y < CELL)
+				diffy = YRES-CELL*2;
+			if (y >= YRES-CELL)
+				diffy = -(YRES-CELL*2);
+			if (diffx || diffy)
+			{
+				volatile float tmpx = xf+diffx, tmpy = yf+diffy;
+				xf = tmpx, yf = tmpy;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	void GetGravityAccel(int x, int y, float particleGrav, float newtonGrav, float & pGravX, float & pGravY) const
+	{
+		pGravX = newtonGrav*gravx[(y/CELL)*(XRES/CELL)+(x/CELL)];
+		pGravY = newtonGrav*gravy[(y/CELL)*(XRES/CELL)+(x/CELL)];
+		switch (gravityMode)
+		{
+			default:
+			case 0: //normal, vertical gravity
+				pGravY += particleGrav;
+				break;
+			case 1: //no gravity
+				break;
+			case 2: //radial gravity
+				if (x-XCNTR != 0 || y-YCNTR != 0)
+				{
+					float pGravMult = particleGrav/sqrt((x-XCNTR)*(x-XCNTR) + (y-YCNTR)*(y-YCNTR));
+					pGravX -= pGravMult * (float)(x - XCNTR);
+					pGravY -= pGravMult * (float)(y - YCNTR);
+				}
 		}
 	}
 

@@ -46,7 +46,8 @@ unsigned int tron_colours[32];
 
 bool canmovetron(Simulation * sim, int x, int y, int len)
 {
-	int result=2, tmpResult, rt;
+	MoveResult::Code result=MoveResult::ALLOW, tmpResult;
+	int rt;
 	int rcount, ri, rnext;
 	
 	//TODO: maybe TRON should be able to cross some walls? E.g. detector wall
@@ -57,22 +58,22 @@ bool canmovetron(Simulation * sim, int x, int y, int len)
 	{
 		rt = parts[ri].type;
 		if (rt==PT_SWCH && parts[ri].life>=10)
-			tmpResult = 2;
+			tmpResult = MoveResult::ALLOW;
 		else if (rt==PT_INVIS && parts[ri].tmp==1)
-			tmpResult = 2;
+			tmpResult = MoveResult::ALLOW;
 		else if ((((sim->elements[rt].Properties & PROP_LIFE_KILL_DEC) && sim->parts[ri].life > 0) || (sim->elements[rt].Properties & (PROP_LIFE_KILL|PROP_LIFE_DEC))==(PROP_LIFE_KILL|PROP_LIFE_DEC)) && parts[ri].life < len)
-			tmpResult = 2;
+			tmpResult = MoveResult::ALLOW;
 		else
 		{
-			tmpResult = can_move[PT_TRON][parts[ri].type];
-			if (tmpResult==3)
-				tmpResult = eval_move_special(PT_TRON, x, y, ri, tmpResult);
+			tmpResult = sim->can_move[PT_TRON][parts[ri].type];
+			if (tmpResult==MoveResult::DYNAMIC)
+				tmpResult = sim->part_canMove_dynamic(PT_TRON, x, y, ri, tmpResult);
 		}
 		// Find the particle which restricts movement the most
 		if (tmpResult<result)
 			result = tmpResult;
 	}
-	return (result==2);
+	return (result==MoveResult::ALLOW || result==MoveResult::ALLOW_BUT_SLOW);
 }
 
 int new_tronhead(Simulation *sim, int x, int y, int i, int direction)

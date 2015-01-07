@@ -22,6 +22,7 @@
 #include "http.h"
 #include <console.h>
 #include <luaconsole.h>
+#include <simulation/Simulation.h>
 
 #if defined(LIN32) || defined(LIN64)
 #include <sys/stat.h>
@@ -694,7 +695,7 @@ int luacon_elementwrite(lua_State* l){
 		if (modified_stuff & LUACON_EL_MODIFIED_MENUS)
 			menu_count();
 		if (modified_stuff & LUACON_EL_MODIFIED_CANMOVE)
-			init_can_move();
+			globalSim->InitCanMove();
 		if (modified_stuff & LUACON_EL_MODIFIED_GRAPHICS)
 			memset(graphicscache, 0, sizeof(gcache_item)*PT_NUM);
 	}

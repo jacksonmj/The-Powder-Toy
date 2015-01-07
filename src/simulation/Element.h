@@ -111,7 +111,7 @@ public:
 	// Func_Create_Allowed is used to check whether a particle can be created, by both Simulation::part_create and Simulation::part_change_type
 	// Arguments are the same as Simulation::part_create or Simulation::part_change_type
 	// This function should not modify the particle
-	// Before calling this, coordinates and particle type are checked, but not eval_move()
+	// Before calling this, coordinates and particle type are checked, but not part_canMove()
 	bool (*Func_Create_Allowed)(ELEMENT_CREATE_ALLOWED_FUNC_ARGS);
 
 	// Func_ChangeType is called by Simulation::part_create, Simulation::part_change_type, and Simulation::part_kill

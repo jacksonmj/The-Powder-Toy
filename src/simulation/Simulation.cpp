@@ -407,13 +407,14 @@ int Simulation::part_create(int p, int x, int y, int t)
 	if (p==-1)
 	{
 		// Check whether the particle can be created here
-
 		// If there is a particle, only allow creation if the new particle can occupy the same space as the existing particle
 		// If there isn't a particle but there is a wall, check whether the new particle is allowed to be in it
 		// If there's no particle and no wall, assume creation is allowed
-		if (pmap[y][x].count ? (eval_move(t, x, y)!=2) : (bmap[y/CELL][x/CELL] && eval_move(t, x, y)!=2))
+		if (pmap[y][x].count || bmap[y/CELL][x/CELL])
 		{
-			return -1;
+			MoveResult::Code moveResult = part_canMove(t, x, y);
+			if (moveResult!=MoveResult::ALLOW && moveResult!=MoveResult::ALLOW_BUT_SLOW)
+				return -1;
 		}
 		i = part_alloc();
 	}
@@ -728,7 +729,6 @@ void Simulation::UpdateParticles()
 	float c_heat = 0.0f;
 	int h_count = 0;
 	int lighting_ok=1;
-	int moveRet;
 	unsigned int elem_properties;
 	float pGravX, pGravY, pGravD;
 	int excessive_stacking_found = 0;
@@ -1661,7 +1661,7 @@ killed:
 					}
 					if (mv <= 0.0f)
 					{
-						// nothing found
+						// finished interpolation, nothing found
 						fin_xf = parts[i].x + parts[i].vx;
 						fin_yf = parts[i].y + parts[i].vy;
 						fin_x = (int)(fin_xf+0.5f);
@@ -1672,7 +1672,7 @@ killed:
 						clear_y = (int)(clear_yf+0.5f);
 						break;
 					}
-					if (eval_move(t, fin_x, fin_y)!=2 || (t == PT_PHOT && pmap[fin_y][fin_x].count_notEnergy) || bmap[fin_y/CELL][fin_x/CELL]==WL_DESTROYALL)
+					if (!MoveResult::AllowInterpolation(part_canMove(t, fin_x, fin_y)))
 					{
 						// found an obstacle
 						clear_xf = fin_xf-dx;
@@ -1694,7 +1694,7 @@ killed:
 				//head movement, let head pass through anything
 				if (edgeMode != 2)
 				{
-					part_move(i, x, y, parts[i].x+parts[i].vx, parts[i].y+parts[i].vy);;
+					part_set_pos(i, x, y, parts[i].x+parts[i].vx, parts[i].y+parts[i].vy);
 				}
 				else
 				{
@@ -1709,7 +1709,7 @@ killed:
 						diffy = YRES-CELL*2;
 					if (ny >= YRES-CELL)
 						diffy = -(YRES-CELL*2);
-					if (diffx || diffy) //when moving from left to right stickmen might be able to fall through solid things, fix with "eval_move(t, nx+diffx, ny+diffy)" but then they die instead
+					if (diffx || diffy) //when moving from left to right stickmen might be able to fall through solid things, fix with "part_canMove(t, nx+diffx, ny+diffy)" but then they die instead
 					{
 						//adjust stickmen legs
 						playerst* stickman = NULL;
@@ -1728,7 +1728,7 @@ killed:
 								stickman->legs[i+1] += diffy;
 							}
 					}
-					part_move(i, x, y, parts[i].x+parts[i].vx+diffx, parts[i].y+parts[i].vy+diffy);
+					part_set_pos(i, x, y, parts[i].x+parts[i].vx+diffx, parts[i].y+parts[i].vy+diffy);
 				}
 				continue;
 			}
@@ -1747,8 +1747,7 @@ killed:
 					int ri = pmap_find_one(fin_x, fin_y, PT_GLAS);
 					int li = pmap_find_one(x, y, PT_GLAS);
 
-					r = eval_move(PT_PHOT, fin_x, fin_y);
-					if (r && ((ri>=0 && li<0) || (ri<0 && li>=0))) {
+					if (MoveResult::WillSucceed(part_canMove(PT_PHOT, fin_x, fin_y)) && ((ri>=0 && li<0) || (ri<0 && li>=0))) {
 						if (!get_normal_interp(REFRACT|t, parts[i].x, parts[i].y, parts[i].vx, parts[i].vy, &nrx, &nry)) {
 							kill_part(i);
 							continue;
@@ -1786,14 +1785,19 @@ killed:
 				}
 				if (stagnant)//FLAG_STAGNANT set, was reflected on previous frame
 				{
-					// cast coords as int then back to float for compatibility with existing saves
-					if ((moveRet=do_move(i, x, y, (float)fin_x, (float)fin_y))<=0 && parts[i].type) {
-						if (moveRet==0)
-							kill_part(i);
+					// cast coords as int then back to float for compatibility with existing saves. TODO: remove when breaking compatibility
+					MoveResult::Code moveResult = part_move(i, x, y, (float)fin_x, (float)fin_y);
+					if (MoveResult::WasBlocked(moveResult))
+					{
+						part_kill(i);
+						continue;
+					}
+					else if (MoveResult::WasKilled(moveResult))
+					{
 						continue;
 					}
 				}
-				else if (do_move(i, x, y, fin_xf, fin_yf)==0)
+				else if (MoveResult::WasBlocked(part_move(i, x, y, fin_xf, fin_yf)))
 				{
 					// reflection
 					parts[i].flags |= FLAG_STAGNANT;
@@ -1818,11 +1822,12 @@ killed:
 						continue;
 					}
 				}
+				goto movedone;
 			}
 			else if (elements[t].Falldown==0)
 			{
 				// gases and solids (but not powders)
-				if (do_move(i, x, y, fin_xf, fin_yf)==0)
+				if (MoveResult::WasBlocked(part_move(i, x, y, fin_xf, fin_yf)))
 				{
 					// can't move there, so bounce off
 					// TODO
@@ -1830,11 +1835,11 @@ killed:
 					if (fin_x<x-ISTP) fin_x=x-ISTP;
 					if (fin_y>y+ISTP) fin_y=y+ISTP;
 					if (fin_y<y-ISTP) fin_y=y-ISTP;
-					if (do_move(i, x, y, 0.25f+(float)(2*x-fin_x), 0.25f+fin_y)>0)
+					if (MoveResult::Succeeded(part_move(i, x, y, 0.25f+(float)(2*x-fin_x), 0.25f+fin_y)))
 					{
 						parts[i].vx *= elements[t].Collision;
 					}
-					else if (do_move(i, x, y, 0.25f+fin_x, 0.25f+(float)(2*y-fin_y))>0)
+					else if (MoveResult::Succeeded(part_move(i, x, y, 0.25f+fin_x, 0.25f+(float)(2*y-fin_y))))
 					{
 						parts[i].vy *= elements[t].Collision;
 					}
@@ -1844,6 +1849,7 @@ killed:
 						parts[i].vy *= elements[t].Collision;
 					}
 				}
+				goto movedone;
 			}
 			else
 			{
@@ -1853,19 +1859,22 @@ killed:
 						goto movedone;
 				}
 				// liquids and powders
-				if (do_move(i, x, y, fin_xf, fin_yf)==0)
+				// First try to move in the direction of the particle velocity
+				if (MoveResult::WasBlocked(part_move(i, x, y, fin_xf, fin_yf)))
 				{
-					if (fin_x!=x && (moveRet=do_move(i, x, y, fin_xf, clear_yf))!=0)
+					MoveResult::Code moveResult;
+					// Now try moving a little less in the direction of the particle velocity
+					if (fin_x!=x && MoveResult::Succeeded_MaybeKilled(moveResult=part_move(i, x, y, fin_xf, clear_yf)))
 					{
-						if (moveRet>0)
+						if (!MoveResult::WasKilled(moveResult))
 						{
 							parts[i].vx *= elements[t].Collision;
 							parts[i].vy *= elements[t].Collision;
 						}
 					}
-					else if (fin_y!=y && (moveRet=do_move(i, x, y, clear_xf, fin_yf))!=0)
+					else if (fin_y!=y && MoveResult::Succeeded_MaybeKilled(moveResult=part_move(i, x, y, clear_xf, fin_yf)))
 					{
-						if (moveRet>0)
+						if (!MoveResult::WasKilled(moveResult))
 						{
 							parts[i].vx *= elements[t].Collision;
 							parts[i].vy *= elements[t].Collision;
@@ -1873,6 +1882,7 @@ killed:
 					}
 					else
 					{
+						// Movement in velocity direction is blocked, try moving diagonally and (for liquids) horizontally
 						s = 1;
 						r = (rand()%2)*2-1;// position search direction (left/right first)
 						if ((clear_x!=x || clear_y!=y || nt || surround_space) &&
@@ -1888,21 +1898,18 @@ killed:
 								mv = fabsf(dx);
 							dx /= mv;
 							dy /= mv;
-							if ((moveRet=do_move(i, x, y, clear_xf+dx, clear_yf+dy))!=0)
+							if (MoveResult::Succeeded_MaybeKilled(moveResult=part_move(i, x, y, clear_xf+dx, clear_yf+dy)))
 							{
-								if (moveRet>0)
+								if (!MoveResult::WasKilled(moveResult))
 								{
 									parts[i].vx *= elements[t].Collision;
 									parts[i].vy *= elements[t].Collision;
 								}
 								goto movedone;
 							}
-							swappage = dx;
-							dx = dy*r;
-							dy = -swappage*r;
-							if ((moveRet=do_move(i, x, y, clear_xf+dx, clear_yf+dy))!=0)
+							if (MoveResult::Succeeded_MaybeKilled(moveResult=part_move(i, x, y, clear_xf+dy*r, clear_yf-dx*r)))// perpendicular to previous vector
 							{
-								if (moveRet>0)
+								if (!MoveResult::WasKilled(moveResult))
 								{
 									parts[i].vx *= elements[t].Collision;
 									parts[i].vy *= elements[t].Collision;
@@ -1912,7 +1919,7 @@ killed:
 						}
 						if (elements[t].Falldown>1 && !ngrav_enable && gravityMode==0 && parts[i].vy>fabsf(parts[i].vx))
 						{
-							s = 0;
+							moveResult = MoveResult::BLOCK;
 							// stagnant is true if FLAG_STAGNANT was set for this particle in previous frame
 							if (!stagnant || nt) //nt is if there is an something else besides the current particle type, around the particle
 								rt = 30;//slight less water lag, although it changes how it moves a lot
@@ -1924,35 +1931,38 @@ killed:
 
 							for (j=clear_x+r; j>=0 && j>=clear_x-rt && j<clear_x+rt && j<XRES; j+=r)
 							{
-								if ((pmap_find_one(j, fin_y, t)<0 || bmap[fin_y/CELL][j/CELL])
-									&& (s=do_move(i, x, y, (float)j, fin_yf))!=0)
+								if (pmap_find_one(j, fin_y, t)<0 || bmap[fin_y/CELL][j/CELL])
 								{
-									if (s>0)
+									moveResult = part_move(i, x, y, (float)j, fin_yf);
+									if (MoveResult::Succeeded_MaybeKilled(moveResult))
 									{
-										nx = (int)(parts[i].x+0.5f);
-										ny = (int)(parts[i].y+0.5f);
+										if (!MoveResult::WasKilled(moveResult))
+										{
+											nx = (int)(parts[i].x+0.5f);
+											ny = (int)(parts[i].y+0.5f);
+										}
+										break;
 									}
-									break;
 								}
-								if (fin_y!=clear_y && (pmap_find_one(j, clear_y, t)<0 || bmap[clear_y/CELL][j/CELL])
-									&& (s=do_move(i, x, y, (float)j, clear_yf))!=0)
+								if (fin_y!=clear_y && (pmap_find_one(j, clear_y, t)<0 || bmap[clear_y/CELL][j/CELL]))
 								{
-									if (s>0)
+									moveResult = part_move(i, x, y, (float)j, clear_yf);
+									if (MoveResult::Succeeded_MaybeKilled(moveResult))
 									{
-										nx = (int)(parts[i].x+0.5f);
-										ny = (int)(parts[i].y+0.5f);
+										if (!MoveResult::WasKilled(moveResult))
+										{
+											nx = (int)(parts[i].x+0.5f);
+											ny = (int)(parts[i].y+0.5f);
+										}
+										break;
 									}
-									break;
 								}
 								if (pmap_find_one(j, clear_y, t)<0 || (bmap[clear_y/CELL][j/CELL] && bmap[clear_y/CELL][j/CELL]!=WL_STREAM))
 									break;
 							}
-							if (s==0)
-							{
-								parts[i].vx *= elements[t].Collision;
-								parts[i].vy *= elements[t].Collision;
-							}
-							else if (s==1)
+							if (MoveResult::WasKilled(moveResult))
+								continue;
+							if (MoveResult::Succeeded(moveResult))
 							{
 								if (parts[i].vy>0)
 									r = 1;
@@ -1962,22 +1972,28 @@ killed:
 								parts[i].vy *= elements[t].Collision;
 								for (j=ny+r; j>=0 && j<YRES && j>=ny-rt && j<ny+rt; j+=r)
 								{
-									bool tmp = (pmap_find_one(nx, j, t)<0);
-									if ((tmp || bmap[j/CELL][nx/CELL]) && do_move(i, nx, ny, (float)nx, (float)j)!=0)
+									bool tmp = (pmap_find_one(nx, j, t)<0);// true if no particles of the same type are at nx,j
+									if ((tmp || bmap[j/CELL][nx/CELL]) && MoveResult::Succeeded_MaybeKilled(part_move(i, nx, ny, (float)nx, (float)j)))
 										break;
 									if (tmp || (bmap[j/CELL][nx/CELL] && bmap[j/CELL][nx/CELL]!=WL_STREAM))
 										break;
 								}
 							}
-							else if (s<0) {} // particle has been killed
-							else if ((clear_x!=x||clear_y!=y) && do_move(i, x, y, clear_xf, clear_yf)!=0) {}
-							else parts[i].flags |= FLAG_STAGNANT;
+							else
+							{
+								parts[i].vx *= elements[t].Collision;
+								parts[i].vy *= elements[t].Collision;
+								if ((clear_x!=x||clear_y!=y) && part_move(i, x, y, clear_xf, clear_yf)!=0) {}
+								else parts[i].flags |= FLAG_STAGNANT;
+							}
 						}
 						// fabsf stuff here is checking whether the component of the velocity parallel to the gravity direction is greater than the perpendicular component, indicating the particle is fairly stationary, with the velocity being due mainly to the acceleration by gravity
 						else if (elements[t].Falldown>1 && fabsf(pGravX*parts[i].vx+pGravY*parts[i].vy)>fabsf(pGravY*parts[i].vx-pGravX*parts[i].vy))
 						{
-							float nxf, nyf, prev_pGravX, prev_pGravY, ptGrav = elements[t].Gravity;
-							s = 0;
+							parts[i].vx *= elements[t].Collision;
+							parts[i].vy *= elements[t].Collision;
+							float nxf, nyf, pGravX, pGravY, prev_pGravX, prev_pGravY, ptGrav = elements[t].Gravity;
+							moveResult = MoveResult::BLOCK;
 							// stagnant is true if FLAG_STAGNANT was set for this particle in previous frame
 							if (!stagnant || nt) //nt is if there is an something else besides the current particle type, around the particle
 								rt = 30;//slight less water lag, although it changes how it moves a lot
@@ -1991,24 +2007,7 @@ killed:
 							// Look for spaces to move horizontally (perpendicular to gravity direction), keep going until a space is found or the number of positions examined = rt
 							for (j=0;j<rt;j++)
 							{
-								// Calculate overall gravity direction
-								switch (gravityMode)
-								{
-									default:
-									case 0:
-										pGravX = 0.0f;
-										pGravY = ptGrav;
-										break;
-									case 1:
-										pGravX = pGravY = 0.0f;
-										break;
-									case 2:
-										pGravD = 0.01f - hypotf((nx - XCNTR), (ny - YCNTR));
-										pGravX = ptGrav * ((float)(nx - XCNTR) / pGravD);
-										pGravY = ptGrav * ((float)(ny - YCNTR) / pGravD);
-								}
-								pGravX += gravx[(ny/CELL)*(XRES/CELL)+(nx/CELL)];
-								pGravY += gravy[(ny/CELL)*(XRES/CELL)+(nx/CELL)];
+								GetGravityAccel(nx,ny, ptGrav, 1.0f, pGravX, pGravY);
 								// Scale gravity vector so that the largest component is 1 pixel
 								if (fabsf(pGravY)>fabsf(pGravX))
 									mv = fabsf(pGravY);
@@ -2034,18 +2033,17 @@ killed:
 								}
 								prev_pGravX = pGravX;
 								prev_pGravY = pGravY;
-								// Check whether movement is allowed
 								nx = (int)(nxf+0.5f);
 								ny = (int)(nyf+0.5f);
-								if (nx<0 || ny<0 || nx>=XRES || ny >=YRES)
+								// Check whether movement is allowed
+								if (!InBounds(nx,ny))
 									break;
 								if (pmap_find_one(nx,ny,t)<0 || bmap[ny/CELL][nx/CELL])
 								{
-									s = do_move(i, x, y, nxf, nyf);
-									if (s!=0)
+									moveResult = part_move(i, x, y, nxf, nyf);
+									if (MoveResult::Succeeded_MaybeKilled(moveResult))
 									{
-										// Movement was successful
-										if (s>0)
+										if (!MoveResult::WasKilled(moveResult))
 										{
 											nx = (int)(parts[i].x+0.5f);
 											ny = (int)(parts[i].y+0.5f);
@@ -2057,12 +2055,9 @@ killed:
 										break;
 								}
 							}
-							if (s>=0)
-							{
-								parts[i].vx *= elements[t].Collision;
-								parts[i].vy *= elements[t].Collision;
-							}
-							if (s==1)
+							if (MoveResult::WasKilled(moveResult))
+								continue;
+							if (MoveResult::Succeeded(moveResult))
 							{
 								// The particle managed to move horizontally, now try to move vertically (parallel to gravity direction)
 								// Keep going until the particle is blocked (by something that isn't the same element) or the number of positions examined = rt
@@ -2071,32 +2066,16 @@ killed:
 								for (j=0;j<rt;j++)
 								{
 									// Calculate overall gravity direction
-									switch (gravityMode)
-									{
-										default:
-										case 0:
-											pGravX = 0.0f;
-											pGravY = ptGrav;
-											break;
-										case 1:
-											pGravX = pGravY = 0.0f;
-											break;
-										case 2:
-											pGravD = 0.01f - hypotf((nx - XCNTR), (ny - YCNTR));
-											pGravX = ptGrav * ((float)(nx - XCNTR) / pGravD);
-											pGravY = ptGrav * ((float)(ny - YCNTR) / pGravD);
-									}
-									pGravX += gravx[(ny/CELL)*(XRES/CELL)+(nx/CELL)];
-									pGravY += gravy[(ny/CELL)*(XRES/CELL)+(nx/CELL)];
+									GetGravityAccel(nx,ny, ptGrav, 1.0f, pGravX, pGravY);
 									// Scale gravity vector so that the largest component is 1 pixel
 									if (fabsf(pGravY)>fabsf(pGravX))
 										mv = fabsf(pGravY);
 									else
 										mv = fabsf(pGravX);
 									if (mv<0.0001f) break;
-									// Move 1 pixel in the direction of gravity
 									pGravX /= mv;
 									pGravY /= mv;
+									// Move 1 pixel in the direction of gravity
 									nxf += pGravX;
 									nyf += pGravY;
 									nx = (int)(nxf+0.5f);
@@ -2106,20 +2085,19 @@ killed:
 									// If the space is anything except the same element (so is a wall, empty space, or occupied by a particle of a different element), try to move into it
 									if (pmap_find_one(nx,ny,t)<0 || bmap[ny/CELL][nx/CELL])
 									{
-										s = do_move(i, clear_x, clear_y, nxf, nyf);
-										if (s!=0 || bmap[ny/CELL][nx/CELL]!=WL_STREAM)
+										moveResult = part_move(i, clear_x, clear_y, nxf, nyf);
+										if (MoveResult::Succeeded(moveResult) || bmap[ny/CELL][nx/CELL]!=WL_STREAM)
 											break;// found the edge of the liquid and movement into it succeeded, so stop moving down
 									}
 								}
 							}
-							else if (s<0) {} // particle has been killed
-							else if ((clear_x!=x||clear_y!=y) && do_move(i, x, y, clear_xf, clear_yf)) {} // try moving to the last clear position
+							else if ((clear_x!=x||clear_y!=y) && part_move(i, x, y, clear_xf, clear_yf)) {} // try moving to the last clear position
 							else parts[i].flags |= FLAG_STAGNANT;
 						}
 						else
 						{
 							// if interpolation was done, try moving to last clear position
-							if ((clear_x!=x||clear_y!=y) && do_move(i, x, y, clear_xf, clear_yf)!=0) {}
+							if ((clear_x!=x||clear_y!=y) && part_move(i, x, y, clear_xf, clear_yf)!=0) {}
 							else parts[i].flags |= FLAG_STAGNANT;
 							parts[i].vx *= elements[t].Collision;
 							parts[i].vy *= elements[t].Collision;
