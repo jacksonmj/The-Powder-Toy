@@ -70,7 +70,7 @@ int DTEC_update(UPDATE_FUNC_ARGS)
 						bool foundFILT = false;
 						FOR_PMAP_POSITION_NOENERGY(sim, nx, ny, rcount, ri, rnext)
 						{
-							if (parts[ri].type==PT_FILT)
+							if (parts[ri].type==PT_FILT && parts[ri].tmp!=4 && parts[ri].tmp!=5)
 							{
 								parts[ri].ctype = photonWl;
 								foundFILT = true;

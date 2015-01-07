@@ -56,13 +56,17 @@ public:
 				return origWl & (~filtWl); //Subtract colour of filt from colour of photon
 			case 4:
 				{
-					int shift = int((cpart->temp-273.0f)*0.025f);
+					int shift = cpart->ctype;
+					if (!shift)
+						shift = int((cpart->temp-273.0f)*0.025f);
 					if (shift<=0) shift = 1;
 					return (origWl << shift) & mask; // red shift
 				}
 			case 5:
 				{
-					int shift = int((cpart->temp-273.0f)*0.025f);
+					int shift = cpart->ctype;
+					if (!shift)
+						shift = int((cpart->temp-273.0f)*0.025f);
 					if (shift<=0) shift = 1;
 					return (origWl >> shift) & mask; // blue shift
 				}

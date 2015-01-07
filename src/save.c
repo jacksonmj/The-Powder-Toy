@@ -1658,6 +1658,11 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 								partsptr[newIndex].tmp = 6;
 							partsptr[newIndex].ctype = 0;
 						}
+						if (saved_version < 91)
+						{
+							if (partsptr[newIndex].tmp==4 || partsptr[newIndex].tmp==5)
+								partsptr[newIndex].ctype = 0;
+						}
 						break;
 					case PT_QRTZ:
 					case PT_PQRT:
@@ -2460,6 +2465,11 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned c
 					if (parts[i-1].tmp<0 || parts[i-1].tmp>3)
 						parts[i-1].tmp = 6;
 					parts[i-1].ctype = 0;
+				}
+				if (ver < 91)
+				{
+					if (parts[i-1].tmp==4 || parts[i-1].tmp==5)
+						parts[i-1].ctype = 0;
 				}
 				break;
 			case PT_QRTZ:
