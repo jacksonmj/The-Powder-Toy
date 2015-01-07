@@ -32,7 +32,6 @@ int VINE_update(UPDATE_FUNC_ARGS)
 			if (np>=0)
 			{
 				parts[np].temp = parts[i].temp;
-				parts[i].tmp = 1;
 				part_change_type(i,x,y,PT_PLNT);
 			}
 		}

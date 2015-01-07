@@ -1674,6 +1674,12 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 							partsptr[newIndex].flags |= FLAG_PHOTDECO;
 						}
 						break;
+					case PT_VINE:
+						if (saved_version < 91)
+						{
+							partsptr[newIndex].tmp = 1;
+						}
+						break;
 					}
 				}
 			}
@@ -2469,6 +2475,12 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned c
 				if (ver<90)
 				{
 					parts[i-1].flags |= FLAG_PHOTDECO;
+				}
+				break;
+			case PT_VINE:
+				if (ver<91)
+				{
+					parts[i-1].tmp = 1;
 				}
 				break;
 			}
