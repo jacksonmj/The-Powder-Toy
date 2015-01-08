@@ -16,27 +16,28 @@
 #include "simulation/ElementsCommon.h"
 #include "simulation/elements/FIGH.h"
 
-int STKM_graphics(GRAPHICS_FUNC_ARGS);
-void STKM_init_legs(playerst* playerp, int i);
-
 int FIGH_update(UPDATE_FUNC_ARGS)
 {
-	if (parts[i].tmp<0)
+	if (!sim->elemData(PT_FIGH))
+		return 0;
+	Stickman_data *figh = sim->elemData<FIGH_ElemDataSim>(PT_FIGH)->GetFighterData(parts[i]);
+
+	if (!figh)
 	{
 		sim->part_kill(i);
 		return 1;
 	}
 
-	playerst* figh = ((FIGH_ElementDataContainer*)sim->elementData[PT_FIGH])->Get(parts[i].tmp);
-
+	Stickman_data &player = sim->elemData<STKM_ElemDataSim>(PT_STKM)->player;
+	Stickman_data &player2 = sim->elemData<STKM_ElemDataSim>(PT_STKM2)->player;
 	unsigned int tarx, tary;
 
 	parts[i].tmp2 = 0; //0 - stay in place, 1 - seek a stick man
 
 	//Set target coords
-	if (player2.spwn)
+	if (player2.isOnscreen())
 	{
-			if (player.spwn && (pow(player.legs[2]-x, 2) + pow(player.legs[3]-y, 2))<=
+			if (player.isOnscreen() && (pow(player.legs[2]-x, 2) + pow(player.legs[3]-y, 2))<=
 					(pow(player2.legs[2]-x, 2) + pow(player2.legs[3]-y, 2)))
 			{
 				tarx = (unsigned int)player.legs[2];
@@ -49,7 +50,7 @@ int FIGH_update(UPDATE_FUNC_ARGS)
 			}
 			parts[i].tmp2 = 1;
 	}
-	else if (player.spwn)
+	else if (player.isOnscreen())
 	{
 		tarx = (unsigned int)player.legs[2];
 		tary = (unsigned int)player.legs[3];
@@ -64,41 +65,41 @@ int FIGH_update(UPDATE_FUNC_ARGS)
 				if (figh->elem == PT_LIGH || figh->elem == PT_NEUT 
 						|| ptypes[figh->elem].properties&(PROP_DEADLY|PROP_RADIOACTIVE) 
 						|| ptypes[figh->elem].heat>=323 || ptypes[figh->elem].heat<=243)
-					figh->comm = (int)figh->comm | 0x08;
+					figh->commandOn(STKM_commands::Action);
 			}
 			else if (tarx<x)
 			{
 				if(figh->rocketBoots || MoveResult::WillBlock(sim->part_canMove(PT_FIGH, figh->legs[4]-10, figh->legs[5]+6)) || MoveResult::WillBlock(sim->part_canMove(PT_FIGH, figh->legs[4]-10, figh->legs[5]+3)))
-					figh->comm = 0x01;
+					figh->comm = STKM_commands::Left;
 				else
-					figh->comm = 0x02;
+					figh->comm = STKM_commands::Right;
 
 				if (figh->rocketBoots)
 				{
 					if (tary<y)
-						figh->comm = (int)figh->comm | 0x04;
+						figh->commandOn(STKM_commands::Jump);
 				}
 				else if (MoveResult::WillBlock(sim->part_canMove(PT_FIGH, figh->legs[4]-4, figh->legs[5]-1))
 						|| MoveResult::WillBlock(sim->part_canMove(PT_FIGH, figh->legs[12]-4, figh->legs[13]-1))
 						|| !MoveResult::WillBlock(sim->part_canMove(PT_FIGH, 2*figh->legs[4]-figh->legs[6], figh->legs[5]+5)))
-					figh->comm = (int)figh->comm | 0x04;
+					figh->commandOn(STKM_commands::Jump);
 			}
 			else
 			{ 
 				if (figh->rocketBoots || MoveResult::WillBlock(sim->part_canMove(PT_FIGH, figh->legs[12]+10, figh->legs[13]+6)) || MoveResult::WillBlock(sim->part_canMove(PT_FIGH, figh->legs[12]+10, figh->legs[13]+3)))
-					figh->comm = 0x02;
+					figh->comm = STKM_commands::Right;
 				else
-					figh->comm = 0x01;
+					figh->comm = STKM_commands::Left;
 
 				if (figh->rocketBoots)
 				{
 					if (tary<y)
-						figh->comm = (int)figh->comm | 0x04;
+						figh->commandOn(STKM_commands::Jump);
 				}
 				else if (MoveResult::WillBlock(sim->part_canMove(PT_FIGH, figh->legs[4]+4, figh->legs[5]-1))
 						|| MoveResult::WillBlock(sim->part_canMove(PT_FIGH, figh->legs[4]+4, figh->legs[5]-1))
 						|| !MoveResult::WillBlock(sim->part_canMove(PT_FIGH, 2*figh->legs[12]-figh->legs[14], figh->legs[13]+5)))
-					figh->comm = (int)figh->comm | 0x04;
+					figh->commandOn(STKM_commands::Jump);
 			}
 			break;
 		default:
@@ -113,26 +114,19 @@ int FIGH_update(UPDATE_FUNC_ARGS)
 
 bool FIGH_create_allowed(ELEMENT_CREATE_ALLOWED_FUNC_ARGS)
 {
-	return ((FIGH_ElementDataContainer*)sim->elementData[PT_FIGH])->CanAlloc();
+	return sim->elemData<FIGH_ElemDataSim>(PT_FIGH)->create_allowed();
 }
 
 void FIGH_ChangeType(ELEMENT_CHANGETYPE_FUNC_ARGS)
 {
+	FIGH_ElemDataSim *fighdata = sim->elemData<FIGH_ElemDataSim>(PT_FIGH);
 	if (to==PT_FIGH)
 	{
-		sim->parts[i].tmp = ((FIGH_ElementDataContainer*)sim->elementData[PT_FIGH])->Alloc();
-		if (sim->parts[i].tmp>=0)
-		{
-			playerst* figh = ((FIGH_ElementDataContainer*)sim->elementData[PT_FIGH])->Get(sim->parts[i].tmp);
-			figh->spwn = 1;
-			figh->elem = PT_DUST;
-			figh->rocketBoots = false;
-			STKM_init_legs(figh, i);
-		}
+		fighdata->on_part_create(sim->parts[i]);
 	}
 	else
 	{
-		((FIGH_ElementDataContainer*)sim->elementData[PT_FIGH])->Free(sim->parts[i].tmp);
+		fighdata->on_part_kill(sim->parts[i]);
 	}
 }
 
@@ -186,10 +180,6 @@ void FIGH_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Func_Create_Allowed = &FIGH_create_allowed;
 	elem->Func_ChangeType = &FIGH_ChangeType;
 
-	if (sim->elementData[t])
-	{
-		delete sim->elementData[t];
-	}
-	sim->elementData[t] = new FIGH_ElementDataContainer;
+	sim->elemData(t, new FIGH_ElemDataSim(sim));
 }
 

@@ -51,6 +51,7 @@
 #include "save.h"
 
 #include "simulation/Simulation.h"
+#include "simulation/elements/STKM.h"
 
 SDLMod sdl_mod;
 int sdl_key, sdl_rkey, sdl_wheel, sdl_ascii, sdl_zoom_trig=0;
@@ -3060,68 +3061,32 @@ int sdl_poll(void)
 
 void stickmen_keys()
 {
-	//  4
-	//1 8 2
-	if (sdl_key == SDLK_RIGHT)
-	{
-		player.comm = (int)(player.comm)|0x02;  //Go right command
-	}
-	if (sdl_key == SDLK_LEFT)
-	{
-		player.comm = (int)(player.comm)|0x01;  //Go left command
-	}
-	if (sdl_key == SDLK_DOWN && ((int)(player.comm)&0x08)!=0x08)
-	{
-		player.comm = (int)(player.comm)|0x08;  //Use element command
-	}
-	if (sdl_key == SDLK_UP && ((int)(player.comm)&0x04)!=0x04)
-	{
-		player.comm = (int)(player.comm)|0x04;  //Jump command
-	}
+	struct stkm_key_cmd_t {
+		int key;
+		int elem;
+		STKM_command_t cmd;
+	};
+	struct stkm_key_cmd_t keys[8] = {
+		{ SDLK_RIGHT,	PT_STKM,  STKM_commands::Right },
+		{ SDLK_LEFT,	PT_STKM,  STKM_commands::Left },
+		{ SDLK_DOWN,	PT_STKM,  STKM_commands::Action },
+		{ SDLK_UP,		PT_STKM,  STKM_commands::Jump },
+		{ SDLK_d,		PT_STKM2, STKM_commands::Right },
+		{ SDLK_a,		PT_STKM2, STKM_commands::Left },
+		{ SDLK_s,		PT_STKM2, STKM_commands::Action },
+		{ SDLK_w,		PT_STKM2, STKM_commands::Jump },
+	};
 
-	if (sdl_key == SDLK_d)
+	for (int i=0; i<8; i++)
 	{
-		player2.comm = (int)(player2.comm)|0x02;  //Go right command
-	}
-	if (sdl_key == SDLK_a)
-	{
-		player2.comm = (int)(player2.comm)|0x01;  //Go left command
-	}
-	if (sdl_key == SDLK_s && ((int)(player2.comm)&0x08)!=0x08)
-	{
-		player2.comm = (int)(player2.comm)|0x08;  //Use element command
-	}
-	if (sdl_key == SDLK_w && ((int)(player2.comm)&0x04)!=0x04)
-	{
-		player2.comm = (int)(player2.comm)|0x04;  //Jump command
-	}
-
-	if (sdl_rkey == SDLK_RIGHT || sdl_rkey == SDLK_LEFT)
-	{
-		player.pcomm = player.comm;  //Saving last movement
-		player.comm = (int)(player.comm)&12;  //Stop command
-	}
-	if (sdl_rkey == SDLK_UP)
-	{
-		player.comm = (int)(player.comm)&11;
-	}
-	if (sdl_rkey == SDLK_DOWN)
-	{
-		player.comm = (int)(player.comm)&7;
-	}
-
-	if (sdl_rkey == SDLK_d || sdl_rkey == SDLK_a)
-	{
-		player2.pcomm = player2.comm;  //Saving last movement
-		player2.comm = (int)(player2.comm)&12;  //Stop command
-	}
-	if (sdl_rkey == SDLK_w)
-	{
-		player2.comm = (int)(player2.comm)&11;
-	}
-	if (sdl_rkey == SDLK_s)
-	{
-		player2.comm = (int)(player2.comm)&7;
+		if (sdl_key==keys[i].key)
+		{
+			globalSim->elemData<STKM_ElemDataSim>(keys[i].elem)->player.commandOn(keys[i].cmd);
+		}
+		if (sdl_rkey==keys[i].key)
+		{
+			globalSim->elemData<STKM_ElemDataSim>(keys[i].elem)->player.commandOff(keys[i].cmd);
+		}
 	}
 }
 

@@ -28,7 +28,7 @@
 
 #include "simulation/Simulation.h"
 #include "simulation/CoordStack.h"
-#include "simulation/ElementDataContainer.h"
+#include "simulation/ElemDataSim.h"
 #include "simulation/elements/PRTI.h"
 #include "simulation/elements/FILT.h"
 
@@ -38,9 +38,6 @@ unsigned int platent[PT_NUM];
 
 int lighting_recreate = 0;
 int force_stacking_check = 0;//whether to force a check for excessively stacked particles
-
-playerst player;
-playerst player2;
 
 particle *parts;
 particle *cb_parts;

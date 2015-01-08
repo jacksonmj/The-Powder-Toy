@@ -72,6 +72,7 @@
 #endif
 
 #include "simulation/elements/PRTI.h"
+#include "simulation/elements/STKM.h"
 #include "simulation/elements/WIFI.h"
 
 //unsigned cmode = CM_FIRE;
@@ -2265,14 +2266,12 @@ void render_parts(pixel *vid)
 					char buff[20];  //Buffer for HP
 					int s;
 					int legr, legg, legb;
-					playerst *cplayer;
-					if(t==PT_STKM)
-						cplayer = &player;
-					else if(t==PT_STKM2)
-						cplayer = &player2;
+					Stickman_data *cplayer = NULL;
+					if(t==PT_STKM || t==PT_STKM2)
+						cplayer = &globalSim->elemData<STKM_ElemDataSim>(t)->player;
 					else if(t==PT_FIGH)
-						cplayer = ((FIGH_ElementDataContainer*)globalSim->elementData[PT_FIGH])->Get(parts[i].tmp);
-					else
+						cplayer = globalSim->elemData<FIGH_ElemDataSim>(PT_FIGH)->GetFighterData(parts[i]);
+					if (!cplayer)
 						continue;
 
 					if (mousex>(nx-3) && mousex<(nx+3) && mousey<(ny+3) && mousey>(ny-3)) //If mouse is in the head

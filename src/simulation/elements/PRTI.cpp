@@ -16,6 +16,7 @@
 #include "simulation/ElementsCommon.h"
 #include "simulation/elements/PRTI.h"
 #include "simulation/elements/SOAP.h"
+#include "simulation/elements/STKM.h"
 
 /*these are the count values of where the particle gets stored, depending on where it came from
    0 1 2
@@ -27,14 +28,85 @@
 const int portal_rx[8] = {-1, 0, 1, 1, 1, 0,-1,-1};
 const int portal_ry[8] = {-1,-1,-1, 0, 1, 1, 1, 0};
 
+PRTI_ElemDataSim::PRTI_ElemDataSim(Simulation *s)
+	: ElemDataSim(s),
+	  obs_simCleared(sim->hook_cleared, this, &PRTI_ElemDataSim::ClearPortalContents)
+{
+	ClearPortalContents();
+}
+
+void PRTI_ElemDataSim::ClearPortalContents()
+{
+	for (int i=0; i<CHANNELS; i++)
+		channels[i].ClearContents();
+}
+
+void PortalChannel::ClearContents()
+{
+	memset(portalp, 0, sizeof(portalp));
+	memset(particleCount, 0, sizeof(particleCount));
+}
+
+particle * PortalChannel::AllocParticle(int slot)
+{
+	if (particleCount[slot]>=storageSize)
+		return NULL;
+	for (int nnx=0; nnx<80; nnx++)
+		if (!portalp[slot][nnx].type)
+		{
+			particleCount[slot]++;
+			return &(portalp[slot][nnx]);
+		}
+	return NULL;
+}
+
+// Store a particle in a given slot (one of the 8 neighbour positions) for this portal channel, then kills the original
+// Does not check whether the particle should be in a portal
+// Returns a pointer to the particle on success, or NULL if the portal is full
+particle * PortalChannel::StoreParticle(Simulation *sim, int store_i, int slot)
+{
+	if (particleCount[slot]>=storageSize)
+		return NULL;
+	Stickman_data *stkdata = NULL;
+	if (sim->parts[store_i].type==PT_STKM || sim->parts[store_i].type==PT_STKM2 || sim->parts[store_i].type==PT_FIGH)
+	{
+		stkdata = Stickman_data::get(sim, sim->parts[store_i]);
+		if (stkdata && stkdata->part != &sim->parts[store_i])
+			return NULL;
+	}
+	for (int nnx=0; nnx<80; nnx++)
+		if (!portalp[slot][nnx].type)
+		{
+			portalp[slot][nnx] = sim->parts[store_i];
+			particleCount[slot]++;
+			if (sim->parts[store_i].type==PT_SOAP)
+				SOAP_detach(sim, store_i);
+
+			if (sim->parts[store_i].type==PT_SPRK)
+				sim->part_change_type(store_i,(int)(sim->parts[store_i].x+0.5f),(int)(sim->parts[store_i].y+0.5f),sim->parts[store_i].ctype);
+			else if (stkdata)
+			{
+				sim->elemData<STK_common_ElemDataSim>(sim->parts[store_i].type)->storageActionPending = true;
+				sim->part_kill(store_i);
+				stkdata->set_particle(&portalp[slot][nnx]);
+			}
+			else
+			{
+				sim->part_kill(store_i);
+			}
+			return &portalp[slot][nnx];
+		}
+	return NULL;
+}
+
 int PRTI_update(UPDATE_FUNC_ARGS)
 {
-	if (!sim->elementData[PT_PRTI])
+	if (!sim->elemData(PT_PRTI))
 		return 0;
-	int r, nnx, rx, ry, rt, fe = 0;
+	int r, rx, ry, rt, fe = 0;
 	int rcount, ri, rnext;
 	int count =0;
-	PortalChannel *channel = ((PRTI_ElementDataContainer*)sim->elementData[PT_PRTI])->GetParticleChannel(sim, i);
+	PortalChannel *channel = sim->elemData<PRTI_ElemDataSim>(PT_PRTI)->GetParticleChannel(sim->parts[i]);
 	for (count=0; count<8; count++)
 	{
 		if (channel->particleCount[count] >= channel->storageSize)
@@ -48,15 +120,7 @@ int PRTI_update(UPDATE_FUNC_ARGS)
 			{
 				rt = parts[ri].type;
 				if (rt==PT_PRTI || rt==PT_PRTO || (!(ptypes[rt].properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY)) && rt!=PT_SPRK))
-				{
 					continue;
-				}
-
-				if (rt==PT_STKM || rt==PT_STKM2 || rt==PT_FIGH)
-					continue;// Handling these is a bit more complicated, and is done in STKM_interact()
-
-				if (rt == PT_SOAP)
-					SOAP_detach(sim, ri);
 
 				if (channel->StoreParticle(sim, ri, count))
 					fe = 1;
@@ -153,10 +217,6 @@ void PRTI_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Update = &PRTI_update;
 	elem->Graphics = &PRTI_graphics;
 
-	if (sim->elementData[t])
-	{
-		delete sim->elementData[t];
-	}
-	sim->elementData[t] = new PRTI_ElementDataContainer;
+	sim->elemData(t, new PRTI_ElemDataSim(sim));
 }
 

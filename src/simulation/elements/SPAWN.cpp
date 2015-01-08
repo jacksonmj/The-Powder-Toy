@@ -14,10 +14,11 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/elements/STKM.h"
 
 int SPAWN_update(UPDATE_FUNC_ARGS)
 {
-	if (!player.spwn)
+	if (!Stickman_data::get(sim, PT_STKM)->exists())
 		sim->part_create(-1, x, y, PT_STKM);
 	return 0;
 }

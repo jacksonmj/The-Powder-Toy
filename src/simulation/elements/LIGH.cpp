@@ -14,6 +14,7 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/elements/STKM.h"
 
 #define LIGHTING_POWER 0.65
 
@@ -230,7 +231,7 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 							parts[ri].life = 99;
 						}
 					}
-					if ((rt==PT_STKM && player.elem!=PT_LIGH) || (rt==PT_STKM2 && player2.elem!=PT_LIGH))
+					if ((rt==PT_STKM && Stickman_data::get(sim, PT_STKM)->elem!=PT_LIGH) || (rt==PT_STKM2 && Stickman_data::get(sim, PT_STKM2)->elem!=PT_LIGH))
 					{
 						parts[ri].life-=powderful/100;
 					}

@@ -16,7 +16,8 @@
 #ifndef SIMULATION_ELEMENTS_PRTI_H
 #define SIMULATION_ELEMENTS_PRTI_H 
 
-#include "simulation/ElementDataContainer.h"
+#include "simulation/ElemDataSim.h"
+#include "simulation/Simulation.h"
 #include "powder.h"
 
 extern const int portal_rx[8];
@@ -36,6 +37,7 @@ public:
 	}
 };
 
+class particle;
 
 class PortalChannel
 {
@@ -45,65 +47,33 @@ public:
 	particle portalp[8][80];
 	// Store a particle in a given slot (one of the 8 neighbour positions) for this portal channel, then kills the original
 	// Does not check whether the particle should be in a portal
-	// Returns true on success, or false if the portal is full
-	bool StoreParticle(Simulation *sim, int store_i, int slot)
-	{
-		if (particleCount[slot]>=storageSize)
-			return false;
-		for (int nnx=0; nnx<80; nnx++)
-			if (!portalp[slot][nnx].type)
-			{
-				portalp[slot][nnx] = parts[store_i];
-				particleCount[slot]++;
-				if (parts[store_i].type==PT_SPRK)
-					sim->part_change_type(store_i,(int)(sim->parts[store_i].x+0.5f),(int)(sim->parts[store_i].y+0.5f),sim->parts[store_i].ctype);
-				else
-					sim->part_kill(store_i);
-				return true;
-			}
-		return false;
-	}
-	particle * AllocParticle(int slot)
-	{
-		if (particleCount[slot]>=storageSize)
-			return NULL;
-		for (int nnx=0; nnx<80; nnx++)
-			if (!portalp[slot][nnx].type)
-			{
-				particleCount[slot]++;
-				return &(portalp[slot][nnx]);
-			}
-		return NULL;
-	}
-	void Simulation_Cleared()
-	{
-		memset(portalp, 0, sizeof(portalp));
-		memset(particleCount, 0, sizeof(particleCount));
-	}
+	// Returns a pointer to the particle on success, or NULL if the portal is full
+	particle * StoreParticle(Simulation *sim, int store_i, int slot);
+	particle * AllocParticle(int slot);
+	void ClearContents();
 };
 
-class PRTI_ElementDataContainer : public ElementDataContainer
+class PRTI_ElemDataSim : public ElemDataSim
 {
 private:
 	PortalChannel channels[CHANNELS];
-public:	
-	PRTI_ElementDataContainer()
-	{
-		for (int i=0; i<CHANNELS; i++)
-			channels[i].Simulation_Cleared();
-	}
+	Observer_ClassMember<PRTI_ElemDataSim> obs_simCleared;
+public:
+	PRTI_ElemDataSim(Simulation *s);
+	void ClearPortalContents();
 	PortalChannel* GetChannel(int i)
 	{
 		return channels+i;
 	}
-	PortalChannel* GetParticleChannel(Simulation *sim, int i)
+	PortalChannel* GetParticleChannel(particle &p)
 	{
-		sim->parts[i].tmp = (int)((sim->parts[i].temp-73.15f)/100+1);
-		if (sim->parts[i].tmp>=CHANNELS) sim->parts[i].tmp = CHANNELS-1;
-		else if (sim->parts[i].tmp<0) sim->parts[i].tmp = 0;
-		return channels+parts[i].tmp;
+		p.tmp = (int)((p.temp-73.15f)/100+1);
+		if (p.tmp>=CHANNELS) p.tmp = CHANNELS-1;
+		else if (p.tmp<0) p.tmp = 0;
+		return &channels[p.tmp];
 	}
-	static int GetSlot(int rx, int ry)
+
+	static int GetPosIndex(int rx, int ry)
 	{
 		if (rx>1 || ry>1 || rx<-1 || ry<-1)
 		{
@@ -119,11 +89,7 @@ public:
 		}
 		return 1; // Dunno, put it in the top of the portal
 	}
-	virtual void Simulation_Cleared(Simulation *sim)
-	{
-		for (int i=0; i<CHANNELS; i++)
-			channels[i].Simulation_Cleared();
-	}
+
 };
 
 #endif

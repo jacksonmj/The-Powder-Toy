@@ -16,66 +16,86 @@
 #ifndef SIMULATION_ELEMENTS_FIGH_H
 #define SIMULATION_ELEMENTS_FIGH_H 
 
-#include "simulation/ElementDataContainer.h"
-#include "powder.h"
+#include "simulation/ElemDataSim.h"
+#include "simulation/elements/STKM.h"
 
-class FIGH_ElementDataContainer : public ElementDataContainer
+class FIGH_ElemDataSim : public STK_common_ElemDataSim
 {
 private:
-	static const int maxFighters = 100;
-	playerst fighters[256];
+	Stickman_data fighters[100];
 	int usedCount;
-public:	
-	FIGH_ElementDataContainer() :
-		usedCount(0)
+	Observer_ClassMember<FIGH_ElemDataSim> obs_simCleared;
+public:
+	static const int maxFighters = 100;
+	void Simulation_Cleared()
 	{
-		memset(fighters, 0, sizeof(fighters));
+		for (int i=0; i<maxFighters; i++)
+		{
+			fighters[i].reset();
+		}
+		usedCount = 0;
+		storageActionPending = false;
 	}
-	playerst *Get(unsigned char i)
+	FIGH_ElemDataSim(Simulation *s) :
+		STK_common_ElemDataSim(s),
+		usedCount(0),
+		obs_simCleared(sim->hook_cleared, this, &FIGH_ElemDataSim::Simulation_Cleared)
 	{
-		return fighters+i;
+		Simulation_Cleared();
 	}
-	int Alloc()
+	Stickman_data *GetFighterData(int i)
 	{
-		if (usedCount>=maxFighters) return -1;
+		if (i>=0 && i<maxFighters)
+			return fighters+i;
+		else
+			return NULL;
+	}
+	Stickman_data *GetFighterData(particle & part)
+	{
+		if (part.type==PT_FIGH && part.tmp>=0 && part.tmp<maxFighters)
+			return &fighters[part.tmp];
+		else
+			return NULL;
+	}
+	void on_part_create(particle &p)
+	{
+		if (storageActionPending)
+		{
+			storageActionPending = false;
+			return;
+		}
+		if (usedCount>=maxFighters)
+		{
+			p.tmp = -1;
+			return;
+		}
 		int i = 0;
-		while (i<maxFighters && fighters[i].spwn==1) i++;
+		while (i<maxFighters && fighters[i].exists()) i++;
 		if (i<maxFighters)
 		{
-			fighters[i].spwn = 1;
+			p.tmp = i;
+			fighters[i].set_particle(&p);
 			fighters[i].elem = PT_DUST;
 			fighters[i].rocketBoots = false;
 			usedCount++;
-			return i;
 		}
-		else return -1;
-	}
-	// Mark a specific fighter as allocated - used for portals
-	void AllocSpecific(unsigned char i)
-	{
-		if (!fighters[i].spwn)
+		else
 		{
-			fighters[i].spwn = 1;
-			usedCount++;
+			p.tmp = -1;
 		}
 	}
-	void Free(unsigned char i)
+	void on_part_kill(particle &p)
 	{
-		if (fighters[i].spwn)
-		{
-			fighters[i].spwn = 0;
-			usedCount--;
-		}
+		Stickman_data *playerp = GetFighterData(p);
+		if (!playerp || playerp->part!=&p)
+			return;
+		playerp->set_particle(NULL);
+		playerp->isStored = storageActionPending;
+		storageActionPending = false;
 	}
-	// Returns true if there are free slots for additional fighters to go in
-	bool CanAlloc()
+	bool create_allowed()
 	{
-		return (usedCount<maxFighters);
-	}
-	virtual void Simulation_Cleared(Simulation *sim)
-	{
-		memset(fighters, 0, sizeof(fighters));
-		usedCount = 0;
+		return (usedCount<maxFighters) || storageActionPending;
 	}
 };
 

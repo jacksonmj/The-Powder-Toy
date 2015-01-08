@@ -130,26 +130,11 @@ int graphics_DEFAULT(GRAPHICS_FUNC_ARGS);
 
 void TRON_init_graphics();
 
-struct playerst
-{
-	char comm;           //command cell
-	char pcomm;          //previous command
-	int elem;            //element power
-	float legs[16];      //legs' positions
-	float accs[8];       //accelerations
-	char spwn;           //if stick man was spawned
-	unsigned int frames; //frames since last particle spawn - used when spawning LIGH
-	bool rocketBoots;
-};
-typedef struct playerst playerst;
-
 int update_PYRO(UPDATE_FUNC_ARGS);
 
 int update_MISC(UPDATE_FUNC_ARGS);
 int update_legacy_PYRO(UPDATE_FUNC_ARGS);
 int update_legacy_all(UPDATE_FUNC_ARGS);
-int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS);
-void STKM_init_legs(playerst* playerp, int i);
 
 void PPIP_flood_trigger(Simulation* sim, int x, int y, int sparkedBy);
 
@@ -320,12 +305,6 @@ extern const int portal_ry[8];
 
 extern int force_stacking_check;
 extern int ppip_changed;
-
-extern playerst player;
-extern playerst player2;
-
-extern playerst fighters[256];
-extern unsigned char fighcount;
 
 extern int airMode;
 

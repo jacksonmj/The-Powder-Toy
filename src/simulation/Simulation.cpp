@@ -21,7 +21,7 @@
 #endif
 
 #include "simulation/Element.h"
-#include "simulation/ElementDataContainer.h"
+#include "simulation/ElemDataSim.h"
 #include "simulation/Simulation.h"
 #include <cmath>
 
@@ -32,6 +32,8 @@
 
 
 #include "simulation/elements/FIGH.h"
+#include "simulation/elements/FILT.h"
+#include "simulation/elements/PRTI.h"
 
 
 Simulation *globalSim = NULL; // TODO: remove this global variable
@@ -40,7 +42,11 @@ Simulation::Simulation() :
 	pfree(-1),
 	heat_mode(1)
 {
-	memset(elementData, 0, sizeof(elementData));
+	int t;
+	for (t=0; t<PT_NUM; t++)
+	{
+		elemDataSim_[t] = NULL;
+	}
 	Clear();
 }
 
@@ -49,11 +55,7 @@ Simulation::~Simulation()
 	int t;
 	for (t=0; t<PT_NUM; t++)
 	{
-		if (elementData[t])
-		{
-			delete elementData[t];
-			elementData[t] = NULL;
-		}
+		delete elemDataSim_[t];
 	}
 }
 
@@ -72,13 +74,7 @@ void Simulation::Clear()
 
 	option_edgeMode(0);
 
-	for (t=0; t<PT_NUM; t++)
-	{
-		if (elementData[t])
-		{
-			elementData[t]->Simulation_Cleared(this);
-		}
-	}
+	hook_cleared.Trigger();
 	memset(elementCount, 0, sizeof(elementCount));
 
 	pmap_entry *pmap_flat = (pmap_entry*)pmap;
@@ -1173,8 +1169,8 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 			rt = parts[ri].type;
 			if (rt==PT_PRTI)
 			{
-				PortalChannel *channel = ((PRTI_ElementDataContainer*)elementData[PT_PRTI])->GetParticleChannel(this, ri);
-				int slot = PRTI_ElementDataContainer::GetSlot(x-nx,y-ny);
+				PortalChannel *channel = elemData<PRTI_ElemDataSim>(PT_PRTI)->GetParticleChannel(parts[ri]);
+				int slot = PRTI_ElemDataSim::GetPosIndex(x-nx,y-ny);
 				if (channel->StoreParticle(this, i, slot))
 					return MoveResult::STORED;
 			}
@@ -1623,13 +1619,7 @@ void Simulation::UpdateParticles()
 			}
 		}
 	}
-	for (t=1; t<PT_NUM; t++)
-	{
-		if (elementData[t])
-		{
-			elementData[t]->Simulation_BeforeUpdate(this);
-		}
-	}
+	hook_beforeUpdate.Trigger();
 	for (i=0; i<=parts_lastActiveIndex; i++)
 		if (parts[i].type)
 		{
@@ -2251,20 +2241,12 @@ killed:
 					if (diffx || diffy) //when moving from left to right stickmen might be able to fall through solid things, fix with "part_canMove(t, nx+diffx, ny+diffy)" but then they die instead
 					{
 						//adjust stickmen legs
-						playerst* stickman = NULL;
-						int t = parts[i].type;
-						if (t == PT_STKM)
-							stickman = &player;
-						else if (t == PT_STKM2)
-							stickman = &player2;
-						else if (t == PT_FIGH && parts[i].tmp >= 0 && parts[i].tmp < 256)
-							stickman = ((FIGH_ElementDataContainer*)(elementData[PT_FIGH]))->Get(parts[i].tmp);
-
-						if (stickman)
+						Stickman_data* playerp = Stickman_data::get(this, parts[i]);
+						if (playerp)
 							for (int i = 0; i < 16; i+=2)
 							{
-								stickman->legs[i] += diffx;
-								stickman->legs[i+1] += diffy;
+								playerp->legs[i] += diffx;
+								playerp->legs[i+1] += diffy;
 							}
 					}
 					part_set_pos(i, x, y, parts[i].x+parts[i].vx+diffx, parts[i].y+parts[i].vy+diffy);
@@ -2647,6 +2629,8 @@ killed:
 movedone:
 			continue;
 		}
+
+	hook_afterUpdate.Trigger();
 }
 
 

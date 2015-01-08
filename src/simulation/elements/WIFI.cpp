@@ -14,25 +14,23 @@
  */
 
 #include "simulation/ElementsCommon.h"
-#include "simulation/ElementDataContainer.h"
+#include "simulation/ElemDataSim.h"
 #include "simulation/elements/WIFI.h"
 
-class WIFI_ElementDataContainer : public ElementDataContainer
+class WIFI_ElemDataSim : public ElemDataSim
 {
+private:
+	Observer_ClassMember<WIFI_ElemDataSim> obs_simCleared;
+	Observer_ClassMember<WIFI_ElemDataSim> obs_simBeforeUpdate;
 public:
 	int wireless[CHANNELS][2];
 	bool wifi_lastframe;
-	WIFI_ElementDataContainer()
+	void Simulation_Cleared()
 	{
 		memset(wireless, 0, sizeof(wireless));
 		wifi_lastframe = false;
 	}
-	virtual void Simulation_Cleared(Simulation *sim)
-	{
-		memset(wireless, 0, sizeof(wireless));
-		wifi_lastframe = false;
-	}
-	virtual void Simulation_BeforeUpdate(Simulation *sim)
+	void Simulation_BeforeUpdate()
 	{
 		if (!sim->elementCount[PT_WIFI] && !wifi_lastframe)
 		{
@@ -54,6 +52,13 @@ public:
 			wireless[q][1] = 0;
 		}
 	}
+	WIFI_ElemDataSim(Simulation *s)
+		: ElemDataSim(s),
+		  obs_simCleared(sim->hook_cleared, this, &WIFI_ElemDataSim::Simulation_Cleared),
+		  obs_simBeforeUpdate(sim->hook_beforeUpdate, this, &WIFI_ElemDataSim::Simulation_BeforeUpdate)
+	{
+		Simulation_Cleared();
+	}
 };
 
 int WIFI_update(UPDATE_FUNC_ARGS)
@@ -61,7 +66,7 @@ int WIFI_update(UPDATE_FUNC_ARGS)
 	int rx, ry, rt;
 	int rcount, ri, rnext;
 	parts[i].tmp = Element_WIFI::get_channel(&parts[i]);
-	int (*channel) = ((WIFI_ElementDataContainer*)sim->elementData[PT_WIFI])->wireless[parts[i].tmp];
+	int (*channel) = sim->elemData<WIFI_ElemDataSim>(PT_WIFI)->wireless[parts[i].tmp];
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
@@ -147,10 +152,6 @@ void WIFI_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Update = &WIFI_update;
 	elem->Graphics = &WIFI_graphics;
 
-	if (sim->elementData[t])
-	{
-		delete sim->elementData[t];
-	}
-	sim->elementData[t] = new WIFI_ElementDataContainer;
+	sim->elemData(t, new WIFI_ElemDataSim(sim));
 }
 

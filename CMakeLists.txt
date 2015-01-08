@@ -10,6 +10,7 @@ file(GLOB powder_SRC
     "src/*.c"
     "src/elements/*.c"
     "src/*.cpp"
+    "src/common/*.cpp"
     "src/lib/resampler/*.cpp"
     "src/simulation/*.cpp"
     "src/simulation/elements/*.cpp"

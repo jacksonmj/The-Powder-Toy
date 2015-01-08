@@ -14,18 +14,16 @@
  */
 
 #include "simulation/ElementsCommon.h"
-
-int STKM_graphics(GRAPHICS_FUNC_ARGS);
-void STKM_init_legs(playerst* playerp, int i);
+#include "simulation/elements/STKM.h"
 
 int STKM2_update(UPDATE_FUNC_ARGS)
 {
-	return run_stickman(&player2, UPDATE_FUNC_SUBCALL_ARGS);
+	return run_stickman(&sim->elemData<STKM_ElemDataSim>(PT_STKM2)->player, UPDATE_FUNC_SUBCALL_ARGS);
 }
 
 bool STKM2_create_allowed(ELEMENT_CREATE_ALLOWED_FUNC_ARGS)
 {
-	return !player2.spwn;
+	return sim->elemData<STKM_ElemDataSim>(PT_STKM2)->create_allowed();
 }
 
 void STKM2_create(ELEMENT_CREATE_FUNC_ARGS)
@@ -35,16 +33,11 @@ void STKM2_create(ELEMENT_CREATE_FUNC_ARGS)
 
 void STKM2_ChangeType(ELEMENT_CHANGETYPE_FUNC_ARGS)
 {
+	STKM_ElemDataSim *ed = sim->elemData<STKM_ElemDataSim>(PT_STKM2);
 	if (to==PT_STKM2)
-	{
-		STKM_init_legs(&player2, i);
-		player2.spwn = 1;
-		player2.rocketBoots = false;
-	}
+		ed->on_part_create(parts[i]);
 	else
-	{
-		player2.spwn = 0;
-	}
+		ed->on_part_kill(parts[i]);
 }
 
 void STKM2_init_element(ELEMENT_INIT_FUNC_ARGS)
@@ -95,5 +88,7 @@ void STKM2_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Func_Create_Allowed = &STKM2_create_allowed;
 	elem->Func_Create = &STKM2_create;
 	elem->Func_ChangeType = &STKM2_ChangeType;
+
+	sim->elemData(t, new STKM_ElemDataSim(sim));
 }
 

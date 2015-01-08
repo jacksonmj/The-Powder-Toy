@@ -17,9 +17,12 @@
 #define Simulation_h
 
 #include "simulation/Element.h"
+#include "simulation/ElemDataSim.h"
 #include <cmath>
 #include "powder.h"
 #include "gravity.h"
+#include <vector>
+#include "common/Observer.h"
 
 // Defines for element transitions
 #define IPL -257.0f
@@ -122,7 +125,6 @@ public:
 	}
 };
 
-class ElementDataContainer;
 struct pmap_entry
 {
 	int count;// number of particles, including energy particles
@@ -134,6 +136,8 @@ typedef struct pmap_entry pmap_entry;
 
 class Simulation
 {
+protected:
+	ElemDataSim *elemDataSim_[PT_NUM];
 public:
 	particle parts[NPART];
 #ifdef DEBUG_PARTSALLOC
@@ -141,7 +145,6 @@ public:
 #endif
 	int elementCount[PT_NUM];
 	Element elements[PT_NUM];
-	ElementDataContainer *elementData[PT_NUM];
 	pmap_entry pmap[YRES][XRES];
 	MoveResult::Code can_move[PT_NUM][PT_NUM];
 	int pfree;
@@ -149,10 +152,22 @@ public:
 	static const float maxVelocity = 1e4f;
 
 	short heat_mode;//Will be a replacement for legacy_enable at some point. 0=heat sim off, 1=heat sim on, 2=realistic heat on (todo)
-
 	short edgeMode;
+
+	ObserverSubject hook_cleared;
+	ObserverSubject hook_beforeUpdate;
+	ObserverSubject hook_afterUpdate;
+
 	short option_edgeMode() { return edgeMode; }
 	void option_edgeMode(short newMode);
+
+	template <class ContainerClass>
+	ContainerClass * elemData(int elementId) { return static_cast<ContainerClass*>(elemDataSim_[elementId]); }
+	ElemDataSim * elemData(int elementId) { return elemDataSim_[elementId]; }
+	void elemData(int elementId, ElemDataSim *newData) {
+		delete elemDataSim_[elementId];
+		elemDataSim_[elementId] = newData;
+	}
 
 	Simulation();
 	~Simulation();

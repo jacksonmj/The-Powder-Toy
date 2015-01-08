@@ -19,12 +19,98 @@
 
 #define INBOND(x, y) ((x)>=0 && (y)>=0 && (x)<XRES && (y)<YRES)
 
-void STKM_interact(Simulation *sim, playerst* playerp, int i, int x, int y);
+STKM_ElemDataSim::STKM_ElemDataSim(Simulation *s)
+	: STK_common_ElemDataSim(s),
+	  obs_simCleared(sim->hook_cleared, &player, &Stickman_data::reset)
+{}
 
+Stickman_data::Stickman_data() :isStored(false), part(NULL), comm(0), pcomm(0), elem(PT_DUST), elemDelayFrames(0), rocketBoots(false)
+{}
+
+void Stickman_data::reset()
+{
+	set_particle(NULL);
+	isStored = false;
+	elem = PT_DUST;
+	elemDelayFrames = 0;
+	rocketBoots = false;
+}
+
+void Stickman_data::set_legs_pos(int x, int y)
+{
+	legs[0] = x-1;
+	legs[1] = y+6;
+	legs[2] = x-1;
+	legs[3] = y+6;
+
+	legs[4] = x-3;
+	legs[5] = y+12;
+	legs[6] = x-3;
+	legs[7] = y+12;
+
+	legs[8] = x+1;
+	legs[9] = y+6;
+	legs[10] = x+1;
+	legs[11] = y+6;
+
+	legs[12] = x+3;
+	legs[13] = y+12;
+	legs[14] = x+3;
+	legs[15] = y+12;
+}
+void Stickman_data::set_particle(particle * p)
+{
+	part = p;
+	if (part) set_legs_pos(part->x, part->y);
+}
+
+void STKM_ElemDataSim::on_part_create(particle &p)
+{
+	player.set_particle(&p);
+	if (storageActionPending)
+	{
+		// being retrieved from portal
+		storageActionPending = false;
+		player.isStored = false;
+	}
+	else
+	{
+		player.elem = PT_DUST;
+		player.elemDelayFrames = 0;
+		player.rocketBoots = false;
+	}
+}
+
+void STKM_ElemDataSim::on_part_kill(particle &p)
+{
+	if (&p!=player.part)
+		return;
+	player.set_particle(NULL);
+	player.isStored = storageActionPending;
+	storageActionPending = false;
+}
+
+Stickman_data * Stickman_data::get(Simulation * sim, const particle &p)
+{
+	if (p.type==PT_STKM || p.type==PT_STKM2)
+		return &sim->elemData<STKM_ElemDataSim>(p.type)->player;
+	else if (p.type==PT_FIGH)
+		return sim->elemData<FIGH_ElemDataSim>(p.type)->GetFighterData(p.tmp);
+	return NULL;
+}
+
+Stickman_data * Stickman_data::get(Simulation * sim, int elementId, int whichFighter)
+{
+	if (elementId==PT_STKM || elementId==PT_STKM2)
+		return &sim->elemData<STKM_ElemDataSim>(elementId)->player;
+	else if (elementId==PT_FIGH)
+		return sim->elemData<FIGH_ElemDataSim>(elementId)->GetFighterData(whichFighter);
+	return NULL;
+}
 
 int STKM_update(UPDATE_FUNC_ARGS)
 {
-	return run_stickman(&player, UPDATE_FUNC_SUBCALL_ARGS);
+	return run_stickman(&sim->elemData<STKM_ElemDataSim>(PT_STKM)->player, UPDATE_FUNC_SUBCALL_ARGS);
 }
 
 int STKM_graphics(GRAPHICS_FUNC_ARGS)
@@ -34,11 +120,17 @@ int STKM_graphics(GRAPHICS_FUNC_ARGS)
 	return 0;
 }
 
-int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
+int run_stickman(Stickman_data* playerp, UPDATE_FUNC_ARGS)
 {
+	if (playerp->part != &sim->parts[i])
+	{
+		sim->part_kill(i);
+		return 1;
+	}
+
 	int rx, ry, rt;
 	int rcount, ri, rnext;
-	int t = parts[i].type;
+	int t = sim->parts[i].type;
 	float pp, d;
 	float dt = 0.9;///(FPSB*FPSB);  //Delta time in square
 	float gvx, gvy;
@@ -48,9 +140,14 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 	float rocketBootsHeadEffectV = 0.3f;// stronger acceleration vertically, to counteract gravity
 	float rocketBootsFeetEffectV = 0.45f;
 
-	if ((parts[i].ctype>0 && parts[i].ctype<PT_NUM && ptypes[parts[i].ctype].enabled && ptypes[parts[i].ctype].falldown>0) || parts[i].ctype==SPC_AIR || parts[i].ctype == PT_NEUT || parts[i].ctype == PT_PHOT || parts[i].ctype == PT_LIGH)
+	if ((sim->parts[i].ctype>0 && sim->parts[i].ctype<PT_NUM && sim->elements[parts[i].ctype].Enabled && sim->elements[parts[i].ctype].Falldown>0) || sim->parts[i].ctype==SPC_AIR || sim->parts[i].ctype == PT_NEUT || sim->parts[i].ctype == PT_PHOT || sim->parts[i].ctype == PT_LIGH)
 		playerp->elem = parts[i].ctype;
-	playerp->frames++;
+	sim->parts[i].ctype = playerp->elem;
+
+	if (playerp->elem != PT_LIGH)
+		playerp->elemDelayFrames = 0;
+	else if (playerp->elemDelayFrames>0)
+		playerp->elemDelayFrames--;
 
 	//Temperature handling
 	if (parts[i].temp<243)
@@ -74,27 +171,7 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 	}
 
 	//Follow gravity
-	gvx = gvy = 0.0f;
-	switch (gravityMode)
-	{
-		default:
-		case 0:
-			gvy = 1;
-			break;
-		case 1:
-			gvy = gvx = 0.0f;
-			break;
-		case 2:
-			{
-				float gravd;
-				gravd = 0.01f - hypotf((parts[i].x - XCNTR), (parts[i].y - YCNTR));
-				gvx = ((float)(parts[i].x - XCNTR) / gravd);
-				gvy = ((float)(parts[i].y - YCNTR) / gravd);
-			}
-	}
-
-	gvx += gravx[((int)parts[i].y/CELL)*(XRES/CELL)+((int)parts[i].x/CELL)];
-	gvy += gravy[((int)parts[i].y/CELL)*(XRES/CELL)+((int)parts[i].x/CELL)];
+	sim->GetGravityAccel(parts[i].x, parts[i].y, 1.0f, 1.0f, gvx, gvy);
 
 	float rbx = gvx;
 	float rby = gvy;
@@ -389,18 +466,17 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 		if (solidFound)
 		{
 			sim->spark_position_conductiveOnly(rx, ry);
-			playerp->frames = 0;
 		}
 		else
 		{
 			int np = -1;
 			if (playerp->elem == SPC_AIR)
 				create_parts(rx + 3*((((int)playerp->pcomm)&0x02) == 0x02) - 3*((((int)playerp->pcomm)&0x01) == 0x01), ry, 4, 4, SPC_AIR, 0, 1);
-			else if (playerp->elem==PT_LIGH && playerp->frames<30)//limit lightning creation rate
+			else if (playerp->elem==PT_LIGH && playerp->elemDelayFrames>0)//limit lightning creation rate
 				np = -1;
 			else
 				np = sim->part_create(-1, rx, ry, playerp->elem);
-			if ( (np < NPART) && np>=0)
+			if (np>=0)
 			{
 				if (playerp->elem == PT_PHOT)
 				{
@@ -436,6 +512,7 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 					parts[np].life=rand()%(2+power/15)+power/7;
 					parts[np].temp=parts[np].life*power/2.5;
 					parts[np].tmp2=1;
+					playerp->elemDelayFrames = 30;
 				}
 				else if (playerp->elem != SPC_AIR)
 				{
@@ -443,7 +520,6 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 					parts[np].vy -= gvx*(5*((((int)playerp->pcomm)&0x02) == 0x02) - 5*(((int)(playerp->pcomm)&0x01) == 0x01));
 					parts[i].vx -= (ptypes[(int)playerp->elem].weight*parts[np].vx)/1000;
 				}
-				playerp->frames = 0;
 			}
 
 		}
@@ -546,7 +622,7 @@ int run_stickman(playerst* playerp, UPDATE_FUNC_ARGS)
 	return 0;
 }
 
-void STKM_interact(Simulation *sim, playerst* playerp, int i, int x, int y)
+void STKM_interact(Simulation *sim, Stickman_data* playerp, int i, int x, int y)
 {
 	int rt;
 	int rcount, ri, rnext;
@@ -561,7 +637,7 @@ void STKM_interact(Simulation *sim, playerst* playerp, int i, int x, int y)
 			parts[i].life -= (int)(rand()*20/RAND_MAX)+32;
 		}
 
-		if (ptypes[rt].hconduct && (rt!=PT_HSWC||sim->parts[ri].life==10) && ((playerp->elem!=PT_LIGH && parts[ri].temp>=323) || parts[ri].temp<=243) && (!playerp->rocketBoots || rt!=PT_PLSM))
+		if (sim->elements[rt].HeatConduct && (rt!=PT_HSWC||sim->parts[ri].life==10) && ((playerp->elem!=PT_LIGH && parts[ri].temp>=323) || parts[ri].temp<=243) && (!playerp->rocketBoots || rt!=PT_PLSM))
 		{
 			parts[i].life -= 2;
 			playerp->accs[3] -= 1;
@@ -584,15 +660,9 @@ void STKM_interact(Simulation *sim, playerst* playerp, int i, int x, int y)
 		{
 			int t = parts[i].type;
 			int tmp = parts[i].tmp;
-			PortalChannel *channel = ((PRTI_ElementDataContainer*)sim->elementData[PT_PRTI])->GetParticleChannel(sim, ri);
+			PortalChannel *channel = sim->elemData<PRTI_ElemDataSim>(PT_PRTI)->GetParticleChannel(sim->parts[ri]);
 			if (channel->StoreParticle(sim, i, 1))//slot=1 gives rx=0, ry=1 in PRTO_update
-			{
-				//stop new STKM/fighters being created to replace the ones in the portal:
-				if (t==PT_FIGH)
-					((FIGH_ElementDataContainer*)sim->elementData[PT_FIGH])->AllocSpecific(tmp);
-				else
-					playerp->spwn = 1;
-			}
+				return;
 		}
 
 		if ((rt==PT_BHOL || rt==PT_NBHL) && parts[i].type)
@@ -601,46 +671,20 @@ void STKM_interact(Simulation *sim, playerst* playerp, int i, int x, int y)
 			{
 				parts[ri].temp = restrict_flt(parts[ri].temp+parts[i].temp/2, MIN_TEMP, MAX_TEMP);
 			}
-			kill_part(i);
+			sim->part_kill(i);
+			return;
 		}
 		if ((rt==PT_VOID || (rt==PT_PVOD && parts[ri].life==10)) && (!parts[ri].ctype || (parts[ri].ctype==parts[i].type)!=(parts[ri].tmp&1)) && parts[i].type)
 		{
-			kill_part(i);
+			sim->part_kill(i);
+			return;
 		}
 	}
 }
 
-void STKM_init_legs(playerst* playerp, int i)
-{
-	int x, y;
-
-	x = (int)(parts[i].x+0.5f);
-	y = (int)(parts[i].y+0.5f);
-
-	playerp->legs[0] = x-1;
-	playerp->legs[1] = y+6;
-	playerp->legs[2] = x-1;
-	playerp->legs[3] = y+6;
-
-	playerp->legs[4] = x-3;
-	playerp->legs[5] = y+12;
-	playerp->legs[6] = x-3;
-	playerp->legs[7] = y+12;
-
-	playerp->legs[8] = x+1;
-	playerp->legs[9] = y+6;
-	playerp->legs[10] = x+1;
-	playerp->legs[11] = y+6;
-
-	playerp->legs[12] = x+3;
-	playerp->legs[13] = y+12;
-	playerp->legs[14] = x+3;
-	playerp->legs[15] = y+12;
-}
-
 bool STKM_create_allowed(ELEMENT_CREATE_ALLOWED_FUNC_ARGS)
 {
-	return !player.spwn;
+	return sim->elemData<STKM_ElemDataSim>(PT_STKM)->create_allowed();
 }
 
 void STKM_create(ELEMENT_CREATE_FUNC_ARGS)
@@ -650,16 +694,11 @@ void STKM_create(ELEMENT_CREATE_FUNC_ARGS)
 
 void STKM_ChangeType(ELEMENT_CHANGETYPE_FUNC_ARGS)
 {
+	STKM_ElemDataSim *ed = sim->elemData<STKM_ElemDataSim>(PT_STKM);
 	if (to==PT_STKM)
-	{
-		STKM_init_legs(&player, i);
-		player.spwn = 1;
-		player.rocketBoots = false;
-	}
+		ed->on_part_create(parts[i]);
 	else
-	{
-		player.spwn = 0;
-	}
+		ed->on_part_kill(parts[i]);
 }
 
 void STKM_init_element(ELEMENT_INIT_FUNC_ARGS)
@@ -712,5 +751,7 @@ void STKM_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Func_Create_Allowed = &STKM_create_allowed;
 	elem->Func_Create = &STKM_create;
 	elem->Func_ChangeType = &STKM_ChangeType;
+
+	sim->elemData(t, new STKM_ElemDataSim(sim));
 }
 

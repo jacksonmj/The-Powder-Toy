@@ -16,6 +16,7 @@
 #include "simulation/ElementsCommon.h"
 #include "simulation/elements/FIGH.h"
 #include "simulation/elements/PRTI.h"
+#include "simulation/elements/STKM.h"
 
 /*these are the count values of where the particle gets stored, depending on where it came from
    0 1 2
@@ -26,11 +27,11 @@
 */
 int PRTO_update(UPDATE_FUNC_ARGS)
 {
-	if (!sim->elementData[PT_PRTI])
+	if (!sim->elemData(PT_PRTI))
 		return 0;
 	int r, nnx, rx, ry, np, fe = 0;
 	int count = 0;
-	PortalChannel *channel = ((PRTI_ElementDataContainer*)sim->elementData[PT_PRTI])->GetParticleChannel(sim, i);
+	PortalChannel *channel = sim->elemData<PRTI_ElemDataSim>(PT_PRTI)->GetParticleChannel(sim->parts[i]);
 	for (count=0; count<8; count++)
 	{
 		rx = portal_rx[count];
@@ -64,32 +65,36 @@ int PRTO_update(UPDATE_FUNC_ARGS)
 					}
 					else if (storedPart->type)
 					{
-						if (storedPart->type==PT_STKM)
-							player.spwn = 0;
-						if (storedPart->type==PT_STKM2)
-							player2.spwn = 0;
-						if (storedPart->type==PT_FIGH)
+						STK_common_ElemDataSim *ed = NULL;
+						if (storedPart->type==PT_STKM || storedPart->type==PT_STKM2 || storedPart->type==PT_FIGH)
+							ed = sim->elemData<STK_common_ElemDataSim>(storedPart->type);
+
+						if (ed)
 						{
-							((FIGH_ElementDataContainer*)sim->elementData[PT_FIGH])->Free(storedPart->tmp);
-						}
-						np = sim->part_create(-1,x+rx,y+ry,storedPart->type);
-						if (np<0)
-						{
-							if (storedPart->type==PT_STKM)
-								player.spwn = 1;
-							if (storedPart->type==PT_STKM2)
-								player2.spwn = 1;
+							ed->storageActionPending = true;//causes the create_allowed check to be overridden
+							np = sim->part_create(-1,x+rx,y+ry,storedPart->type);
+							if (np<0)
+							{
+								ed->storageActionPending = false;
+								continue;
+							}
+							sim->part_copy_properties(*storedPart, sim->parts[np]);
 							if (storedPart->type==PT_FIGH)
 							{
-								((FIGH_ElementDataContainer*)sim->elementData[PT_FIGH])->AllocSpecific(storedPart->tmp);
+								Stickman_data *stkdata = Stickman_data::get(sim, sim->parts[np]);
+								if (stkdata)
+								{
+									//have to set these here because FIGH_ChangeType does not know which fighter it is
+									stkdata->isStored = false;
+									stkdata->set_particle(&sim->parts[np]);
+								}
 							}
-							continue;
 						}
-						if (parts[np].type==PT_FIGH)
+						else
 						{
-							// Release the fighters[] element allocated by part_create, the one reserved when the fighter went into the portal will be used
-							((FIGH_ElementDataContainer*)sim->elementData[PT_FIGH])->Free(parts[np].tmp);
-							((FIGH_ElementDataContainer*)sim->elementData[PT_FIGH])->AllocSpecific(storedPart->tmp);
+							np = sim->part_create(-1,x+rx,y+ry,storedPart->type);
+							if (np<0)
+								continue;
 						}
 
 						if (storedPart->vx == 0.0f && storedPart->vy == 0.0f)

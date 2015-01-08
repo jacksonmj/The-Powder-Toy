@@ -26,6 +26,7 @@
 
 #include "simulation/Simulation.h"
 #include "simulation/elements/FIGH.h"
+#include "simulation/elements/STKM.h"
 
 // Convert wall number from the one used by TPT++ to the current (legacy) number
 int change_wall_pp_current(int wt)
@@ -1581,37 +1582,19 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 					partsptr[newIndex].lastY = partsptr[newIndex].y - partsptr[newIndex].vy;
 #endif
 
-					if ((player.spwn == 1 && partsptr[newIndex].type==PT_STKM) || (player2.spwn == 1 && partsptr[newIndex].type==PT_STKM2))
+					if (partsptr==globalSim->parts)
 					{
-						partsptr[newIndex].type = PT_NONE;
-					}
-					else if (partsptr[newIndex].type == PT_STKM)
-					{
-						STKM_init_legs(&player, newIndex);
-						player.spwn = 1;
-						player.elem = PT_DUST;
-						player.rocketBoots = false;
-					}
-					else if (partsptr[newIndex].type == PT_STKM2)
-					{
-						STKM_init_legs(&player2, newIndex);
-						player2.spwn = 1;
-						player2.elem = PT_DUST;
-						player2.rocketBoots = false;
-					}
-					else if (partsptr[newIndex].type == PT_FIGH)
-					{
-						partsptr[newIndex].tmp = ((FIGH_ElementDataContainer*)globalSim->elementData[PT_FIGH])->Alloc();
-						if (partsptr[newIndex].tmp>=0)
+						if ((Stickman_data::get(globalSim, PT_STKM)->exists() && partsptr[newIndex].type==PT_STKM) || (Stickman_data::get(globalSim, PT_STKM2)->exists() && partsptr[newIndex].type==PT_STKM2))
 						{
-							playerst* figh = ((FIGH_ElementDataContainer*)globalSim->elementData[PT_FIGH])->Get(partsptr[newIndex].tmp);
-							figh->spwn = 1;
-							figh->elem = PT_DUST;
-							figh->rocketBoots = false;
-							STKM_init_legs(figh, newIndex);
+							partsptr[newIndex].type = PT_NONE;
+						}
+						else if (partsptr[newIndex].type == PT_STKM || partsptr[newIndex].type == PT_STKM2 || partsptr[newIndex].type == PT_FIGH)
+						{
+							globalSim->elemData<STK_common_ElemDataSim>(partsptr[newIndex].type)->on_part_create(partsptr[newIndex]);
 						}
 					}
-					else if (partsptr[newIndex].type == PT_SOAP)
+
+					if (partsptr[newIndex].type == PT_SOAP)
 					{
 						//Clear soap links, links will be added back in if soapLinkData is present
 						partsptr[newIndex].ctype &= ~6;
@@ -2342,37 +2325,19 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned c
 		// no more particle properties to load, so we can change type here without messing up loading
 		if (i && i<=NPART)
 		{
-			if ((player.spwn == 1 && ty==PT_STKM) || (player2.spwn == 1 && ty==PT_STKM2))
+			if (parts==globalSim->parts)
 			{
-				parts[i-1].type = PT_NONE;
-			}
-			else if (parts[i-1].type == PT_STKM)
-			{
-				STKM_init_legs(&player, i-1);
-				player.spwn = 1;
-				player.elem = PT_DUST;
-				player.rocketBoots = false;
-			}
-			else if (parts[i-1].type == PT_STKM2)
-			{
-				STKM_init_legs(&player2, i-1);
-				player2.spwn = 1;
-				player2.elem = PT_DUST;
-				player2.rocketBoots = false;
-			}
-			else if (parts[i-1].type == PT_FIGH)
-			{
-				parts[i-1].tmp = ((FIGH_ElementDataContainer*)globalSim->elementData[PT_FIGH])->Alloc();
-				if (parts[i-1].tmp>=0)
+				if ((Stickman_data::get(globalSim, PT_STKM)->exists() && ty==PT_STKM) || (Stickman_data::get(globalSim, PT_STKM2)->exists() && ty==PT_STKM2))
 				{
-					playerst* figh = ((FIGH_ElementDataContainer*)globalSim->elementData[PT_FIGH])->Get(parts[i-1].tmp);
-					figh->spwn = 1;
-					figh->elem = PT_DUST;
-					figh->rocketBoots = false;
-					STKM_init_legs(figh, i-1);
+					parts[i-1].type = PT_NONE;
+				}
+				else if (parts[i-1].type == PT_STKM || parts[i-1].type == PT_STKM2 || parts[i-1].type == PT_FIGH)
+				{
+					globalSim->elemData<STK_common_ElemDataSim>(parts[i-1].type)->on_part_create(parts[i-1]);
 				}
 			}
-			else if (ver<79 && parts[i-1].type == PT_SPNG)
+
+			if (ver<79 && parts[i-1].type == PT_SPNG)
 			{
 				if (fabs(parts[i-1].vx)>0.0f || fabs(parts[i-1].vy)>0.0f)
 					parts[i-1].flags |= FLAG_MOVABLE;

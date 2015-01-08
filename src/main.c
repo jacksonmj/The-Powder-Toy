@@ -62,6 +62,7 @@
 #include "benchmark.h"
 
 #include "simulation/Simulation.h"
+#include "simulation/elements/STKM.h"
 
 pixel *vid_buf;
 
@@ -339,8 +340,6 @@ void clear_sim(void)
 	memset(fvy, 0, sizeof(fvy));
 	memset(photons, 0, sizeof(photons));
 	memset(gol2, 0, sizeof(gol2));
-	player.spwn = 0;
-	player2.spwn = 0;
 	emp_decor = 0;
 	memset(pers_bg, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
 	memset(fire_r, 0, sizeof(fire_r));
@@ -1374,7 +1373,7 @@ int main(int argc, char *argv[])
 						free(load_data);
 				}
 			}
-			if (sdl_key=='s' && ((sdl_mod & (KMOD_CTRL)) || !player2.spwn))
+			if (sdl_key=='s' && ((sdl_mod & (KMOD_CTRL)) || !globalSim->elemData<STKM_ElemDataSim>(PT_STKM2)->player.isOnscreen()))
 			{
 				if (it > 50)
 					it = 50;
@@ -1513,7 +1512,7 @@ int main(int argc, char *argv[])
 						bsy = 0;
 				}
 			}
-			if (sdl_key=='d' && ((sdl_mod & (KMOD_CTRL)) || !player2.spwn))
+			if (sdl_key=='d' && ((sdl_mod & (KMOD_CTRL)) || !globalSim->elemData<STKM_ElemDataSim>(PT_STKM2)->player.isOnscreen()))
 				DEBUG_MODE = !DEBUG_MODE;
 			if (sdl_key=='i')
 			{
@@ -1608,7 +1607,7 @@ int main(int argc, char *argv[])
 				}
 			}
 
-			if (sdl_key=='w' && (!player2.spwn || (sdl_mod & (KMOD_CTRL)))) //Gravity, by Moach
+			if (sdl_key=='w' && (!globalSim->elemData<STKM_ElemDataSim>(PT_STKM2)->player.isOnscreen() || (sdl_mod & (KMOD_CTRL)))) //Gravity, by Moach
 			{
 				++gravityMode; // cycle gravity mode
 				itc = 51;
@@ -2928,22 +2927,6 @@ int main(int argc, char *argv[])
 		}
 
 		sdl_blit(0, 0, XRES+BARSIZE, YRES+MENUSIZE, vid_buf, XRES+BARSIZE);
-
-		//Setting an element for the stick man
-		if (player.spwn==0)
-		{
-			if ((sr>0 && sr<PT_NUM && ptypes[sr].enabled && ptypes[sr].falldown>0) || sr==SPC_AIR || sr == PT_NEUT || sr == PT_PHOT || sr == PT_LIGH)
-				player.elem = sr;
-			else
-				player.elem = PT_DUST;
-		}
-		if (player2.spwn==0)
-		{
-			if ((sr>0 && sr<PT_NUM && ptypes[sr].enabled && ptypes[sr].falldown>0) || sr==SPC_AIR || sr == PT_NEUT || sr == PT_PHOT || sr == PT_LIGH)
-				player2.elem = sr;
-			else
-				player2.elem = PT_DUST;
-		}
 	}
 	save_presets(0);
 	

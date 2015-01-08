@@ -13,16 +13,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ElementDataContainer_h
-#define ElementDataContainer_h
+#ifndef ElemDataSim_h
+#define ElemDataSim_h
 
-class ElementDataContainer
+class Simulation;
+
+class ElemDataSim
 {
+protected:
+	Simulation *sim;
 public:
-	ElementDataContainer() {}
-	virtual ~ElementDataContainer() {}
-	virtual void Simulation_Cleared(Simulation *sim) {}
-	virtual void Simulation_BeforeUpdate(Simulation *sim) {}
+	ElemDataSim(Simulation *s) : sim(s) {}
+	virtual ~ElemDataSim() {}
 };
 
 #endif
