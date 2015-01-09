@@ -119,12 +119,9 @@
 #define FLAG_PHOTDECO  0x8 // compatibility with old saves (decorated photons), only applies to PHOT. Having the same value as FLAG_MOVABLE is fine because they apply to different elements, and this saves space for future flags.
 
 class Simulation;
-#define UPDATE_FUNC_ARGS Simulation *sim, int i, int x, int y, int surround_space, int nt
-#define UPDATE_FUNC_SUBCALL_ARGS sim, i, x, y, surround_space, nt
-#define GRAPHICS_FUNC_ARGS Simulation *sim, particle *cpart, int nx, int ny, int *pixel_mode, int* cola, int *colr, int *colg, int *colb, int *firea, int *firer, int *fireg, int *fireb
-#define GRAPHICS_FUNC_SUBCALL_ARGS sim, cpart, nx, ny, pixel_mode, cola, colr, colg, colb, firea, firer, fireg, fireb
 
 #include "simulation/Particle.h"
+#include "simulation/Element.h"
 
 void TRON_init_graphics();
 
@@ -290,10 +287,7 @@ typedef struct wall_type wall_type;
 extern wall_type wtypes[];
 
 #define CHANNELS ((int)(MAX_TEMP-73)/100+2)
-extern particle portalp[CHANNELS][8][80];
 extern const particle emptyparticle;
-extern const int portal_rx[8];
-extern const int portal_ry[8];
 
 extern int force_stacking_check;
 extern int ppip_changed;

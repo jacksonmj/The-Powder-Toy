@@ -2113,7 +2113,7 @@ void Simulation::UpdateParticles()
 			if (elements[t].Update)
 #endif
 			{
-				if ((*(elements[t].Update))(this, i,x,y,surround_space,nt))
+				if ((*(elements[t].Update))(this, i,x,y,surround_space,nt,parts))
 					continue;
 				else if (t==PT_WARP)
 				{
@@ -2133,7 +2133,7 @@ void Simulation::UpdateParticles()
 			}
 #endif
 			if (legacy_enable)//if heat sim is off
-				ElementsShared_noHeatSim::update(this, i,x,y,surround_space,nt);
+				ElementsShared_noHeatSim::update(this, i,x,y,surround_space,nt,parts);
 
 killed:
 			if (parts[i].type == PT_NONE)//if its dead, skip to next particle
