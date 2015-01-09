@@ -17,11 +17,13 @@
 
 void GAS_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_GAS";
-	elem->Name = "GAS";
+	elem->ui->Name = "GAS";
 	elem->Colour = COLPACK(0xE0FF20);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_GAS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_GAS;
 	elem->Enabled = 1;
 
 	elem->Advection = 1.0f;
@@ -44,7 +46,7 @@ void GAS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+2.0f	+273.15f;
 	elem->HeatConduct = 42;
 	elem->Latent = 0;
-	elem->Description = "Diffuses quickly and flammable. Liquefies into OIL under pressure.";
+	elem->ui->Description = "Diffuses quickly and flammable. Liquefies into OIL under pressure.";
 
 	elem->State = ST_GAS;
 	elem->Properties = TYPE_GAS | PROP_NEUTPASS;

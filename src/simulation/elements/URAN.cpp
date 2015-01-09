@@ -34,11 +34,13 @@ int URAN_update(UPDATE_FUNC_ARGS)
 
 void URAN_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_URAN";
-	elem->Name = "URAN";
+	elem->ui->Name = "URAN";
 	elem->Colour = COLPACK(0x707020);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_NUCLEAR;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.4f;
@@ -62,7 +64,7 @@ void URAN_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+30.0f+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Heavy particles. Generates heat under pressure.";
+	elem->ui->Description = "Heavy particles. Generates heat under pressure.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART | PROP_RADIOACTIVE;

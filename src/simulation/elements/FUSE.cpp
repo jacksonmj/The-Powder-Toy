@@ -66,11 +66,13 @@ doneTriggerCheck:
 
 void FUSE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_FUSE";
-	elem->Name = "FUSE";
+	elem->ui->Name = "FUSE";
 	elem->Colour = COLPACK(0x0A5706);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -93,7 +95,7 @@ void FUSE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 200;
 	elem->Latent = 0;
-	elem->Description = "Burns slowly. Ignites at somewhat high temperatures or with electricity.";
+	elem->ui->Description = "Burns slowly. Ignites at somewhat high temperatures or with electricity.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

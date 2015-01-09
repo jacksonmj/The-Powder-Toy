@@ -98,11 +98,13 @@ int EMBR_graphics(GRAPHICS_FUNC_ARGS)
 
 void EMBR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_EMBR";
-	elem->Name = "EMBR";
+	elem->ui->Name = "EMBR";
 	elem->Colour = COLPACK(0xFFF288);
-	elem->MenuVisible = 0;
-	elem->MenuSection = SC_EXPLOSIVE;
+	elem->ui->MenuVisible = 0;
+	elem->ui->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.4f;
@@ -125,7 +127,7 @@ void EMBR_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 500.0f	+273.15f;
 	elem->HeatConduct = 29;
 	elem->Latent = 0;
-	elem->Description = "Sparks. Formed by explosions.";
+	elem->ui->Description = "Sparks. Formed by explosions.";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_PART|PROP_LIFE_DEC|PROP_LIFE_KILL|PROP_SPARKSETTLE;

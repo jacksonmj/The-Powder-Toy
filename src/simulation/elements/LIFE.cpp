@@ -101,6 +101,23 @@ int goltype[NGOL] =
 	GT_BRAN,
 };
 
+class Element_UI_LIFE : public Element_UI
+{
+public:
+	Element_UI_LIFE(Element *el)
+		: Element_UI(el)
+	{}
+
+	std::string getHUDText(Simulation *sim, int i, bool debugMode)
+	{
+		int lifeType = sim->parts[i].ctype;
+		if (lifeType>=0 && lifeType<NGOLALT)
+			return Name + " (" + gmenu[lifeType].name + ")";
+		else
+			return Name;
+	}
+};
+
 int LIFE_update(UPDATE_FUNC_ARGS)
 {
 	if (parts[i].tmp <= 0 || parts[i].ctype<0 || parts[i].ctype >= NGOLALT)
@@ -170,11 +187,13 @@ int LIFE_graphics(GRAPHICS_FUNC_ARGS)
 
 void LIFE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI_LIFE>();
+
 	elem->Identifier = "DEFAULT_PT_LIFE";
-	elem->Name = "LIFE";
+	elem->ui->Name = "LIFE";
 	elem->Colour = COLPACK(0x0CAC00);
-	elem->MenuVisible = 0;
-	elem->MenuSection = SC_LIFE;
+	elem->ui->MenuVisible = 0;
+	elem->ui->MenuSection = SC_LIFE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -197,7 +216,7 @@ void LIFE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 9000.0f;
 	elem->HeatConduct = 40;
 	elem->Latent = 0;
-	elem->Description = "Game Of Life! B3/S23";
+	elem->ui->Description = "Game Of Life! B3/S23";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_SOLID|PROP_LIFE;

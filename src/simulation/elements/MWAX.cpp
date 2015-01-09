@@ -17,11 +17,13 @@
 
 void MWAX_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_MWAX";
-	elem->Name = "MWAX";
+	elem->ui->Name = "MWAX";
 	elem->Colour = COLPACK(0xE0E0AA);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_LIQUID;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.3f;
@@ -44,7 +46,7 @@ void MWAX_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+28.0f+273.15f;
 	elem->HeatConduct = 44;
 	elem->Latent = 0;
-	elem->Description = "Liquid Wax. Hardens into WAX at 45 degrees.";
+	elem->ui->Description = "Liquid Wax. Hardens into WAX at 45 degrees.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID;

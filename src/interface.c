@@ -4613,7 +4613,7 @@ int open_ui(pixel *vid_buf, char *save_id, char *save_date)
 		if (queue_open) {
 			if (info_ready && data_ready) {
 				// Do Open!
-				status = parse_save(data, data_size, 1, 0, 0, bmap, vx, vy, pv, fvx, fvy, signs, parts, pmap);
+				status = parse_save(data, data_size, 1, 0, 0, bmap, vx, vy, pv, fvx, fvy, signs, parts);
 				if (!status) {
 					if(svf_last)
 						free(svf_last);
@@ -6601,7 +6601,7 @@ void catalogue_ui(pixel * vid_buf)
 						void *data;
 						data = file_load(csave->filename, &size);
 						if(data){
-							status = parse_save(data, size, 1, 0, 0, bmap, vx, vy, pv, fvx, fvy, signs, parts, pmap);
+							status = parse_save(data, size, 1, 0, 0, bmap, vx, vy, pv, fvx, fvy, signs, parts);
 							if(!status)
 							{
 								//svf_filename[0] = 0;

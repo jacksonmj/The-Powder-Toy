@@ -253,11 +253,13 @@ int VIBR_graphics(GRAPHICS_FUNC_ARGS)
 
 void VIBR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_VIBR";
-	elem->Name = "VIBR";
+	elem->ui->Name = "VIBR";
 	elem->Colour = COLPACK(0x002900);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -280,7 +282,7 @@ void VIBR_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f  +273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Vibranium. Stores energy and releases it in violent explosions.";
+	elem->ui->Description = "Vibranium. Stores energy and releases it in violent explosions.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_LIFE_DEC;

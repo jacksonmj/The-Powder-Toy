@@ -17,11 +17,13 @@
 
 void LRBD_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_LRBD";
-	elem->Name = "LRBD";
+	elem->ui->Name = "LRBD";
 	elem->Colour = COLPACK(0xAAAAAA);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_EXPLOSIVE;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.3f;
@@ -44,7 +46,7 @@ void LRBD_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+45.0f+273.15f;
 	elem->HeatConduct = 170;
 	elem->Latent = 0;
-	elem->Description = "Liquid Rubidium.";
+	elem->ui->Description = "Liquid Rubidium.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID|PROP_CONDUCTS|PROP_LIFE_DEC;

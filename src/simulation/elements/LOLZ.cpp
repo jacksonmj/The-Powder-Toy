@@ -17,11 +17,13 @@
 
 void LOLZ_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_LOLZ";
-	elem->Name = "LOLZ";
+	elem->ui->Name = "LOLZ";
 	elem->Colour = COLPACK(0x569212);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_CRACKER2;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_CRACKER2;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -44,7 +46,7 @@ void LOLZ_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 373.0f;
 	elem->HeatConduct = 40;
 	elem->Latent = 0;
-	elem->Description = "Lolz";
+	elem->ui->Description = "Lolz";
 
 	elem->State = ST_GAS;
 	elem->Properties = TYPE_SOLID;

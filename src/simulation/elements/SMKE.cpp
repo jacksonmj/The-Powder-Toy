@@ -34,11 +34,13 @@ int SMKE_graphics(GRAPHICS_FUNC_ARGS)
 
 void SMKE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_SMKE";
-	elem->Name = "SMKE";
+	elem->ui->Name = "SMKE";
 	elem->Colour = COLPACK(0x222222);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_GAS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_GAS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.9f;
@@ -61,7 +63,7 @@ void SMKE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+320.0f+273.15f;
 	elem->HeatConduct = 88;
 	elem->Latent = 0;
-	elem->Description = "Smoke, created by fire.";
+	elem->ui->Description = "Smoke, created by fire.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_GAS|PROP_LIFE_DEC|PROP_LIFE_KILL_DEC;

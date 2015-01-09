@@ -76,11 +76,13 @@ int DLAY_graphics(GRAPHICS_FUNC_ARGS)
 
 void DLAY_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_DLAY";
-	elem->Name = "DLAY";
+	elem->ui->Name = "DLAY";
 	elem->Colour = COLPACK(0x753590);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_POWERED;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_POWERED;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -103,7 +105,7 @@ void DLAY_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 4.0f+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Conducts with temperature-dependent delay. (use HEAT/COOL).";
+	elem->ui->Description = "Conducts with temperature-dependent delay. (use HEAT/COOL).";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

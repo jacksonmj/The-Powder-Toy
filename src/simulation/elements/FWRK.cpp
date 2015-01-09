@@ -86,11 +86,13 @@ int FWRK_update(UPDATE_FUNC_ARGS)
 
 void FWRK_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_FWRK";
-	elem->Name = "FWRK";
+	elem->ui->Name = "FWRK";
 	elem->Colour = COLPACK(0x666666);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_EXPLOSIVE;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.4f;
@@ -113,7 +115,7 @@ void FWRK_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 100;
 	elem->Latent = 0;
-	elem->Description = "Original version of fireworks, activated by heat/neutrons.";
+	elem->ui->Description = "Original version of fireworks, activated by heat/neutrons.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART|PROP_LIFE_DEC;

@@ -17,11 +17,13 @@
 
 void PSTS_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_PSTS";
-	elem->Name = "PSTS";
+	elem->ui->Name = "PSTS";
 	elem->Colour = COLPACK(0x776677);
-	elem->MenuVisible = 0;
-	elem->MenuSection = SC_CRACKER;
+	elem->ui->MenuVisible = 0;
+	elem->ui->MenuSection = SC_CRACKER;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -44,7 +46,7 @@ void PSTS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP-2.0f	+273.15f;
 	elem->HeatConduct = 29;
 	elem->Latent = 0;
-	elem->Description = "Solid form of PSTE.";
+	elem->ui->Description = "Solid form of PSTE.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

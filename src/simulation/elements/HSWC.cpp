@@ -54,11 +54,13 @@ int HSWC_graphics(GRAPHICS_FUNC_ARGS)
 
 void HSWC_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_HSWC";
-	elem->Name = "HSWC";
+	elem->ui->Name = "HSWC";
 	elem->Colour = COLPACK(0x3B0A0A);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_POWERED;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_POWERED;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -81,7 +83,7 @@ void HSWC_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Heat switch. Conducts heat only when activated.";
+	elem->ui->Description = "Heat switch. Conducts heat only when activated.";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_SOLID;

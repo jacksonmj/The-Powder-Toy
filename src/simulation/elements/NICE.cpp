@@ -17,11 +17,13 @@
 
 void NICE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_NICE";
-	elem->Name = "NICE";
+	elem->ui->Name = "NICE";
 	elem->Colour = COLPACK(0xC0E0FF);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -44,7 +46,7 @@ void NICE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 35.0f;
 	elem->HeatConduct = 46;
 	elem->Latent = 0;
-	elem->Description = "Nitrogen Ice. Very cold, will melt into LN2 when heated only slightly.";
+	elem->ui->Description = "Nitrogen Ice. Very cold, will melt into LN2 when heated only slightly.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

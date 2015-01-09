@@ -74,11 +74,13 @@ int CO2_update(UPDATE_FUNC_ARGS)
 
 void CO2_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_CO2";
-	elem->Name = "CO2";
+	elem->ui->Name = "CO2";
 	elem->Colour = COLPACK(0x666666);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_GAS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_GAS;
 	elem->Enabled = 1;
 
 	elem->Advection = 2.0f;
@@ -101,7 +103,7 @@ void CO2_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+273.15f;
 	elem->HeatConduct = 88;
 	elem->Latent = 0;
-	elem->Description = "Carbon Dioxide. Heavy gas, drifts downwards. Carbonates water and turns to dry ice when cold.";
+	elem->ui->Description = "Carbon Dioxide. Heavy gas, drifts downwards. Carbonates water and turns to dry ice when cold.";
 
 	elem->State = ST_GAS;
 	elem->Properties = TYPE_GAS;

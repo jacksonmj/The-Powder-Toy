@@ -37,11 +37,13 @@ int BTRY_update(UPDATE_FUNC_ARGS)
 
 void BTRY_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_BTRY";
-	elem->Name = "BTRY";
+	elem->ui->Name = "BTRY";
 	elem->Colour = COLPACK(0x858505);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_ELEC;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_ELEC;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -64,7 +66,7 @@ void BTRY_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Solid. Generates infinite electricity.";
+	elem->ui->Description = "Solid. Generates infinite electricity.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

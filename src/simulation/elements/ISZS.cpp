@@ -31,11 +31,13 @@ int ISZ_update(UPDATE_FUNC_ARGS) // for both ISZS and ISOZ
 
 void ISZS_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_ISZS";
-	elem->Name = "ISZS";
+	elem->ui->Name = "ISZS";
 	elem->Colour = COLPACK(0x662089);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_NUCLEAR;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -58,7 +60,7 @@ void ISZS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 140.00f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Solid form of ISOZ, slowly decays into PHOT.";
+	elem->ui->Description = "Solid form of ISOZ, slowly decays into PHOT.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

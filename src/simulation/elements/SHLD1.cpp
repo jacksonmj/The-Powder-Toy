@@ -54,11 +54,13 @@ int SHLD1_update(UPDATE_FUNC_ARGS)
 
 void SHLD1_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_SHLD1";
-	elem->Name = "SHLD";
+	elem->ui->Name = "SHLD";
 	elem->Colour = COLPACK(0xAAAAAA);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -81,7 +83,7 @@ void SHLD1_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Shield, spark it to grow.";
+	elem->ui->Description = "Shield, spark it to grow.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_LIFE_DEC;

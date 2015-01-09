@@ -41,11 +41,13 @@ void HFLM_create(ELEMENT_CREATE_FUNC_ARGS)
 
 void HFLM_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_HFLM";
-	elem->Name = "CFLM";
+	elem->ui->Name = "CFLM";
 	elem->Colour = COLPACK(0x8080FF);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_EXPLOSIVE;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.9f;
@@ -68,7 +70,7 @@ void HFLM_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 0.0f;
 	elem->HeatConduct = 88;
 	elem->Latent = 0;
-	elem->Description = "Sub-zero flame.";
+	elem->ui->Description = "Sub-zero flame.";
 
 	elem->State = ST_GAS;
 	elem->Properties = TYPE_GAS|PROP_LIFE_DEC|PROP_LIFE_KILL;

@@ -71,11 +71,13 @@ int FIRE_update(UPDATE_FUNC_ARGS)
 
 void FIRE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_FIRE";
-	elem->Name = "FIRE";
+	elem->ui->Name = "FIRE";
 	elem->Colour = COLPACK(0xFF1000);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_EXPLOSIVE;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.9f;
@@ -98,7 +100,7 @@ void FIRE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+400.0f+273.15f;
 	elem->HeatConduct = 88;
 	elem->Latent = 0;
-	elem->Description = "Ignites flammable materials. Heats air.";
+	elem->ui->Description = "Ignites flammable materials. Heats air.";
 
 	elem->State = ST_GAS;
 	elem->Properties = TYPE_GAS|PROP_LIFE_DEC|PROP_LIFE_KILL;

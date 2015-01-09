@@ -90,11 +90,13 @@ int DTEC_update(UPDATE_FUNC_ARGS)
 
 void DTEC_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_DTEC";
-	elem->Name = "DTEC";
+	elem->ui->Name = "DTEC";
 	elem->Colour = COLPACK(0xFD9D18);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SENSOR;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SENSOR;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -117,7 +119,7 @@ void DTEC_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Detector, creates a spark when something with its ctype is nearby.";
+	elem->ui->Description = "Detector, creates a spark when something with its ctype is nearby.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

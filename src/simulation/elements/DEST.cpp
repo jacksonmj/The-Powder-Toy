@@ -89,11 +89,13 @@ int DEST_graphics(GRAPHICS_FUNC_ARGS)
 
 void DEST_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_DEST";
-	elem->Name = "DEST";
+	elem->ui->Name = "DEST";
 	elem->Colour = COLPACK(0xFF3311);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_EXPLOSIVE;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;
 
 	elem->Advection = -0.05f;
@@ -116,7 +118,7 @@ void DEST_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 150;
 	elem->Latent = 0;
-	elem->Description = "More destructive Bomb, can break through virtually anything.";
+	elem->ui->Description = "More destructive Bomb, can break through virtually anything.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART|PROP_LIFE_DEC|PROP_LIFE_KILL_DEC;

@@ -63,11 +63,13 @@ int SHLD2_update(UPDATE_FUNC_ARGS)
 
 void SHLD2_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_SHLD2";
-	elem->Name = "SHD2";
+	elem->ui->Name = "SHD2";
 	elem->Colour = COLPACK(0x777777);
-	elem->MenuVisible = 0;
-	elem->MenuSection = SC_CRACKER2;
+	elem->ui->MenuVisible = 0;
+	elem->ui->MenuSection = SC_CRACKER2;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -90,7 +92,7 @@ void SHLD2_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Shield lvl 2.";
+	elem->ui->Description = "Shield lvl 2.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_LIFE_DEC;

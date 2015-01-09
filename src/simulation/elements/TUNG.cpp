@@ -101,11 +101,13 @@ int TUNG_graphics(GRAPHICS_FUNC_ARGS)
 
 void TUNG_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_TUNG";
-	elem->Name = "TUNG";
+	elem->ui->Name = "TUNG";
 	elem->Colour = COLPACK(0x505050);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_ELEC;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_ELEC;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -128,7 +130,7 @@ void TUNG_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Tungsten. Brittle metal with a very high melting point.";
+	elem->ui->Description = "Tungsten. Brittle metal with a very high melting point.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_CONDUCTS|PROP_LIFE_DEC;

@@ -119,11 +119,13 @@ int DEUT_graphics(GRAPHICS_FUNC_ARGS)
 
 void DEUT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_DEUT";
-	elem->Name = "DEUT";
+	elem->ui->Name = "DEUT";
 	elem->Colour = COLPACK(0x00153F);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_NUCLEAR;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.6f;
@@ -146,7 +148,7 @@ void DEUT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP-2.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Deuterium oxide. Volume changes with temp, radioactive with neutrons.";
+	elem->ui->Description = "Deuterium oxide. Volume changes with temp, radioactive with neutrons.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID|PROP_NEUTPASS;

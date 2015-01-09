@@ -42,11 +42,13 @@ int FRZW_update(UPDATE_FUNC_ARGS)
 
 void FRZW_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_FRZW";
-	elem->Name = "FRZW";
+	elem->ui->Name = "FRZW";
 	elem->Colour = COLPACK(0x1020C0);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_CRACKER2;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_CRACKER2;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.6f;
@@ -69,7 +71,7 @@ void FRZW_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 120.0f;
 	elem->HeatConduct = 29;
 	elem->Latent = 0;
-	elem->Description = "Freeze water. Hybrid liquid formed when Freeze powder melts.";
+	elem->ui->Description = "Freeze water. Hybrid liquid formed when Freeze powder melts.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID | PROP_LIFE_DEC;

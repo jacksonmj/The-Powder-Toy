@@ -19,11 +19,13 @@ int ISZ_update(UPDATE_FUNC_ARGS);
 
 void ISOZ_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_ISOZ";
-	elem->Name = "ISOZ";
+	elem->ui->Name = "ISOZ";
 	elem->Colour = COLPACK(0xAA30D0);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_NUCLEAR;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.6f;
@@ -46,7 +48,7 @@ void ISOZ_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP-2.0f	+273.15f;
 	elem->HeatConduct = 29;
 	elem->Latent = 0;
-	elem->Description = "Isotope-Z. Radioactive liquid, decays into photons when touching PHOT or under negative pressure.";
+	elem->ui->Description = "Isotope-Z. Radioactive liquid, decays into photons when touching PHOT or under negative pressure.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID|PROP_NEUTPENETRATE;

@@ -198,11 +198,13 @@ void NEUT_create(ELEMENT_CREATE_FUNC_ARGS)
 
 void NEUT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_NEUT";
-	elem->Name = "NEUT";
+	elem->ui->Name = "NEUT";
 	elem->Colour = COLPACK(0x20E0FF);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_NUCLEAR;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -225,7 +227,7 @@ void NEUT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+4.0f	+273.15f;
 	elem->HeatConduct = 60;
 	elem->Latent = 0;
-	elem->Description = "Neutrons. Interact with matter in odd ways.";
+	elem->ui->Description = "Neutrons. Interact with matter in odd ways.";
 
 	elem->State = ST_GAS;
 	elem->Properties = TYPE_ENERGY|PROP_LIFE_DEC|PROP_LIFE_KILL_DEC;

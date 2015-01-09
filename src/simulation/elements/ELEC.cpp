@@ -124,11 +124,13 @@ void ELEC_create(ELEMENT_CREATE_FUNC_ARGS)
 
 void ELEC_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_ELEC";
-	elem->Name = "ELEC";
+	elem->ui->Name = "ELEC";
 	elem->Colour = COLPACK(0xDFEFFF);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_NUCLEAR;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -151,7 +153,7 @@ void ELEC_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+200.0f+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Electrons. Sparks electronics, reacts with NEUT and WATR.";
+	elem->ui->Description = "Electrons. Sparks electronics, reacts with NEUT and WATR.";
 
 	elem->State = ST_GAS;
 	elem->Properties = TYPE_ENERGY|PROP_LIFE_DEC|PROP_LIFE_KILL_DEC;

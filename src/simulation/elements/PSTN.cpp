@@ -304,11 +304,13 @@ int PSTN_graphics(GRAPHICS_FUNC_ARGS)
 
 void PSTN_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_PSTN";
-	elem->Name = "PSTN";
+	elem->ui->Name = "PSTN";
 	elem->Colour = COLPACK(0xAA9999);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_FORCE;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_FORCE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -331,7 +333,7 @@ void PSTN_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 283.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Piston, extends and pushes particles.";
+	elem->ui->Description = "Piston, extends and pushes particles.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

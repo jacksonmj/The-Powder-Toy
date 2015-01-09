@@ -32,11 +32,13 @@ int BRCK_graphics(GRAPHICS_FUNC_ARGS)
 
 void BRCK_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_BRCK";
-	elem->Name = "BRCK";
+	elem->ui->Name = "BRCK";
 	elem->Colour = COLPACK(0x808080);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -59,7 +61,7 @@ void BRCK_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Brick, breakable building material.";
+	elem->ui->Description = "Brick, breakable building material.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_HOT_GLOW;

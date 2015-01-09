@@ -14,6 +14,7 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/elements-shared/Element_UI_ctypeWavelengths.h"
 
 //Used by ALL 3 BIZR states
 int BIZR_update(UPDATE_FUNC_ARGS)
@@ -89,11 +90,13 @@ int BIZR_graphics(GRAPHICS_FUNC_ARGS) //BIZR, BIZRG, BIZRS
 
 void BIZR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI_ctypeWavelengths>();
+
 	elem->Identifier = "DEFAULT_PT_BIZR";
-	elem->Name = "BIZR";
+	elem->ui->Name = "BIZR";
 	elem->Colour = COLPACK(0x00FF77);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_LIQUID;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.6f;
@@ -116,7 +119,7 @@ void BIZR_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 29;
 	elem->Latent = 0;
-	elem->Description = "Bizarre... contradicts the normal state changes. Paints other elements with its deco color.";
+	elem->ui->Description = "Bizarre... contradicts the normal state changes. Paints other elements with its deco color.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID;

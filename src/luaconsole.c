@@ -1332,7 +1332,6 @@ int luatpt_set_property(lua_State* l)
 		h = abs(luaL_optint(l, 6, -1));
 	else
 		h = -1;
-	//TODO: Use particle_getproperty
 	if (strcmp(prop,"type")==0){
 		offset = offsetof(particle, type);
 		format = 3;
@@ -1389,6 +1388,9 @@ int luatpt_set_property(lua_State* l)
 		if (!console_parse_type(name, &t, NULL))
 			return luaL_error(l, "Unrecognised element '%s'", name);
 	}
+	/*
+	 TODO: fix
+
 	if(i == -1 || (w != -1 && h != -1)){
 		// Got a region
 		if(i == -1){
@@ -1443,7 +1445,7 @@ int luatpt_set_property(lua_State* l)
 		} else {
 			*((int*)(((char*)&parts[i])+offset)) = t;
 		}
-	}
+	}*/
 	return 0;
 }
 
@@ -1455,7 +1457,7 @@ int luatpt_get_property(lua_State* l)
 	i = luaL_optint(l, 2, 0);
 	y = luaL_optint(l, 3, -1);
 	if(y!=-1 && y < YRES && y >= 0 && i < XRES && i >= 0){
-		r = pmap[y][i];
+		/*r = pmap[y][i];
 		if (!r)
 			r = photons[y][i];
 		if (!r)
@@ -1466,7 +1468,9 @@ int luatpt_get_property(lua_State* l)
 			}
 			return luaL_error(l, "Particle does not exist");
 		}
-		i = r>>8;
+		i = r>>8;*/
+		// TODO: fix
+		i = -1;
 	}
 	else if (y!=-1)
 		return luaL_error(l, "Coordinates out of range (%d,%d)", i, y);

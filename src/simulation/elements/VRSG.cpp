@@ -30,11 +30,13 @@ int VRSG_graphics(GRAPHICS_FUNC_ARGS)
 
 void VRSG_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_VRSG";
-	elem->Name = "VRSG";
+	elem->ui->Name = "VRSG";
 	elem->Colour = COLPACK(0xFE68FE);
-	elem->MenuVisible = 0;
-	elem->MenuSection = SC_GAS;
+	elem->ui->MenuVisible = 0;
+	elem->ui->MenuSection = SC_GAS;
 	elem->Enabled = 1;
 
 	elem->Advection = 1.0f;
@@ -57,7 +59,7 @@ void VRSG_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 522.0f + 273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Gas Virus. Turns everything it touches into virus.";
+	elem->ui->Description = "Gas Virus. Turns everything it touches into virus.";
 
 	elem->State = ST_GAS;
 	elem->Properties = TYPE_GAS|PROP_DEADLY;

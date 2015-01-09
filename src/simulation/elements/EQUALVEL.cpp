@@ -17,11 +17,13 @@
 
 void EQUALVEL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_EQUALVEL";
-	elem->Name = "EQVE";
+	elem->ui->Name = "EQVE";
 	elem->Colour = COLPACK(0xFFE0A0);
-	elem->MenuVisible = 0;
-	elem->MenuSection = SC_CRACKER2;
+	elem->ui->MenuVisible = 0;
+	elem->ui->MenuSection = SC_CRACKER2;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.7f;
@@ -44,7 +46,7 @@ void EQUALVEL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 70;
 	elem->Latent = 0;
-	elem->Description = "A failed shared velocity test.";
+	elem->ui->Description = "A failed shared velocity test.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART;

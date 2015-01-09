@@ -19,15 +19,16 @@
 
 #define LIGHTING_POWER 0.65
 
-int LIGH_nearest_part(int ci, int max_d)
+int LIGH_nearest_part(Simulation *sim, int ci, int max_d)
 {
+	particle *parts = sim->parts;
 	int distance = (max_d!=-1)?max_d:MAX_DISTANCE;
 	int ndistance = 0;
 	int id = -1;
 	int i = 0;
 	int cx = (int)parts[ci].x;
 	int cy = (int)parts[ci].y;
-	for (i=0; i<=parts_lastActiveIndex; i++)
+	for (i=0; i<=sim->parts_lastActiveIndex; i++)
 	{
 		if (parts[i].type && !parts[i].life && i!=ci && parts[i].type!=PT_LIGH && parts[i].type!=PT_THDR && parts[i].type!=PT_NEUT && parts[i].type!=PT_PHOT)
 		{
@@ -261,7 +262,7 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 
 	angle2=-1;
 
-	near = LIGH_nearest_part(i, parts[i].life*2.5);
+	near = LIGH_nearest_part(sim, i, parts[i].life*2.5);
 	if (near!=-1)
 	{
 		int t=parts[near].type;
@@ -353,11 +354,13 @@ void LIGH_create(ELEMENT_CREATE_FUNC_ARGS)
 
 void LIGH_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_LIGH";
-	elem->Name = "LIGH";
+	elem->ui->Name = "LIGH";
 	elem->Colour = COLPACK(0xFFFFC0);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_EXPLOSIVE;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -380,7 +383,7 @@ void LIGH_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Lightning. Change the brush size to set the size of the lightning.";
+	elem->ui->Description = "Lightning. Change the brush size to set the size of the lightning.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

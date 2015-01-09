@@ -15,6 +15,35 @@
 
 #include "simulation/ElementsCommon.h"
 #include "simulation/elements/FILT.h"
+#include "simulation/elements-shared/Element_UI_ctypeWavelengths.h"
+#include <sstream>
+
+class Element_UI_FILT : public Element_UI_ctypeWavelengths
+{
+public:
+	Element_UI_FILT(Element *el)
+		: Element_UI_ctypeWavelengths(el)
+	{}
+
+	std::string getModeName(int tmpMode)
+	{
+		const char* filtModes[] = {"set colour", "AND", "OR", "subtract colour", "red shift", "blue shift", "no effect", "XOR", "NOT", "old QRTZ scattering"};
+		if (tmpMode>=0 && tmpMode<=9)
+			return filtModes[tmpMode];
+		else
+			return "unknown mode";
+	}
+
+	std::string getHUDText(Simulation *sim, int i, bool debugMode)
+	{
+		std::stringstream ss;
+		ss << Name << " (" << getModeName(sim->parts[i].tmp);
+		if (sim->parts[i].ctype)
+			ss << ", " << sim->parts[i].ctype;
+		ss << ")";
+		return ss.str();
+	}
+};
 
 int FILT_graphics(GRAPHICS_FUNC_ARGS)
 {
@@ -43,11 +72,13 @@ int FILT_graphics(GRAPHICS_FUNC_ARGS)
 
 void FILT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI_FILT>();
+
 	elem->Identifier = "DEFAULT_PT_FILT";
-	elem->Name = "FILT";
+	elem->ui->Name = "FILT";
 	elem->Colour = COLPACK(0x000056);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -70,7 +101,7 @@ void FILT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Filter for photons, changes the color.";
+	elem->ui->Description = "Filter for photons, changes the color.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID | PROP_NOAMBHEAT | PROP_LIFE_DEC;

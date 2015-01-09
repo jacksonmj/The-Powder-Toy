@@ -59,11 +59,13 @@ int IGNT_update(UPDATE_FUNC_ARGS)
 
 void IGNT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_IGNT";
-	elem->Name = "IGNC";
+	elem->ui->Name = "IGNC";
 	elem->Colour = COLPACK(0xC0B050);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_EXPLOSIVE;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -86,7 +88,7 @@ void IGNT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 88;
 	elem->Latent = 0;
-	elem->Description = "Ignition cord. Burns slowly with fire and sparks.";
+	elem->ui->Description = "Ignition cord. Burns slowly with fire and sparks.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID | PROP_NEUTPENETRATE | PROP_SPARKSETTLE | PROP_LIFE_KILL;

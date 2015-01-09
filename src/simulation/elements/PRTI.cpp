@@ -173,11 +173,13 @@ int PRTI_graphics(GRAPHICS_FUNC_ARGS)
 
 void PRTI_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_PRTI";
-	elem->Name = "PRTI";
+	elem->ui->Name = "PRTI";
 	elem->Colour = COLPACK(0xEB5917);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SPECIAL;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SPECIAL;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -200,7 +202,7 @@ void PRTI_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Portal IN. Particles go in here. Also has temperature dependent channels. (same as WIFI)";
+	elem->ui->Description = "Portal IN. Particles go in here. Also has temperature dependent channels. (same as WIFI)";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;
@@ -216,7 +218,6 @@ void PRTI_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = &PRTI_update;
 	elem->Graphics = &PRTI_graphics;
-
-	sim->elemData(t, new PRTI_ElemDataSim(sim));
+	elem->Func_SimInit = &SimInit_createElemData<PRTI_ElemDataSim>;
 }
 

@@ -162,11 +162,13 @@ int PRTO_graphics(GRAPHICS_FUNC_ARGS)
 
 void PRTO_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_PRTO";
-	elem->Name = "PRTO";
+	elem->ui->Name = "PRTO";
 	elem->Colour = COLPACK(0x0020EB);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SPECIAL;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SPECIAL;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -189,7 +191,7 @@ void PRTO_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Portal OUT. Particles come out here. Also has temperature dependent channels. (same as WIFI)";
+	elem->ui->Description = "Portal OUT. Particles come out here. Also has temperature dependent channels. (same as WIFI)";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

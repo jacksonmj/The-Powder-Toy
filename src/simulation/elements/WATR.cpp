@@ -70,11 +70,13 @@ int WATR_update(UPDATE_FUNC_ARGS)
 
 void WATR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_WATR";
-	elem->Name = "WATR";
+	elem->ui->Name = "WATR";
 	elem->Colour = COLPACK(0x2030D0);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_LIQUID;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.6f;
@@ -97,7 +99,7 @@ void WATR_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP-2.0f	+273.15f;
 	elem->HeatConduct = 29;
 	elem->Latent = 7500;
-	elem->Description = "Conducts electricity, freezes, and extinguishes fires.";
+	elem->ui->Description = "Conducts electricity, freezes, and extinguishes fires.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID|PROP_CONDUCTS|PROP_LIFE_DEC|PROP_NEUTPASS;

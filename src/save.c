@@ -28,6 +28,8 @@
 #include "simulation/elements/FIGH.h"
 #include "simulation/elements/STKM.h"
 
+unsigned pmap_save[YRES][XRES];// TODO: remove
+
 // Convert wall number from the one used by TPT++ to the current (legacy) number
 int change_wall_pp_current(int wt)
 {
@@ -163,6 +165,8 @@ void *build_save(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h, un
 int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char bmap[YRES/CELL][XRES/CELL], float vx[YRES/CELL][XRES/CELL], float vy[YRES/CELL][XRES/CELL], float pv[YRES/CELL][XRES/CELL], float fvx[YRES/CELL][XRES/CELL], float fvy[YRES/CELL][XRES/CELL], sign signs[MAXSIGNS], void* partsptr, unsigned pmap[YRES][XRES])
 {
 	unsigned char * saveData = (unsigned char*)save;
+	if (!pmap)
+		pmap = pmap_save;
 	int result = 1;
 	if (size<16)
 	{
@@ -1390,7 +1394,7 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 			fprintf(stderr, "Not enough particle position data\n");
 			goto fail;
 		}
-		parts_lastActiveIndex = NPART-1;
+		globalSim->parts_lastActiveIndex = NPART-1;
 		freeIndicesCount = 0;
 		freeIndices = (int*)calloc(sizeof(int), NPART);
 		partsSimIndex = (unsigned*)calloc(NPART, sizeof(unsigned));
@@ -1987,7 +1991,7 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned c
 		}
 		clear_sim();
 	}
-	parts_lastActiveIndex = NPART-1;
+	globalSim->parts_lastActiveIndex = NPART-1;
 	m = (int*)calloc(XRES*YRES, sizeof(int));
 
 	// make a catalog of free parts

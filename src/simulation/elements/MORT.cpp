@@ -23,11 +23,13 @@ int MORT_update(UPDATE_FUNC_ARGS)
 
 void MORT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_MORT";
-	elem->Name = "MORT";
+	elem->ui->Name = "MORT";
 	elem->Colour = COLPACK(0xE0E0E0);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_CRACKER2;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_CRACKER2;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -50,7 +52,7 @@ void MORT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+4.0f	+273.15f;
 	elem->HeatConduct = 60;
 	elem->Latent = 0;
-	elem->Description = "Steam Train.";
+	elem->ui->Description = "Steam Train.";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_PART;

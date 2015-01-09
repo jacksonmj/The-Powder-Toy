@@ -81,11 +81,13 @@ int GOLD_graphics(GRAPHICS_FUNC_ARGS)
 
 void GOLD_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_GOLD";
-	elem->Name = "GOLD";
+	elem->ui->Name = "GOLD";
 	elem->Colour = COLPACK(0xDCAD2C);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -109,7 +111,7 @@ void GOLD_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Corrosion resistant metal, will reverse corrosion of iron.";
+	elem->ui->Description = "Corrosion resistant metal, will reverse corrosion of iron.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_CONDUCTS|PROP_HOT_GLOW|PROP_LIFE_DEC|PROP_NEUTPASS;

@@ -48,11 +48,13 @@ int GRVT_graphics(GRAPHICS_FUNC_ARGS)
 
 void GRVT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_GRVT";
-	elem->Name = "GRVT";
+	elem->ui->Name = "GRVT";
 	elem->Colour = COLPACK(0x00EE76);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_NUCLEAR;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -75,7 +77,7 @@ void GRVT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+273.15f;
 	elem->HeatConduct = 61;
 	elem->Latent = 0;
-	elem->Description = "Gravitons. Create Newtonian Gravity.";
+	elem->ui->Description = "Gravitons. Create Newtonian Gravity.";
 
 	elem->State = ST_GAS;
 	elem->Properties = TYPE_ENERGY|PROP_LIFE_DEC|PROP_LIFE_KILL_DEC;

@@ -17,11 +17,13 @@
 
 void NONE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_NONE";
-	elem->Name = "";
+	elem->ui->Name = "";
 	elem->Colour = COLPACK(0x000000);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SPECIAL;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SPECIAL;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -44,7 +46,7 @@ void NONE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Erases particles.";
+	elem->ui->Description = "Erases particles.";
 
 	elem->State = ST_NONE;
 	elem->Properties = 0;

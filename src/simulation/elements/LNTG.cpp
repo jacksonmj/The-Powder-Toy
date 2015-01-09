@@ -17,11 +17,13 @@
 
 void LNTG_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_LNTG";
-	elem->Name = "LN2";
+	elem->ui->Name = "LN2";
 	elem->Colour = COLPACK(0x80A0DF);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_LIQUID;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.6f;
@@ -44,7 +46,7 @@ void LNTG_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 70.15f;
 	elem->HeatConduct = 70;
 	elem->Latent = 0;
-	elem->Description = "Liquid Nitrogen. Very cold, disappears whenever it touches anything warmer.";
+	elem->ui->Description = "Liquid Nitrogen. Very cold, disappears whenever it touches anything warmer.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_LIQUID;

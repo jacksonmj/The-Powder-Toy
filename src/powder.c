@@ -51,9 +51,6 @@ unsigned char emap[YRES/CELL][XRES/CELL];
 unsigned char cb_bmap[YRES/CELL][XRES/CELL];
 unsigned char cb_emap[YRES/CELL][XRES/CELL];
 
-unsigned pmap[YRES][XRES];
-int pmap_count[YRES][XRES];
-unsigned photons[YRES][XRES];
 int NUM_PARTS = 0;
 
 int GRAV;
@@ -522,7 +519,7 @@ int nearest_part(int ci, int t, int max_d)
 	int i = 0;
 	int cx = (int)parts[ci].x;
 	int cy = (int)parts[ci].y;
-	for (i=0; i<=parts_lastActiveIndex; i++)
+	for (i=0; i<=globalSim->parts_lastActiveIndex; i++)
 	{
 		if ((parts[i].type==t||(t==-1&&parts[i].type))&&!parts[i].life&&i!=ci)
 		{
@@ -571,7 +568,6 @@ void create_arc(int sx, int sy, int dx, int dy, int midpoints, int variance, int
 	free(ymid);
 }
 
-int parts_lastActiveIndex = NPART-1;
 void update_wallmaps()
 {
 	int x, y;
@@ -867,7 +863,7 @@ int flood_water(int x, int y, int i, int originaly, int check)
 					}
 				}
 				//check above, maybe around other sides too?
-				if ( ((y-1) > originaly) && !pmap[y-1][x] && globalSim->part_canMove(parts[i].type, x, y-1))
+				if ( ((y-1) > originaly) && !globalSim->pmap[y-1][x].count_notEnergy && globalSim->part_canMove(parts[i].type, x, y-1))
 				{
 					sim->part_set_pos(i, (int)(parts[i].x + 0.5f), (int)(parts[i].y + 0.5f), x, y-1);
 					return 0;
@@ -1122,9 +1118,9 @@ int create_parts2(int f, int x, int y, int c, int rx, int ry, int flags)
 	{
 		if (x<0 || y<0 || x>=XRES || y>=YRES)
 			return 0;
-		if ((pmap[y][x]&0xFF)!=SLALT&&SLALT!=0)
+		if (SLALT!=0 && globalSim->pmap_find_one(x,y,SLALT)<0)
 			return 0;
-		if ((pmap[y][x]))
+		if (globalSim->pmap[y][x].count)
 		{
 			delete_part(x, y, 0);
 			if (c!=0)

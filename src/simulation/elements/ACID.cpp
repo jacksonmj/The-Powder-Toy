@@ -109,11 +109,13 @@ int ACID_graphics(GRAPHICS_FUNC_ARGS)
 
 void ACID_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_ACID";
-	elem->Name = "ACID";
+	elem->ui->Name = "ACID";
 	elem->Colour = COLPACK(0xED55FF);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_LIQUID;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.6f;
@@ -137,7 +139,7 @@ void ACID_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 34;
 	elem->Latent = 0;
-	elem->Description = "Dissolves almost everything.";
+	elem->ui->Description = "Dissolves almost everything.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID|PROP_DEADLY;

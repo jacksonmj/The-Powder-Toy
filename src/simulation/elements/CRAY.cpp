@@ -141,11 +141,13 @@ int CRAY_update(UPDATE_FUNC_ARGS)
 
 void CRAY_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_CRAY";
-	elem->Name = "CRAY";
+	elem->ui->Name = "CRAY";
 	elem->Colour = COLPACK(0xBBFF00);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_ELEC;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_ELEC;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -168,7 +170,7 @@ void CRAY_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f +273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Particle Ray Emitter. Creates a beam of particles set by its ctype, with a range set by tmp.";
+	elem->ui->Description = "Particle Ray Emitter. Creates a beam of particles set by its ctype, with a range set by tmp.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_LIFE_DEC;

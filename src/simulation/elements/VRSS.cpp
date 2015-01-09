@@ -24,11 +24,13 @@ int VRSS_graphics(GRAPHICS_FUNC_ARGS)
 
 void VRSS_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_VRSS";
-	elem->Name = "VRSS";
+	elem->ui->Name = "VRSS";
 	elem->Colour = COLPACK(0xD408CD);
-	elem->MenuVisible = 0;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 0;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -51,7 +53,7 @@ void VRSS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+ 273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Solid Virus. Turns everything it touches into virus.";
+	elem->ui->Description = "Solid Virus. Turns everything it touches into virus.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_DEADLY;

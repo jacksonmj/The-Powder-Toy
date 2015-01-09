@@ -47,11 +47,13 @@ int AMTR_update(UPDATE_FUNC_ARGS)
 
 void AMTR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_AMTR";
-	elem->Name = "AMTR";
+	elem->ui->Name = "AMTR";
 	elem->Colour = COLPACK(0x808080);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_NUCLEAR;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.7f;
@@ -74,7 +76,7 @@ void AMTR_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f +273.15f;
 	elem->HeatConduct = 70;
 	elem->Latent = 0;
-	elem->Description = "Anti-Matter, destroys a majority of particles.";
+	elem->ui->Description = "Anti-Matter, destroys a majority of particles.";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_PART;

@@ -17,11 +17,13 @@
 
 void INSL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_INSL";
-	elem->Name = "INSL";
+	elem->ui->Name = "INSL";
 	elem->Colour = COLPACK(0x9EA3B6);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_ELEC;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_ELEC;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -44,7 +46,7 @@ void INSL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Insulator, does not conduct heat and blocks electricity.";
+	elem->ui->Description = "Insulator, does not conduct heat and blocks electricity.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

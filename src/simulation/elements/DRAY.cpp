@@ -100,11 +100,13 @@ int DRAY_update(UPDATE_FUNC_ARGS)
 
 void DRAY_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_DRAY";
-	elem->Name = "DRAY";
+	elem->ui->Name = "DRAY";
 	elem->Colour = COLPACK(0xFFAA22);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_ELEC;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_ELEC;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -127,7 +129,7 @@ void DRAY_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP + 273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Duplicator ray. Replicates a line of particles in front of it.";
+	elem->ui->Description = "Duplicator ray. Replicates a line of particles in front of it.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_LIFE_DEC;

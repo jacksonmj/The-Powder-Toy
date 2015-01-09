@@ -33,11 +33,13 @@ void GLAS_create(ELEMENT_CREATE_FUNC_ARGS)
 
 void GLAS_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_GLAS";
-	elem->Name = "GLAS";
+	elem->ui->Name = "GLAS";
 	elem->Colour = COLPACK(0x404040);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -60,7 +62,7 @@ void GLAS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 150;
 	elem->Latent = 0;
-	elem->Description = "Glass. Meltable. Shatters under pressure, and refracts photons.";
+	elem->ui->Description = "Glass. Meltable. Shatters under pressure, and refracts photons.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID | PROP_NEUTPASS | PROP_HOT_GLOW | PROP_SPARKSETTLE;

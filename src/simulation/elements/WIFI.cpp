@@ -106,13 +106,20 @@ int WIFI_graphics(GRAPHICS_FUNC_ARGS)
 	return 0;
 }
 
+void WIFI_Simulation_Init(ELEMENT_SIMINIT_FUNC_ARGS)
+{
+	sim->elemData_create<WIFI_ElemDataSim>(t, sim);
+}
+
 void WIFI_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_WIFI";
-	elem->Name = "WIFI";
+	elem->ui->Name = "WIFI";
 	elem->Colour = COLPACK(0x40A060);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_ELEC;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_ELEC;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -135,7 +142,7 @@ void WIFI_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Wireless transmitter, transfers spark to any other wifi on the same temperature channel.";
+	elem->ui->Description = "Wireless transmitter, transfers spark to any other wifi on the same temperature channel.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;
@@ -151,7 +158,6 @@ void WIFI_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Update = &WIFI_update;
 	elem->Graphics = &WIFI_graphics;
-
-	sim->elemData(t, new WIFI_ElemDataSim(sim));
+	elem->Func_SimInit = &SimInit_createElemData<WIFI_ElemDataSim>;
 }
 

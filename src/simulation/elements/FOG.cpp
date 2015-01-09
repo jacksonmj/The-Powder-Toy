@@ -41,11 +41,13 @@ int FOG_update(UPDATE_FUNC_ARGS)
 
 void FOG_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_FOG";
-	elem->Name = "FOG";
+	elem->ui->Name = "FOG";
 	elem->Colour = COLPACK(0xAAAAAA);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_GAS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_GAS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.8f;
@@ -68,7 +70,7 @@ void FOG_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 243.15f;
 	elem->HeatConduct = 100;
 	elem->Latent = 0;
-	elem->Description = "Fog, created when an electric current is passed through RIME.";
+	elem->ui->Description = "Fog, created when an electric current is passed through RIME.";
 
 	elem->State = ST_GAS;
 	elem->Properties = TYPE_GAS|PROP_LIFE_DEC;

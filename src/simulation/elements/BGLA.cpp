@@ -17,11 +17,13 @@
 
 void BGLA_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_BGLA";
-	elem->Name = "BGLA";
+	elem->ui->Name = "BGLA";
 	elem->Colour = COLPACK(0x606060);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_POWDERS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.4f;
@@ -44,7 +46,7 @@ void BGLA_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 150;
 	elem->Latent = 0;
-	elem->Description = "Broken Glass, heavy particles formed when glass breaks under pressure. Meltable. Bagels.";
+	elem->ui->Description = "Broken Glass, heavy particles formed when glass breaks under pressure. Meltable. Bagels.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART | PROP_HOT_GLOW;

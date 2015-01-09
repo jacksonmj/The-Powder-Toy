@@ -17,11 +17,13 @@
 
 void OIL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_OIL";
-	elem->Name = "OIL";
+	elem->ui->Name = "OIL";
 	elem->Colour = COLPACK(0x404010);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_LIQUID;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.6f;
@@ -44,7 +46,7 @@ void OIL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 42;
 	elem->Latent = 0;
-	elem->Description = "Flammable, turns into GAS at low pressure or high temperature. Can be formed with NEUT and NITR.";
+	elem->ui->Description = "Flammable, turns into GAS at low pressure or high temperature. Can be formed with NEUT and NITR.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID | PROP_NEUTPASS;

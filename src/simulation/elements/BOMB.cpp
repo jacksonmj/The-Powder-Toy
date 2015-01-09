@@ -59,7 +59,7 @@ int BOMB_update(UPDATE_FUNC_ARGS)
 								}
 						for (nxj=-(rad+1); nxj<=(rad+1); nxj++)
 							for (nxi=-(rad+1); nxi<=(rad+1); nxi++)
-								if ((pow(nxi,2))/(pow((rad+1),2))+(pow(nxj,2))/(pow((rad+1),2))<=1 && !(pmap[y+nxj][x+nxi]&0xFF)) {
+								if ((pow(nxi,2))/(pow((rad+1),2))+(pow(nxj,2))/(pow((rad+1),2))<=1 && !sim->pmap[y+nxj][x+nxi].count_notEnergy) {
 									nb = sim->part_create(-3, x+nxi, y+nxj, PT_EMBR);
 									if (nb!=-1) {
 										parts[nb].tmp = 0;
@@ -85,11 +85,13 @@ int BOMB_graphics(GRAPHICS_FUNC_ARGS)
 
 void BOMB_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_BOMB";
-	elem->Name = "BOMB";
+	elem->ui->Name = "BOMB";
 	elem->Colour = COLPACK(0xFFF288);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_EXPLOSIVE;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.6f;
@@ -112,7 +114,7 @@ void BOMB_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP-2.0f	+273.15f;
 	elem->HeatConduct = 29;
 	elem->Latent = 0;
-	elem->Description = "Bomb. Explodes and destroys all surrounding particles when it touches something.";
+	elem->ui->Description = "Bomb. Explodes and destroys all surrounding particles when it touches something.";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_PART|PROP_LIFE_DEC|PROP_LIFE_KILL_DEC|PROP_SPARKSETTLE;

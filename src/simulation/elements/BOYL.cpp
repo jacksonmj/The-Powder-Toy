@@ -62,11 +62,13 @@ int BOYL_update(UPDATE_FUNC_ARGS)
 
 void BOYL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_BOYL";
-	elem->Name = "BOYL";
+	elem->ui->Name = "BOYL";
 	elem->Colour = COLPACK(0x0A3200);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_GAS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_GAS;
 	elem->Enabled = 1;
 
 	elem->Advection = 1.0f;
@@ -89,7 +91,7 @@ void BOYL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+2.0f	+273.15f;
 	elem->HeatConduct = 42;
 	elem->Latent = 0;
-	elem->Description = "Boyle, variable pressure gas. Expands when heated.";
+	elem->ui->Description = "Boyle, variable pressure gas. Expands when heated.";
 
 	elem->State = ST_GAS;
 	elem->Properties = TYPE_GAS;

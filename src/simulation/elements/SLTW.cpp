@@ -63,11 +63,13 @@ int SLTW_update(UPDATE_FUNC_ARGS) {
 
 void SLTW_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_SLTW";
-	elem->Name = "SLTW";
+	elem->ui->Name = "SLTW";
 	elem->Colour = COLPACK(0x4050F0);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_LIQUID;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.6f;
@@ -90,7 +92,7 @@ void SLTW_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 75;
 	elem->Latent = 7500;
-	elem->Description = "Saltwater, conducts electricity, difficult to freeze.";
+	elem->ui->Description = "Saltwater, conducts electricity, difficult to freeze.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID|PROP_CONDUCTS|PROP_LIFE_DEC|PROP_NEUTPENETRATE;

@@ -45,11 +45,13 @@ int PSNS_update(UPDATE_FUNC_ARGS)
 
 void PSNS_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_PSNS";
-	elem->Name = "PSNS";
+	elem->ui->Name = "PSNS";
 	elem->Colour = COLPACK(0xDB2020);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SENSOR;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SENSOR;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -72,7 +74,7 @@ void PSNS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 277.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Pressure sensor, creates a spark when the pressure is greater than its temperature.";
+	elem->ui->Description = "Pressure sensor, creates a spark when the pressure is greater than its temperature.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

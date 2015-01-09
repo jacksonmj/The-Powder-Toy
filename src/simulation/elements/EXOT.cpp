@@ -202,11 +202,13 @@ int EXOT_graphics(GRAPHICS_FUNC_ARGS)
 
 void EXOT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_EXOT";
-	elem->Name = "EXOT";
+	elem->ui->Name = "EXOT";
 	elem->Colour = COLPACK(0x404040);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_NUCLEAR;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.3f;
@@ -229,7 +231,7 @@ void EXOT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP-2.0f	+273.15f;
 	elem->HeatConduct = 250;
 	elem->Latent = 0;
-	elem->Description = "Exotic matter. Explodes with excess exposure to electrons. Has many other odd reactions.";
+	elem->ui->Description = "Exotic matter. Explodes with excess exposure to electrons. Has many other odd reactions.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID | PROP_NEUTPASS;

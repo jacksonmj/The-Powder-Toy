@@ -25,11 +25,13 @@ void PQRT_create(ELEMENT_CREATE_FUNC_ARGS)
 
 void PQRT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_PQRT";
-	elem->Name = "PQRT";
+	elem->ui->Name = "PQRT";
 	elem->Colour = COLPACK(0x88BBBB);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_POWDERS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.4f;
@@ -52,7 +54,7 @@ void PQRT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 3;
 	elem->Latent = 0;
-	elem->Description = "Powdered quartz, broken form of QRTZ.";
+	elem->ui->Description = "Powdered quartz, broken form of QRTZ.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART| PROP_HOT_GLOW;

@@ -66,11 +66,13 @@ int THDR_graphics(GRAPHICS_FUNC_ARGS)
 
 void THDR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_THDR";
-	elem->Name = "THDR";
+	elem->ui->Name = "THDR";
 	elem->Colour = COLPACK(0xFFFFA0);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_EXPLOSIVE;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -93,7 +95,7 @@ void THDR_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 9000.0f		+273.15f;
 	elem->HeatConduct = 1;
 	elem->Latent = 0;
-	elem->Description = "Lightning! Very hot, inflicts damage upon most materials, and transfers current to metals.";
+	elem->ui->Description = "Lightning! Very hot, inflicts damage upon most materials, and transfers current to metals.";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_PART;

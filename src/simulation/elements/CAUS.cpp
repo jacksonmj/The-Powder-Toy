@@ -54,11 +54,13 @@ int CAUS_update(UPDATE_FUNC_ARGS)
 
 void CAUS_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_CAUS";
-	elem->Name = "CAUS";
+	elem->ui->Name = "CAUS";
 	elem->Colour = COLPACK(0x80FFA0);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_GAS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_GAS;
 	elem->Enabled = 1;
 
 	elem->Advection = 2.0f;
@@ -81,7 +83,7 @@ void CAUS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 70;
 	elem->Latent = 0;
-	elem->Description = "Caustic Gas, acts like ACID.";
+	elem->ui->Description = "Caustic Gas, acts like ACID.";
 
 	elem->State = ST_GAS;
 	elem->Properties = TYPE_GAS|PROP_DEADLY;

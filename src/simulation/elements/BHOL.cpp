@@ -17,11 +17,13 @@
 
 void BHOL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_BHOL";
-	elem->Name = "VACU";
+	elem->ui->Name = "VACU";
 	elem->Colour = COLPACK(0x303030);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SPECIAL;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SPECIAL;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -44,7 +46,7 @@ void BHOL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+70.0f+273.15f;
 	elem->HeatConduct = 255;
 	elem->Latent = 0;
-	elem->Description = "Vacuum, sucks in other particles and heats up.";
+	elem->ui->Description = "Vacuum, sucks in other particles and heats up.";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_SOLID;

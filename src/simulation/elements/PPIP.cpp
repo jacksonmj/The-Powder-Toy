@@ -14,17 +14,17 @@
  */
 
 #include "simulation/ElementsCommon.h"
-
-int PIPE_update(UPDATE_FUNC_ARGS);
-int PIPE_graphics(GRAPHICS_FUNC_ARGS);
+#include "simulation/elements/PIPE.h"
 
 void PPIP_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI_PIPE>();
+
 	elem->Identifier = "DEFAULT_PT_PPIP";
-	elem->Name = "PPIP";
+	elem->ui->Name = "PPIP";
 	elem->Colour = COLPACK(0x444466);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_POWERED;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_POWERED;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -47,7 +47,7 @@ void PPIP_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Powered pipe";
+	elem->ui->Description = "Powered pipe";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_LIFE_DEC;

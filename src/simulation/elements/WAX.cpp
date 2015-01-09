@@ -17,11 +17,13 @@
 
 void WAX_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_WAX";
-	elem->Name = "WAX";
+	elem->ui->Name = "WAX";
 	elem->Colour = COLPACK(0xF0F0BB);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -44,7 +46,7 @@ void WAX_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 44;
 	elem->Latent = 0;
-	elem->Description = "Wax. Melts at moderately high temperatures.";
+	elem->ui->Description = "Wax. Melts at moderately high temperatures.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

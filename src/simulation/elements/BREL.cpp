@@ -32,11 +32,13 @@ int BREL_update(UPDATE_FUNC_ARGS)
 
 void BREL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_BREC";
-	elem->Name = "BREL";
+	elem->ui->Name = "BREL";
 	elem->Colour = COLPACK(0x707060);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_POWDERS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.4f;
@@ -59,7 +61,7 @@ void BREL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 211;
 	elem->Latent = 0;
-	elem->Description = "Broken electronics. Formed from EMP blasts, and when constantly sparked while under pressure, turns to EXOT.";
+	elem->ui->Description = "Broken electronics. Formed from EMP blasts, and when constantly sparked while under pressure, turns to EXOT.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART|PROP_CONDUCTS|PROP_LIFE_DEC|PROP_HOT_GLOW;

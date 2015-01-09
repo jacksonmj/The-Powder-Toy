@@ -17,11 +17,13 @@
 
 void LO2_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_LO2";
-	elem->Name = "LOXY";
+	elem->ui->Name = "LOXY";
 	elem->Colour = COLPACK(0x80A0EF);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_LIQUID;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.6f;
@@ -44,7 +46,7 @@ void LO2_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 80.0f;
 	elem->HeatConduct = 70;
 	elem->Latent = 0;
-	elem->Description = "Liquid Oxygen. Very cold. Reacts with fire.";
+	elem->ui->Description = "Liquid Oxygen. Very cold. Reacts with fire.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID;

@@ -23,11 +23,13 @@ int NWHL_update(UPDATE_FUNC_ARGS)
 
 void NWHL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_NWHL";
-	elem->Name = "WHOL";
+	elem->ui->Name = "WHOL";
 	elem->Colour = COLPACK(0xFFFFFF);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SPECIAL;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SPECIAL;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -50,7 +52,7 @@ void NWHL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 186;
 	elem->Latent = 0;
-	elem->Description = "White hole, pushes away other particles with gravity. (Requires Newtonian gravity)";
+	elem->ui->Description = "White hole, pushes away other particles with gravity. (Requires Newtonian gravity)";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

@@ -15,6 +15,8 @@
 
 #include "simulation/ElementsCommon.h"
 #include "simulation/elements-shared/pyro.h"
+#include <algorithm>
+#include <locale>
 
 int LAVA_graphics(GRAPHICS_FUNC_ARGS)
 {
@@ -55,13 +57,34 @@ int LAVA_update(UPDATE_FUNC_ARGS)
 	return 0;
 }
 
+class Element_UI_LAVA : public Element_UI
+{
+public:
+	Element_UI_LAVA(Element *el)
+		: Element_UI(el)
+	{}
+
+	std::string getHUDText(Simulation *sim, int i, bool debugMode)
+	{
+		int ctypeElem = sim->parts[i].ctype;
+		if (!ctypeElem || !sim->IsValidElement(ctypeElem) || ctypeElem==PT_LAVA)
+			ctypeElem = PT_STNE;
+		std::string ctypeName = sim->elements[ctypeElem].ui->Name;
+
+		std::transform(ctypeName.begin(), ctypeName.end(), ctypeName.begin(), ::tolower);
+		return "Molten " + ctypeName;
+	}
+};
+
 void LAVA_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI_LAVA>();
+
 	elem->Identifier = "DEFAULT_PT_LAVA";
-	elem->Name = "LAVA";
+	elem->ui->Name = "LAVA";
 	elem->Colour = COLPACK(0xE05010);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_LIQUID;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.3f;
@@ -85,7 +108,7 @@ void LAVA_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+1500.0f+273.15f;
 	elem->HeatConduct = 60;
 	elem->Latent = 0;
-	elem->Description = "Molten lava. Ignites flammable materials. Generated when metals and other materials melt, solidifies when cold.";
+	elem->ui->Description = "Molten lava. Ignites flammable materials. Generated when metals and other materials melt, solidifies when cold.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID|PROP_LIFE_DEC;

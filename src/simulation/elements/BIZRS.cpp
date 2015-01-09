@@ -14,17 +14,20 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/elements-shared/Element_UI_ctypeWavelengths.h"
 
 int BIZR_update(UPDATE_FUNC_ARGS);
 int BIZR_graphics(GRAPHICS_FUNC_ARGS);
 
 void BIZRS_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI_ctypeWavelengths>();
+
 	elem->Identifier = "DEFAULT_PT_BIZRS";
-	elem->Name = "BIZS";
+	elem->ui->Name = "BIZS";
 	elem->Colour = COLPACK(0x00E455);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_CRACKER2;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_CRACKER2;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -47,7 +50,7 @@ void BIZRS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+300.0f+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Bizarre solid.";
+	elem->ui->Description = "Bizarre solid.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

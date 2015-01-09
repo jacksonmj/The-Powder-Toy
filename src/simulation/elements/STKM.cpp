@@ -703,11 +703,13 @@ void STKM_ChangeType(ELEMENT_CHANGETYPE_FUNC_ARGS)
 
 void STKM_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_STKM";
-	elem->Name = "STKM";
+	elem->ui->Name = "STKM";
 	elem->Colour = COLPACK(0xFFE0A0);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SPECIAL;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SPECIAL;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.5f;
@@ -730,7 +732,7 @@ void STKM_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+14.6f+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Stickman. Don't kill him! Control with the arrow keys.";
+	elem->ui->Description = "Stickman. Don't kill him! Control with the arrow keys.";
 
 	elem->State = ST_NONE;
 	elem->Properties = PROP_NOCTYPEDRAW;
@@ -751,7 +753,6 @@ void STKM_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Func_Create_Allowed = &STKM_create_allowed;
 	elem->Func_Create = &STKM_create;
 	elem->Func_ChangeType = &STKM_ChangeType;
-
-	sim->elemData(t, new STKM_ElemDataSim(sim));
+	elem->Func_SimInit = &SimInit_createElemData<STKM_ElemDataSim>;
 }
 

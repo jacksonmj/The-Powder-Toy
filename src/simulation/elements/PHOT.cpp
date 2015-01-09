@@ -17,6 +17,7 @@
 #include "simulation/elements/FILT.h"
 #include "simulation/elements/PHOT.h"
 #include "simulation/elements-shared/pyro.h"
+#include "simulation/elements-shared/Element_UI_ctypeWavelengths.h"
 
 void Element_PHOT::create_gain_photon(Simulation *sim, int pp)//photons from PHOT going through GLOW
 {
@@ -202,11 +203,13 @@ void PHOT_create(ELEMENT_CREATE_FUNC_ARGS)
 
 void PHOT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI_ctypeWavelengths>();
+
 	elem->Identifier = "DEFAULT_PT_PHOT";
-	elem->Name = "PHOT";
+	elem->ui->Name = "PHOT";
 	elem->Colour = COLPACK(0xFFFFFF);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_NUCLEAR;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -229,7 +232,7 @@ void PHOT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+900.0f+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Photons. Refracts through glass, scattered by quartz, and color-changed by different elements. Ignites flammable materials.";
+	elem->ui->Description = "Photons. Refracts through glass, scattered by quartz, and color-changed by different elements. Ignites flammable materials.";
 
 	elem->State = ST_GAS;
 	elem->Properties = TYPE_ENERGY|PROP_LIFE_DEC|PROP_LIFE_KILL_DEC;

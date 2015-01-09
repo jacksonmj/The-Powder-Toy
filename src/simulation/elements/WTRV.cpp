@@ -41,11 +41,13 @@ int WTRV_update(UPDATE_FUNC_ARGS)
 
 void WTRV_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_WTRV";
-	elem->Name = "WTRV";
+	elem->ui->Name = "WTRV";
 	elem->Colour = COLPACK(0xA0A0FF);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_GAS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_GAS;
 	elem->Enabled = 1;
 
 	elem->Advection = 1.0f;
@@ -68,7 +70,7 @@ void WTRV_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+100.0f+273.15f;
 	elem->HeatConduct = 48;
 	elem->Latent = 0;
-	elem->Description = "Steam. Produced from hot water.";
+	elem->ui->Description = "Steam. Produced from hot water.";
 
 	elem->State = ST_GAS;
 	elem->Properties = TYPE_GAS;

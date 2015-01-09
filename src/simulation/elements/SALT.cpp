@@ -17,11 +17,13 @@
 
 void SALT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_SALT";
-	elem->Name = "SALT";
+	elem->ui->Name = "SALT";
 	elem->Colour = COLPACK(0xFFFFFF);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_POWDERS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.4f;
@@ -44,7 +46,7 @@ void SALT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 110;
 	elem->Latent = 0;
-	elem->Description = "Salt, dissolves in water.";
+	elem->ui->Description = "Salt, dissolves in water.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART;

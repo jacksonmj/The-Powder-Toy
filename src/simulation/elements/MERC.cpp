@@ -90,11 +90,13 @@ int MERC_update(UPDATE_FUNC_ARGS)
 
 void MERC_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_MERC";
-	elem->Name = "MERC";
+	elem->ui->Name = "MERC";
 	elem->Colour = COLPACK(0x736B6D);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_ELEC;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_ELEC;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.4f;
@@ -117,7 +119,7 @@ void MERC_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Mercury. Volume changes with temperature, Conductive.";
+	elem->ui->Description = "Mercury. Volume changes with temperature, Conductive.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID|PROP_CONDUCTS|PROP_NEUTABSORB|PROP_LIFE_DEC;

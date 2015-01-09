@@ -72,11 +72,13 @@ int DSTW_update(UPDATE_FUNC_ARGS)
 
 void DSTW_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_DSTW";
-	elem->Name = "DSTW";
+	elem->ui->Name = "DSTW";
 	elem->Colour = COLPACK(0x1020C0);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_LIQUID;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.6f;
@@ -99,7 +101,7 @@ void DSTW_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP-2.0f	+273.15f;
 	elem->HeatConduct = 23;
 	elem->Latent = 7500;
-	elem->Description = "Distilled water, does not conduct electricity.";
+	elem->ui->Description = "Distilled water, does not conduct electricity.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID|PROP_NEUTPASS;

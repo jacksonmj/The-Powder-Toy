@@ -116,11 +116,13 @@ int CBNW_graphics(GRAPHICS_FUNC_ARGS)
 
 void CBNW_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_CBNW";
-	elem->Name = "BUBW";
+	elem->ui->Name = "BUBW";
 	elem->Colour = COLPACK(0x2030D0);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_LIQUID;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.6f;
@@ -143,7 +145,7 @@ void CBNW_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP-2.0f	+273.15f;
 	elem->HeatConduct = 29;
 	elem->Latent = 7500;
-	elem->Description = "Carbonated water. Slowly releases CO2.";
+	elem->ui->Description = "Carbonated water. Slowly releases CO2.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID|PROP_CONDUCTS|PROP_LIFE_DEC|PROP_NEUTPENETRATE;

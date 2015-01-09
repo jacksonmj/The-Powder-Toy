@@ -42,11 +42,13 @@ int WOOD_graphics(GRAPHICS_FUNC_ARGS)
 
 void WOOD_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_WOOD";
-	elem->Name = "WOOD";
+	elem->ui->Name = "WOOD";
 	elem->Colour = COLPACK(0xC0A040);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -69,7 +71,7 @@ void WOOD_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 164;
 	elem->Latent = 0;
-	elem->Description = "Wood, flammable.";
+	elem->ui->Description = "Wood, flammable.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID | PROP_NEUTPENETRATE;

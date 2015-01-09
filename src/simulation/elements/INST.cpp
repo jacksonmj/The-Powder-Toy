@@ -137,11 +137,13 @@ int Element_INST::flood_spark(Simulation *sim, int x, int y)
 
 void INST_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_INST";
-	elem->Name = "INST";
+	elem->ui->Name = "INST";
 	elem->Colour = COLPACK(0x404039);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_ELEC;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_ELEC;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -164,7 +166,7 @@ void INST_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Instantly conducts, PSCN to charge, NSCN to take.";
+	elem->ui->Description = "Instantly conducts, PSCN to charge, NSCN to take.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_LIFE_DEC;

@@ -88,11 +88,13 @@ int DMG_graphics(GRAPHICS_FUNC_ARGS)
 
 void DMG_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_DMG";
-	elem->Name = "DMG";
+	elem->ui->Name = "DMG";
 	elem->Colour = COLPACK(0x88FF88);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_FORCE;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_FORCE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -115,7 +117,7 @@ void DMG_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP-2.0f  +273.15f;
 	elem->HeatConduct = 29;
 	elem->Latent = 0;
-	elem->Description = "Generates damaging pressure and breaks any elements it hits.";
+	elem->ui->Description = "Generates damaging pressure and breaks any elements it hits.";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_PART|PROP_LIFE_DEC|PROP_LIFE_KILL_DEC|PROP_SPARKSETTLE;

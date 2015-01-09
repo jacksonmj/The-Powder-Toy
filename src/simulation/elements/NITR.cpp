@@ -17,11 +17,13 @@
 
 void NITR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_NITR";
-	elem->Name = "NITR";
+	elem->ui->Name = "NITR";
 	elem->Colour = COLPACK(0x20E010);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_EXPLOSIVE;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.5f;
@@ -45,7 +47,7 @@ void NITR_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 50;
 	elem->Latent = 0;
-	elem->Description = "Nitroglycerin. Pressure sensitive explosive. Mix with CLST to make TNT.";
+	elem->ui->Description = "Nitroglycerin. Pressure sensitive explosive. Mix with CLST to make TNT.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID;

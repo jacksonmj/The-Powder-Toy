@@ -2035,7 +2035,7 @@ void render_parts(pixel *vid)
 			}
 	}
 #endif
-	for(i = 0; i<=parts_lastActiveIndex; i++) {
+	for(i = 0; i<=globalSim->parts_lastActiveIndex; i++) {
 		if (parts[i].type) {
 			t = parts[i].type;
 
@@ -4880,14 +4880,14 @@ int draw_debug_info(pixel* vid, int lm, int lx, int ly, int cx, int cy, int line
 	if(debug_flags & DEBUG_PARTS)
 	{
 		int i = 0, x = 0, y = 0, lpx = 0, lpy = 0;
-		sprintf(infobuf, "%d/%d (%.2f%%)", parts_lastActiveIndex, NPART, (((float)parts_lastActiveIndex)/((float)NPART))*100.0f);
+		sprintf(infobuf, "%d/%d (%.2f%%)", globalSim->parts_lastActiveIndex, NPART, (((float)globalSim->parts_lastActiveIndex)/((float)NPART))*100.0f);
 		for(i = 0; i < NPART; i++){
 			if(parts[i].type){
 				drawpixel(vid, x, y, 255, 255, 255, 180);
 			} else {
 				drawpixel(vid, x, y, 0, 0, 0, 180);
 			}
-			if(i == parts_lastActiveIndex)
+			if(i == globalSim->parts_lastActiveIndex)
 			{
 				lpx = x;
 				lpy = y;

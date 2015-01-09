@@ -17,11 +17,13 @@
 
 void DESL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_DESL";
-	elem->Name = "DESL";
+	elem->ui->Name = "DESL";
 	elem->Colour = COLPACK(0x440000);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_LIQUID;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;
 
 	elem->Advection = 1.0f;
@@ -44,7 +46,7 @@ void DESL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 42;
 	elem->Latent = 0;
-	elem->Description = "Liquid diesel. Explodes under high pressure and temperatures.";
+	elem->ui->Description = "Liquid diesel. Explodes under high pressure and temperatures.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID;

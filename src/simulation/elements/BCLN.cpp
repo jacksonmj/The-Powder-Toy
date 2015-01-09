@@ -65,11 +65,13 @@ int BCLN_update(UPDATE_FUNC_ARGS)
 
 void BCLN_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_BCLN";
-	elem->Name = "BCLN";
+	elem->ui->Name = "BCLN";
 	elem->Colour = COLPACK(0xFFD040);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SPECIAL;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SPECIAL;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -92,7 +94,7 @@ void BCLN_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Breakable Clone.";
+	elem->ui->Description = "Breakable Clone.";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_SOLID|PROP_LIFE_DEC|PROP_LIFE_KILL_DEC | PROP_DRAWONCTYPE | PROP_NOCTYPEDRAW;

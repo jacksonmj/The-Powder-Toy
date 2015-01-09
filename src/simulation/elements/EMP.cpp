@@ -39,7 +39,7 @@ ok:
 	emp_decor+=3;
 	if (emp_decor>40)
 		emp_decor=40;
-	for (r=0; r<=parts_lastActiveIndex; r++)
+	for (r=0; r<=sim->parts_lastActiveIndex; r++)
 	{
 		t=parts[r].type;
 		rx=parts[r].x;
@@ -157,11 +157,13 @@ int EMP_graphics(GRAPHICS_FUNC_ARGS)
 
 void EMP_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_EMP";
-	elem->Name = "EMP";
+	elem->ui->Name = "EMP";
 	elem->Colour = COLPACK(0x66AAFF);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_ELEC;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_ELEC;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -184,7 +186,7 @@ void EMP_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 121;
 	elem->Latent = 0;
-	elem->Description = "Electromagnetic pulse. Breaks activated electronics.";
+	elem->ui->Description = "Electromagnetic pulse. Breaks activated electronics.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_LIFE_DEC;

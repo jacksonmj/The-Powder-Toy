@@ -17,11 +17,13 @@
 
 void ETRD_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_ETRD";
-	elem->Name = "ETRD";
+	elem->ui->Name = "ETRD";
 	elem->Colour = COLPACK(0x404040);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_ELEC;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_ELEC;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -44,7 +46,7 @@ void ETRD_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Electrode. Creates a surface that allows Plasma arcs. (Use sparingly)";
+	elem->ui->Description = "Electrode. Creates a surface that allows Plasma arcs. (Use sparingly)";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_SOLID|PROP_CONDUCTS|PROP_LIFE_DEC;

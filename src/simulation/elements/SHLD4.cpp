@@ -62,11 +62,13 @@ int SHLD4_update(UPDATE_FUNC_ARGS) {
 
 void SHLD4_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_SHLD4";
-	elem->Name = "SHD4";
+	elem->ui->Name = "SHD4";
 	elem->Colour = COLPACK(0x212121);
-	elem->MenuVisible = 0;
-	elem->MenuSection = SC_CRACKER2;
+	elem->ui->MenuVisible = 0;
+	elem->ui->MenuSection = SC_CRACKER2;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -89,7 +91,7 @@ void SHLD4_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Shield lvl 4.";
+	elem->ui->Description = "Shield lvl 4.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_LIFE_DEC;

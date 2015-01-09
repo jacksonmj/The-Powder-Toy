@@ -42,11 +42,13 @@ int RIME_update(UPDATE_FUNC_ARGS)
 
 void RIME_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_RIME";
-	elem->Name = "RIME";
+	elem->ui->Name = "RIME";
 	elem->Colour = COLPACK(0xCCCCCC);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.00f;
@@ -69,7 +71,7 @@ void RIME_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 243.15f;
 	elem->HeatConduct = 100;
 	elem->Latent = 0;
-	elem->Description = "Solid, created when steam cools rapidly and goes through sublimation.";
+	elem->ui->Description = "Solid, created when steam cools rapidly and goes through sublimation.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

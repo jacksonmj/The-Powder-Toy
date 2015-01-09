@@ -81,11 +81,13 @@ int SWCH_graphics(GRAPHICS_FUNC_ARGS)
 
 void SWCH_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_SWCH";
-	elem->Name = "SWCH";
+	elem->ui->Name = "SWCH";
 	elem->Colour = COLPACK(0x103B11);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_ELEC;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_ELEC;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -108,7 +110,7 @@ void SWCH_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Only conducts when switched on. (PSCN switches on, NSCN switches off)";
+	elem->ui->Description = "Only conducts when switched on. (PSCN switches on, NSCN switches off)";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

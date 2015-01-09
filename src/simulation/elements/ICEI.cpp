@@ -50,11 +50,13 @@ int ICE_update(UPDATE_FUNC_ARGS) //currently used for snow as well
 
 void ICEI_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_ICEI";
-	elem->Name = "ICE";
+	elem->ui->Name = "ICE";
 	elem->Colour = COLPACK(0xA0C0FF);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -77,7 +79,7 @@ void ICEI_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP-50.0f+273.15f;
 	elem->HeatConduct = 46;
 	elem->Latent = 1095;
-	elem->Description = "Crushes under pressure. Cools down air.";
+	elem->ui->Description = "Crushes under pressure. Cools down air.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID | PROP_LIFE_DEC | PROP_NEUTPASS;

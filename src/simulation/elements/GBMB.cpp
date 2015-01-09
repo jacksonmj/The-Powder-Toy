@@ -58,11 +58,13 @@ int GBMB_graphics(GRAPHICS_FUNC_ARGS)
 
 void GBMB_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_GBMB";
-	elem->Name = "GBMB";
+	elem->ui->Name = "GBMB";
 	elem->Colour = COLPACK(0x1144BB);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_EXPLOSIVE;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.6f;
@@ -85,7 +87,7 @@ void GBMB_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP-2.0f	+273.15f;
 	elem->HeatConduct = 29;
 	elem->Latent = 0;
-	elem->Description = "Gravity bomb. Sticks to the first object it touches then produces a strong gravity push.";
+	elem->ui->Description = "Gravity bomb. Sticks to the first object it touches then produces a strong gravity push.";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_PART|PROP_LIFE_DEC|PROP_LIFE_KILL_DEC;

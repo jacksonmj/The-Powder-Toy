@@ -177,11 +177,13 @@ int SPNG_graphics(GRAPHICS_FUNC_ARGS)
 
 void SPNG_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_SPNG";
-	elem->Name = "SPNG";
+	elem->ui->Name = "SPNG";
 	elem->Colour = COLPACK(0xFFBE30);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.00f;
@@ -204,7 +206,7 @@ void SPNG_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f +273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Sponge, absorbs water. Is not a moving solid.";
+	elem->ui->Description = "Sponge, absorbs water. Is not a moving solid.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

@@ -14,17 +14,16 @@
  */
 
 #include "simulation/Element.h"
+#include "simulation/Element_UI.h"
 #include "simulation/Simulation.h"
 
 #include "powdergraphics.h"
 
 
 Element::Element() :
+	ui(new Element_UI(this)),
 	Identifier(""),
-	Name(""),
 	Colour(COLPACK(0xFFFFFF)),
-	MenuVisible(0),
-	MenuSection(0),
 	Enabled(0),
 	Advection(0.0f),
 	AirDrag(0.0f),
@@ -41,9 +40,7 @@ Element::Element() :
 	Hardness(0),
 	PhotonReflectWavelengths(0x3FFFFFFF),
 	Weight(100),
-	HeatConduct(255),
 	Latent(0),
-	Description(""),
 	State(ST_NONE),
 	Properties(0),
 	LowPressureTransitionThreshold(IPL),
@@ -54,6 +51,7 @@ Element::Element() :
 	LowTemperatureTransitionElement(NT),
 	HighTemperatureTransitionThreshold(ITH),
 	HighTemperatureTransitionElement(NT),
+	HeatConduct(255),
 	Update(NULL),
 	Graphics(&Element::Graphics_default),
 	Func_Create(NULL),

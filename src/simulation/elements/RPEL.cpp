@@ -39,11 +39,13 @@ int RPEL_update(UPDATE_FUNC_ARGS)
 
 void RPEL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_RPEL";
-	elem->Name = "RPEL";
+	elem->ui->Name = "RPEL";
 	elem->Colour = COLPACK(0x99CC00);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_FORCE;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_FORCE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -66,7 +68,7 @@ void RPEL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 20.0f+0.0f	+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Repels or attracts particles based on its temperature.";
+	elem->ui->Description = "Repels or attracts particles based on its temperature.";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_SOLID;

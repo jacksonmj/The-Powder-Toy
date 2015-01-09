@@ -63,11 +63,13 @@ int CONV_update(UPDATE_FUNC_ARGS)
 
 void CONV_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_CONV";
-	elem->Name = "CONV";
+	elem->ui->Name = "CONV";
 	elem->Colour = COLPACK(0x0AAB0A);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SPECIAL;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SPECIAL;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -90,7 +92,7 @@ void CONV_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Solid. Converts everything into whatever it first touches.";
+	elem->ui->Description = "Solid. Converts everything into whatever it first touches.";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_SOLID | PROP_DRAWONCTYPE | PROP_NOCTYPEDRAW;

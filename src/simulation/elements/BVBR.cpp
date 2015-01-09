@@ -20,11 +20,13 @@ int VIBR_graphics(GRAPHICS_FUNC_ARGS);
 
 void BVBR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_BVBR";
-	elem->Name = "BVBR";
+	elem->ui->Name = "BVBR";
 	elem->Colour = COLPACK(0x002900);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_NUCLEAR;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.3f;
@@ -47,7 +49,7 @@ void BVBR_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 273.15f;
 	elem->HeatConduct = 164;
 	elem->Latent = 0;
-	elem->Description = "Broken vibranium.";
+	elem->ui->Description = "Broken vibranium.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART|PROP_LIFE_DEC;

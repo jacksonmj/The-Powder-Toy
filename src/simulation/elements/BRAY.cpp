@@ -14,6 +14,7 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/elements-shared/Element_UI_ctypeWavelengths.h"
 
 int BRAY_graphics(GRAPHICS_FUNC_ARGS)
 {
@@ -74,11 +75,13 @@ int BRAY_graphics(GRAPHICS_FUNC_ARGS)
 
 void BRAY_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI_ctypeWavelengths>();
+
 	elem->Identifier = "DEFAULT_PT_BRAY";
-	elem->Name = "BRAY";
+	elem->ui->Name = "BRAY";
 	elem->Colour = COLPACK(0xFFFFFF);
-	elem->MenuVisible = 0;
-	elem->MenuSection = SC_ELEC;
+	elem->ui->MenuVisible = 0;
+	elem->ui->MenuSection = SC_ELEC;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -101,7 +104,7 @@ void BRAY_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f +273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Ray Point. Rays create points when they collide.";
+	elem->ui->Description = "Ray Point. Rays create points when they collide.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_LIFE_DEC|PROP_LIFE_KILL;

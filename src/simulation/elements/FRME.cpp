@@ -28,11 +28,13 @@ int FRME_graphics(GRAPHICS_FUNC_ARGS)
 
 void FRME_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_FRME";
-	elem->Name = "FRME";
+	elem->ui->Name = "FRME";
 	elem->Colour = COLPACK(0x999988);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_FORCE;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_FORCE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -55,7 +57,7 @@ void FRME_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f +273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Frame, can be used with pistons to push many particles.";
+	elem->ui->Description = "Frame, can be used with pistons to push many particles.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_LIFE_DEC;

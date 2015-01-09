@@ -17,11 +17,13 @@
 
 void PLEX_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_PLEX";
-	elem->Name = "C-4";
+	elem->ui->Name = "C-4";
 	elem->Colour = COLPACK(0xD080E0);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_EXPLOSIVE;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -45,7 +47,7 @@ void PLEX_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 88;
 	elem->Latent = 0;
-	elem->Description = "Solid pressure sensitive explosive.";
+	elem->ui->Description = "Solid pressure sensitive explosive.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID | PROP_NEUTPENETRATE;

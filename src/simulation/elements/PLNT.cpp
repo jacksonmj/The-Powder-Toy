@@ -106,11 +106,13 @@ int PLNT_graphics(GRAPHICS_FUNC_ARGS)
 
 void PLNT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_PLNT";
-	elem->Name = "PLNT";
+	elem->ui->Name = "PLNT";
 	elem->Colour = COLPACK(0x0CAC00);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -134,7 +136,7 @@ void PLNT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 65;
 	elem->Latent = 0;
-	elem->Description = "Plant, drinks water and grows.";
+	elem->ui->Description = "Plant, drinks water and grows.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_NEUTPENETRATE|PROP_LIFE_DEC;

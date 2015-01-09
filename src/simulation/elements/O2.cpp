@@ -77,11 +77,13 @@ int O2_update(UPDATE_FUNC_ARGS)
 
 void O2_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_O2";
-	elem->Name = "OXYG";
+	elem->ui->Name = "OXYG";
 	elem->Colour = COLPACK(0x80A0FF);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_GAS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_GAS;
 	elem->Enabled = 1;
 
 	elem->Advection = 2.0f;
@@ -104,7 +106,7 @@ void O2_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 70;
 	elem->Latent = 0;
-	elem->Description = "Oxygen gas. Ignites easily.";
+	elem->ui->Description = "Oxygen gas. Ignites easily.";
 
 	elem->State = ST_GAS;
 	elem->Properties = TYPE_GAS;

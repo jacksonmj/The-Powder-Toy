@@ -30,11 +30,13 @@ bool SPAWN_create_allowed(ELEMENT_CREATE_ALLOWED_FUNC_ARGS)
 
 void SPAWN_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_SPAWN";
-	elem->Name = "SPWN";
+	elem->ui->Name = "SPWN";
 	elem->Colour = COLPACK(0xAAAAAA);
-	elem->MenuVisible = 0;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 0;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -57,7 +59,7 @@ void SPAWN_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "STKM spawn point.";
+	elem->ui->Description = "STKM spawn point.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

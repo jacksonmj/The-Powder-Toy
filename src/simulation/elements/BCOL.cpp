@@ -66,11 +66,13 @@ int BCOL_update(UPDATE_FUNC_ARGS)
 
 void BCOL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_BCOL";
-	elem->Name = "BCOL";
+	elem->ui->Name = "BCOL";
 	elem->Colour = COLPACK(0x333333);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_POWDERS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.4f;
@@ -94,7 +96,7 @@ void BCOL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 150;
 	elem->Latent = 0;
-	elem->Description = "Broken Coal. Heavy particles, burns slowly.";
+	elem->ui->Description = "Broken Coal. Heavy particles, burns slowly.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART;

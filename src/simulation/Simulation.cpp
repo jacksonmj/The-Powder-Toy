@@ -23,12 +23,9 @@
 #include "simulation/Element.h"
 #include "simulation/ElemDataSim.h"
 #include "simulation/Simulation.h"
+#include "simulation/SimulationSharedData.h"
 #include <cmath>
-
-// Declare the element initialisation functions
-#define ElementNumbers_Include_Decl
-#define DEFINE_ELEMENT(name, id) void name ## _init_element(ELEMENT_INIT_FUNC_ARGS);
-#include "simulation/ElementNumbers.h"
+#include <algorithm>
 
 #include "simulation/elements-shared/noHeatSim.h"
 
@@ -41,16 +38,23 @@
 
 Simulation *globalSim = NULL; // TODO: remove this global variable
 
-Simulation::Simulation() :
+Simulation::Simulation(std::shared_ptr<SimulationSharedData> sd) :
+	simSD(sd),
 	pfree(-1),
 	heat_mode(1)
 {
 	int t;
+	elements = simSD->elements;
+	std::fill(elemDataSim_, elemDataSim_+PT_NUM, nullptr);
+
 	for (t=0; t<PT_NUM; t++)
 	{
-		elemDataSim_[t] = NULL;
+		if (elements[t].Func_SimInit)
+			(*elements[t].Func_SimInit)(this, t);
 	}
+
 	Clear();
+	Simulation_Compat_CopyData(this);
 }
 
 Simulation::~Simulation()
@@ -62,18 +66,9 @@ Simulation::~Simulation()
 	}
 }
 
-void Simulation::InitElements()
-{
-	#define DEFINE_ELEMENT(name, id) if (id>=0 && id<PT_NUM) { name ## _init_element(this, &elements[id], id); };
-	#define ElementNumbers_Include_Call
-	#include "simulation/ElementNumbers.h"
-
-	Simulation_Compat_CopyData(this);
-}
-
 void Simulation::Clear()
 {
-	int t,i;
+	int i;
 
 	option_edgeMode(0);
 
@@ -88,6 +83,7 @@ void Simulation::Clear()
 	}
 
 	memset(parts, 0, sizeof(particle)*NPART);
+	parts_lastActiveIndex = 0;
 #ifdef DEBUG_PARTSALLOC
 	for (i=0; i<NPART; i++)
 		partsFree[i] = true;
@@ -358,7 +354,7 @@ bool Simulation::Check()
 	{
 		if (elementCount[i]!=elementCountCheck[i])
 		{
-			printf("elementCount for %s is wrong: value is %d, should be %d\n", elements[i].Name.c_str(), elementCount[i], elementCountCheck[i]);
+			printf("elementCount for %s is wrong: value is %d, should be %d\n", elements[i].Identifier.c_str(), elementCount[i], elementCountCheck[i]);
 			isGood = false;
 		}
 	}
@@ -2677,6 +2673,9 @@ void Simulation::option_edgeMode(short newMode)
 	}
 }
 
+
+#include "simulation/Element_UI.h"
+
 void Simulation_Compat_CopyData(Simulation* sim)
 {
 	// TODO: this can be removed once all the code uses Simulation instead of global variables
@@ -2685,10 +2684,10 @@ void Simulation_Compat_CopyData(Simulation* sim)
 
 	for (int t=0; t<PT_NUM; t++)
 	{
-		ptypes[t].name = mystrdup(sim->elements[t].Name.c_str());
+		ptypes[t].name = mystrdup(sim->elements[t].ui->Name.c_str());
 		ptypes[t].pcolors = PIXRGB(COLR(sim->elements[t].Colour), COLG(sim->elements[t].Colour), COLB(sim->elements[t].Colour));
-		ptypes[t].menu = sim->elements[t].MenuVisible;
-		ptypes[t].menusection = sim->elements[t].MenuSection;
+		ptypes[t].menu = sim->elements[t].ui->MenuVisible;
+		ptypes[t].menusection = sim->elements[t].ui->MenuSection;
 		ptypes[t].enabled = sim->elements[t].Enabled;
 		ptypes[t].advection = sim->elements[t].Advection;
 		ptypes[t].airdrag = sim->elements[t].AirDrag;
@@ -2706,7 +2705,7 @@ void Simulation_Compat_CopyData(Simulation* sim)
 		ptypes[t].weight = sim->elements[t].Weight;
 		ptypes[t].heat = sim->elements[t].DefaultProperties.temp;
 		ptypes[t].hconduct = sim->elements[t].HeatConduct;
-		ptypes[t].descs = mystrdup(sim->elements[t].Description.c_str());
+		ptypes[t].descs = mystrdup(sim->elements[t].ui->Description.c_str());
 		ptypes[t].state = sim->elements[t].State;
 		ptypes[t].properties = sim->elements[t].Properties;
 		ptypes[t].update_func = sim->elements[t].Update;

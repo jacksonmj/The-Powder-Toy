@@ -86,11 +86,13 @@ int STOR_graphics(GRAPHICS_FUNC_ARGS)
 
 void STOR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_STOR";
-	elem->Name = "STOR";
+	elem->ui->Name = "STOR";
 	elem->Colour = COLPACK(0x50DFDF);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_POWERED;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_POWERED;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -113,7 +115,7 @@ void STOR_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Captures and stores a single particle. releases when charged with PSCN, also passes to PIPE.";
+	elem->ui->Description = "Captures and stores a single particle. releases when charged with PSCN, also passes to PIPE.";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_SOLID | PROP_NOCTYPEDRAW;

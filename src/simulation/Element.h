@@ -13,11 +13,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ELEMENT_H
-#define ELEMENT_H
+#ifndef Simulation_Element_H
+#define Simulation_Element_H
 
 #include "graphics/ARGBColour.h"
 #include "simulation/Particle.h"
+#include "simulation/Element_UI.h"
 #include <string>
 
 class Simulation;
@@ -30,16 +31,15 @@ class Simulation;
 #define ELEMENT_CREATE_OVERRIDE_FUNC_ARGS Simulation *sim, int p, int x, int y, int t
 #define ELEMENT_CREATE_ALLOWED_FUNC_ARGS Simulation *sim, int i, int x, int y, int t
 #define ELEMENT_CHANGETYPE_FUNC_ARGS Simulation *sim, int i, int x, int y, int from, int to
-
+#define ELEMENT_SIMINIT_FUNC_ARGS Simulation *sim, int t
 
 class Element
 {
 public:
+	Element_UI *ui;
+
 	std::string Identifier;
-	std::string Name;
 	ARGBColour Colour;
-	int MenuVisible;
-	int MenuSection;
 	int Enabled;
 
 	float Advection;
@@ -70,7 +70,6 @@ public:
 
 	// Latent value is in TPT imaginary units - 750/226*enthalpy value of the material
 	unsigned int Latent;
-	std::string Description;
 
 	char State;
 	// NB: if (Properties&TYPE_ENERGY) is changed, pmap needs rebuilding (sim->pmap_reset()) since it is divided according to this property
@@ -114,10 +113,20 @@ public:
 	// For part_kill, it is called at the start of the function, before modifying particle properties or removing it from the pmap
 	void (*Func_ChangeType)(ELEMENT_CHANGETYPE_FUNC_ARGS);
 
+	// Func_SimInit is called when a simulation is created, normally just used to create ElemDataSim objects for the new simulation
+	void (*Func_SimInit)(ELEMENT_SIMINIT_FUNC_ARGS);
+
 	particle DefaultProperties;
 
+	template<class ElemUI_Class_T, typename... Args>
+	void ui_create(Args&&... args) {
+		delete ui;
+		ui = new ElemUI_Class_T(this, args...);
+	}
 	Element();
-	virtual ~Element() {}
+	virtual ~Element() {
+		delete ui;
+	}
 	static int Graphics_default(GRAPHICS_FUNC_ARGS);
 };
 

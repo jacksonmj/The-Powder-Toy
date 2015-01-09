@@ -138,11 +138,13 @@ int VIRS_graphics(GRAPHICS_FUNC_ARGS)
 
 void VIRS_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_VIRS";
-	elem->Name = "VIRS";
+	elem->ui->Name = "VIRS";
 	elem->Colour = COLPACK(0xFE11F6);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_LIQUID;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.6f;
@@ -165,7 +167,7 @@ void VIRS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 72.0f	+ 273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Virus. Turns everything it touches into virus.";
+	elem->ui->Description = "Virus. Turns everything it touches into virus.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID|PROP_DEADLY;

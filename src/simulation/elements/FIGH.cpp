@@ -132,11 +132,13 @@ void FIGH_ChangeType(ELEMENT_CHANGETYPE_FUNC_ARGS)
 
 void FIGH_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_FIGH";
-	elem->Name = "FIGH";
+	elem->ui->Name = "FIGH";
 	elem->Colour = COLPACK(0xFFE0A0);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SPECIAL;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SPECIAL;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.5f;
@@ -159,7 +161,7 @@ void FIGH_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+14.6f+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Fighter. Tries to kill stickmen. You must first give it an element to kill him with.";
+	elem->ui->Description = "Fighter. Tries to kill stickmen. You must first give it an element to kill him with.";
 
 	elem->State = ST_NONE;
 	elem->Properties = PROP_NOCTYPEDRAW;
@@ -179,7 +181,6 @@ void FIGH_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Graphics = &STKM_graphics;
 	elem->Func_Create_Allowed = &FIGH_create_allowed;
 	elem->Func_ChangeType = &FIGH_ChangeType;
-
-	sim->elemData(t, new FIGH_ElemDataSim(sim));
+	elem->Func_SimInit = &SimInit_createElemData<FIGH_ElemDataSim>;
 }
 

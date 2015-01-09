@@ -61,11 +61,13 @@ int GPMP_graphics(GRAPHICS_FUNC_ARGS)
 
 void GPMP_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_GPMP";
-	elem->Name = "GPMP";
+	elem->ui->Name = "GPMP";
 	elem->Colour = COLPACK(0x0A3B3B);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_POWERED;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_POWERED;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -88,7 +90,7 @@ void GPMP_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 0.0f		+273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Gravity pump. Changes gravity to its temp when activated. (use HEAT/COOL)";
+	elem->ui->Description = "Gravity pump. Changes gravity to its temp when activated. (use HEAT/COOL)";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_SOLID;

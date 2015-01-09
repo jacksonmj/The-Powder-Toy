@@ -43,11 +43,13 @@ int FRZZ_update(UPDATE_FUNC_ARGS)
 
 void FRZZ_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_FRZZ";
-	elem->Name = "FRZZ";
+	elem->ui->Name = "FRZZ";
 	elem->Colour = COLPACK(0xC0E0FF);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_POWDERS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.7f;
@@ -70,7 +72,7 @@ void FRZZ_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 253.15f;
 	elem->HeatConduct = 46;
 	elem->Latent = 0;
-	elem->Description = "Freeze powder. When melted, forms ice that always cools. Spreads with regular water.";
+	elem->ui->Description = "Freeze powder. When melted, forms ice that always cools. Spreads with regular water.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART;

@@ -172,11 +172,13 @@ void PROT_create(ELEMENT_CREATE_FUNC_ARGS)
 
 void PROT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_PROT";
-	elem->Name = "PROT";
+	elem->ui->Name = "PROT";
 	elem->Colour = COLPACK(0x990000);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_NUCLEAR;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_NUCLEAR;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -199,7 +201,7 @@ void PROT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+273.15f;
 	elem->HeatConduct = 61;
 	elem->Latent = 0;
-	elem->Description = "Protons. Transfer heat to materials, and removes sparks.";
+	elem->ui->Description = "Protons. Transfer heat to materials, and removes sparks.";
 
 	elem->State = ST_GAS;
 	elem->Properties = TYPE_ENERGY;

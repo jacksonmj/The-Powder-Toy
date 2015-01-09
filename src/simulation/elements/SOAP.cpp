@@ -285,11 +285,13 @@ int SOAP_graphics(GRAPHICS_FUNC_ARGS)
 
 void SOAP_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_SOAP";
-	elem->Name = "SOAP";
+	elem->ui->Name = "SOAP";
 	elem->Colour = COLPACK(0xF5F5DC);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_LIQUID;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.6f;
@@ -312,7 +314,7 @@ void SOAP_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP-2.0f	+273.15f;
 	elem->HeatConduct = 29;
 	elem->Latent = 0;
-	elem->Description = "Soap. Creates bubbles. Washes off deco color, and cures virus.";
+	elem->ui->Description = "Soap. Creates bubbles. Washes off deco color, and cures virus.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID|PROP_NEUTPENETRATE|PROP_LIFE_DEC;

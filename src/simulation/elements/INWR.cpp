@@ -17,11 +17,13 @@
 
 void INWR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_INWR";
-	elem->Name = "INWR";
+	elem->ui->Name = "INWR";
 	elem->Colour = COLPACK(0x544141);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_ELEC;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_ELEC;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -44,7 +46,7 @@ void INWR_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Insulated Wire. Doesn't conduct to metal or semiconductors.";
+	elem->ui->Description = "Insulated Wire. Doesn't conduct to metal or semiconductors.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_CONDUCTS|PROP_LIFE_DEC;

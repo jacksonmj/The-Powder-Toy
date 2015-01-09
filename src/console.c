@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "simulation/ElementNumbers.h"
 #include <powder.h>
 #include <console.h>
 #include <math.h>
@@ -72,11 +73,13 @@ int console_parse_partref(const char *txt, int *which, char *err)
 	if (err) strcpy(err,"");
 	if (strchr(txt,',') && console_parse_coords(txt, &nx, &ny, err))
 	{
-		i = pmap[ny][nx];
+		/*i = pmap[ny][nx];
 		if (!i)
 			i = -1;
 		else
-			i = i>>8;
+			i = i>>8;*/
+		// TODO: fix
+		i = -1;
 	}
 	else if (txt)
 	{

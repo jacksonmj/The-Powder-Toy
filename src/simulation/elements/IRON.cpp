@@ -61,11 +61,13 @@ succ:
 
 void IRON_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_IRON";
-	elem->Name = "IRON";
+	elem->ui->Name = "IRON";
 	elem->Colour = COLPACK(0x707070);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -88,7 +90,7 @@ void IRON_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f +273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Rusts with salt, can be used for electrolysis of WATR.";
+	elem->ui->Description = "Rusts with salt, can be used for electrolysis of WATR.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_CONDUCTS|PROP_LIFE_DEC|PROP_HOT_GLOW;

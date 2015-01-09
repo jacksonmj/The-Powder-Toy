@@ -94,11 +94,13 @@ int COAL_graphics(GRAPHICS_FUNC_ARGS) //Both COAL and Broken Coal
 
 void COAL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_COAL";
-	elem->Name = "COAL";
+	elem->ui->Name = "COAL";
 	elem->Colour = COLPACK(0x222222);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -122,7 +124,7 @@ void COAL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 200;
 	elem->Latent = 0;
-	elem->Description = "Coal, Burns very slowly. Gets red when hot.";
+	elem->ui->Description = "Coal, Burns very slowly. Gets red when hot.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

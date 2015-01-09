@@ -142,11 +142,13 @@ void QRTZ_create(ELEMENT_CREATE_FUNC_ARGS)
 
 void QRTZ_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_QRTZ";
-	elem->Name = "QRTZ";
+	elem->ui->Name = "QRTZ";
 	elem->Colour = COLPACK(0xAADDDD);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -169,7 +171,7 @@ void QRTZ_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 3;
 	elem->Latent = 0;
-	elem->Description = "Quartz, breakable mineral. Conducts but becomes brittle at lower temperatures.";
+	elem->ui->Description = "Quartz, breakable mineral. Conducts but becomes brittle at lower temperatures.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_HOT_GLOW|PROP_LIFE_DEC;

@@ -23,7 +23,11 @@
 #include "simulation/Element.h"
 #include "simulation/Simulation.h"
 
-
+template<class ElemDataClass_T>
+void SimInit_createElemData(ELEMENT_SIMINIT_FUNC_ARGS)
+{
+	sim->elemData_create<ElemDataClass_T>(t, sim);
+}
 
 #include "powder.h"
 #include "gravity.h"

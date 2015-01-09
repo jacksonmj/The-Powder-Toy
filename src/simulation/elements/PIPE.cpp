@@ -14,8 +14,12 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/elements/PIPE.h"
 #include "simulation/elements/PRTI.h"
 #include "simulation/elements/SOAP.h"
+
+#include <algorithm>
+#include <locale>
 
 #define PFLAG_NORMALSPEED 0x00010000
 
@@ -508,7 +512,7 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 int PIPE_graphics(GRAPHICS_FUNC_ARGS)
 {
 
-	if (sim->IsValidElement(cpart->tmp&0xFF))
+	if ((cpart->tmp&0xFF) && sim->IsValidElement(cpart->tmp&0xFF))
 	{
 		//Create a temp. particle and do a subcall.
 		particle tpart;
@@ -536,9 +540,9 @@ int PIPE_graphics(GRAPHICS_FUNC_ARGS)
 		}
 		else
 		{
-			*colr = PIXR(sim->elements[t].Colour);
-			*colg = PIXG(sim->elements[t].Colour);
-			*colb = PIXB(sim->elements[t].Colour);
+			*colr = COLR(sim->elements[t].Colour);
+			*colg = COLG(sim->elements[t].Colour);
+			*colb = COLB(sim->elements[t].Colour);
 			if (sim->elements[t].Graphics)
 			{
 				(*(sim->elements[t].Graphics))(sim, &tpart, nx, ny, pixel_mode, cola, colr, colg, colb, firea, firer, fireg, fireb);
@@ -594,13 +598,31 @@ int PIPE_graphics(GRAPHICS_FUNC_ARGS)
 	return 0;
 }
 
+std::string Element_UI_PIPE::getHUDText(Simulation *sim, int i, bool debugMode)
+{
+	int storedElem = (sim->parts[i].tmp&0xFF);
+	if (!sim->IsValidElement(storedElem))
+		storedElem = PT_NONE;
+	if (!storedElem)
+		return Name;
+
+	std::string storedName = sim->elements[storedElem].ui->Name;
+	std::transform(storedName.begin(), storedName.end(), storedName.begin(), ::tolower);
+	if (sim->parts[i].type==PT_PPIP)
+		return "PPIP with " + storedName;
+	else
+		return "Pipe with " + storedName;
+}
+
 void PIPE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI_PIPE>();
+
 	elem->Identifier = "DEFAULT_PT_PIPE";
-	elem->Name = "PIPE";
+	elem->ui->Name = "PIPE";
 	elem->Colour = COLPACK(0x444444);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_FORCE;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_FORCE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -623,7 +645,7 @@ void PIPE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "PIPE, moves particles around. Once the BRCK generates, erase some for the exit. Then the PIPE generates and is usable.";
+	elem->ui->Description = "PIPE, moves particles around. Once the BRCK generates, erase some for the exit. Then the PIPE generates and is usable.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_LIFE_DEC;

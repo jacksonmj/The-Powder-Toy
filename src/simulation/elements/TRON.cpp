@@ -259,11 +259,13 @@ void TRON_create(ELEMENT_CREATE_FUNC_ARGS)
 
 void TRON_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_TRON";
-	elem->Name = "TRON";
+	elem->ui->Name = "TRON";
 	elem->Colour = COLPACK(0xA9FF00);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SPECIAL;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SPECIAL;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -286,7 +288,7 @@ void TRON_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 0.0f;
 	elem->HeatConduct = 40;
 	elem->Latent = 0;
-	elem->Description = "Smart particles, Travels in straight lines and avoids obstacles. Grows with time.";
+	elem->ui->Description = "Smart particles, Travels in straight lines and avoids obstacles. Grows with time.";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_SOLID|PROP_LIFE_DEC|PROP_LIFE_KILL;

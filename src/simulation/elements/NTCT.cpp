@@ -24,11 +24,13 @@ int NPTCT_update(UPDATE_FUNC_ARGS)
 
 void NTCT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_NTCT";
-	elem->Name = "NTCT";
+	elem->ui->Name = "NTCT";
 	elem->Colour = COLPACK(0x505040);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_ELEC;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_ELEC;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -51,7 +53,7 @@ void NTCT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Semi-conductor. Only conducts electricity when hot. (More than 100C)";
+	elem->ui->Description = "Semi-conductor. Only conducts electricity when hot. (More than 100C)";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_CONDUCTS|PROP_LIFE_DEC;

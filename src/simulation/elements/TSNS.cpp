@@ -56,11 +56,13 @@ int TSNS_update(UPDATE_FUNC_ARGS)
 
 void TSNS_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_TSNS";
-	elem->Name = "TSNS";
+	elem->ui->Name = "TSNS";
 	elem->Colour = COLPACK(0xFD00D5);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SENSOR;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SENSOR;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -83,7 +85,7 @@ void TSNS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f  +273.15f;
 	elem->HeatConduct = 0;
 	elem->Latent = 0;
-	elem->Description = "Temperature sensor, creates a spark when there's a nearby particle with a greater temperature.";
+	elem->ui->Description = "Temperature sensor, creates a spark when there's a nearby particle with a greater temperature.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

@@ -8,7 +8,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
 file(GLOB powder_SRC
     "src/*.c"
-    "src/elements/*.c"
     "src/*.cpp"
     "src/common/*.cpp"
     "src/lib/resampler/*.cpp"
@@ -23,6 +22,12 @@ include_directories(includes)
 include_directories(src)
 add_executable(powder ${powder_SRC})
 
+if(CMAKE_COMPILER_IS_GNUCC)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c++11")
+endif(CMAKE_COMPILER_IS_GNUCC)
+if(CMAKE_COMPILER_IS_GNUCXX)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif(CMAKE_COMPILER_IS_GNUCXX)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	add_definitions(-DLIN32)

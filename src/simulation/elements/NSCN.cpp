@@ -17,11 +17,13 @@
 
 void NSCN_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_NSCN";
-	elem->Name = "NSCN";
+	elem->ui->Name = "NSCN";
 	elem->Colour = COLPACK(0x505080);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_ELEC;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_ELEC;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -45,7 +47,7 @@ void NSCN_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "N-Type Silicon, Will not transfer current to P-Type Silicon.";
+	elem->ui->Description = "N-Type Silicon, Will not transfer current to P-Type Silicon.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_CONDUCTS|PROP_LIFE_DEC;

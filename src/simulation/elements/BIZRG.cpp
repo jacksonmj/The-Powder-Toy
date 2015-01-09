@@ -14,17 +14,20 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/elements-shared/Element_UI_ctypeWavelengths.h"
 
 int BIZR_update(UPDATE_FUNC_ARGS);
 int BIZR_graphics(GRAPHICS_FUNC_ARGS);
 
 void BIZRG_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI_ctypeWavelengths>();
+
 	elem->Identifier = "DEFAULT_PT_BIZRG";
-	elem->Name = "BIZG";
+	elem->ui->Name = "BIZG";
 	elem->Colour = COLPACK(0x00FFBB);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_CRACKER2;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_CRACKER2;
 	elem->Enabled = 1;
 
 	elem->Advection = 1.0f;
@@ -47,7 +50,7 @@ void BIZRG_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP-200.0f+273.15f;
 	elem->HeatConduct = 42;
 	elem->Latent = 0;
-	elem->Description = "Bizarre gas.";
+	elem->ui->Description = "Bizarre gas.";
 
 	elem->State = ST_GAS;
 	elem->Properties = TYPE_GAS;

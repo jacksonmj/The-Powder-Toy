@@ -17,11 +17,13 @@
 
 void THRM_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_THRM";
-	elem->Name = "THRM";
+	elem->ui->Name = "THRM";
 	elem->Colour = COLPACK(0xA08090);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_EXPLOSIVE;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.4f;
@@ -44,7 +46,7 @@ void THRM_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 211;
 	elem->Latent = 0;
-	elem->Description = "Thermite. Burns at extremely high temperature.";
+	elem->ui->Description = "Thermite. Burns at extremely high temperature.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART;

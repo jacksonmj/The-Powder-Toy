@@ -30,11 +30,13 @@ int GOO_update(UPDATE_FUNC_ARGS)
 
 void GOO_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_GOO";
-	elem->Name = "GOO";
+	elem->ui->Name = "GOO";
 	elem->Colour = COLPACK(0x804000);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -58,7 +60,7 @@ void GOO_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 75;
 	elem->Latent = 0;
-	elem->Description = "Deforms and disappears under pressure.";
+	elem->ui->Description = "Deforms and disappears under pressure.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID | PROP_NEUTPENETRATE|PROP_LIFE_DEC|PROP_LIFE_KILL_DEC;

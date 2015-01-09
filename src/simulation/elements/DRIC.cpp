@@ -17,11 +17,13 @@
 
 void DRIC_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_DRIC";
-	elem->Name = "DRIC";
+	elem->ui->Name = "DRIC";
 	elem->Colour = COLPACK(0xE0E0E0);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_SOLIDS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_SOLIDS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -44,7 +46,7 @@ void DRIC_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 172.65f;
 	elem->HeatConduct = 2;
 	elem->Latent = 0;
-	elem->Description = "Dry Ice, formed when CO2 is cooled.";
+	elem->ui->Description = "Dry Ice, formed when CO2 is cooled.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

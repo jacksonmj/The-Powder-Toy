@@ -51,11 +51,13 @@ int BRMT_update(UPDATE_FUNC_ARGS)
 
 void BRMT_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_BRMT";
-	elem->Name = "BRMT";
+	elem->ui->Name = "BRMT";
 	elem->Colour = COLPACK(0x705060);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_POWDERS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.4f;
@@ -78,7 +80,7 @@ void BRMT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 211;
 	elem->Latent = 0;
-	elem->Description = "Broken metal. Created when iron rusts or when when metals break from pressure.";
+	elem->ui->Description = "Broken metal. Created when iron rusts or when when metals break from pressure.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART|PROP_CONDUCTS|PROP_LIFE_DEC|PROP_HOT_GLOW;

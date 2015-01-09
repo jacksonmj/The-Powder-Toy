@@ -56,11 +56,13 @@ int DCEL_graphics(GRAPHICS_FUNC_ARGS)
 
 void DCEL_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_DCEL";
-	elem->Name = "DCEL";
+	elem->ui->Name = "DCEL";
 	elem->Colour = COLPACK(0x99CC00);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_FORCE;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_FORCE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -83,7 +85,7 @@ void DCEL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Decelerator, slows down nearby elements.";
+	elem->ui->Description = "Decelerator, slows down nearby elements.";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_SOLID;

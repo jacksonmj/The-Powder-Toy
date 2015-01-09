@@ -41,11 +41,13 @@ int ANAR_update(UPDATE_FUNC_ARGS)
 
 void ANAR_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_ANAR";
-	elem->Name = "ANAR";
+	elem->ui->Name = "ANAR";
 	elem->Colour = COLPACK(0xFFFFEE);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_POWDERS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;
 
 	elem->Advection = -0.7f;
@@ -68,7 +70,7 @@ void ANAR_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 70;
 	elem->Latent = 0;
-	elem->Description = "Anti-air. Very light dust, which behaves opposite gravity.";
+	elem->ui->Description = "Anti-air. Very light dust, which behaves opposite gravity.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART;

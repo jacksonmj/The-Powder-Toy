@@ -17,11 +17,13 @@
 
 void PSTE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_PSTE";
-	elem->Name = "PSTE";
+	elem->ui->Name = "PSTE";
 	elem->Colour = COLPACK(0xAA99AA);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_LIQUID;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_LIQUID;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.6f;
@@ -44,7 +46,7 @@ void PSTE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP-2.0f	+273.15f;
 	elem->HeatConduct = 29;
 	elem->Latent = 0;
-	elem->Description = "Colloid, Hardens under pressure.";
+	elem->ui->Description = "Colloid, Hardens under pressure.";
 
 	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID;

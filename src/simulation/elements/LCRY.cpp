@@ -114,11 +114,13 @@ int LCRY_graphics(GRAPHICS_FUNC_ARGS)
 
 void LCRY_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_LCRY";
-	elem->Name = "LCRY";
+	elem->ui->Name = "LCRY";
 	elem->Colour = COLPACK(0x505050);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_POWERED;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_POWERED;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.0f;
@@ -141,7 +143,7 @@ void LCRY_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 251;
 	elem->Latent = 0;
-	elem->Description = "Liquid Crystal. Changes colour when charged. (PSCN Charges, NSCN Discharges)";
+	elem->ui->Description = "Liquid Crystal. Changes colour when charged. (PSCN Charges, NSCN Discharges)";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;

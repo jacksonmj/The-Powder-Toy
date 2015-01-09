@@ -34,6 +34,7 @@
 #include <bzlib.h>
 #include <time.h>
 #include <pthread.h>
+#include <memory>
 
 #ifdef WIN32
 #include <direct.h>
@@ -62,6 +63,7 @@
 #include "benchmark.h"
 
 #include "simulation/Simulation.h"
+#include "simulation/SimulationSharedData.h"
 #include "simulation/elements/STKM.h"
 
 pixel *vid_buf;
@@ -331,14 +333,11 @@ void clear_sim(void)
 	memset(emap, 0, sizeof(emap));
 	memset(signs, 0, sizeof(signs));
 	MSIGN = -1;
-	parts_lastActiveIndex = 0;
-	memset(pmap, 0, sizeof(pmap));
 	memset(pv, 0, sizeof(pv));
 	memset(vx, 0, sizeof(vx));
 	memset(vy, 0, sizeof(vy));
 	memset(fvx, 0, sizeof(fvx));
 	memset(fvy, 0, sizeof(fvy));
-	memset(photons, 0, sizeof(photons));
 	memset(gol2, 0, sizeof(gol2));
 	emp_decor = 0;
 	memset(pers_bg, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
@@ -692,7 +691,7 @@ int main(int argc, char *argv[])
 	if(load_data && load_size){
 		int parsestate = 0;
 		//parsestate = parse_save(load_data, load_size, 1, 0, 0);
-		parsestate = parse_save(load_data, load_size, 1, 0, 0, bmap, vx, vy, pv, fvx, fvy, signs, parts, pmap);
+		parsestate = parse_save(load_data, load_size, 1, 0, 0, bmap, vx, vy, pv, fvx, fvy, signs, parts);
 		
 		decorations_enable = 0;
 		for(i=0; i<30; i++){
@@ -755,8 +754,8 @@ int main(int argc, char *argv[])
 #else
 int main(int argc, char *argv[])
 {
-	Simulation *mainSim = new Simulation();
-	mainSim->InitElements();
+	std::shared_ptr<SimulationSharedData> simSD = std::make_shared<SimulationSharedData>();
+	Simulation *mainSim = new Simulation(simSD);
 	mainSim->InitCanMove();
 	globalSim = mainSim;
 
@@ -1167,7 +1166,7 @@ int main(int argc, char *argv[])
 			
 			svf_last = saveDataOpen;
 			svf_lsize = saveDataOpenSize;
-			if(parse_save(saveDataOpen, saveDataOpenSize, 1, 0, 0, bmap, fvx, fvy, vx, vy, pv, signs, parts, pmap))
+			if(parse_save(saveDataOpen, saveDataOpenSize, 1, 0, 0, bmap, fvx, fvy, vx, vy, pv, signs, parts))
 			{
 				saveOpenError = 1;
 				svf_last = NULL;
@@ -1761,7 +1760,7 @@ int main(int argc, char *argv[])
 
 					for (cbi=0; cbi<NPART; cbi++)
 						parts[cbi] = cb_parts[cbi];
-					parts_lastActiveIndex = NPART-1;
+					globalSim->parts_lastActiveIndex = NPART-1;
 
 					for (cby = 0; cby<(YRES/CELL); cby++)
 						for (cbx = 0; cbx<(XRES/CELL); cbx++)
@@ -1919,61 +1918,12 @@ int main(int argc, char *argv[])
 					cri = globalSim->pmap[y][x].first;
 				crt = parts[cri].type;
 
-				if (crt==PT_PHOT || crt==PT_BIZR || crt==PT_BIZRG || crt==PT_BIZRS || crt==PT_BRAY)
-					wavelength_gfx = parts[cri].ctype;
-				if (crt==PT_FILT && (parts[cri].ctype&0x3FFFFFFF))
+				if ((crt==PT_PHOT || crt==PT_BIZR || crt==PT_BIZRG || crt==PT_BIZRS || crt==PT_BRAY || crt==PT_FILT) && (parts[cri].ctype&0x3FFFFFFF))
 					wavelength_gfx = parts[cri].ctype;
 
-				if (crt==PT_LIFE && parts[cri].ctype>=0 && parts[cri].ctype<NGOLALT)
-				{
-					sprintf(nametext, "%s (%s)", ptypes[crt].name, gmenu[parts[cri].ctype].name);
-				}
-				else if (crt==PT_FILT)
-				{
-					const char* filtModes[] = {"set colour", "AND", "OR", "subtract colour", "red shift", "blue shift", "no effect", "XOR", "NOT", "old QRTZ scattering"};
-					if (parts[cri].tmp>=0 && parts[cri].tmp<=9)
-						sprintf(nametext, "%s (%s)", ptypes[crt].name, filtModes[parts[cri].tmp]);
-					else
-						sprintf(nametext, "%s (unknown mode)", ptypes[crt].name);
-				}
-				else if (crt==PT_LAVA && globalSim->IsValidElement(parts[cri].ctype))
-				{
-					char lowername[6];
-					int ix;
-					strcpy(lowername, ptypes[parts[cri].ctype].name);
-					for (ix = 0; lowername[ix]; ix++)
-						lowername[ix] = tolower(lowername[ix]);
+				std::string elemHudText = globalSim->elements[crt].ui->getHUDText(globalSim, cri, DEBUG_MODE);
+				strcpy(nametext, elemHudText.c_str());
 
-					sprintf(nametext, "Molten %s", lowername);
-				}
-				else if ((crt==PT_PIPE || crt == PT_PPIP) && globalSim->IsValidElement((parts[cri].tmp&0xFF)))
-				{
-					char lowername[6];
-					int ix;
-					strcpy(lowername, ptypes[parts[cri].tmp&0xFF].name);
-					for (ix = 0; lowername[ix]; ix++)
-						lowername[ix] = tolower(lowername[ix]);
-
-					sprintf(nametext, "Pipe with %s", lowername);
-				}
-				else if (DEBUG_MODE)
-				{
-					int tctype = parts[cri].ctype;
-					if (crt==PT_PIPE || crt == PT_PPIP)
-					{
-						tctype = parts[cri].tmp&0xFF;
-					}
-					if (!globalSim->IsValidElement(tctype))
-						tctype = 0;
-					if (wavelength_gfx)
-						sprintf(nametext, "%s (%d)", ptypes[crt].name, (parts[cri].ctype&0x3FFFFFFF));
-					else
-						sprintf(nametext, "%s (%s)", ptypes[crt].name, ptypes[tctype].name);
-				}
-				else
-				{
-					strcpy(nametext, ptypes[crt].name);
-				}
 				if (DEBUG_MODE)
 				{
 					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d, Tmp:%d", nametext, pv[y/CELL][x/CELL], parts[cri].temp-273.15f, parts[cri].life, parts[cri].tmp);
@@ -2210,7 +2160,7 @@ int main(int argc, char *argv[])
 			if (load_y<0) load_y=0;
 			if (bq==1 && !b)
 			{
-				parse_save(load_data, load_size, 0, load_x, load_y, bmap, vx, vy, pv, fvx, fvy, signs, parts, pmap);
+				parse_save(load_data, load_size, 0, load_x, load_y, bmap, vx, vy, pv, fvx, fvy, signs, parts);
 				free(load_data);
 				free(load_img);
 				load_mode = 0;
@@ -2410,7 +2360,7 @@ int main(int argc, char *argv[])
 					if (x>=19 && x<=35 && svf_last && !bq) {
 						//int tpval = sys_pause;
 						if (b == 1 || !strncmp(svf_id,"",8))
-							parse_save(svf_last, svf_lsize, 1, 0, 0, bmap, vx, vy, pv, fvx, fvy, signs, parts, pmap);
+							parse_save(svf_last, svf_lsize, 1, 0, 0, bmap, vx, vy, pv, fvx, fvy, signs, parts);
 						else
 							open_ui(vid_buf, svf_id, NULL);
 						//sys_pause = tpval;

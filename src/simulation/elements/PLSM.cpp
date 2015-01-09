@@ -74,11 +74,13 @@ int PLSM_update(UPDATE_FUNC_ARGS)
 
 void PLSM_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_PLSM";
-	elem->Name = "PLSM";
+	elem->ui->Name = "PLSM";
 	elem->Colour = COLPACK(0xBB99FF);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_GAS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_GAS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.9f;
@@ -101,7 +103,7 @@ void PLSM_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = 10000.0f	+273.15f;
 	elem->HeatConduct = 5;
 	elem->Latent = 0;
-	elem->Description = "Plasma, extremely hot.";
+	elem->ui->Description = "Plasma, extremely hot.";
 
 	elem->State = ST_NONE;
 	elem->Properties = TYPE_GAS|PROP_LIFE_DEC|PROP_LIFE_KILL;

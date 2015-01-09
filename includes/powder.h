@@ -17,6 +17,8 @@
 #ifndef POWDER_H
 #define POWDER_H
 
+#include "Config.h"
+
 #include "air.h"
 #include "graphics.h"
 #include "defines.h"
@@ -73,50 +75,8 @@
 #define WL_ALLOWENERGY 145
 #define WL_BLOCKAIR 147
 
-#include "simulation/ElementNumbers.h"
+
 #define OLD_PT_WIND 147
-#define PT_NUM  220
-
-#define R_TEMP 22
-#define MAX_TEMP 9999
-#define MIN_TEMP 0
-#define O_MAX_TEMP 3500
-#define O_MIN_TEMP -273
-
-#define ST_NONE 0
-#define ST_SOLID 1
-#define ST_LIQUID 2
-#define ST_GAS 3
-/*
-   TODO: We should start to implement these.
-*/
-#define TYPE_PART			0x00001 //1 Powders
-#define TYPE_LIQUID			0x00002 //2 Liquids
-#define TYPE_SOLID			0x00004 //4 Solids
-#define TYPE_GAS			0x00008 //8 Gases (Includes plasma)
-#define TYPE_ENERGY			0x00010 //16 Energy (Thunder, Light, Neutrons etc.)
-#define PROP_CONDUCTS		0x00020 //32 Conducts electricity
-#define PROP_BLACK			0x00040 //64 Absorbs Photons (not currently implemented or used, a photwl attribute might be better)
-#define PROP_NEUTPENETRATE	0x00080 //128 Penetrated by neutrons
-#define PROP_NEUTABSORB		0x00100 //256 Absorbs neutrons, reflect is default
-#define PROP_NEUTPASS		0x00200 //512 Neutrons pass through, such as with glass
-#define PROP_DEADLY			0x00400 //1024 Is deadly for stickman
-#define PROP_HOT_GLOW		0x00800 //2048 Hot Metal Glow
-#define PROP_LIFE			0x01000 //4096 Is a GoL type
-#define PROP_RADIOACTIVE	0x02000 //8192 Radioactive
-#define PROP_LIFE_DEC		0x04000 //2^14 Life decreases by one every frame if > zero
-#define PROP_LIFE_KILL		0x08000 //2^15 Kill when life value is <= zero
-#define PROP_LIFE_KILL_DEC	0x10000 //2^16 Kill when life value is decremented to<= zero
-#define PROP_SPARKSETTLE	0x20000	//2^17 Allow Sparks/Embers to settle
-#define PROP_NOAMBHEAT      0x40000 //2^18 Don't transfer or receive heat from ambient heat.
-#define PROP_DRAWONCTYPE       0x80000  //2^19 Set its ctype to another element if the element is drawn upon it (like what CLNE does)
-#define PROP_NOCTYPEDRAW       0x100000 // 2^20 When this element is drawn upon with, do not set ctype (like BCLN for CLNE)
-
-#define FLAG_STAGNANT	0x1
-#define FLAG_SKIPMOVE	0x2 // skip movement for one frame, only implemented for PHOT
-#define FLAG_WATEREQUAL	0x4 // if a liquid was already checked during equalization
-#define FLAG_MOVABLE	0x8 // compatibility with old saves (moving SPNG), only applies to SPNG
-#define FLAG_PHOTDECO  0x8 // compatibility with old saves (decorated photons), only applies to PHOT. Having the same value as FLAG_MOVABLE is fine because they apply to different elements, and this saves space for future flags.
 
 class Simulation;
 
@@ -175,15 +135,6 @@ typedef struct part_transition part_transition;
 extern part_type ptypes[PT_NUM];
 extern unsigned int platent[PT_NUM];
 
-// temporarily define abbreviations for impossible p/t values
-#define IPL -257.0f
-#define IPH 257.0f
-#define ITL MIN_TEMP-1
-#define ITH MAX_TEMP+1
-// no transition (PT_NONE means kill part)
-#define NT -1
-// special transition - lava ctypes etc need extra code, which is only found and run if ST is given
-#define ST PT_NUM
 extern part_transition ptransitions[PT_NUM];
 
 //Old IDs for GOL types
@@ -296,16 +247,12 @@ extern int airMode;
 
 extern particle *parts;
 extern particle *cb_parts;
-extern int parts_lastActiveIndex;
 
 extern unsigned char bmap[YRES/CELL][XRES/CELL];
 extern unsigned char emap[YRES/CELL][XRES/CELL];
 
 extern unsigned char cb_bmap[YRES/CELL][XRES/CELL];
 extern unsigned char cb_emap[YRES/CELL][XRES/CELL];
-
-extern unsigned pmap[YRES][XRES];
-extern unsigned photons[YRES][XRES];
 
 extern int GRAV;
 extern int GRAV_R;

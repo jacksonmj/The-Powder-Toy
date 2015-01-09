@@ -96,11 +96,13 @@ int FIRW_graphics(GRAPHICS_FUNC_ARGS)
 
 void FIRW_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_FIRW";
-	elem->Name = "FIRW";
+	elem->ui->Name = "FIRW";
 	elem->Colour = COLPACK(0xFFA040);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_EXPLOSIVE;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_EXPLOSIVE;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.2f;
@@ -123,7 +125,7 @@ void FIRW_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP+0.0f	+273.15f;
 	elem->HeatConduct = 70;
 	elem->Latent = 0;
-	elem->Description = "Fireworks! Colorful, set off by fire.";
+	elem->ui->Description = "Fireworks! Colorful, set off by fire.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART|PROP_LIFE_DEC;

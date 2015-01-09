@@ -19,11 +19,13 @@ int ICE_update(UPDATE_FUNC_ARGS);
 
 void SNOW_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
+	elem->ui_create<Element_UI>();
+
 	elem->Identifier = "DEFAULT_PT_SNOW";
-	elem->Name = "SNOW";
+	elem->ui->Name = "SNOW";
 	elem->Colour = COLPACK(0xC0E0FF);
-	elem->MenuVisible = 1;
-	elem->MenuSection = SC_POWDERS;
+	elem->ui->MenuVisible = 1;
+	elem->ui->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;
 
 	elem->Advection = 0.7f;
@@ -47,7 +49,7 @@ void SNOW_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->DefaultProperties.temp = R_TEMP-30.0f+273.15f;
 	elem->HeatConduct = 46;
 	elem->Latent = 1095;
-	elem->Description = "Light particles. Created when ICE breaks under pressure.";
+	elem->ui->Description = "Light particles. Created when ICE breaks under pressure.";
 
 	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART | PROP_LIFE_DEC | PROP_NEUTPASS;
