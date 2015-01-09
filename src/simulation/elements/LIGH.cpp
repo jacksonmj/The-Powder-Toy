@@ -15,6 +15,7 @@
 
 #include "simulation/ElementsCommon.h"
 #include "simulation/elements/STKM.h"
+#include "simulation/elements-shared/pyro.h"
 
 #define LIGHTING_POWER 0.65
 
@@ -182,7 +183,6 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 	int angle, angle2=-1;
 	int near;
 	powderful = parts[i].temp*(1+parts[i].life/40)*LIGHTING_POWER;
-	update_PYRO(UPDATE_FUNC_SUBCALL_ARGS);
 	if (aheat_enable)
 	{
 		hv[y/CELL][x/CELL]+=powderful/50;
@@ -196,6 +196,10 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
+					int ret = ElementsShared_pyro::update_neighbour(UPDATE_FUNC_SUBCALL_ARGS, rx,ry, parts[ri].type, ri);
+					if (ret==1) return 1;
+					if (ret==2) continue;
+
 					rt = parts[ri].type;
 					if (rt==PT_LIGH || rt==PT_TESC)
 						continue;

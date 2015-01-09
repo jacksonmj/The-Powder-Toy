@@ -14,6 +14,7 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/elements-shared/pyro.h"
 
 int LAVA_graphics(GRAPHICS_FUNC_ARGS)
 {
@@ -36,6 +37,22 @@ int LAVA_graphics(GRAPHICS_FUNC_ARGS)
 void LAVA_create(ELEMENT_CREATE_FUNC_ARGS)
 {
 	sim->parts[i].life = rand()%120+240;
+}
+
+int LAVA_update(UPDATE_FUNC_ARGS)
+{
+	int rx, ry, rcount, ri, rnext;
+	for (rx=-2; rx<3; rx++)
+		for (ry=-2; ry<3; ry++)
+			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+			{
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
+				{
+					if (ElementsShared_pyro::update_neighbour(UPDATE_FUNC_SUBCALL_ARGS, rx, ry, parts[ri].type, ri)==1)
+						return 1;
+				}
+			}
+	return 0;
 }
 
 void LAVA_init_element(ELEMENT_INIT_FUNC_ARGS)
@@ -82,7 +99,7 @@ void LAVA_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = &update_PYRO;
+	elem->Update = &LAVA_update;
 	elem->Graphics = &LAVA_graphics;
 	elem->Func_Create = &LAVA_create;
 }

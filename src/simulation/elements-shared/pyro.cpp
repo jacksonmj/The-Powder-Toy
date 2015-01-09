@@ -13,26 +13,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <element.h>
+#include "simulation/ElementsCommon.h"
+#include "simulation/elements-shared/pyro.h"
 
-int graphics_DEFAULT(GRAPHICS_FUNC_ARGS)
-{	
-	int t = cpart->type;
-	//Property based defaults
-	if(ptypes[t].properties & PROP_RADIOACTIVE) *pixel_mode |= PMODE_GLOW;
-	if(ptypes[t].properties & TYPE_LIQUID)
-	{
-		*pixel_mode |= PMODE_BLUR;
-	}
-	if(ptypes[t].properties & TYPE_GAS)
-	{
-		*pixel_mode &= ~PMODE;
-		*pixel_mode |= FIRE_BLEND;
-		*firer = *colr/2;
-		*fireg = *colg/2;
-		*fireb = *colb/2;
-		*firea = 125;
-		*pixel_mode |= DECO_FIRE;
-	}
-	return 1;
+int ElementsShared_pyro::update(UPDATE_FUNC_ARGS)
+{
+	int rx, ry, rcount, ri, rnext;
+	for (rx=-2; rx<3; rx++)
+		for (ry=-2; ry<3; ry++)
+			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+			{
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
+				{
+					if (ElementsShared_pyro::update_neighbour(UPDATE_FUNC_SUBCALL_ARGS, rx, ry, parts[ri].type, ri)==1)
+						return 1;
+				}
+			}
+	return 0;
 }

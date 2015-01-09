@@ -15,6 +15,7 @@
 
 #include "simulation/ElementsCommon.h"
 #include "simulation/elements/INST.h"
+#include "simulation/elements-shared/pyro.h"
 
 int NPTCT_update(UPDATE_FUNC_ARGS);
 
@@ -22,7 +23,6 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 {
 	int rx, ry, nearp, ct = parts[i].ctype;
 	int rcount, ri, rnext;
-	update_PYRO(UPDATE_FUNC_SUBCALL_ARGS);
 
 	if (parts[i].life<=0)
 	{
@@ -144,6 +144,10 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 				bool spark_blocked = sim->is_spark_blocked(x,y,x+rx,y+ry); // is spark blocked by insl
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
+					int ret = ElementsShared_pyro::update_neighbour(UPDATE_FUNC_SUBCALL_ARGS, rx,ry, parts[ri].type, ri);
+					if (ret==1) return 1;
+					if (ret==2) continue;
+
 					receiver = parts[ri].type;
 					//receiver is the element SPRK is trying to conduct to
 					//sender is the element the SPRK is on
@@ -312,7 +316,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 					}
 					else if (sender==PT_ETRD && parts[i].life==5) //ETRD is odd and conducts to others only at life 5, this could probably be somewhere else
 					{
-						part_change_type(i,x,y,sender);
+						sim->part_change_type(i,x,y,sender);
 						parts[i].ctype = PT_NONE;
 						parts[i].life = 20;
 						sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);

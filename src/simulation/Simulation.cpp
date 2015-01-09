@@ -30,6 +30,7 @@
 #define DEFINE_ELEMENT(name, id) void name ## _init_element(ELEMENT_INIT_FUNC_ARGS);
 #include "simulation/ElementNumbers.h"
 
+#include "simulation/elements-shared/noHeatSim.h"
 
 #include "simulation/elements/FIGH.h"
 #include "simulation/elements/FILT.h"
@@ -2132,7 +2133,7 @@ void Simulation::UpdateParticles()
 			}
 #endif
 			if (legacy_enable)//if heat sim is off
-				update_legacy_all(this, i,x,y,surround_space,nt);
+				ElementsShared_noHeatSim::update(this, i,x,y,surround_space,nt);
 
 killed:
 			if (parts[i].type == PT_NONE)//if its dead, skip to next particle

@@ -14,8 +14,10 @@
  */
 
 #include "simulation/Element.h"
+#include "simulation/Simulation.h"
 
-#include "powder.h"
+#include "powdergraphics.h"
+
 
 Element::Element() :
 	Identifier(""),
@@ -53,7 +55,7 @@ Element::Element() :
 	HighTemperatureTransitionThreshold(ITH),
 	HighTemperatureTransitionElement(NT),
 	Update(NULL),
-	Graphics(NULL),
+	Graphics(&Element::Graphics_default),
 	Func_Create(NULL),
 	Func_Create_Override(NULL),
 	Func_Create_Allowed(NULL),
@@ -63,4 +65,27 @@ Element::Element() :
 	DefaultProperties.temp = R_TEMP + 273.15f;
 	DefaultProperties.pmap_prev = -1;
 	DefaultProperties.pmap_next = -1;
+}
+
+
+int Element::Graphics_default(GRAPHICS_FUNC_ARGS)
+{
+	int t = cpart->type;
+	//Property based defaults
+	if (sim->elements[t].Properties & PROP_RADIOACTIVE) *pixel_mode |= PMODE_GLOW;
+	if(sim->elements[t].Properties & TYPE_LIQUID)
+	{
+		*pixel_mode |= PMODE_BLUR;
+	}
+	if(sim->elements[t].Properties & TYPE_GAS)
+	{
+		*pixel_mode &= ~PMODE;
+		*pixel_mode |= FIRE_BLEND;
+		*firer = *colr/2;
+		*fireg = *colg/2;
+		*fireb = *colb/2;
+		*firea = 125;
+		*pixel_mode |= DECO_FIRE;
+	}
+	return 1;
 }

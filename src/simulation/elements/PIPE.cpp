@@ -536,21 +536,18 @@ int PIPE_graphics(GRAPHICS_FUNC_ARGS)
 		}
 		else
 		{
-			*colr = PIXR(ptypes[t].pcolors);
-			*colg = PIXG(ptypes[t].pcolors);
-			*colb = PIXB(ptypes[t].pcolors);
-			if (ptypes[t].graphics_func)
+			*colr = PIXR(sim->elements[t].Colour);
+			*colg = PIXG(sim->elements[t].Colour);
+			*colb = PIXB(sim->elements[t].Colour);
+			if (sim->elements[t].Graphics)
 			{
-				(*(ptypes[t].graphics_func))(sim, &tpart, nx, ny, pixel_mode, cola, colr, colg, colb, firea, firer, fireg, fireb);
+				(*(sim->elements[t].Graphics))(sim, &tpart, nx, ny, pixel_mode, cola, colr, colg, colb, firea, firer, fireg, fireb);
 			}
 			else
 			{
-				graphics_DEFAULT(sim, &tpart, nx, ny, pixel_mode, cola, colr, colg, colb, firea, firer, fireg, fireb);
+				Element::Graphics_default(sim, &tpart, nx, ny, pixel_mode, cola, colr, colg, colb, firea, firer, fireg, fireb);
 			}
 		}
-		//*colr = PIXR(ptypes[cpart->tmp&0xFF].pcolors);
-		//*colg = PIXG(ptypes[cpart->tmp&0xFF].pcolors);
-		//*colb = PIXB(ptypes[cpart->tmp&0xFF].pcolors);
 	}
 	else
 	{

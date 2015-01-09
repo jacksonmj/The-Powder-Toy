@@ -14,6 +14,7 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/elements-shared/pyro.h"
 
 int PLSM_graphics(GRAPHICS_FUNC_ARGS)
 {
@@ -36,6 +37,39 @@ int PLSM_graphics(GRAPHICS_FUNC_ARGS)
 void PLSM_create(ELEMENT_CREATE_FUNC_ARGS)
 {
 	sim->parts[i].life = rand()%150+50;
+}
+
+int PLSM_update(UPDATE_FUNC_ARGS)
+{
+	if (parts[i].life <= 1)
+	{
+		if (parts[i].ctype == PT_NBLE)
+		{
+			part_change_type(i,x,y,PT_NBLE);
+			parts[i].life = 0;
+			return 1;
+		}
+		else if ((parts[i].tmp&3)==3)
+		{
+			part_change_type(i,x,y,PT_DSTW);
+			parts[i].life = 0;
+			parts[i].ctype = PT_FIRE;
+			return 1;
+		}
+	}
+
+	int rx, ry, rcount, ri, rnext;
+	for (rx=-2; rx<3; rx++)
+		for (ry=-2; ry<3; ry++)
+			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+			{
+				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
+				{
+					if (ElementsShared_pyro::update_neighbour(UPDATE_FUNC_SUBCALL_ARGS, rx, ry, parts[ri].type, ri)==1)
+						return 1;
+				}
+			}
+	return 0;
 }
 
 void PLSM_init_element(ELEMENT_INIT_FUNC_ARGS)
@@ -81,7 +115,7 @@ void PLSM_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = &update_PYRO;
+	elem->Update = &PLSM_update;
 	elem->Graphics = &PLSM_graphics;
 	elem->Func_Create = &PLSM_create;
 }

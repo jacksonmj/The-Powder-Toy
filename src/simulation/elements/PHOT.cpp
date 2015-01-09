@@ -16,6 +16,7 @@
 #include "simulation/ElementsCommon.h"
 #include "simulation/elements/FILT.h"
 #include "simulation/elements/PHOT.h"
+#include "simulation/elements-shared/pyro.h"
 
 void Element_PHOT::create_gain_photon(Simulation *sim, int pp)//photons from PHOT going through GLOW
 {
@@ -107,7 +108,11 @@ int PHOT_update(UPDATE_FUNC_ARGS)
 		return 1;
 	}
 	if (parts[i].temp > 506)
-		if (!(rand()%10)) update_PYRO(UPDATE_FUNC_SUBCALL_ARGS);
+		if (!(rand()%10))
+		{
+			if (ElementsShared_pyro::update(UPDATE_FUNC_SUBCALL_ARGS)==1)
+				return 1;
+		}
 
 	bool isQuartz = false;
 	for (rx=-1; rx<2; rx++)

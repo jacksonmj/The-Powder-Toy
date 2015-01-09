@@ -2141,7 +2141,7 @@ void render_parts(pixel *vid)
 					}
 					else
 					{
-						if(graphics_DEFAULT(sim, &(parts[i]), nx, ny, &pixel_mode, &cola, &colr, &colg, &colb, &firea, &firer, &fireg, &fireb))
+						if(Element::Graphics_default(sim, &(parts[i]), nx, ny, &pixel_mode, &cola, &colr, &colg, &colb, &firea, &firer, &fireg, &fireb))
 						{
 							graphicscache[t].isready = 1;
 							graphicscache[t].pixel_mode = pixel_mode;

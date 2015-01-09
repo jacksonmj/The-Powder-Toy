@@ -13,7 +13,7 @@ file(GLOB powder_SRC
     "src/common/*.cpp"
     "src/lib/resampler/*.cpp"
     "src/simulation/*.cpp"
-    "src/simulation/elements/*.cpp"
+    "src/simulation/*/*.cpp"
 )
 
 # TODO: remove this once everything is C++, this is needed because the C++ stuff interacts with stuff in .c files and not all the headers for .c files have extern "C"

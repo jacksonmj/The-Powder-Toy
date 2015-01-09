@@ -124,7 +124,7 @@ public:
 
 	Element();
 	virtual ~Element() {}
-
+	static int Graphics_default(GRAPHICS_FUNC_ARGS);
 };
 
 #endif

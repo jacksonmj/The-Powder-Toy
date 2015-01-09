@@ -126,15 +126,7 @@ class Simulation;
 
 #include "simulation/Particle.h"
 
-int graphics_DEFAULT(GRAPHICS_FUNC_ARGS);
-
 void TRON_init_graphics();
-
-int update_PYRO(UPDATE_FUNC_ARGS);
-
-int update_MISC(UPDATE_FUNC_ARGS);
-int update_legacy_PYRO(UPDATE_FUNC_ARGS);
-int update_legacy_all(UPDATE_FUNC_ARGS);
 
 void PPIP_flood_trigger(Simulation* sim, int x, int y, int sparkedBy);
 
