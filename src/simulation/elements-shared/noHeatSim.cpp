@@ -102,7 +102,7 @@ int ElementsShared_noHeatSim::update(UPDATE_FUNC_ARGS) {
 					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						rt = parts[ri].type;
-						if ((rt==PT_WATR || rt==PT_DSTW) && !(rand()%1000))
+						if ((rt==PT_WATR || rt==PT_DSTW) && (rand()%1000))
 						{
 							sim->part_change_type(i,x,y,PT_ICEI);
 							sim->part_change_type(ri,x+rx,y+ry,PT_ICEI);
@@ -123,7 +123,7 @@ int ElementsShared_noHeatSim::update(UPDATE_FUNC_ARGS) {
 							sim->part_change_type(i,x,y,PT_ICEI);
 							sim->part_change_type(ri,x+rx,y+ry,PT_ICEI);
 						}
-						if ((rt==PT_WATR || rt==PT_DSTW) && !(rand()%1000))
+						if ((rt==PT_WATR || rt==PT_DSTW) && 15>(rand()%1000))
 							sim->part_change_type(i,x,y,PT_WATR);
 					}
 				}
