@@ -15,6 +15,7 @@
 
 #include "simulation/ElementsCommon.h"
 #include "simulation/CoordStack.h"
+#include "simulation/elements/INST.h"
 
 bool pmap_contains_sparkable_INST(Simulation *sim, int x, int y)
 {
@@ -27,7 +28,7 @@ bool pmap_contains_sparkable_INST(Simulation *sim, int x, int y)
 	return false;
 }
 
-int INST_flood_spark(Simulation *sim, int x, int y)
+int Element_INST::flood_spark(Simulation *sim, int x, int y)
 {
 	int x1, x2;
 	const int cm = PT_INST;

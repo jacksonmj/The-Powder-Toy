@@ -2805,7 +2805,7 @@ void render_parts(pixel *vid)
 					int fire_rv = 0;
 					float drad = 0.0f;
 					float ddist = 0.0f;
-					orbitalparts_get(parts[i].life, parts[i].ctype, orbd, orbl);
+					Element_PRTI::orbitalparts_get(parts[i].life, parts[i].ctype, orbd, orbl);
 					for (r = 0; r < 4; r++) {
 						ddist = ((float)orbd[r])/16.0f;
 						drad = (M_PI * ((float)orbl[r]) / 180.0f)*1.41f;
@@ -2823,7 +2823,7 @@ void render_parts(pixel *vid)
 					int fire_bv = 0;
 					float drad = 0.0f;
 					float ddist = 0.0f;
-					orbitalparts_get(parts[i].life, parts[i].ctype, orbd, orbl);
+					Element_PRTI::orbitalparts_get(parts[i].life, parts[i].ctype, orbd, orbl);
 					for (r = 0; r < 4; r++) {
 						ddist = ((float)orbd[r])/16.0f;
 						drad = (M_PI * ((float)orbl[r]) / 180.0f)*1.41f;

@@ -14,6 +14,7 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/elements/INST.h"
 
 int NPTCT_update(UPDATE_FUNC_ARGS);
 
@@ -302,7 +303,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 					{
 						if (parts[ri].life==0 && parts[i].life<4)
 						{
-							INST_flood_spark(sim, x+rx, y+ry);
+							Element_INST::flood_spark(sim, x+rx, y+ry);
 						}
 					}
 					else if (parts[ri].life==0 && parts[i].life<4)

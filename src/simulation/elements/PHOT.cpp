@@ -15,6 +15,87 @@
 
 #include "simulation/ElementsCommon.h"
 #include "simulation/elements/FILT.h"
+#include "simulation/elements/PHOT.h"
+
+void Element_PHOT::create_gain_photon(Simulation *sim, int pp)//photons from PHOT going through GLOW
+{
+	float xx, yy;
+	int i, lr, temp_bin, nx, ny;
+
+	lr = rand() % 2;
+
+	if (lr) {
+		xx = sim->parts[pp].x - 0.3*sim->parts[pp].vy;
+		yy = sim->parts[pp].y + 0.3*sim->parts[pp].vx;
+	} else {
+		xx = sim->parts[pp].x + 0.3*sim->parts[pp].vy;
+		yy = sim->parts[pp].y - 0.3*sim->parts[pp].vx;
+	}
+
+	Simulation::FloatTruncCoords(xx,yy);
+	nx = (int)(xx + 0.5f);
+	ny = (int)(yy + 0.5f);
+
+	if (!sim->InBounds(nx,ny))
+		return;
+
+	int glow_i = sim->pmap_find_one(nx, ny, PT_GLOW);
+	if (glow_i<0)
+		return;
+
+	i = sim->part_create(-1, xx, yy, PT_PHOT);
+	if (i<0)
+		return;
+
+	sim->parts[i].life = 680;
+	sim->parts[i].vx = sim->parts[pp].vx;
+	sim->parts[i].vy = sim->parts[pp].vy;
+	sim->parts[i].temp = sim->parts[glow_i].temp;
+
+	temp_bin = (int)((parts[i].temp-273.0f)*0.25f);
+	if (temp_bin < 0) temp_bin = 0;
+	if (temp_bin > 25) temp_bin = 25;
+	parts[i].ctype = 0x1F << temp_bin;
+}
+
+void Element_PHOT::create_cherenkov_photon(Simulation *sim, int pp)//photons from NEUT going through GLAS
+{
+	int i, lr, nx, ny;
+	float r;
+
+	nx = (int)(parts[pp].x + 0.5f);
+	ny = (int)(parts[pp].y + 0.5f);
+	int glass_i = sim->pmap_find_one(nx, ny, PT_GLAS);
+	if (glass_i<0)
+		return;
+
+	if (hypotf(sim->parts[pp].vx, sim->parts[pp].vy) < 1.44f)
+		return;
+
+	i = sim->part_create(-1, sim->parts[pp].x,sim->parts[pp].y, PT_PHOT);
+	if (i<0)
+		return;
+
+	lr = rand() % 2;
+
+	sim->parts[i].ctype = 0x00000F80;
+	sim->parts[i].life = 680;
+	sim->parts[i].temp = sim->parts[glass_i].temp;
+	sim->parts[i].pavg[0] = sim->parts[i].pavg[1] = 0.0f;
+
+	if (lr) {
+		sim->parts[i].vx = sim->parts[pp].vx - 2.5f*sim->parts[pp].vy;
+		sim->parts[i].vy = sim->parts[pp].vy + 2.5f*sim->parts[pp].vx;
+	} else {
+		sim->parts[i].vx = sim->parts[pp].vx + 2.5f*sim->parts[pp].vy;
+		sim->parts[i].vy = sim->parts[pp].vy - 2.5f*sim->parts[pp].vx;
+	}
+
+	/* photons have speed of light. no discussion. */
+	r = 1.269 / hypotf(sim->parts[i].vx, sim->parts[i].vy);
+	sim->parts[i].vx *= r;
+	sim->parts[i].vy *= r;
+}
 
 int PHOT_update(UPDATE_FUNC_ARGS)
 {

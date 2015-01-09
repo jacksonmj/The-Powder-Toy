@@ -1,7 +1,23 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef Observer_h
 #define Observer_h
 
 #include <vector>
+#include <cstddef>
 
 class ObserverSubject;
 
@@ -13,7 +29,9 @@ protected:
 public:
 	Observer() : subject(NULL) {}
 	virtual void Run() = 0;
-	virtual ~Observer() {}
+	void Attach(ObserverSubject &s);
+	void Detach();
+	virtual ~Observer();
 };
 
 class ObserverSubject
@@ -26,6 +44,8 @@ public:
 
 	void Attach(Observer *obs)
 	{
+		if (obs->subject)
+			obs->Detach();
 		obs->subject = this;
 		observers.push_back(obs);
 	}
@@ -38,6 +58,8 @@ public:
 				observers.erase(it);
 			}
 		}
+		if (obs->subject==this)
+			obs->subject = NULL;
 	}
 	// Runs all registered callback functions
 	void Trigger()
@@ -78,6 +100,9 @@ private:
 	T *targetObject;//pointer to the object which will have a member function called
 	void (T::*targetFunc)();//pointer to the member function to call
 public:
+	Observer_ClassMember(T *obj, void (T::*func)())
+		: targetObject(obj), targetFunc(func)
+	{}
 	Observer_ClassMember(ObserverSubject &s, T *obj, void (T::*func)())
 		: targetObject(obj), targetFunc(func)
 	{
@@ -88,11 +113,6 @@ public:
 	{
 		if (other.subject)
 			other.subject->Attach(this);
-	}
-	virtual ~Observer_ClassMember()
-	{
-		if (subject)
-			subject->Detach(this);
 	}
 	virtual void Run()
 	{
@@ -105,6 +125,9 @@ class Observer_PlainFunc : public Observer
 private:
 	void (*targetFunc)();//pointer to the function to call
 public:
+	Observer_PlainFunc(void (*func)())
+		: targetFunc(func)
+	{}
 	Observer_PlainFunc(ObserverSubject &s, void (*func)())
 		: targetFunc(func)
 	{
@@ -115,11 +138,6 @@ public:
 	{
 		if (other.subject)
 			other.subject->Attach(this);
-	}
-	virtual ~Observer_PlainFunc()
-	{
-		if (subject)
-			subject->Detach(this);
 	}
 	virtual void Run()
 	{

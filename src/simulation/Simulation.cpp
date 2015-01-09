@@ -33,6 +33,8 @@
 
 #include "simulation/elements/FIGH.h"
 #include "simulation/elements/FILT.h"
+#include "simulation/elements/INST.h"
+#include "simulation/elements/PHOT.h"
 #include "simulation/elements/PRTI.h"
 
 
@@ -373,13 +375,16 @@ bool Simulation::Check()
 // p=-1 for normal creation (checks whether the particle is allowed to be in that location first)
 // p=-3 to create without checking whether the particle is allowed to be in that location
 // or p = a particle number, to replace a particle
-int Simulation::part_create(int p, int x, int y, int t)
+int Simulation::part_create(int p, float xf, float yf, int t)
 {
 	// This function is only for actually creating particles.
 	// Not for tools, or changing things into spark, or special brush things like setting clone ctype.
 
+	FloatTruncCoords(xf,yf);
+	int x = (int)(xf+0.5f), y = (int)(yf+0.5f);
+
 	int i, oldType = PT_NONE;
-	if (x<0 || y<0 || x>=XRES || y>=YRES || t<=0 || t>=PT_NUM || !elements[t].Enabled)
+	if (!InBounds(x,y) || t<=0 || t>=PT_NUM || !elements[t].Enabled)
 	{
 		return -1;
 	}
@@ -443,11 +448,11 @@ int Simulation::part_create(int p, int x, int y, int t)
 	// Set some properties
 	parts[i] = elements[t].DefaultProperties;
 	parts[i].type = t;
-	parts[i].x = (float)x;
-	parts[i].y = (float)y;
+	parts[i].x = xf;
+	parts[i].y = yf;
 #ifdef OGLR
-	parts[i].lastX = (float)x;
-	parts[i].lastY = (float)y;
+	parts[i].lastX = xf;
+	parts[i].lastY = yf;
 #endif
 
 	// Fancy dust effects for powder types
@@ -618,7 +623,7 @@ void Simulation::spark_particle_nocheck(int i, int x, int y)
 	if (parts[i].type==PT_WIRE)
 		parts[i].ctype = PT_DUST;
 	else if (parts[i].type==PT_INST)
-		INST_flood_spark(this, x, y);
+		Element_INST::flood_spark(this, x, y);
 	else
 		spark_particle_nocheck_forceSPRK(i, x, y);
 }
@@ -1037,7 +1042,7 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 					if (!parts[ri].life && rand() < RAND_MAX/30)
 					{
 						parts[ri].life = 120;
-						create_gain_photon(i);
+						Element_PHOT::create_gain_photon(this, i);
 					}
 				}
 				else if (rt==PT_FILT)
@@ -1077,7 +1082,7 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 				if (rt==PT_GLAS)
 				{
 					if (rand() < RAND_MAX/10)
-						create_cherenkov_photon(i);
+						Element_PHOT::create_cherenkov_photon(this, i);
 				}
 			}
 			else if (t == PT_PROT)
@@ -2274,8 +2279,8 @@ killed:
 							continue;
 						}
 
-						r = get_wavelength_bin(&parts[i].ctype);
-						if (r == -1 || !(parts[i].ctype&0x3FFFFFFF)) {
+						r = Element_PHOT::get_wavelength_bin(&parts[i].ctype);
+						if (r == -1) {
 							kill_part(i);
 							continue;
 						}

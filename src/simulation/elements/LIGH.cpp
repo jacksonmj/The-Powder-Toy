@@ -333,7 +333,7 @@ void LIGH_create(ELEMENT_CREATE_FUNC_ARGS)
 	float gx, gy, gsize;
 	sim->parts[i].life = 30;
 	sim->parts[i].temp = sim->parts[i].life*150.0f; // temperature of the lightning shows the power of the lightning
-	get_gravity_field(x, y, 1.0f, 1.0f, &gx, &gy);
+	sim->GetGravityAccel(x,y, 1.0f, 1.0f, gx,gy);
 	gsize = gx*gx+gy*gy;
 	if (gsize<0.0016f)
 	{

@@ -29,8 +29,7 @@
 #include "simulation/Simulation.h"
 #include "simulation/CoordStack.h"
 #include "simulation/ElemDataSim.h"
-#include "simulation/elements/PRTI.h"
-#include "simulation/elements/FILT.h"
+#include "simulation/elements/PHOT.h"
 
 part_type ptypes[PT_NUM];
 part_transition ptransitions[PT_NUM];
@@ -102,58 +101,6 @@ wall_type wtypes[] =
 	{PIXPACK(0xFFAA00), PIXPACK(0xAA5500), -1, "Property edit tool"},
 	{PIXPACK(0xDCDCDC), PIXPACK(0x000000), 1, "Allows all particles, but blocks air."},
 };
-
-void get_gravity_field(int x, int y, float particleGrav, float newtonGrav, float *pGravX, float *pGravY)
-{
-	*pGravX = newtonGrav*gravx[(y/CELL)*(XRES/CELL)+(x/CELL)];
-	*pGravY = newtonGrav*gravy[(y/CELL)*(XRES/CELL)+(x/CELL)];
-	switch (gravityMode)
-	{
-		default:
-		case 0: //normal, vertical gravity
-			*pGravY += particleGrav;
-			break;
-		case 1: //no gravity
-			break;
-		case 2: //radial gravity
-			if (x-XCNTR != 0 || y-YCNTR != 0)
-			{
-				float pGravMult = particleGrav/sqrtf((x-XCNTR)*(x-XCNTR) + (y-YCNTR)*(y-YCNTR));
-				*pGravX -= pGravMult * (float)(x - XCNTR);
-				*pGravY -= pGravMult * (float)(y - YCNTR);
-			}
-	}
-}
-
-static int pn_junction_sprk(int x, int y, int pt)
-{
-	int rcount, ri, rnext;
-	bool ptFound = false;
-	FOR_PMAP_POSITION_NOENERGY(globalSim, x, y, rcount, ri, rnext)
-	{
-		if (parts[ri].type==pt)
-		{
-			ptFound = true;
-			break;
-		}
-	}
-	if (!ptFound)
-		return 0;
-
-	return globalSim->spark_particle_conductiveOnly(ri, x, y);
-}
-
-static void photoelectric_effect(int nx, int ny)//create sparks from PHOT when hitting PSCN and NSCN
-{
-	if (globalSim->pmap_find_one(nx,ny,PT_PSCN)>=0)
-	{
-		if (globalSim->pmap_find_one(nx-1,ny,PT_NSCN)>=0 ||
-		        globalSim->pmap_find_one(nx+1,ny,PT_NSCN)>=0 ||
-		        globalSim->pmap_find_one(nx,ny-1,PT_NSCN)>=0 ||
-		        globalSim->pmap_find_one(nx,ny+1,PT_NSCN)>=0)
-			pn_junction_sprk(nx, ny, PT_PSCN);
-	}
-}
 
 static unsigned direction_to_map(float dx, float dy, int t)
 {
@@ -300,7 +247,7 @@ int get_normal_interp(int pt, float x0, float y0, float dx, float dy, float *nx,
 		return 0;
 
 	if (pt == PT_PHOT)
-		photoelectric_effect(x, y);
+		Element_PHOT::photoelectric_effect(globalSim, x, y);
 
 	return get_normal(pt, x, y, dx, dy, nx, ny);
 }
@@ -471,89 +418,6 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 	return i;
 }
 
-void create_gain_photon(int pp)//photons from PHOT going through GLOW
-{
-	float xx, yy;
-	int i, lr, temp_bin, nx, ny;
-
-	lr = rand() % 2;
-
-	if (lr) {
-		xx = parts[pp].x - 0.3*parts[pp].vy;
-		yy = parts[pp].y + 0.3*parts[pp].vx;
-	} else {
-		xx = parts[pp].x + 0.3*parts[pp].vy;
-		yy = parts[pp].y - 0.3*parts[pp].vx;
-	}
-
-	nx = (int)(xx + 0.5f);
-	ny = (int)(yy + 0.5f);
-
-	if (nx<0 || ny<0 || nx>=XRES || ny>=YRES)
-		return;
-
-	int glow_i = globalSim->pmap_find_one(nx, ny, PT_GLOW);
-	if (glow_i<0)
-		return;
-
-	i = globalSim->part_create(-1, nx, ny, PT_PHOT);
-	if (i<0)
-		return;
-
-	parts[i].life = 680;
-	parts[i].x = xx;
-	parts[i].y = yy;
-	parts[i].vx = parts[pp].vx;
-	parts[i].vy = parts[pp].vy;
-	parts[i].temp = parts[glow_i].temp;
-
-	temp_bin = (int)((parts[i].temp-273.0f)*0.25f);
-	if (temp_bin < 0) temp_bin = 0;
-	if (temp_bin > 25) temp_bin = 25;
-	parts[i].ctype = 0x1F << temp_bin;
-}
-
-void create_cherenkov_photon(int pp)//photons from NEUT going through GLAS
-{
-	int i, lr, nx, ny;
-	float r, eff_ior;
-
-	nx = (int)(parts[pp].x + 0.5f);
-	ny = (int)(parts[pp].y + 0.5f);
-	int glass_i = globalSim->pmap_find_one(nx, ny, PT_GLAS);
-	if (glass_i<0)
-		return;
-
-	if (hypotf(parts[pp].vx, parts[pp].vy) < 1.44f)
-		return;
-
-	i = globalSim->part_create(-1, nx, ny, PT_PHOT);
-	if (i<0)
-		return;
-
-	lr = rand() % 2;
-
-	parts[i].ctype = 0x00000F80;
-	parts[i].life = 680;
-	parts[i].x = parts[pp].x;
-	parts[i].y = parts[pp].y;
-	parts[i].temp = parts[glass_i].temp;
-	parts[i].pavg[0] = parts[i].pavg[1] = 0.0f;
-
-	if (lr) {
-		parts[i].vx = parts[pp].vx - 2.5f*parts[pp].vy;
-		parts[i].vy = parts[pp].vy + 2.5f*parts[pp].vx;
-	} else {
-		parts[i].vx = parts[pp].vx + 2.5f*parts[pp].vy;
-		parts[i].vy = parts[pp].vy - 2.5f*parts[pp].vx;
-	}
-
-	/* photons have speed of light. no discussion. */
-	r = 1.269 / hypotf(parts[i].vx, parts[i].vy);
-	parts[i].vx *= r;
-	parts[i].vy *= r;
-}
-
 TPT_INLINE void delete_part(int x, int y, int flags)//calls kill_part with the particle located at x,y
 {
 	if (x<0 || y<0 || x>=XRES || y>=YRES)
@@ -591,31 +455,6 @@ TPT_INLINE int is_wire(int x, int y)
 TPT_INLINE int is_wire_off(int x, int y)
 {
 	return (bmap[y][x]==WL_DETECT || bmap[y][x]==WL_EWALL || bmap[y][x]==WL_ALLOWLIQUID || bmap[y][x]==WL_WALLELEC || bmap[y][x]==WL_ALLOWALLELEC || bmap[y][x]==WL_EHOLE) && emap[y][x]<8;
-}
-
-int get_wavelength_bin(int *wm)
-{
-	int i, w0=30, wM=0;
-
-	if (!*wm)
-		return -1;
-
-	for (i=0; i<30; i++)
-		if (*wm & (1<<i)) {
-			if (i < w0)
-				w0 = i;
-			if (i > wM)
-				wM = i;
-		}
-
-	if (wM-w0 < 5)
-		return (wM+w0)/2;
-
-	i = rand() % (wM-w0-3);
-	i += w0;
-
-	*wm &= 0x1F << i;
-	return i + 2;
 }
 
 void set_emap(int x, int y)
@@ -1382,36 +1221,4 @@ void create_line(int x1, int y1, int x2, int y2, int rx, int ry, int c, int flag
 			e -= 1.0f;
 		}
 	}
-}
-
-TPT_GNU_INLINE void orbitalparts_get(int block1, int block2, int resblock1[], int resblock2[])
-{
-	resblock1[0] = (block1&0x000000FF);
-	resblock1[1] = (block1&0x0000FF00)>>8;
-	resblock1[2] = (block1&0x00FF0000)>>16;
-	resblock1[3] = (block1&0xFF000000)>>24;
-
-	resblock2[0] = (block2&0x000000FF);
-	resblock2[1] = (block2&0x0000FF00)>>8;
-	resblock2[2] = (block2&0x00FF0000)>>16;
-	resblock2[3] = (block2&0xFF000000)>>24;
-}
-
-TPT_GNU_INLINE void orbitalparts_set(int *block1, int *block2, int resblock1[], int resblock2[])
-{
-	int block1tmp = 0;
-	int block2tmp = 0;
-
-	block1tmp = (resblock1[0]&0xFF);
-	block1tmp |= (resblock1[1]&0xFF)<<8;
-	block1tmp |= (resblock1[2]&0xFF)<<16;
-	block1tmp |= (resblock1[3]&0xFF)<<24;
-
-	block2tmp = (resblock2[0]&0xFF);
-	block2tmp |= (resblock2[1]&0xFF)<<8;
-	block2tmp |= (resblock2[2]&0xFF)<<16;
-	block2tmp |= (resblock2[3]&0xFF)<<24;
-
-	*block1 = block1tmp;
-	*block2 = block2tmp;
 }

@@ -179,7 +179,7 @@ public:
 	void RecalcElementCounts();
 	void pmap_reset();
 
-	int part_create(int p, int x, int y, int t);
+	int part_create(int p, float x, float y, int t);
 	void part_kill(int i);
 	void part_kill(int i, int x, int y);
 	bool part_change_type(int i, int x, int y, int t);
@@ -304,7 +304,7 @@ public:
 		partsFree[i] = true;
 #endif
 	}
-	void FloatTruncCoords(float & xf, float & yf)
+	static void FloatTruncCoords(float & xf, float & yf)
 	{
 		// hopefully force truncation of floats in x87 registers by storing and reloading from memory, so that rounding issues don't cause particles to appear in the wrong pmap list. If using -mfpmath=sse or an ARM CPU, this may be unnecessary.
 		volatile float tmpx = xf, tmpy = yf;
@@ -338,6 +338,9 @@ public:
 				pmap_add(i, nx, ny, parts[i].type);
 			}
 		}
+	}
+	void part_set_pos(int i, float nxf, float nyf) {
+		part_set_pos(i, (int)(parts[i].x+0.5f), (int)(parts[i].y+0.5f), nxf, nyf);
 	}
 	
 	// Adjust coords to take account of edgeMode setting
