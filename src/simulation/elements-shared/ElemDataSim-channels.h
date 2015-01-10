@@ -13,25 +13,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// This header is included in every single element file
+#ifndef Simulation_ElementUI_ctypeWavelengths_h
+#define Simulation_ElementUI_ctypeWavelengths_h
 
-#ifndef ELEMENTS_COMMON_H
-#define ELEMENTS_COMMON_H
+#include "simulation/ElemDataSim.h"
 
-#include <cmath>
-#include "common/tptmath.h"
-#include "simulation/ElementNumbers.h"
-#include "simulation/Element.h"
-#include "simulation/Simulation.h"
+class particle;
 
-template<class ElemDataClass_T>
-void SimInit_createElemData(ELEMENT_SIMINIT_FUNC_ARGS)
+class ElemDataSim_channels : public ElemDataSim
 {
-	sim->elemData_create<ElemDataClass_T>(t, sim);
-}
-
-#include "powder.h"
-#include "gravity.h"
-#include "powdergraphics.h"
+public:
+	ElemDataSim_channels(Simulation *s) : ElemDataSim(s) {}
+	virtual int GetChannelId(particle &p) = 0;
+};
 
 #endif

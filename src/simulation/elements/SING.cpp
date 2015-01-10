@@ -111,8 +111,8 @@ int SING_update(UPDATE_FUNC_ARGS) {
 							parts[i].life += 3;
 							parts[i].tmp++;
 						}
-						parts[i].temp = restrict_flt(parts[ri].temp+parts[i].temp, MIN_TEMP, MAX_TEMP);
-						kill_part(ri);
+						sim->part_add_temp(parts[i], parts[ri].temp);
+						sim->part_kill(ri);
 					}
 				}
 			}

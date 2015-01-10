@@ -24,6 +24,7 @@
 #include "BSON.h"
 #include "hmap.h"
 
+#include "common/tptmath.h"
 #include "simulation/Simulation.h"
 #include "simulation/elements/FIGH.h"
 #include "simulation/elements/STKM.h"
@@ -1624,7 +1625,7 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 						}
 						if (partsptr[newIndex].type==PT_FIRW && partsptr[newIndex].tmp>=2)
 						{
-							int caddress = restrict_flt(restrict_flt((float)(partsptr[newIndex].tmp-4), 0.0f, 200.0f)*3, 0.0f, (200.0f*3)-3);
+							int caddress = tptmath::clamp_int(partsptr[newIndex].tmp-4, 0, 200-1)*3;
 							partsptr[newIndex].type = PT_EMBR;
 							partsptr[newIndex].tmp = 1;
 							partsptr[newIndex].ctype = (((unsigned char)(firw_data[caddress]))<<16) | (((unsigned char)(firw_data[caddress+1]))<<8) | ((unsigned char)(firw_data[caddress+2]));
@@ -2420,7 +2421,7 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned c
 				}
 				if (parts[i-1].type==PT_FIRW && parts[i-1].tmp>=2)
 				{
-					int caddress = restrict_flt(restrict_flt((float)(parts[i-1].tmp-4), 0.0f, 200.0f)*3, 0.0f, (200.0f*3)-3);
+					int caddress = tptmath::clamp_int(parts[i-1].tmp-4, 0, 200-1);
 					parts[i-1].type = PT_EMBR;
 					parts[i-1].tmp = 1;
 					parts[i-1].ctype = (((unsigned char)(firw_data[caddress]))<<16) | (((unsigned char)(firw_data[caddress+1]))<<8) | ((unsigned char)(firw_data[caddress+2]));

@@ -237,7 +237,6 @@ typedef struct wall_type wall_type;
 
 extern wall_type wtypes[];
 
-#define CHANNELS ((int)(MAX_TEMP-73)/100+2)
 extern const particle emptyparticle;
 
 extern int force_stacking_check;

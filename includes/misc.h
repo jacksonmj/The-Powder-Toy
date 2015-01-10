@@ -37,13 +37,6 @@ __asm__ __volatile ("cpuid":\
 
 extern char hex[];
 
-//Signum function
-int isign(float i);
-
-unsigned clamp_flt(float f, float min, float max);
-
-float restrict_flt(float f, float min, float max);
-
 char *mystrdup(const char *s);
 
 struct strlist

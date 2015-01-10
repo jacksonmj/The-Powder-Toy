@@ -45,7 +45,7 @@ int IGNT_update(UPDATE_FUNC_ARGS)
 				parts[nb].life = 30;
 				parts[nb].vx = rand()%20-10;
 				parts[nb].vy = rand()%20-10;
-				parts[nb].temp = restrict_flt(parts[i].temp-273.15+400.0f, MIN_TEMP, MAX_TEMP);
+				sim->part_set_temp(parts[nb], parts[i].temp-273.15+400.0f);
 			}
 		}
 		else

@@ -16,19 +16,38 @@
 #ifndef Simulation_Elements_WIFI_h
 #define Simulation_Elements_WIFI_h 
 
-class Element_WIFI
+#include "common/tptmath.h"
+#include "simulation/elements-shared/ElemDataSim-channels.h"
+
+class WifiChannel
 {
 public:
-	static int get_channel(particle *cpart)
-	{
-		int q = (int)((cpart->temp-73.15f)/100+1);
-		if (q>=CHANNELS)
-			return CHANNELS-1;
-		else if (q<0)
-			return 0;
-		return q;
-	}
+	bool activeThisFrame, activeNextFrame;
 };
 
+class WIFI_ElemDataSim : public ElemDataSim_channels
+{
+private:
+	Observer_ClassMember<WIFI_ElemDataSim> obs_simCleared;
+	Observer_ClassMember<WIFI_ElemDataSim> obs_simBeforeUpdate;
+	WifiChannel *channels;
+public:
+	float channelStep;
+	int channelCount;
+	int GetChannelId(particle &p)
+	{
+		return tptmath::clamp_int(int((p.temp-73.15f)/channelStep+1), 0, channelCount-1);
+	}
+	WifiChannel* GetParticleChannel(particle &p)
+	{
+		p.tmp = tptmath::clamp_int(int((p.temp-73.15f)/channelStep+1), 0, channelCount-1);
+		return &channels[p.tmp];
+	}
+	WIFI_ElemDataSim(Simulation *s, float chanStep=100, int chanCount=-1);
+	~WIFI_ElemDataSim();
+	bool wifi_lastframe;
+	void Simulation_Cleared();
+	void Simulation_BeforeUpdate();
+};
 
 #endif

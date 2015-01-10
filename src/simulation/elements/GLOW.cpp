@@ -46,13 +46,13 @@ int GLOW_update(UPDATE_FUNC_ARGS)
 
 int GLOW_graphics(GRAPHICS_FUNC_ARGS)
 {
-	*firer = restrict_flt(cpart->temp-(275.13f+32.0f), 0, 128)/50.0f;
-	*fireg = restrict_flt(cpart->ctype, 0, 128)/50.0f;
-	*fireb = restrict_flt(cpart->tmp, 0, 128)/50.0f;
+	*firer = tptmath::clamp_flt(cpart->temp-(273.15f+32.0f), 0, 128)/50.0f;
+	*fireg = tptmath::clamp_flt(cpart->ctype, 0, 128)/50.0f;
+	*fireb = tptmath::clamp_flt(cpart->tmp, 0, 128)/50.0f;
 
-	*colr = restrict_flt(64.0f+cpart->temp-(275.13f+32.0f), 0, 255);
-	*colg = restrict_flt(64.0f+cpart->ctype, 0, 255);
-	*colb = restrict_flt(64.0f+cpart->tmp, 0, 255);
+	*colr = tptmath::clamp_flt(64.0f+cpart->temp-(273.15f+32.0f), 0, 255);
+	*colg = tptmath::clamp_flt(64.0f+cpart->ctype, 0, 255);
+	*colb = tptmath::clamp_flt(64.0f+cpart->tmp, 0, 255);
 	
 	*pixel_mode |= FIRE_ADD;
 	return 0;

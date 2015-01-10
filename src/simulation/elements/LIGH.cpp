@@ -206,7 +206,7 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 						continue;
 					if (rt==PT_CLNE || rt==PT_THDR || rt==PT_DMND || rt==PT_FIRE)
 					{
-						parts[ri].temp = restrict_flt(parts[ri].temp+powderful/10, MIN_TEMP, MAX_TEMP);
+						sim->part_add_temp(parts[ri], powderful/10);
 					}
 					else
 					{
@@ -215,12 +215,12 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 							sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
 						}
 						pv[y/CELL][x/CELL] += powderful/400;
-						if (ptypes[rt].hconduct)
-							parts[ri].temp = restrict_flt(parts[ri].temp+powderful/1.3, MIN_TEMP, MAX_TEMP);
+						if (sim->elements[rt].HeatConduct)
+							sim->part_add_temp(parts[ri], powderful/1.3f);
 					}
 					if (rt==PT_DEUT || rt==PT_PLUT) // start nuclear reactions
 					{
-						parts[ri].temp = restrict_flt(parts[ri].temp+powderful, MIN_TEMP, MAX_TEMP);
+						sim->part_add_temp(parts[ri], powderful);
 						pv[y/CELL][x/CELL] +=powderful/35;
 						if (!(rand()%3))
 						{

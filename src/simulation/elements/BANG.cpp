@@ -66,7 +66,7 @@ int BANG_update(UPDATE_FUNC_ARGS)
 				sim->part_create(i, x, y, PT_SMKE);
 				parts[i].life = rand()%50+500;
 			}
-			parts[i].temp = restrict_flt((MAX_TEMP/4)+otemp, MIN_TEMP, MAX_TEMP);
+			sim->part_set_temp(parts[i], (MAX_TEMP/4)+otemp);
 		}
 		else
 		{
@@ -75,13 +75,13 @@ int BANG_update(UPDATE_FUNC_ARGS)
 				sim->part_create(i, x, y, PT_EMBR);
 				parts[i].tmp = 0;
 				parts[i].life = 50;
-				parts[i].temp = restrict_flt((MAX_TEMP/3)+otemp, MIN_TEMP, MAX_TEMP);
+				sim->part_set_temp(parts[i], (MAX_TEMP/3)+otemp);
 				parts[i].vx = rand()%20-10;
 				parts[i].vy = rand()%20-10;
 			}
 			else
 			{
-				kill_part(i);
+				sim->part_kill(i);
 			}
 		}
 		return 1;

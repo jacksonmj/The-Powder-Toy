@@ -27,15 +27,15 @@ int WOOD_graphics(GRAPHICS_FUNC_ARGS)
 	float maxtemp = fmax(cpart->tmp,cpart->temp);
 	if (maxtemp > 400)
 	{
-		*colr -= (int)restrict_flt((maxtemp-400)/3,0,172);
-		*colg -= (int)restrict_flt((maxtemp-400)/4,0,140);
-		*colb -= (int)restrict_flt((maxtemp-400)/20,0,44);
+		*colr -= (int)tptmath::clamp_flt((maxtemp-400)/3,0,172);
+		*colg -= (int)tptmath::clamp_flt((maxtemp-400)/4,0,140);
+		*colb -= (int)tptmath::clamp_flt((maxtemp-400)/20,0,44);
 	}
 	if (maxtemp < 273)
 	{
-		*colr -= (int)restrict_flt((273-maxtemp)/5,0,40);
-		*colg += (int)restrict_flt((273-maxtemp)/4,0,40);
-		*colb += (int)restrict_flt((273-maxtemp)/1.5,0,150);
+		*colr -= (int)tptmath::clamp_flt((273-maxtemp)/5,0,40);
+		*colg += (int)tptmath::clamp_flt((273-maxtemp)/4,0,40);
+		*colb += (int)tptmath::clamp_flt((273-maxtemp)/1.5,0,150);
 	}
 	return 0;
 }

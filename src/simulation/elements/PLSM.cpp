@@ -18,7 +18,7 @@
 
 int PLSM_graphics(GRAPHICS_FUNC_ARGS)
 {
-	int caddress = restrict_flt(restrict_flt((float)cpart->life, 0.0f, 200.0f)*3, 0.0f, (200.0f*3)-3);
+	int caddress = tptmath::clamp_int(cpart->life, 0, (200-1)*3);
 	*colr = (unsigned char)plasma_data[caddress];
 	*colg = (unsigned char)plasma_data[caddress+1];
 	*colb = (unsigned char)plasma_data[caddress+2];

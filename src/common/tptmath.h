@@ -13,25 +13,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// This header is included in every single element file
+#ifndef tptmath_h
+#define tptmath_h
 
-#ifndef ELEMENTS_COMMON_H
-#define ELEMENTS_COMMON_H
-
-#include <cmath>
-#include "common/tptmath.h"
-#include "simulation/ElementNumbers.h"
-#include "simulation/Element.h"
-#include "simulation/Simulation.h"
-
-template<class ElemDataClass_T>
-void SimInit_createElemData(ELEMENT_SIMINIT_FUNC_ARGS)
+class tptmath
 {
-	sim->elemData_create<ElemDataClass_T>(t, sim);
-}
+public:
+	template<typename T>
+	static constexpr int isign(T i)
+	{
+		return (i>0) ? 1 : ((i<0) ? -1 : 0);
+	}
 
-#include "powder.h"
-#include "gravity.h"
-#include "powdergraphics.h"
+	static unsigned scale_to_clamped_byte(float f, float min, float max)
+	{
+		if (f<min)
+			return 0;
+		if (f>max)
+			return 255;
+		return (unsigned)(255.0f*(f-min)/(max-min));
+	}
+
+	static constexpr float clamp_flt(float x, float min, float max)
+	{
+		// optimised by gcc into two SSE instructions (maxss, minss)
+		return (x>max) ? max : ((x<min) ? min : x);
+	}
+	static constexpr int clamp_int(int x, int min, int max)
+	{
+		return (x>max) ? max : ((x<min) ? min : x);
+	}
+};
+
+
 
 #endif

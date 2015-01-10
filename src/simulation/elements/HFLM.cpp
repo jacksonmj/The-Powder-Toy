@@ -18,7 +18,7 @@
 
 int HFLM_graphics(GRAPHICS_FUNC_ARGS)
 {
-	int caddress = restrict_flt(restrict_flt((float)((int)(cpart->life/2)), 0.0f, 200.0f)*3, 0.0f, (200.0f*3)-3);
+	int caddress = tptmath::clamp_int(cpart->life/2, 0, (200-1)*3);
 	*colr = (unsigned char)hflm_data[caddress];
 	*colg = (unsigned char)hflm_data[caddress+1];
 	*colb = (unsigned char)hflm_data[caddress+2];

@@ -17,56 +17,66 @@
 #include "simulation/ElemDataSim.h"
 #include "simulation/elements/WIFI.h"
 
-class WIFI_ElemDataSim : public ElemDataSim
+WIFI_ElemDataSim::WIFI_ElemDataSim(Simulation *s, float chanStep, int chanCount)
+	: ElemDataSim_channels(s),
+	  obs_simCleared(sim->hook_cleared, this, &WIFI_ElemDataSim::Simulation_Cleared),
+	  obs_simBeforeUpdate(sim->hook_beforeUpdate, this, &WIFI_ElemDataSim::Simulation_BeforeUpdate),
+	  channelStep(chanStep),
+	  channelCount(chanCount)
 {
-private:
-	Observer_ClassMember<WIFI_ElemDataSim> obs_simCleared;
-	Observer_ClassMember<WIFI_ElemDataSim> obs_simBeforeUpdate;
-public:
-	int wireless[CHANNELS][2];
-	bool wifi_lastframe;
-	void Simulation_Cleared()
+	if (channelStep<1)
+		channelStep = 1;
+	if (channelCount<0)//default value=-1 : set channelCount automatically based on channelStep
+		channelCount = 1 + int((MAX_TEMP-73.15f)/channelStep+1) - int((MIN_TEMP-73.15f)/channelStep+1);
+
+	channels = new WifiChannel[channelCount];
+	Simulation_Cleared();
+}
+
+WIFI_ElemDataSim::~WIFI_ElemDataSim()
+{
+	delete[] channels;
+}
+
+void WIFI_ElemDataSim::Simulation_Cleared()
+{
+	for (int q=0; q<channelCount; q++)
 	{
-		memset(wireless, 0, sizeof(wireless));
+		channels[q].activeThisFrame = false;
+		channels[q].activeNextFrame = false;
+	}
+	wifi_lastframe = false;
+}
+
+void WIFI_ElemDataSim::Simulation_BeforeUpdate()
+{
+	if (!sim->elementCount[PT_WIFI] && !wifi_lastframe)
+	{
+		return;
+	}
+	if (sim->elementCount[PT_WIFI])
+	{
+		wifi_lastframe = true;
+	}
+	else
+	{
 		wifi_lastframe = false;
 	}
-	void Simulation_BeforeUpdate()
-	{
-		if (!sim->elementCount[PT_WIFI] && !wifi_lastframe)
-		{
-			return;
-		}
-		if (sim->elementCount[PT_WIFI])
-		{
-			wifi_lastframe = true;
-		}
-		else
-		{
-			wifi_lastframe = false;
-		}
 
-		int q;
-		for ( q = 0; q<(int)(MAX_TEMP-73.15f)/100+2; q++)
-		{
-			wireless[q][0] = wireless[q][1];
-			wireless[q][1] = 0;
-		}
-	}
-	WIFI_ElemDataSim(Simulation *s)
-		: ElemDataSim(s),
-		  obs_simCleared(sim->hook_cleared, this, &WIFI_ElemDataSim::Simulation_Cleared),
-		  obs_simBeforeUpdate(sim->hook_beforeUpdate, this, &WIFI_ElemDataSim::Simulation_BeforeUpdate)
+	for (int q = 0; q<channelCount; q++)
 	{
-		Simulation_Cleared();
+		channels[q].activeThisFrame = channels[q].activeNextFrame;
+		channels[q].activeNextFrame = false;
 	}
-};
+}
 
 int WIFI_update(UPDATE_FUNC_ARGS)
 {
 	int rx, ry, rt;
 	int rcount, ri, rnext;
-	parts[i].tmp = Element_WIFI::get_channel(&parts[i]);
-	int (*channel) = sim->elemData<WIFI_ElemDataSim>(PT_WIFI)->wireless[parts[i].tmp];
+	WIFI_ElemDataSim *ed = sim->elemData<WIFI_ElemDataSim>(PT_WIFI);
+	parts[i].tmp = ed->GetChannelId(parts[i]);
+	WifiChannel *channel = ed->GetParticleChannel(parts[i]);
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
@@ -74,9 +84,7 @@ int WIFI_update(UPDATE_FUNC_ARGS)
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
-					// channel[0] - whether channel is active on this frame
-					// channel[1] - whether channel should be active on next frame
-					if (channel[0])
+					if (channel->activeThisFrame)
 					{
 						if ((rt==PT_NSCN||rt==PT_PSCN||rt==PT_INWR)&&parts[ri].life==0)
 						{
@@ -87,7 +95,7 @@ int WIFI_update(UPDATE_FUNC_ARGS)
 					{
 						if (rt==PT_SPRK && parts[ri].ctype!=PT_NSCN && parts[ri].life==3)
 						{
-							channel[1] = 1;
+							channel->activeNextFrame = 1;
 						}
 					}
 				}
@@ -98,7 +106,7 @@ int WIFI_update(UPDATE_FUNC_ARGS)
 int WIFI_graphics(GRAPHICS_FUNC_ARGS)
 {
 	float frequency = 0.0628;
-	int q = Element_WIFI::get_channel(cpart);
+	int q = sim->elemData<WIFI_ElemDataSim>(PT_WIFI)->GetChannelId(*cpart);
 	*colr = sin(frequency*q + 0) * 127 + 128;
 	*colg = sin(frequency*q + 2) * 127 + 128;
 	*colb = sin(frequency*q + 4) * 127 + 128;

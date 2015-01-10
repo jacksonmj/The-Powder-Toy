@@ -18,6 +18,7 @@
 
 #include "simulation/ElemDataSim.h"
 #include "simulation/Simulation.h"
+#include "simulation/elements-shared/ElemDataSim-channels.h"
 #include "powder.h"
 
 extern const int portal_rx[8];
@@ -26,15 +27,6 @@ extern const int portal_ry[8];
 class Element_PRTI
 {
 public:
-	static int get_channel(particle *cpart)
-	{
-		int q = (int)((cpart->temp-73.15f)/100+1);
-		if (q>=CHANNELS)
-			return CHANNELS-1;
-		else if (q<0)
-			return 0;
-		return q;
-	}
 	static void orbitalparts_get(int block1, int block2, int resblock1[], int resblock2[])
 	{
 		resblock1[0] = (block1&0x000000FF);
@@ -84,23 +76,24 @@ public:
 	void ClearContents();
 };
 
-class PRTI_ElemDataSim : public ElemDataSim
+class PRTI_ElemDataSim : public ElemDataSim_channels
 {
 private:
-	PortalChannel channels[CHANNELS];
+	PortalChannel *channels;
 	Observer_ClassMember<PRTI_ElemDataSim> obs_simCleared;
 public:
-	PRTI_ElemDataSim(Simulation *s);
+	float channelStep;
+	int channelCount;
+	PRTI_ElemDataSim(Simulation *s, float chanStep=100, int chanCount=-1);
+	~PRTI_ElemDataSim();
 	void ClearPortalContents();
-	PortalChannel* GetChannel(int i)
+	int GetChannelId(particle &p)
 	{
-		return channels+i;
+		return tptmath::clamp_int(int((p.temp-73.15f)/channelStep+1), 0, channelCount-1);
 	}
 	PortalChannel* GetParticleChannel(particle &p)
 	{
-		p.tmp = (int)((p.temp-73.15f)/100+1);
-		if (p.tmp>=CHANNELS) p.tmp = CHANNELS-1;
-		else if (p.tmp<0) p.tmp = 0;
+		p.tmp = tptmath::clamp_int(int((p.temp-73.15f)/channelStep+1), 0, channelCount-1);
 		return &channels[p.tmp];
 	}
 

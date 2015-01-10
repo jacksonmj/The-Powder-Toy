@@ -239,10 +239,10 @@ int VIBR_graphics(GRAPHICS_FUNC_ARGS)
 	}
 	else if (gradient < 100)
 	{
-		*colr += (int)restrict_flt(gradient*2.0f,0,255);
-		*colg += (int)restrict_flt(gradient*2.0f,0,175);
-		*colb += (int)restrict_flt(gradient*2.0f,0,255);
-		*firea = (int)restrict_flt(gradient*.6f,0,60);
+		*colr += (int)tptmath::clamp_flt(gradient*2.0f,0,255);
+		*colg += (int)tptmath::clamp_flt(gradient*2.0f,0,175);
+		*colb += (int)tptmath::clamp_flt(gradient*2.0f,0,255);
+		*firea = (int)tptmath::clamp_flt(gradient*.6f,0,60);
 		*firer = *colr/2;
 		*fireg = *colg/2;
 		*fireb = *colb/2;

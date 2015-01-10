@@ -55,6 +55,7 @@
 #include "images.h"
 #endif
 
+#include "common/tptmath.h"
 #include "simulation/Simulation.h"
 #include "simulation/elements/FIGH.h"
 #include "graphics/ARGBColour.h"
@@ -1569,26 +1570,23 @@ void draw_air(pixel *vid)
 			if (display_mode & DISPLAY_AIRP)
 			{
 				if (pv[y][x] > 0.0f)
-					c  = PIXRGB(clamp_flt(pv[y][x], 0.0f, 8.0f), 0, 0);//positive pressure is red!
+					c  = PIXRGB(tptmath::scale_to_clamped_byte(pv[y][x], 0.0f, 8.0f), 0, 0);//positive pressure is red
 				else
-					c  = PIXRGB(0, 0, clamp_flt(-pv[y][x], 0.0f, 8.0f));//negative pressure is blue!
+					c  = PIXRGB(0, 0, tptmath::scale_to_clamped_byte(-pv[y][x], 0.0f, 8.0f));//negative pressure is blue
 			}
 			else if (display_mode & DISPLAY_AIRV)
 			{
-				c  = PIXRGB(clamp_flt(fabsf(vx[y][x]), 0.0f, 8.0f),//vx adds red
-					clamp_flt(pv[y][x], 0.0f, 8.0f),//pressure adds green
-					clamp_flt(fabsf(vy[y][x]), 0.0f, 8.0f));//vy adds blue
+				c  = PIXRGB(tptmath::scale_to_clamped_byte(fabsf(vx[y][x]), 0.0f, 8.0f),//vx adds red
+					tptmath::scale_to_clamped_byte(pv[y][x], 0.0f, 8.0f),//pressure adds green
+					tptmath::scale_to_clamped_byte(fabsf(vy[y][x]), 0.0f, 8.0f));//vy adds blue
 			}
 			else if ((display_mode & DISPLAY_AIRH))
 			{
 				if (aheat_enable)
 				{
-					float ttemp = hv[y][x]+(-MIN_TEMP);
-					int caddress = restrict_flt((int)( restrict_flt(ttemp, 0.0f, MAX_TEMP+(-MIN_TEMP)) / ((MAX_TEMP+(-MIN_TEMP))/1024) ) *3, 0.0f, (1024.0f*3)-3);
+					float ttemp = tptmath::clamp_flt(hv[y][x]-MIN_TEMP, 0.0f, TEMP_RANGE);
+					int caddress = tptmath::clamp_int(int(ttemp*1024/TEMP_RANGE)*3, 0, (1024-1)*3);
 					c = PIXRGB((int)((unsigned char)color_data[caddress]*0.7f), (int)((unsigned char)color_data[caddress+1]*0.7f), (int)((unsigned char)color_data[caddress+2]*0.7f));
-					//c  = PIXRGB(clamp_flt(fabsf(vx[y][x]), 0.0f, 8.0f),//vx adds red
-					//	clamp_flt(hv[y][x], 0.0f, 1600.0f),//heat adds green
-					//	clamp_flt(fabsf(vy[y][x]), 0.0f, 8.0f));//vy adds blue
 				}
 				else
 					c = PIXRGB(0,0,0);
@@ -1598,32 +1596,24 @@ void draw_air(pixel *vid)
 				int r;
 				int g;
 				int b;
-				// velocity adds grey
-				r = clamp_flt(fabsf(vx[y][x]), 0.0f, 24.0f) + clamp_flt(fabsf(vy[y][x]), 0.0f, 20.0f);
-				g = clamp_flt(fabsf(vx[y][x]), 0.0f, 20.0f) + clamp_flt(fabsf(vy[y][x]), 0.0f, 24.0f);
-				b = clamp_flt(fabsf(vx[y][x]), 0.0f, 24.0f) + clamp_flt(fabsf(vy[y][x]), 0.0f, 20.0f);
-				if (pv[y][x] > 0.0f)
-				{
-					r += clamp_flt(pv[y][x], 0.0f, 16.0f);//pressure adds red!
-					if (r>255)
-						r=255;
-					if (g>255)
-						g=255;
-					if (b>255)
-						b=255;
-					c  = PIXRGB(r, g, b);
-				}
-				else
-				{
-					b += clamp_flt(-pv[y][x], 0.0f, 16.0f);//pressure adds blue!
-					if (r>255)
-						r=255;
-					if (g>255)
-						g=255;
-					if (b>255)
-						b=255;
-					c  = PIXRGB(r, g, b);
-				}
+				// velocity adds grey (with a slightly purple shade for vy, and slightly green shade for vx)
+				r = tptmath::scale_to_clamped_byte(fabsf(vx[y][x]), 0.0f, 24.0f)
+					+ tptmath::scale_to_clamped_byte(fabsf(vy[y][x]), 0.0f, 20.0f);
+				g = tptmath::scale_to_clamped_byte(fabsf(vx[y][x]), 0.0f, 20.0f)
+					+ tptmath::scale_to_clamped_byte(fabsf(vy[y][x]), 0.0f, 24.0f);
+				b = tptmath::scale_to_clamped_byte(fabsf(vx[y][x]), 0.0f, 24.0f)
+					+ tptmath::scale_to_clamped_byte(fabsf(vy[y][x]), 0.0f, 20.0f);
+				if (pv[y][x] > 0.0f) //positive pressure adds red
+					r += tptmath::scale_to_clamped_byte(pv[y][x], 0.0f, 16.0f);
+				else //negative pressure adds blue
+					b += tptmath::scale_to_clamped_byte(-pv[y][x], 0.0f, 16.0f);
+				if (r>255)
+					r=255;
+				if (g>255)
+					g=255;
+				if (b>255)
+					b=255;
+				c  = PIXRGB(r, g, b);
 			}
 			for (j=0; j<CELL; j++)//draws the colors
 				for (i=0; i<CELL; i++)
@@ -1737,8 +1727,8 @@ void draw_line(pixel *vid, int x1, int y1, int x2, int y2, int r, int g, int b, 
 
 	dx = abs(x1-x2);
 	dy = abs(y1-y2);
-	sx = isign(x2-x1);
-	sy = isign(y2-y1);
+	sx = tptmath::isign(x2-x1);
+	sy = tptmath::isign(y2-y1);
 	x = x1;
 	y = y1;
 	check = 0;
@@ -2004,7 +1994,7 @@ GLfloat ablurLineC[(((YRES*XRES)*2)*4)];
 void render_parts(pixel *vid)
 {
 	Simulation *sim = globalSim;
-	int deca, decr, decg, decb, cola, colr, colg, colb, firea, firer=0, fireg=0, fireb=0, pixel_mode, q, i, t, nx, ny, x, y, caddress;
+	int deca, decr, decg, decb, cola, colr, colg, colb, firea, firer=0, fireg=0, fireb=0, pixel_mode, q, i, t, nx, ny, x, y;
 	int orbd[4] = {0, 0, 0, 0}, orbl[4] = {0, 0, 0, 0};
 	float gradv, flicker, fnx, fny, flx, fly;
 #ifdef OGLR
@@ -2159,10 +2149,10 @@ void render_parts(pixel *vid)
 				if(ptypes[t].properties & PROP_HOT_GLOW && parts[i].temp>(ptransitions[t].thv-800.0f))
 				{
 					gradv = 3.1415/(2*ptransitions[t].thv-(ptransitions[t].thv-800.0f));
-					caddress = (parts[i].temp>ptransitions[t].thv)?ptransitions[t].thv-(ptransitions[t].thv-800.0f):parts[i].temp-(ptransitions[t].thv-800.0f);
-					colr += sin(gradv*caddress) * 226;;
-					colg += sin(gradv*caddress*4.55 +3.14) * 34;
-					colb += sin(gradv*caddress*2.22 +3.14) * 64;
+					float caddress = fminf(800.0f, parts[i].temp-(ptransitions[t].thv-800.0f));
+					colr += sin(gradv*caddress) * 226;
+					colg += sin(gradv*caddress*4.55f +3.14f) * 34;
+					colb += sin(gradv*caddress*2.22f +3.14f) * 64;
 				}
 				
 				if(pixel_mode & FIRE_ADD && !(render_mode & FIRE_ADD))
@@ -2181,7 +2171,7 @@ void render_parts(pixel *vid)
 				//Alter colour based on display mode
 				if(colour_mode & COLOUR_HEAT)
 				{
-					caddress = restrict_flt((int)( restrict_flt((float)(parts[i].temp+(-MIN_TEMP)), 0.0f, MAX_TEMP+(-MIN_TEMP)) / ((MAX_TEMP+(-MIN_TEMP))/1024) ) *3, 0.0f, (1024.0f*3)-3);
+					int caddress = tptmath::clamp_int(int(tptmath::clamp_flt(parts[i].temp-MIN_TEMP, 0.0f, TEMP_RANGE)*1024/TEMP_RANGE) *3, 0, (1024-1)*3);
 					firea = 255;
 					firer = colr = (unsigned char)color_data[caddress];
 					fireg = colg = (unsigned char)color_data[caddress+1];
@@ -2838,29 +2828,27 @@ void render_parts(pixel *vid)
 					if ((parts[i].ctype&3) == 3 && parts[i].tmp >= 0 && parts[i].tmp < NPART)
 						draw_line(vid, nx, ny, (int)(parts[parts[i].tmp].x+0.5f), (int)(parts[parts[i].tmp].y+0.5f), colr, colg, colb, XRES+BARSIZE);
 				}
-				else if ((pixel_mode & EFFECT_LINES) && DEBUG_MODE && !(display_mode&DISPLAY_PERS))
+				else if ((pixel_mode & EFFECT_LINES) && DEBUG_MODE && !(display_mode&DISPLAY_PERS) && (t==PT_PRTI || t==PT_PRTO || t==PT_WIFI))
 				{
 					if (mousex==(nx) && mousey==(ny))//draw lines connecting wifi/portal channels
 					{
-						int z;
-						int type = parts[i].type;
+						int type = parts[i].type;// which element we're drawing lines to
 						if (type == PT_PRTI)
 							type = PT_PRTO;
 						else if (type == PT_PRTO)
 							type = PT_PRTI;
-						int channel, otherchannel;
-						if (type==PT_WIFI)
-							channel = Element_WIFI::get_channel(&parts[i]);
+
+						ElemDataSim_channels *elemData;
+						if (type==PT_PRTO)
+							elemData = globalSim->elemData<ElemDataSim_channels>(PT_PRTI);
 						else
-							channel = Element_PRTI::get_channel(&parts[i]);
-						for (z = 0; z<NPART; z++) {
+							elemData = globalSim->elemData<ElemDataSim_channels>(type);
+
+						int channel = elemData->GetChannelId(parts[i]);
+						for (int z = 0; z<globalSim->parts_lastActiveIndex; z++) {
 							if (parts[z].type==type)
 							{
-								if (type==PT_WIFI)
-									otherchannel = Element_WIFI::get_channel(&parts[z]);
-								else
-									otherchannel = Element_PRTI::get_channel(&parts[z]);
-								if (otherchannel==channel)
+								if (elemData->GetChannelId(parts[z])==channel)
 									xor_line(nx,ny,(int)(parts[z].x+0.5f),(int)(parts[z].y+0.5f),vid);
 							}
 						}
@@ -3549,7 +3537,11 @@ void create_decoration(int x, int y, int r, int g, int b, int click, int tool)
 			tr = COLR(parts[ri].dcolour);
 			tg = COLG(parts[ri].dcolour);
 			tb = COLB(parts[ri].dcolour);
-			parts[ri].dcolour = COLARGB(COLA(parts[ri].dcolour), clamp_flt(tr+(255-tr)*0.02+1, 0,255), clamp_flt(tg+(255-tg)*0.02+1, 0,255), clamp_flt(tb+(255-tb)*0.02+1, 0,255));
+			parts[ri].dcolour = COLARGB(COLA(parts[ri].dcolour),
+									tptmath::scale_to_clamped_byte(tr+(255-tr)*0.02+1, 0,255),
+									tptmath::scale_to_clamped_byte(tg+(255-tg)*0.02+1, 0,255),
+									tptmath::scale_to_clamped_byte(tb+(255-tb)*0.02+1, 0,255)
+								);
 		}
 		else if (tool == DECO_DARKEN)
 		{
@@ -3558,7 +3550,11 @@ void create_decoration(int x, int y, int r, int g, int b, int click, int tool)
 			tr = COLR(parts[ri].dcolour);
 			tg = COLG(parts[ri].dcolour);
 			tb = COLB(parts[ri].dcolour);
-			parts[ri].dcolour = COLARGB(COLA(parts[ri].dcolour), clamp_flt(tr-(tr)*0.02, 0,255), clamp_flt(tg-(tg)*0.02, 0,255), clamp_flt(tb-(tb)*0.02, 0,255));
+			parts[ri].dcolour = COLARGB(COLA(parts[ri].dcolour),
+									tptmath::scale_to_clamped_byte(tr-(tr)*0.02, 0,255),
+									tptmath::scale_to_clamped_byte(tg-(tg)*0.02, 0,255),
+									tptmath::scale_to_clamped_byte(tb-(tb)*0.02, 0,255)
+								);
 		}
 		else if (tool == DECO_SMUDGE)
 		{
@@ -3567,7 +3563,7 @@ void create_decoration(int x, int y, int r, int g, int b, int click, int tool)
 			tg = COLG(smudgeCol);
 			tb = COLB(smudgeCol);
 			if (!parts[ri].dcolour)
-				ta = fmaxf(0,ta-3);//TODO: what is this for?
+				ta = fmaxf(0,ta-3);//reduce transparency on deco that has been spread by smudging onto undecorated particles
 			parts[ri].dcolour = COLARGB(ta,tr,tg,tb);
 		}
 	}

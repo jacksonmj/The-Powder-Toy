@@ -21,7 +21,7 @@ int ICE_update(UPDATE_FUNC_ARGS) //currently used for snow as well
 	int rcount, ri, rnext;
 	if (parts[i].ctype==PT_FRZW)//get colder if it is from FRZW
 	{
-		parts[i].temp = restrict_flt(parts[i].temp-1.0f, MIN_TEMP, MAX_TEMP);
+		sim->part_add_temp(parts[i], -1.0f);
 	}
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
@@ -34,13 +34,13 @@ int ICE_update(UPDATE_FUNC_ARGS) //currently used for snow as well
 					{
 						if (parts[i].temp > ptransitions[PT_SLTW].tlv && !(rand()%200))
 						{
-							part_change_type(i,x,y,PT_SLTW);
-							part_change_type(ri,x+rx,y+ry,PT_SLTW);
+							sim->part_change_type(i,x,y,PT_SLTW);
+							sim->part_change_type(ri,x+rx,y+ry,PT_SLTW);
 						}
 					}
 					else if (rt==PT_FRZZ && !(rand()%200))
 					{
-						part_change_type(ri,x+rx,y+ry,PT_ICEI);
+						sim->part_change_type(ri,x+rx,y+ry,PT_ICEI);
 						parts[ri].ctype = PT_FRZW;
 					}
 				}

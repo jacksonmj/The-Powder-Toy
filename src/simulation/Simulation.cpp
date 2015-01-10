@@ -1014,7 +1014,7 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 						parts[ri].temp = parts[i].temp;
 
 					if (rt < PT_NUM && elements[rt].HeatConduct && (rt!=PT_HSWC||parts[ri].life==10) && rt!=PT_FILT)
-						parts[i].temp = parts[ri].temp = restrict_flt((parts[ri].temp+parts[i].temp)/2, MIN_TEMP, MAX_TEMP);
+						parts[i].temp = parts[ri].temp = tptmath::clamp_flt((parts[ri].temp+parts[i].temp)/2, MIN_TEMP, MAX_TEMP);
 				}
 				if (rt==PT_CLNE || rt==PT_PCLN || rt==PT_BCLN || rt==PT_PBCN) {
 					if (!parts[ri].ctype)
@@ -1121,21 +1121,21 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 				// blackhole heats up when it eats particles
 				if (!legacy_enable)
 				{
-					parts[ri].temp = restrict_flt(parts[ri].temp+parts[i].temp/2, MIN_TEMP, MAX_TEMP);
+					part_add_temp(parts[ri], parts[i].temp/2);
 				}
-				kill_part(i);
+				part_kill(i);
 				return MoveResult::DESTROYED;
 			}
 			else if (rt==PT_WHOL||rt==PT_NWHL)
 			{
 				if (t==PT_ANAR)
 				{
-					// whitehole heats up when it eats ANAR
+					// whitehole cools down when it eats ANAR
 					if (!legacy_enable)
 					{
-						parts[ri].temp = restrict_flt(parts[ri].temp- (MAX_TEMP-parts[i].temp)/2, MIN_TEMP, MAX_TEMP);
+						part_add_temp(parts[ri], -(MAX_TEMP-parts[i].temp)/2);
 					}
-					kill_part(i);
+					part_kill(i);
 					return MoveResult::DESTROYED;
 				}
 			}
@@ -1145,8 +1145,8 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 				{
 					if(parts[ri].life < 6000)
 						parts[ri].life += 1;
-					parts[ri].temp = 0;
-					kill_part(i);
+					part_set_temp(parts[ri], 0);
+					part_kill(i);
 					return MoveResult::DESTROYED;
 				}
 			}
@@ -1155,12 +1155,12 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 				if (elements[t].Properties & TYPE_ENERGY)
 				{
 					parts[ri].tmp += 20;
-					kill_part(i);
+					part_kill(i);
 					return MoveResult::DESTROYED;
 				}
 			}
 		}
-		kill_part(i);
+		part_kill(i);
 		return MoveResult::DESTROYED;
 	}
 	else if (moveCode==MoveResult::STORE)
@@ -1185,7 +1185,7 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 					parts[ri].tmp2 = parts[i].life;
 					parts[ri].pavg[0] = parts[i].tmp;
 					parts[ri].pavg[1] = parts[i].ctype;
-					kill_part(i);
+					part_kill(i);
 					return MoveResult::STORED;
 				}
 			}
@@ -1813,8 +1813,8 @@ void Simulation::UpdateParticles()
 					if (aheat_enable && !(elements[t].Properties&PROP_NOAMBHEAT))
 					{
 						c_heat = (hv[y/CELL][x/CELL]-parts[i].temp)*0.04;
-						c_heat = restrict_flt(c_heat, -MAX_TEMP+MIN_TEMP, MAX_TEMP-MIN_TEMP);
-						parts[i].temp += c_heat;
+						c_heat = tptmath::clamp_flt(c_heat, -TEMP_RANGE, TEMP_RANGE);
+						part_add_temp(parts[i], c_heat);
 						hv[y/CELL][x/CELL] -= c_heat;
 					}
 
@@ -1842,7 +1842,7 @@ void Simulation::UpdateParticles()
 						}
 					}
 					pt = (c_heat+parts[i].temp)/(h_count+1);
-					pt = parts[i].temp = restrict_flt(pt, MIN_TEMP, MAX_TEMP);
+					pt = parts[i].temp = tptmath::clamp_flt(pt, MIN_TEMP, MAX_TEMP);
 					for (rx=-1; rx<2; rx++)
 					{
 						for (ry=-1; ry<2; ry++)
@@ -1987,9 +1987,9 @@ void Simulation::UpdateParticles()
 						transitionOccurred = true;
 					}
 
-					pt = parts[i].temp = restrict_flt(parts[i].temp, MIN_TEMP, MAX_TEMP);
+					pt = parts[i].temp = tptmath::clamp_flt(parts[i].temp, MIN_TEMP, MAX_TEMP);
 					if (t==PT_LAVA) {
-						parts[i].life = restrict_flt((parts[i].temp-700)/7, 0.0f, 400.0f);
+						parts[i].life = tptmath::clamp_flt((parts[i].temp-700)/7, 0, 400);
 						if (parts[i].ctype==PT_THRM&&parts[i].tmp>0)
 						{
 							parts[i].tmp--;
@@ -2006,13 +2006,13 @@ void Simulation::UpdateParticles()
 				{
 					if (!(bmap_blockairh[y/CELL][x/CELL]&0x8))
 						bmap_blockairh[y/CELL][x/CELL]++;
-					parts[i].temp = restrict_flt(parts[i].temp, MIN_TEMP, MAX_TEMP);
+					parts[i].temp = tptmath::clamp_flt(parts[i].temp, MIN_TEMP, MAX_TEMP);
 				}
 			}
 
 			if (t==PT_LIFE)
 			{
-				parts[i].temp = restrict_flt(parts[i].temp-50.0f, MIN_TEMP, MAX_TEMP);
+				part_add_temp(parts[i], -50.0f);
 			}
 			//spark updates from walls
 			if ((elements[t].Properties&PROP_CONDUCTS) || t==PT_SPRK)
@@ -2050,7 +2050,8 @@ void Simulation::UpdateParticles()
 			if ((elements[t].Explosive&2) && pv[y/CELL][x/CELL]>2.5f)
 			{
 				parts[i].life = rand()%80+180;
-				parts[i].temp = restrict_flt(elements[PT_FIRE].DefaultProperties.temp + (elements[t].Flammable/2), MIN_TEMP, MAX_TEMP);
+				// TODO: add to existing temp instead of setting temp? Might break compatibility.
+				part_set_temp(parts[i], elements[PT_FIRE].DefaultProperties.temp + (elements[t].Flammable/2));
 				t = PT_FIRE;
 				part_change_type(i,x,y,t);
 				pv[y/CELL][x/CELL] += 0.25f * CFDS;

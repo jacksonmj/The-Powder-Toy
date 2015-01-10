@@ -50,6 +50,7 @@
 #include <powdergraphics.h>
 #include "save.h"
 
+#include "common/tptmath.h"
 #include "simulation/Simulation.h"
 #include "simulation/elements/STKM.h"
 
@@ -2361,202 +2362,6 @@ int save_name_ui(pixel *vid_buf)
 	return 0;
 }
 
-//unused old function, with all the elements drawn at the bottom
-/*
-void menu_ui(pixel *vid_buf, int i, int *sl, int *sr)
-{
-	int b=1,bq,mx,my,h,x,y,n=0,height,width,sy,rows=0;
-	pixel *old_vid=(pixel *)calloc((XRES+BARSIZE)*(YRES+MENUSIZE), PIXELSIZE);
-	if (!old_vid)
-		return;
-	fillrect(vid_buf, -1, -1, XRES+1, YRES+MENUSIZE, 0, 0, 0, 192);
-	memcpy(old_vid, vid_buf, ((XRES+BARSIZE)*(YRES+MENUSIZE))*PIXELSIZE);
-
-	while (!sdl_poll())
-	{
-		b = mouse_get_state(&mx, &my);
-		if (!b)
-			break;
-	}
-	while (!sdl_poll())
-	{
-		bq = b;
-		b = mouse_get_state(&mx, &my);
-		rows = ceil((float)msections[i].itemcount/16.0f);
-		height = (ceil((float)msections[i].itemcount/16.0f)*18);
-		width = restrict_flt(msections[i].itemcount*31, 0, 16*31);
-		//clearrect(vid_buf, -1, -1, XRES+1, YRES+MENUSIZE+1);
-		h = -1;
-		x = XRES-BARSIZE-26;
-		y = (((YRES/SC_TOTAL)*i)+((YRES/SC_TOTAL)/2))-(height/2)+(FONT_H/2)+1;
-		sy = y;
-		//clearrect(vid_buf, (XRES-BARSIZE-width)+1, y-4, width+4, height+4+rows);
-		fillrect(vid_buf, (XRES-BARSIZE-width)-7, y-10, width+16, height+16+rows, 0, 0, 0, 100);
-		drawrect(vid_buf, (XRES-BARSIZE-width)-7, y-10, width+16, height+16+rows, 255, 255, 255, 255);
-		fillrect(vid_buf, (XRES-BARSIZE)+11, (((YRES/SC_TOTAL)*i)+((YRES/SC_TOTAL)/2))-2, 15, FONT_H+3, 0, 0, 0, 100);
-		drawrect(vid_buf, (XRES-BARSIZE)+10, (((YRES/SC_TOTAL)*i)+((YRES/SC_TOTAL)/2))-2, 16, FONT_H+3, 255, 255, 255, 255);
-		drawrect(vid_buf, (XRES-BARSIZE)+9, (((YRES/SC_TOTAL)*i)+((YRES/SC_TOTAL)/2))-1, 1, FONT_H+1, 0, 0, 0, 255);
-		if (i==SC_WALL)
-		{
-			for (n = 122; n<122+UI_WALLCOUNT; n++)
-			{
-				if (n!=SPC_AIR&&n!=SPC_HEAT&&n!=SPC_COOL&&n!=SPC_VACUUM)
-				{
-					if (x-26<=60)
-					{
-						x = XRES-BARSIZE-26;
-						y += 19;
-					}
-					x -= draw_tool_xy(vid_buf, x, y, n, mwalls[n-122].colour)+5;
-					if (mx>=x+32 && mx<x+58 && my>=y && my< y+15)
-					{
-						drawrect(vid_buf, x+30, y-1, 29, 17, 255, 0, 0, 255);
-						h = n;
-					}
-					else if (n==*sl)
-					{
-						drawrect(vid_buf, x+30, y-1, 29, 17, 255, 0, 0, 255);
-					}
-					else if (n==*sr)
-					{
-						drawrect(vid_buf, x+30, y-1, 29, 17, 0, 0, 255, 255);
-					}
-				}
-			}
-		}
-		else if (i==SC_SPECIAL)
-		{
-			for (n = 122; n<122+UI_WALLCOUNT; n++)
-			{
-				if (n==SPC_AIR||n==SPC_HEAT||n==SPC_COOL||n==SPC_VACUUM)
-				{
-					if (x-26<=60)
-					{
-						x = XRES-BARSIZE-26;
-						y += 19;
-					}
-					x -= draw_tool_xy(vid_buf, x, y, n, mwalls[n-122].colour)+5;
-					if (mx>=x+32 && mx<x+58 && my>=y && my< y+15)
-					{
-						drawrect(vid_buf, x+30, y-1, 29, 17, 255, 0, 0, 255);
-						h = n;
-					}
-					else if (n==*sl)
-					{
-						drawrect(vid_buf, x+30, y-1, 29, 17, 255, 0, 0, 255);
-					}
-					else if (n==*sr)
-					{
-						drawrect(vid_buf, x+30, y-1, 29, 17, 0, 0, 255, 255);
-					}
-				}
-			}
-			for (n = 0; n<PT_NUM; n++)
-			{
-				if (ptypes[n].menusection==i&&ptypes[n].menu==1)
-				{
-					if (x-26<=60)
-					{
-						x = XRES-BARSIZE-26;
-						y += 19;
-					}
-					x -= draw_tool_xy(vid_buf, x, y, n, ptypes[n].pcolors)+5;
-					if (mx>=x+32 && mx<x+58 && my>=y && my< y+15)
-					{
-						drawrect(vid_buf, x+30, y-1, 29, 17, 255, 0, 0, 255);
-						h = n;
-					}
-					else if (n==*sl)
-					{
-						drawrect(vid_buf, x+30, y-1, 29, 17, 255, 0, 0, 255);
-					}
-					else if (n==*sr)
-					{
-						drawrect(vid_buf, x+30, y-1, 29, 17, 0, 0, 255, 255);
-					}
-				}
-			}
-		}
-		else
-		{
-			for (n = 0; n<PT_NUM; n++)
-			{
-				if (ptypes[n].menusection==i&&ptypes[n].menu==1)
-				{
-					if (x-26<=60)
-					{
-						x = XRES-BARSIZE-26;
-						y += 19;
-					}
-					x -= draw_tool_xy(vid_buf, x, y, n, ptypes[n].pcolors)+5;
-					if (mx>=x+32 && mx<x+58 && my>=y && my< y+15)
-					{
-						drawrect(vid_buf, x+30, y-1, 29, 17, 255, 0, 0, 255);
-						h = n;
-					}
-					else if (n==*sl)
-					{
-						drawrect(vid_buf, x+30, y-1, 29, 17, 255, 0, 0, 255);
-					}
-					else if (n==*sr)
-					{
-						drawrect(vid_buf, x+30, y-1, 29, 17, 0, 0, 255, 255);
-					}
-				}
-			}
-		}
-
-		if (h==-1)
-		{
-			drawtext(vid_buf, XRES-textwidth((char *)msections[i].name)-BARSIZE, sy+height+10, (char *)msections[i].name, 255, 255, 255, 255);
-		}
-		else if (i==SC_WALL||(i==SC_SPECIAL&&h>=122))
-		{
-			drawtext(vid_buf, XRES-textwidth((char *)mwalls[h-122].descs)-BARSIZE, sy+height+10, (char *)mwalls[h-122].descs, 255, 255, 255, 255);
-		}
-		else
-		{
-			drawtext(vid_buf, XRES-textwidth((char *)ptypes[h].descs)-BARSIZE, sy+height+10, (char *)ptypes[h].descs, 255, 255, 255, 255);
-		}
-
-
-		sdl_blit(0, 0, (XRES+BARSIZE), YRES+MENUSIZE, vid_buf, (XRES+BARSIZE));
-		memcpy(vid_buf, old_vid, ((XRES+BARSIZE)*(YRES+MENUSIZE))*PIXELSIZE);
-		if (!(mx>=(XRES-BARSIZE-width)-7 && my>=sy-10 && my<sy+height+9))
-		{
-			break;
-		}
-
-		if (b==1&&h!=-1)
-		{
-			*sl = h;
-			break;
-		}
-		if (b==4&&h!=-1)
-		{
-			*sr = h;
-			break;
-		}
-		//if(b==4&&h!=-1) {
-		//	h = -1;
-		//	break;
-		//}
-
-		if (sdl_key==SDLK_RETURN)
-			break;
-		if (sdl_key==SDLK_ESCAPE)
-			break;
-	}
-
-	while (!sdl_poll())
-	{
-		b = mouse_get_state(&mx, &my);
-		if (!b)
-			break;
-	}
-	//drawtext(vid_buf, XRES+2, (12*i)+2, msections[i].icon, 255, 255, 255, 255);
-}
-*/
 //current menu function
 void menu_ui_v3(pixel *vid_buf, int i, int *sl, int *sr, int *su, int *dae, int b, int bq, int mx, int my)
 {
@@ -2564,7 +2369,7 @@ void menu_ui_v3(pixel *vid_buf, int i, int *sl, int *sr, int *su, int *dae, int 
 	SEC = SEC2;
 	rows = ceil((float)msections[i].itemcount/16.0f);
 	height = (ceil((float)msections[i].itemcount/16.0f)*18);
-	width = restrict_flt(msections[i].itemcount*31, 0, 16*31);
+	width = tptmath::clamp_int(msections[i].itemcount*31, 0, 16*31);
 	fwidth = msections[i].itemcount*31;
 	h = -1;
 	x = XRES-BARSIZE-18;
@@ -5783,7 +5588,7 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 					cg = 0;
 					cb = 0;
 					HSV_to_RGB(hh,255-ss,255-ss,&cr,&cg,&cb);
-					vid_buf[(ss+grid_offset_y)*(XRES+BARSIZE)+(clamp_flt(hh, 0, 359)+grid_offset_x)] = PIXRGB(cr, cg, cb);
+					vid_buf[(ss+grid_offset_y)*(XRES+BARSIZE)+(tptmath::scale_to_clamped_byte(hh, 0, 359)+grid_offset_x)] = PIXRGB(cr, cg, cb);
 				}
 			//draw brightness bar
 			for(vv=0; vv<=255; vv++)
@@ -5795,10 +5600,10 @@ unsigned int decorations_ui(pixel *vid_buf,int *bsx,int *bsy, unsigned int saved
 					HSV_to_RGB(currH,currS,vv,&cr,&cg,&cb);
 					vid_buf[(vv+grid_offset_y)*(XRES+BARSIZE)+(i+grid_offset_x+255+4)] = PIXRGB(cr, cg, cb);
 				}
-			addpixel(vid_buf,grid_offset_x + clamp_flt(currH, 0, 359),grid_offset_y-1,255,255,255,255);
+			addpixel(vid_buf,grid_offset_x + tptmath::scale_to_clamped_byte(currH, 0, 359),grid_offset_y-1,255,255,255,255);
 			addpixel(vid_buf,grid_offset_x -1,grid_offset_y+(255-currS),255,255,255,255);
 
-			addpixel(vid_buf,grid_offset_x + clamp_flt(th, 0, 359),grid_offset_y-1,100,100,100,255);
+			addpixel(vid_buf,grid_offset_x + tptmath::scale_to_clamped_byte(th, 0, 359),grid_offset_y-1,100,100,100,255);
 			addpixel(vid_buf,grid_offset_x -1,grid_offset_y+(255-ts),100,100,100,255);
 
 			addpixel(vid_buf,grid_offset_x + 255 +3,grid_offset_y+tv,100,100,100,255);

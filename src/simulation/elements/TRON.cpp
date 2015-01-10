@@ -206,7 +206,7 @@ int TRON_update(UPDATE_FUNC_ARGS)
 	{
 		if (parts[i].tmp&TRON_NODIE)
 			parts[i].life++;
-		//parts[i].dcolour =  clamp_flt((float)parts[i].life/(float)parts[i].tmp2,0,1.0f) << 24 |  parts[i].dcolour&0x00FFFFFF;
+		//parts[i].dcolour =  tptmath::scale_to_clamped_byte((float)parts[i].life/(float)parts[i].tmp2,0,1.0f) << 24 |  parts[i].dcolour&0x00FFFFFF;
 	}
 	return 0;
 }

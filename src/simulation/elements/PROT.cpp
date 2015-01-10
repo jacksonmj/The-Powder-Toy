@@ -69,7 +69,7 @@ int PROT_update(UPDATE_FUNC_ARGS)
 		newID = sim->part_create(-1, x+rand()%3-1, y+rand()%3-1, element);
 		if (newID>=0)
 		{
-			parts[newID].temp = restrict_flt(100.0f*parts[i].tmp, MIN_TEMP, MAX_TEMP);
+			sim->part_set_temp(parts[newID], 100.0f*parts[i].tmp);
 			sim->part_kill(i);
 			return 1;
 		}
@@ -82,7 +82,7 @@ int PROT_update(UPDATE_FUNC_ARGS)
 		if (parts[i].temp > 273.15f+500.0f && (sim->elements[rt].Flammable || sim->elements[rt].Explosive || rt == PT_BANG))
 		{
 			sim->part_create(ri, x, y, PT_FIRE);
-			parts[ri].temp += restrict_flt(sim->elements[rt].Flammable*5, MIN_TEMP, MAX_TEMP);
+			sim->part_add_temp(parts[ri], sim->elements[rt].Flammable*5);
 			pv[y/CELL][x/CELL] += 1.00f;
 		}
 		//remove active sparks
@@ -96,7 +96,7 @@ int PROT_update(UPDATE_FUNC_ARGS)
 		{
 			if ((-((int)pv[y/CELL][x/CELL]-4)+(parts[ri].life/100)) > rand()%200)
 			{
-				PROT_DeutImplosion(sim, parts[ri].life, x, y, restrict_flt(parts[ri].temp + parts[ri].life*500, MIN_TEMP, MAX_TEMP), PT_PROT);
+				PROT_DeutImplosion(sim, parts[ri].life, x, y, tptmath::clamp_flt(parts[ri].temp + parts[ri].life*500, MIN_TEMP, MAX_TEMP), PT_PROT);
 				sim->part_kill(ri);
 				continue;
 			}
@@ -126,11 +126,11 @@ int PROT_update(UPDATE_FUNC_ARGS)
 			else if (parts[i].temp>473.15f) change = 1000.0f;
 			else if (parts[i].temp>373.15f) change = 100.0f;
 			else change = 0.0f;
-			parts[ri].temp = restrict_flt(parts[ri].temp+change, MIN_TEMP, MAX_TEMP);
+			sim->part_add_temp(parts[ri], change);
 		}
 		else if (rt!=PT_PROT)
 		{
-			parts[ri].temp = restrict_flt(parts[ri].temp-(parts[ri].temp-parts[i].temp)/4.0f, MIN_TEMP, MAX_TEMP);
+			sim->part_add_temp(parts[ri], (parts[i].temp-parts[ri].temp)/4.0f);
 		}
 
 		//collide with other protons to make heavier materials

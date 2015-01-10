@@ -669,7 +669,7 @@ void STKM_interact(Simulation *sim, Stickman_data* playerp, int i, int x, int y)
 		{
 			if (!legacy_enable)
 			{
-				parts[ri].temp = restrict_flt(parts[ri].temp+parts[i].temp/2, MIN_TEMP, MAX_TEMP);
+				sim->part_add_temp(parts[ri], parts[i].temp/2);
 			}
 			sim->part_kill(i);
 			return;

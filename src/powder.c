@@ -26,6 +26,7 @@
 #include <luaconsole.h>
 #endif
 
+#include "common/tptmath.h"
 #include "simulation/Simulation.h"
 #include "simulation/CoordStack.h"
 #include "simulation/ElemDataSim.h"
@@ -290,7 +291,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 				else
 					heatchange = fast?50.0f:4.0f;
 				
-				parts[ri].temp = restrict_flt(parts[ri].temp + heatchange, MIN_TEMP, MAX_TEMP);
+				globalSim->part_add_temp(parts[ri], heatchange);
 			}
 			if (t==SPC_COOL&&parts[ri].temp>MIN_TEMP)
 			{
@@ -301,7 +302,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 				else
 					heatchange = fast?50.0f:4.0f;
 				
-				parts[ri].temp = restrict_flt(parts[ri].temp - heatchange, MIN_TEMP, MAX_TEMP);
+				globalSim->part_add_temp(parts[ri], -heatchange);
 			}
 		}
 		return ri;

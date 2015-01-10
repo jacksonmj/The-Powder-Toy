@@ -49,34 +49,6 @@ char *clipboard_text = NULL;
 
 char hex[] = "0123456789ABCDEF";
 
-//Signum function
-TPT_GNU_INLINE int isign(float i)
-{
-	if (i<0)
-		return -1;
-	if (i>0)
-		return 1;
-	return 0;
-}
-
-TPT_GNU_INLINE unsigned clamp_flt(float f, float min, float max)
-{
-	if (f<min)
-		return 0;
-	if (f>max)
-		return 255;
-	return (int)(255.0f*(f-min)/(max-min));
-}
-
-TPT_GNU_INLINE float restrict_flt(float f, float min, float max)
-{
-	if (f<min)
-		return min;
-	if (f>max)
-		return max;
-	return f;
-}
-
 char *mystrdup(const char *s)
 {
 	char *x;

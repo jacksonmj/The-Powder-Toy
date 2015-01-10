@@ -48,14 +48,14 @@ int VINE_graphics(GRAPHICS_FUNC_ARGS)
 		maxtemp = cpart->tmp2;
 	if (maxtemp > 300)
 	{
-		*colr += (int)restrict_flt((maxtemp-300)/5,0,58);
-		*colg -= (int)restrict_flt((maxtemp-300)/2,0,102);
-		*colb += (int)restrict_flt((maxtemp-300)/5,0,70);
+		*colr += (int)tptmath::clamp_flt((maxtemp-300)/5,0,58);
+		*colg -= (int)tptmath::clamp_flt((maxtemp-300)/2,0,102);
+		*colb += (int)tptmath::clamp_flt((maxtemp-300)/5,0,70);
 	}
 	if (maxtemp < 273)
 	{
-		*colg += (int)restrict_flt((273-maxtemp)/4,0,255);
-		*colb += (int)restrict_flt((273-maxtemp)/1.5,0,255);
+		*colg += (int)tptmath::clamp_flt((273-maxtemp)/4,0,255);
+		*colb += (int)tptmath::clamp_flt((273-maxtemp)/1.5,0,255);
 	}
 	return 0;
 }

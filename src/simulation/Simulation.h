@@ -25,14 +25,18 @@
 #include <vector>
 #include <memory>
 #include "common/Observer.h"
+#include "common/tptmath.h"
 
 #include "simulation/ElementNumbers.h"
 
 #define R_TEMP 22
 #define MAX_TEMP 9999
 #define MIN_TEMP 0
+constexpr float TEMP_RANGE = MAX_TEMP-MIN_TEMP;
 #define O_MAX_TEMP 3500
 #define O_MIN_TEMP -273
+constexpr float O_TEMP_RANGE = O_MAX_TEMP-O_MIN_TEMP;
+
 
 #define ST_NONE 0
 #define ST_SOLID 1
@@ -243,13 +247,21 @@ public:
 	int delete_position_notEnergy(int x, int y, int only_type=0, int except_id=-1);
 
 	// Functions for changing particle temperature, respecting temperature caps.
-	// The _noLatent functions also set the stored transition energy of the particle to make it appear as though latent heat does not apply - the particles will change into the type that they should be at that temperature, instead of the temperature increase just contributing towards the stored transition energy
+	// TODO: The _noLatent functions also set the stored transition energy of the particle to make it appear as though latent heat does not apply - the particles will change into the type that they should be at that temperature, instead of the temperature increase just contributing towards the stored transition energy
 	// set_temp sets the temperature to a specific value, add_temp changes the temperature by the given amount (can be positive or negative)
-	void part_set_temp(int i, float newTemp);
-	void part_set_temp_noLatent(int i, float newTemp);
-	void part_add_temp(int i, float change);
-	void part_add_temp_noLatent(int i, float change);
-	void part_add_energy(int i, float amount);
+	void part_set_temp(particle & p, float newTemp) {
+		p.temp = tptmath::clamp_flt(newTemp, MIN_TEMP, MAX_TEMP);
+	}
+	void part_set_temp_noLatent(particle & p, float newTemp) {
+		part_set_temp(p, newTemp);
+	}
+	void part_add_temp(particle & p, float change) {
+		p.temp = tptmath::clamp_flt(p.temp+change, MIN_TEMP, MAX_TEMP);
+	}
+	void part_add_temp_noLatent(particle & p, float change) {
+		part_add_temp(p, change);
+	}
+	void part_add_energy(particle & p, float amount);// TODO
 
 	void spark_particle_nocheck(int i, int x, int y);
 	void spark_particle_nocheck_forceSPRK(int i, int x, int y);

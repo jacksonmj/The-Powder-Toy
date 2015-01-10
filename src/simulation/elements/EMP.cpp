@@ -52,7 +52,7 @@ ok:
 			{
 				is_elec=1;
 				if (!(rand()%100))
-					parts[r].temp = restrict_flt(parts[r].temp+3000.0f, MIN_TEMP, MAX_TEMP);
+					sim->part_add_temp(parts[r], 3000.0f);
 				if (!(rand()%80))
 					part_change_type(r, rx, ry, PT_BREL);
 				else if (!(rand()%120))
@@ -75,29 +75,29 @@ ok:
 								{
 								case PT_METL:
 									if (!(rand()%280))
-										parts[ri].temp = restrict_flt(parts[ri].temp+3000.0f, MIN_TEMP, MAX_TEMP);
+										sim->part_add_temp(parts[ri], 3000.0f);
 									if (!(rand()%300))
-										part_change_type(ri, rx+nx, ry+ny, PT_BMTL);
+										sim->part_change_type(ri, rx+nx, ry+ny, PT_BMTL);
 									break;
 								case PT_BMTL:
 									if (!(rand()%280))
-										parts[ri].temp = restrict_flt(parts[ri].temp+3000.0f, MIN_TEMP, MAX_TEMP);
+										sim->part_add_temp(parts[ri], 3000.0f);
 									if (!(rand()%160))
 									{
-										part_change_type(ri, rx+nx, ry+ny, PT_BRMT);
-										parts[ri].temp = restrict_flt(parts[ri].temp+1000.0f, MIN_TEMP, MAX_TEMP);
+										sim->part_change_type(ri, rx+nx, ry+ny, PT_BRMT);
+										sim->part_add_temp(parts[ri], 1000.0f);
 									}
 									break;
 								case PT_WIFI:
 									if (!(rand()%8))
 									{
 										//Randomise channel
-										parts[ri].temp = rand()%MAX_TEMP;
+										sim->part_set_temp(parts[ri], MIN_TEMP+(rand()%int(TEMP_RANGE)));
 									}
 									if (!(rand()%16))
 									{
 										sim->part_create(ri, rx+nx, ry+ny, PT_BREL);
-										parts[ri].temp = restrict_flt(parts[ri].temp+1000.0f, MIN_TEMP, MAX_TEMP);
+										sim->part_add_temp(parts[ri], 1000.0f);
 									}
 									break;
 								default:
@@ -110,20 +110,20 @@ ok:
 								if (!(rand()%100))
 									part_change_type(ri, rx+nx, ry+ny, PT_BREL);
 								if (!(rand()%100))
-									parts[ri].temp = restrict_flt(parts[ri].temp+2000.0f, MIN_TEMP, MAX_TEMP);
+									sim->part_add_temp(parts[ri], 2000.0f);
 								break;
 							case PT_ARAY:
 								if (rt==PT_ARAY && !(rand()%60))
 								{
 									sim->part_create(ri, rx+nx, ry+ny, PT_BREL);
-									parts[ri].temp = restrict_flt(parts[ri].temp+1000.0f, MIN_TEMP, MAX_TEMP);
+									sim->part_add_temp(parts[ri], 1000.0f);
 								}
 								break;
 							case PT_DLAY:
 								if (rt==PT_DLAY && !(rand()%70))
 								{
 									//Randomise delay
-									parts[ri].temp = (rand()%256) + 273.15f;
+									sim->part_set_temp(parts[ri], (rand()%256) + 273.15f);
 								}
 								break;
 							default:

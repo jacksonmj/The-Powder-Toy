@@ -75,7 +75,8 @@ public:
 			(rt!=PT_H2 || parts[ri].temp < 2273.15))
 		{
 			sim->part_change_type(ri,x+rx,y+ry,PT_FIRE);
-			parts[ri].temp = restrict_flt(sim->elements[PT_FIRE].DefaultProperties.temp + (sim->elements[rt].Flammable/2), MIN_TEMP, MAX_TEMP);
+			// TODO: add to existing temp instead of setting temp? Might break compatibility.
+			sim->part_set_temp(parts[ri], sim->elements[PT_FIRE].DefaultProperties.temp + (sim->elements[rt].Flammable/2));
 			parts[ri].life = rand()%80+180;
 			parts[ri].tmp = parts[ri].ctype = 0;
 			if (sim->elements[rt].Explosive)

@@ -28,16 +28,29 @@
 const int portal_rx[8] = {-1, 0, 1, 1, 1, 0,-1,-1};
 const int portal_ry[8] = {-1,-1,-1, 0, 1, 1, 1, 0};
 
-PRTI_ElemDataSim::PRTI_ElemDataSim(Simulation *s)
-	: ElemDataSim(s),
-	  obs_simCleared(sim->hook_cleared, this, &PRTI_ElemDataSim::ClearPortalContents)
+PRTI_ElemDataSim::PRTI_ElemDataSim(Simulation *s, float chanStep, int chanCount)
+	: ElemDataSim_channels(s),
+	  obs_simCleared(sim->hook_cleared, this, &PRTI_ElemDataSim::ClearPortalContents),
+	  channelStep(chanStep),
+	  channelCount(chanCount)
 {
+	if (channelStep<1)
+		channelStep = 1;
+	if (channelCount<0)//default value=-1 : set channelCount automatically based on channelStep
+		channelCount = 1 + int((MAX_TEMP-73.15f)/channelStep+1) - int((MIN_TEMP-73.15f)/channelStep+1);
+
+	channels = new PortalChannel[channelCount];
 	ClearPortalContents();
+}
+
+PRTI_ElemDataSim::~PRTI_ElemDataSim()
+{
+	delete[] channels;
 }
 
 void PRTI_ElemDataSim::ClearPortalContents()
 {
-	for (int i=0; i<CHANNELS; i++)
+	for (int i=0; i<channelCount; i++)
 		channels[i].ClearContents();
 }
 
