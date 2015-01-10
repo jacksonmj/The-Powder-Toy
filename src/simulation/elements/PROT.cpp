@@ -138,13 +138,10 @@ int PROT_update(UPDATE_FUNC_ARGS)
 		{
 			float velocity1 = powf(parts[i].vx, 2.0f)+powf(parts[i].vy, 2.0f);
 			float velocity2 = powf(parts[ri].vx, 2.0f)+powf(parts[ri].vy, 2.0f);
-			float direction1 = atan2f(-parts[i].vy, parts[i].vx);
-			float direction2 = atan2f(-parts[ri].vy, parts[ri].vx);
-			float difference = direction1 - direction2;
-			if (difference < 0) difference += 6.28319f;
-			if (difference > 3.12659f && difference < 3.15659f && velocity1 + velocity2 > 10.0f)
+			float normalisedDotProduct = (parts[i].vx*parts[ri].vx + parts[i].vy*parts[ri].vy) / sqrtf(velocity1 * velocity2);
+			if (normalisedDotProduct < -0.995f && velocity1 + velocity2 > 10.0f)
 			{
-				parts[i].tmp += (int)(velocity1 + velocity2);
+				parts[i].tmp += (int)(velocity1 + velocity2) + parts[ri].tmp;
 				sim->part_kill(ri);
 			}
 		}
