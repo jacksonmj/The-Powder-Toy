@@ -19,11 +19,12 @@ int VIRS_update(UPDATE_FUNC_ARGS)
 {
 	//pavg[0] measures how many frames until it is cured (0 if still actively spreading and not being cured)
 	//pavg[1] measures how many frames until it dies
-	int r, rx, ry, rndstore = rand();
+	int rx, ry;
 	if (parts[i].pavg[0])
 	{
-		parts[i].pavg[0] -= (rndstore&0x1) ? 0:1;
-		//has been cured, so change back into the original element
+		if (sim->rng.chance<1,2>())
+			parts[i].pavg[0] -= 1;
+		//if it has been cured, change back into the original element
 		if (!parts[i].pavg[0])
 		{
 			if (parts[i].tmp2)
@@ -45,7 +46,7 @@ int VIRS_update(UPDATE_FUNC_ARGS)
 	//decrease pavg[1] so it slowly dies
 	if (parts[i].pavg[1] > 0)
 	{
-		if (!(rndstore & 0x7))
+		if (sim->rng.chance<1,8>())
 		{
 			parts[i].pavg[1]--;
 			//if pavg[1] is now 0, kill it
@@ -55,14 +56,11 @@ int VIRS_update(UPDATE_FUNC_ARGS)
 				return 1;
 			}
 		}
-		rndstore >>= 3;
 	}
 
 	int rcount, ri, rnext, rt;
 	for (rx=-1; rx<2; rx++)
 	{
-		//reset rndstore, one random can last through 3 locations and reduce rand() calling by up to 6x as much
-		rndstore = rand();
 		for (ry=-1; ry<2; ry++)
 		{
 			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
@@ -73,20 +71,20 @@ int VIRS_update(UPDATE_FUNC_ARGS)
 					//spread "being cured" state
 					if ((rt == PT_VIRS || rt == PT_VRSS || rt == PT_VRSG) && parts[ri].pavg[0])
 					{
-						parts[i].pavg[0] = parts[ri].pavg[0] + ((rndstore & 0x3) ? 2:1);
+						parts[i].pavg[0] = parts[ri].pavg[0] + (sim->rng.chance<3,4>() ? 2:1);
 						return 0;
 					}
 					//soap cures virus
 					else if (rt == PT_SOAP)
 					{
 						parts[i].pavg[0] += 10;
-						if (!(rndstore & 0x3))
+						if (sim->rng.chance<1,4>())
 							sim->part_kill(ri);
 						return 0;
 					}
 					else if (rt == PT_PLSM)
 					{
-						if (surround_space && 10 + (int)(pv[(y+ry)/CELL][(x+rx)/CELL]) > (rand()%100))
+						if (surround_space && sim->rng.chance(10 + (int)(pv[(y+ry)/CELL][(x+rx)/CELL]), 100))
 						{
 							sim->part_create(i, x, y, PT_PLSM);
 							return 1;
@@ -95,15 +93,13 @@ int VIRS_update(UPDATE_FUNC_ARGS)
 					//transforms things into virus here
 					else if (rt != PT_VIRS && rt != PT_VRSS && rt != PT_VRSG && rt != PT_DMND && !(sim->elements[rt].Properties&TYPE_ENERGY))
 					{
-						if (!(rndstore & 0x7))
+						if (sim->rng.chance<1,8>())
 						{
-							rndstore >>= 3;
 							parts[ri].tmp2 = rt;
 							parts[ri].pavg[0] = 0;
 							if (parts[i].pavg[1])
 							{
-								parts[ri].pavg[1] = parts[i].pavg[1] + ((rndstore % 3) ? 1 : 0);
-								rndstore >>= 2;
+								parts[ri].pavg[1] = parts[i].pavg[1] + (sim->rng.chance<2,3>() ? 1 : 0);
 							}
 							else
 								parts[ri].pavg[1] = 0;
@@ -114,8 +110,6 @@ int VIRS_update(UPDATE_FUNC_ARGS)
 							else
 								sim->part_change_type(ri, x+rx, y+ry, PT_VIRS);
 						}
-						else
-							rndstore >>= 3;
 					}
 					//protons make VIRS last forever
 					else if (rt == PT_PROT)

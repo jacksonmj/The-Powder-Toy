@@ -20,37 +20,41 @@ int NBLE_update(UPDATE_FUNC_ARGS)
 	if (parts[i].temp > 5273.15 && pv[y/CELL][x/CELL] > 100.0f)
 	{
 		parts[i].tmp |= 0x1;
-		if (!(rand()%5))
+		if (sim->rng.chance<1,5>())
 		{
-			int j;
+			int j, rx, ry;
 			float temp = parts[i].temp;
 			sim->part_create(i,x,y,PT_CO2);
 
-			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_NEUT);
+			sim->randomRelPos_1(&rx,&ry);
+			j = sim->part_create(-3,x+rx,y+ry,PT_NEUT);
 			if (j != -1)
-				parts[j].temp = temp;
-			if (!(rand()%25))
+				sim->part_set_temp(parts[j], temp);
+			if (sim->rng.chance<1,25>())
 			{
-				j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_ELEC);
+				sim->randomRelPos_1(&rx,&ry);
+				j = sim->part_create(-3,x+rx,y+ry,PT_ELEC);
 				if (j != -1)
-					parts[j].temp = temp;
+					sim->part_set_temp(parts[j], temp);
 			}
-			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_PHOT);
+			sim->randomRelPos_1(&rx,&ry);
+			j = sim->part_create(-3,x+rx,y+ry,PT_PHOT);
 			if (j != -1)
 			{
 				parts[j].ctype = 0xF800000;
-				parts[j].temp = temp;
+				sim->part_set_temp(parts[j], temp);
 				parts[j].tmp = 0x1;
 			}
 
-			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_PLSM);
+			sim->randomRelPos_1(&rx,&ry);
+			j = sim->part_create(-3,x+rx,y+ry,PT_PLSM);
 			if (j != -1)
 			{
-				parts[j].temp = temp;
+				sim->part_set_temp(parts[j], temp);
 				parts[j].tmp |= 4;
 			}
 
-			parts[i].temp = temp+1750+rand()%500;
+			sim->part_set_temp(parts[i], temp+sim->rng.randInt<1750,1750+499>());
 			pv[y/CELL][x/CELL] += 50;
 		}
 	}

@@ -20,7 +20,7 @@ int PBCN_update(UPDATE_FUNC_ARGS)
 	int rx, ry, rt;
 	int rcount, ri, rnext;
 	if (!parts[i].tmp2 && pv[y/CELL][x/CELL]>4.0f)
-		parts[i].tmp2 = rand()%40+80;
+		parts[i].tmp2 = sim->rng.randInt<80,80+39>();
 	if (parts[i].tmp2)
 	{
 		float advection = 0.1f;
@@ -105,9 +105,11 @@ int PBCN_update(UPDATE_FUNC_ARGS)
 					}
 				}
 			}
-			else if (parts[i].ctype!=PT_LIGH || !(rand()%30))
+			else if (parts[i].ctype!=PT_LIGH || sim->rng.chance<1,30>())
 			{
-				int np = sim->part_create(-1, x+rand()%3-1, y+rand()%3-1, parts[i].ctype);
+				int rx,ry;
+				sim->randomRelPos_1_noCentre(&rx,&ry);
+				int np = sim->part_create(-1, x+rx, y+ry, parts[i].ctype);
 				if (np>=0)
 				{
 					if (parts[i].ctype==PT_LAVA && parts[i].tmp>0 && parts[i].tmp<PT_NUM && ptransitions[parts[i].tmp].tht==PT_LAVA)

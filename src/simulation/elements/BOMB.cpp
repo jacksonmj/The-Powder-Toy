@@ -65,8 +65,8 @@ int BOMB_update(UPDATE_FUNC_ARGS)
 										parts[nb].tmp = 0;
 										parts[nb].life = 50;
 										parts[nb].temp = MAX_TEMP;
-										parts[nb].vx = rand()%40-20;
-										parts[nb].vy = rand()%40-20;
+										parts[nb].vx = sim->rng.randInt<-20,20>();
+										parts[nb].vy = sim->rng.randInt<-20,20>();
 									}
 								}
 						kill_part(i);

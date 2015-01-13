@@ -27,10 +27,10 @@ int ANAR_update(UPDATE_FUNC_ARGS)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if (parts[ri].type==PT_HFLM && !(rand()%4))
+					if (parts[ri].type==PT_HFLM && sim->rng.chance<1,4>())
 					{
 						part_change_type(i,x,y,PT_HFLM);
-						parts[i].life = rand()%150+50;
+						parts[i].life = sim->rng.randInt<50,50+149>();
 						parts[ri].temp = parts[i].temp = 0;
 						pv[y/CELL][x/CELL] -= 0.5;
 					}

@@ -32,13 +32,13 @@ int ICE_update(UPDATE_FUNC_ARGS) //currently used for snow as well
 					rt = parts[ri].type;
 					if (rt==PT_SALT || rt==PT_SLTW)
 					{
-						if (parts[i].temp > ptransitions[PT_SLTW].tlv && !(rand()%200))
+						if (parts[i].temp > ptransitions[PT_SLTW].tlv && sim->rng.chance<1,200>())
 						{
 							sim->part_change_type(i,x,y,PT_SLTW);
 							sim->part_change_type(ri,x+rx,y+ry,PT_SLTW);
 						}
 					}
-					else if (rt==PT_FRZZ && !(rand()%200))
+					else if (rt==PT_FRZZ && sim->rng.chance<1,200>())
 					{
 						sim->part_change_type(ri,x+rx,y+ry,PT_ICEI);
 						parts[ri].ctype = PT_FRZW;

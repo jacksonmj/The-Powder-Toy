@@ -28,7 +28,7 @@ int RIME_update(UPDATE_FUNC_ARGS)
 					if (parts[ri].type==PT_SPRK)
 					{
 						part_change_type(i,x,y,PT_FOG);
-						parts[i].life = rand()%50 + 60;
+						parts[i].life = sim->rng.randInt<60,60+49>();
 					}
 					else if (parts[ri].type==PT_FOG&&parts[ri].life>0)
 					{

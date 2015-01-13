@@ -45,11 +45,11 @@ int BOYL_update(UPDATE_FUNC_ARGS)
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					int rt = parts[ri].type;
-					if (rt==PT_WATR && !(rand()%30))
+					if (rt==PT_WATR && sim->rng.chance<1,30>())
 					{
 						part_change_type(ri,x+rx,y+ry,PT_FOG);
 					}
-					else if (rt==PT_O2 && !(rand()%9))
+					else if (rt==PT_O2 && sim->rng.chance<1,9>())
 					{
 						kill_part(ri);
 						part_change_type(i,x,y,PT_WATR);

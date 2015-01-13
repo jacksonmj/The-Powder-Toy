@@ -49,14 +49,14 @@ int H2_update(UPDATE_FUNC_ARGS)
 							parts[ri].tmp |= 1;
 							sim->part_create(i,x,y,PT_FIRE);
 							typeChanged = true;
-							parts[i].temp+=(rand()%100);
+							sim->part_add_temp(parts[i], sim->rng.randInt<0,99>());
 							parts[i].tmp |= 1;
 						}
 						else if ((rt==PT_PLSM && !(parts[ri].tmp&4)) || (rt==PT_LAVA && parts[ri].ctype != PT_BMTL))
 						{
 							sim->part_create(i,x,y,PT_FIRE);
 							typeChanged = true;
-							parts[i].temp+=(rand()%100);
+							sim->part_add_temp(parts[i], sim->rng.randInt<0,99>());
 							parts[i].tmp |= 1;
 						}
 					}
@@ -64,39 +64,43 @@ int H2_update(UPDATE_FUNC_ARGS)
 			}
 	if (parts[i].temp > 2273.15 && pv[y/CELL][x/CELL] > 50.0f)
 	{
-		if (!(rand()%5))
+		if (sim->rng.chance<1,5>())
 		{
-			int j;
+			int np;
 			float temp = parts[i].temp;
 			sim->part_create(i,x,y,PT_NBLE);
 			parts[i].tmp = 0x1;
 			typeChanged = true;
 
-			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_NEUT);
-			if (j>=0)
-				parts[j].temp = temp;
-			if (!(rand()%10))
+			sim->randomRelPos_1(&rx,&ry);
+			np = sim->part_create(-3,x+rx,y+ry,PT_NEUT);
+			if (np>=0)
+				sim->part_set_temp(parts[np], temp);
+			if (sim->rng.chance<1,10>())
 			{
-				j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_ELEC);
-				if (j>=0)
-					parts[j].temp = temp;
+				sim->randomRelPos_1(&rx,&ry);
+				np = sim->part_create(-3,x+rx,y+ry,PT_ELEC);
+				if (np>=0)
+					sim->part_set_temp(parts[np], temp);
 			}
-			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_PHOT);
-			if (j>=0)
+			sim->randomRelPos_1(&rx,&ry);
+			np = sim->part_create(-3,x+rx,y+ry,PT_PHOT);
+			if (np>=0)
 			{
-				parts[j].ctype = 0x7C0000;
-				parts[j].temp = temp;
-				parts[j].tmp = 0x1;
-			}
-
-			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_PLSM);
-			if (j>=0)
-			{
-				parts[j].temp = temp;
-				parts[j].tmp |= 4;
+				parts[np].ctype = 0x7C0000;
+				sim->part_set_temp(parts[np], temp);
+				parts[np].tmp = 0x1;
 			}
 
-			parts[i].temp = temp+750+rand()%500;
+			sim->randomRelPos_1(&rx,&ry);
+			np = sim->part_create(-3,x+rx,y+ry,PT_PLSM);
+			if (np>=0)
+			{
+				sim->part_set_temp(parts[np], temp);
+				parts[np].tmp |= 4;
+			}
+
+			sim->part_set_temp(parts[i], temp+sim->rng.randInt<750,750+499>());
 			pv[y/CELL][x/CELL] += 30;
 		}
 	}

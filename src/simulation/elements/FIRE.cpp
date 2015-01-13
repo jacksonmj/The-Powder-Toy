@@ -36,7 +36,7 @@ int FIRE_graphics(GRAPHICS_FUNC_ARGS)
 
 void FIRE_create(ELEMENT_CREATE_FUNC_ARGS)
 {
-	sim->parts[i].life = rand()%50+120;
+	sim->parts[i].life = sim->rng.randInt<120,120+49>();
 }
 
 int FIRE_update(UPDATE_FUNC_ARGS)
@@ -53,7 +53,7 @@ int FIRE_update(UPDATE_FUNC_ARGS)
 		else if (parts[i].temp<625)
 		{
 			part_change_type(i,x,y,PT_SMKE);
-			parts[i].life = rand()%20+250;
+			parts[i].life = sim->rng.randInt<250,250+19>();
 		}
 	}
 	for (rx=-2; rx<3; rx++)

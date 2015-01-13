@@ -28,11 +28,11 @@ int C5_update(UPDATE_FUNC_ARGS)
 					int rt = parts[ri].type;
 					if ((rt!=PT_C5 && parts[ri].temp<100 && ptypes[rt].hconduct && (rt!=PT_HSWC||parts[ri].life==10)) || rt==PT_HFLM)
 					{
-						if (!(rand()%6))
+						if (sim->rng.chance<1,6>())
 						{
 							part_change_type(i,x,y,PT_HFLM);
 							parts[ri].temp = parts[i].temp = 0;
-							parts[i].life = rand()%150+50;
+							parts[i].life = sim->rng.randInt<50,50+149>();
 							pv[y/CELL][x/CELL] += 1.5;
 						}
 					}

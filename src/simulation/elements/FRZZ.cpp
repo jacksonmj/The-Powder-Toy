@@ -26,7 +26,7 @@ int FRZZ_update(UPDATE_FUNC_ARGS)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if (parts[ri].type==PT_WATR && !(rand()%20))
+					if (parts[ri].type==PT_WATR && sim->rng.chance<1,20>())
 					{
 						part_change_type(ri,x+rx,y+ry,PT_FRZW);
 						parts[ri].life = 100;

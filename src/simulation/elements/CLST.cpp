@@ -29,7 +29,7 @@ int CLST_update(UPDATE_FUNC_ARGS)
 					int rt = parts[ri].type;
 					if (rt==PT_WATR)
 					{
-						if (!(rand()%1500))
+						if (sim->rng.chance<1,1500>())
 						{
 							part_change_type(i,x,y,PT_PSTS);
 							kill_part(ri);
@@ -69,7 +69,7 @@ int CLST_graphics(GRAPHICS_FUNC_ARGS)
 
 void CLST_create(ELEMENT_CREATE_FUNC_ARGS)
 {
-	sim->parts[i].tmp = (rand()%7);
+	sim->parts[i].tmp = sim->rng.randInt<0,6>();
 }
 
 void CLST_init_element(ELEMENT_INIT_FUNC_ARGS)

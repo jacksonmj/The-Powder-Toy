@@ -45,6 +45,18 @@ public:
 	}
 };
 
+struct Vec2f
+{
+	float x, y;
+};
+struct Vec2i
+{
+	int x, y;
+};
+struct Vec2sc
+{
+	signed char x, y;
+};
 
 
 #endif

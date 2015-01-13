@@ -36,7 +36,7 @@ int PLSM_graphics(GRAPHICS_FUNC_ARGS)
 
 void PLSM_create(ELEMENT_CREATE_FUNC_ARGS)
 {
-	sim->parts[i].life = rand()%150+50;
+	sim->parts[i].life = sim->rng.randInt<50,50+149>();
 }
 
 int PLSM_update(UPDATE_FUNC_ARGS)

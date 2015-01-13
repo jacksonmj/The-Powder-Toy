@@ -31,9 +31,9 @@ int BRMT_update(UPDATE_FUNC_ARGS)
 					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						rt = parts[ri].type;
-						if ((rt==PT_BREL) && !(rand()%tempFactor))
+						if ((rt==PT_BREL) && sim->rng.chance(1,tempFactor))
 						{
-							if(rand()%2)
+							if(sim->rng.chance<1,2>())
 							{
 								sim->part_create(ri, x+rx, y+ry, PT_THRM);
 							}

@@ -81,7 +81,7 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 										} else if (rt==PT_FILT) {//get color if passed through FILT
 											if (parts[ri].tmp != 6)
 											{
-												colored = Element_FILT::interactWavelengths(&parts[ri], colored);
+												colored = Element_FILT::interactWavelengths(sim, &parts[ri], colored);
 												if (!colored)
 													break;
 											}

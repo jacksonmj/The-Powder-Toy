@@ -55,29 +55,29 @@ int BANG_update(UPDATE_FUNC_ARGS)
 		//Explode!!
 		pv[y/CELL][x/CELL] += 0.5f;
 		parts[i].tmp = 0;
-		if(!(rand()%3))
+		if(sim->rng.chance<1,3>())
 		{
-			if(!(rand()%2))
+			if(sim->rng.chance<1,2>())
 			{
 				sim->part_create(i, x, y, PT_FIRE);
 			}
 			else
 			{
 				sim->part_create(i, x, y, PT_SMKE);
-				parts[i].life = rand()%50+500;
+				parts[i].life = sim->rng.randInt<500,549>();
 			}
 			sim->part_set_temp(parts[i], (MAX_TEMP/4)+otemp);
 		}
 		else
 		{
-			if(!(rand()%15))
+			if(sim->rng.chance<1,15>())
 			{
 				sim->part_create(i, x, y, PT_EMBR);
 				parts[i].tmp = 0;
 				parts[i].life = 50;
 				sim->part_set_temp(parts[i], (MAX_TEMP/3)+otemp);
-				parts[i].vx = rand()%20-10;
-				parts[i].vy = rand()%20-10;
+				parts[i].vx = sim->rng.randInt<-10,10>();
+				parts[i].vy = sim->rng.randInt<-10,10>();
 			}
 			else
 			{

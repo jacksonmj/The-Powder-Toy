@@ -145,22 +145,17 @@ int PRTI_update(UPDATE_FUNC_ARGS)
 	if (fe) {
 		int orbd[4] = {0, 0, 0, 0};	//Orbital distances
 		int orbl[4] = {0, 0, 0, 0};	//Orbital locations
-		if (!parts[i].life) parts[i].life = rand()*rand()*rand();
-		if (!parts[i].ctype) parts[i].ctype = rand()*rand()*rand();
+		if (!parts[i].life) parts[i].life = sim->rng.randUint32();
+		if (!parts[i].ctype) parts[i].ctype = sim->rng.randUint32();
 		Element_PRTI::orbitalparts_get(parts[i].life, parts[i].ctype, orbd, orbl);
 		for (r = 0; r < 4; r++) {
-			if (orbd[r]>1) {
+			if (orbd[r]>12){
+				// effect pixels move inwards while rotating slightly
 				orbd[r] -= 12;
-				if (orbd[r]<1) {
-					orbd[r] = (rand()%128)+128;
-					orbl[r] = rand()%255;
-				} else {
-					orbl[r] += 2;
-					orbl[r] = orbl[r]%255;
-				}
+				orbl[r] = (orbl[r]+2)%256;
 			} else {
-				orbd[r] = (rand()%128)+128;
-				orbl[r] = rand()%255;
+				orbd[r] = sim->rng.randInt<128,255>();
+				orbl[r] = sim->rng.randInt<0,255>();
 			}
 		}
 		Element_PRTI::orbitalparts_set(&parts[i].life, &parts[i].ctype, orbd, orbl);

@@ -23,11 +23,8 @@ int GOLD_update(UPDATE_FUNC_ARGS)
 	int rcount, ri, rnext;
 	//Find nearby rusted iron (BMTL with tmp 1+)
 	for(int j = 0; j < 8; j++){
-		rndstore = rand();
-		rx = (rndstore % 9)-4;
-		rndstore >>= 4;
-		ry = (rndstore % 9)-4;
-		if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (!rx != !ry)) {
+		sim->randomRelPos_1_noDiag_noCentre(&rx,&ry);
+		if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES) {
 			FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 			{
 				if (parts[ri].type==PT_BMTL && parts[ri].tmp)
@@ -59,7 +56,7 @@ int GOLD_update(UPDATE_FUNC_ARGS)
 	{
 		if (parts[ri].type == PT_NEUT)
 		{
-			if (!(rand()%7))
+			if (sim->rng.chance<1,7>())
 			{
 				sim->part_kill(ri);
 			}

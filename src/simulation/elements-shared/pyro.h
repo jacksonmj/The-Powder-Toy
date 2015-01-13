@@ -33,7 +33,7 @@ public:
 		//THRM burning
 		if (rt==PT_THRM && (t==PT_FIRE || t==PT_PLSM || t==PT_LAVA))
 		{
-			if (!(rand()%500)) {
+			if (sim->rng.chance<1,500>()) {
 				sim->part_change_type(ri,x+rx,y+ry,PT_LAVA);
 				parts[ri].ctype = PT_BMTL;
 				parts[ri].temp = 3500.0f;
@@ -52,13 +52,13 @@ public:
 		{
 			if ((t==PT_FIRE || t==PT_PLSM))
 			{
-				if (parts[ri].life>100 && !(rand()%500)) {
+				if (parts[ri].life>100 && sim->rng.chance<1,500>()) {
 					parts[ri].life = 99;
 				}
 			}
 			else if (t==PT_LAVA)
 			{
-				if (parts[i].ctype == PT_IRON && !(rand()%500)) {
+				if (parts[i].ctype == PT_IRON && sim->rng.chance<1,500>()) {
 					parts[i].ctype = PT_METL;
 					sim->part_kill(ri);
 					return 2;
@@ -67,7 +67,7 @@ public:
 		}
 
 		if ((surround_space || sim->elements[rt].Explosive) &&
-			sim->elements[rt].Flammable && (sim->elements[rt].Flammable + (int)(pv[(y+ry)/CELL][(x+rx)/CELL] * 10.0f)) > (rand()%1000) &&
+			sim->elements[rt].Flammable && sim->rng.chance(sim->elements[rt].Flammable + (int)(pv[(y+ry)/CELL][(x+rx)/CELL] * 10.0f), 1000) &&
 			//exceptions, t is the thing causing the spark and rt is what's burning
 			(t!=PT_SPRK || (rt!=PT_RBDM && rt!=PT_LRBD && rt!=PT_INSL)) &&
 			(t!=PT_PHOT || rt!=PT_INSL) &&
@@ -77,7 +77,7 @@ public:
 			sim->part_change_type(ri,x+rx,y+ry,PT_FIRE);
 			// TODO: add to existing temp instead of setting temp? Might break compatibility.
 			sim->part_set_temp(parts[ri], sim->elements[PT_FIRE].DefaultProperties.temp + (sim->elements[rt].Flammable/2));
-			parts[ri].life = rand()%80+180;
+			parts[ri].life = sim->rng.randInt<180,180+79>();
 			parts[ri].tmp = parts[ri].ctype = 0;
 			if (sim->elements[rt].Explosive)
 				pv[y/CELL][x/CELL] += 0.25f * CFDS;

@@ -35,9 +35,9 @@ int THDR_update(UPDATE_FUNC_ARGS)
 					else if (rt!=PT_CLNE&&rt!=PT_THDR&&rt!=PT_SPRK&&rt!=PT_DMND&&rt!=PT_FIRE)
 					{
 						pv[y/CELL][x/CELL] += 100.0f;
-						if (legacy_enable&&1>(rand()%200))
+						if (legacy_enable && sim->rng.chance<1,200>())
 						{
-							parts[i].life = rand()%50+120;
+							parts[i].life = sim->rng.randInt<120,120+49>();
 							part_change_type(i,x,y,PT_FIRE);
 						}
 						else

@@ -36,7 +36,7 @@ int HFLM_graphics(GRAPHICS_FUNC_ARGS)
 
 void HFLM_create(ELEMENT_CREATE_FUNC_ARGS)
 {
-	sim->parts[i].life = rand()%150+50;
+	sim->parts[i].life = sim->rng.randInt<50,50+149>();
 }
 
 void HFLM_init_element(ELEMENT_INIT_FUNC_ARGS)

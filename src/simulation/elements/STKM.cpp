@@ -453,7 +453,7 @@ int run_stickman(Stickman_data* playerp, UPDATE_FUNC_ARGS)
 	//Spawn
 	if (((int)(playerp->comm)&0x08) == 0x08)
 	{
-		ry -= 2*(rand()%2)+1;
+		ry -= 2*sim->rng.randInt<0,1>()+1;
 		bool solidFound = false;
 		FOR_PMAP_POSITION_NOENERGY(sim, rx, ry, rcount, ri, rnext)
 		{
@@ -474,25 +474,19 @@ int run_stickman(Stickman_data* playerp, UPDATE_FUNC_ARGS)
 				create_parts(rx + 3*((((int)playerp->pcomm)&0x02) == 0x02) - 3*((((int)playerp->pcomm)&0x01) == 0x01), ry, 4, 4, SPC_AIR, 0, 1);
 			else if (playerp->elem==PT_LIGH && playerp->elemDelayFrames>0)//limit lightning creation rate
 				np = -1;
+			else if (playerp->elem == PT_PHOT && sim->rng.chance<1,3>())
+				np = -1;
 			else
 				np = sim->part_create(-1, rx, ry, playerp->elem);
 			if (np>=0)
 			{
 				if (playerp->elem == PT_PHOT)
 				{
-					int random = abs(rand()%3-1)*3;
-					if (random==0)
-					{
-						kill_part(np);
-					}
+					parts[np].vy = 0;
+					if (((int)playerp->pcomm)&(0x01|0x02))
+						parts[np].vx = (((((int)playerp->pcomm)&0x02) == 0x02) - (((int)(playerp->pcomm)&0x01) == 0x01))*3;
 					else
-					{
-						parts[np].vy = 0;
-						if (((int)playerp->pcomm)&(0x01|0x02))
-							parts[np].vx = (((((int)playerp->pcomm)&0x02) == 0x02) - (((int)(playerp->pcomm)&0x01) == 0x01))*random;
-						else
-							parts[np].vx = random;
-					}
+						parts[np].vx = 3;
 				}
 				else if (playerp->elem == PT_LIGH)
 				{
@@ -501,7 +495,7 @@ int run_stickman(Stickman_data* playerp, UPDATE_FUNC_ARGS)
 					if (gvx!=0 || gvy!=0)
 						angle = atan2(gvx, gvy)*180.0f/M_PI;
 					else
-						angle = rand()%360;
+						angle = sim->rng.randInt<0,359>();
 					if (((int)playerp->pcomm)&0x01)
 						angle += 180;
 					if (angle>360)
@@ -509,7 +503,7 @@ int run_stickman(Stickman_data* playerp, UPDATE_FUNC_ARGS)
 					if (angle<0)
 						angle+=360;
 					parts[np].tmp = angle;
-					parts[np].life=rand()%(2+power/15)+power/7;
+					parts[np].life=sim->rng.randInt(0,1+power/15)+power/7;
 					parts[np].temp=parts[np].life*power/2.5;
 					parts[np].tmp2=1;
 					playerp->elemDelayFrames = 30;
@@ -634,7 +628,7 @@ void STKM_interact(Simulation *sim, Stickman_data* playerp, int i, int x, int y)
 
 		if (rt==PT_SPRK && playerp->elem!=PT_LIGH) //If on charge
 		{
-			parts[i].life -= (int)(rand()*20/RAND_MAX)+32;
+			parts[i].life -= sim->rng.randInt<32,32+19>();
 		}
 
 		if (sim->elements[rt].HeatConduct && (rt!=PT_HSWC||sim->parts[ri].life==10) && ((playerp->elem!=PT_LIGH && parts[ri].temp>=323) || parts[ri].temp<=243) && (!playerp->rocketBoots || rt!=PT_PLSM))

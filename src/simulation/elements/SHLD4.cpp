@@ -24,7 +24,7 @@ int SHLD4_update(UPDATE_FUNC_ARGS) {
 			{
 				if (!sim->pmap[y+ry][x+rx].count_notEnergy)
 				{
-					if (!(rand()%5500))
+					if (sim->rng.chance<1,5500>())
 					{
 						np = sim->part_create(-1,x+rx,y+ry,PT_SHLD1);
 						if (np<0) continue;

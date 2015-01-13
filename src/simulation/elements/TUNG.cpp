@@ -36,16 +36,16 @@ int TUNG_update(UPDATE_FUNC_ARGS)
 					}
 				}
 	}
-	if((parts[i].temp > TUNG_MELTING_POINT && !(rand()%20)) || splode)
+	if((parts[i].temp > TUNG_MELTING_POINT && sim->rng.chance<1,20>()) || splode)
 	{
-		if(!(rand()%50))
+		if(sim->rng.chance<1,50>())
 		{
 			pv[y/CELL][x/CELL] += 50.0f;
 		}
-		else if(!(rand()%100))
+		else if(sim->rng.chance<1,100>())
 		{
 			sim->part_change_type(i, x, y, PT_FIRE);
-			parts[i].life = rand()%500;
+			parts[i].life = sim->rng.randInt<0,499>();
 			return 1;
 		}
 		else
@@ -56,10 +56,10 @@ int TUNG_update(UPDATE_FUNC_ARGS)
 		}
 		if(splode)
 		{
-			parts[i].temp = TUNG_MELTING_POINT + (rand()%600) + 200;
+			sim->part_set_temp(parts[i], TUNG_MELTING_POINT + sim->rng.randInt<200,799>());
 		}
-		parts[i].vx += (rand()%100)-50;
-		parts[i].vy += (rand()%100)-50;
+		parts[i].vx += sim->rng.randInt<-50,50>();
+		parts[i].vy += sim->rng.randInt<-50,50>();
 		return 1;
 	} 
 	parts[i].pavg[0] = parts[i].pavg[1];

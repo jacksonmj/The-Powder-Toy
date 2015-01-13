@@ -35,11 +35,35 @@
 #include "simulation/elements/PHOT.h"
 #include "simulation/elements/PRTI.h"
 
+Vec2sc const Simulation::relPos_1[9] =
+{{-1,-1},{ 0,-1},{ 1,-1},  {-1, 0},{ 0, 0},{ 1, 0},  {-1, 1},{ 0, 1},{ 1, 1}};
+Vec2sc const Simulation::relPos_1_noCentre[8] =
+{{-1,-1},{ 0,-1},{ 1,-1},  {-1, 0},        { 1, 0},  {-1, 1},{ 0, 1},{ 1, 1}};
+Vec2sc const Simulation::relPos_1_noDiag_noCentre[4] =
+{{ 0,-1},{-1, 0},{ 1, 0},{ 0, 1}};
+Vec2sc const Simulation::relPos_2[25] =
+{
+	{-2,-2},{-1,-2},{0,-2},{ 1,-2},{ 2,-2},
+	{-2,-1},{-1,-1},{0,-1},{ 1,-1},{ 2,-1},
+	{-2, 0},{-1, 0},{0, 0},{ 1, 0},{ 2, 0},
+	{-2, 1},{-1, 1},{0, 1},{ 1, 1},{ 2, 1},
+	{-2, 2},{-1, 2},{0, 2},{ 1, 2},{ 2, 2}
+};
+Vec2sc const Simulation::relPos_2_noCentre[24] =
+{
+	{-2,-2},{-1,-2},{0,-2},{ 1,-2},{ 2,-2},
+	{-2,-1},{-1,-1},{0,-1},{ 1,-1},{ 2,-1},
+	{-2, 0},{-1, 0},       { 1, 0},{ 2, 0},
+	{-2, 1},{-1, 1},{0, 1},{ 1, 1},{ 2, 1},
+	{-2, 2},{-1, 2},{0, 2},{ 1, 2},{ 2, 2}
+};
 
 Simulation *globalSim = NULL; // TODO: remove this global variable
 
 Simulation::Simulation(std::shared_ptr<SimulationSharedData> sd) :
 	simSD(sd),
+	rngBase(),
+	rng(&rngBase),
 	pfree(-1),
 	heat_mode(1)
 {
@@ -456,13 +480,13 @@ int Simulation::part_create(int p, float xf, float yf, int t)
 	if((elements[t].Properties & TYPE_PART) && pretty_powder)
 	{
 		int colr, colg, colb;
-		colr = PIXR(elements[t].Colour)+sandcolour*1.3+(rand()%40)-20+(rand()%30)-15;
-		colg = PIXG(elements[t].Colour)+sandcolour*1.3+(rand()%40)-20+(rand()%30)-15;
-		colb = PIXB(elements[t].Colour)+sandcolour*1.3+(rand()%40)-20+(rand()%30)-15;
+		colr = PIXR(elements[t].Colour)+sandcolour*1.3+rng.randInt<-20,20>()+rng.randInt<-15,15>();
+		colg = PIXG(elements[t].Colour)+sandcolour*1.3+rng.randInt<-20,20>()+rng.randInt<-15,15>();
+		colb = PIXB(elements[t].Colour)+sandcolour*1.3+rng.randInt<-20,20>()+rng.randInt<-15,15>();
  		colr = colr>255 ? 255 : (colr<0 ? 0 : colr);
  		colg = colg>255 ? 255 : (colg<0 ? 0 : colg);
  		colb = colb>255 ? 255 : (colb<0 ? 0 : colb);
-		parts[i].dcolour = COLARGB(rand()%150, colr, colg, colb);
+		parts[i].dcolour = COLARGB((rng.randInt<0,149>()), colr, colg, colb);
 	}
 
 	// Set non-static properties (such as randomly generated ones)
@@ -988,7 +1012,7 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 	// Some checks which can't be done in part_canMove because source coords  and properties of the moving particle properties are unknown:
 	// half-silvered mirror
 	if (moveCode==MoveResult::BLOCK && t==PT_PHOT &&
-	        ((pmap_find_one(nx,ny,PT_BMTL)>=0 && rand()<RAND_MAX/2) ||
+			((pmap_find_one(nx,ny,PT_BMTL)>=0 && rng.chance<1,2>()) ||
 	         pmap_find_one(x,y,PT_BMTL)>=0))
 		moveCode = MoveResult::ALLOW_BUT_SLOW;
 	// block moving out of unpowered ehole
@@ -1036,7 +1060,7 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 				parts[i].ctype &= elements[rt].PhotonReflectWavelengths;
 				if (rt==PT_GLOW)
 				{
-					if (!parts[ri].life && rand() < RAND_MAX/30)
+					if (!parts[ri].life && rng.chance<1,30>())
 					{
 						parts[ri].life = 120;
 						Element_PHOT::create_gain_photon(this, i);
@@ -1044,7 +1068,7 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 				}
 				else if (rt==PT_FILT)
 				{
-					parts[i].ctype = Element_FILT::interactWavelengths(&parts[ri], parts[i].ctype);
+					parts[i].ctype = Element_FILT::interactWavelengths(this, &parts[ri], parts[i].ctype);
 				}
 				else if (rt==PT_INVIS)
 				{
@@ -1078,7 +1102,7 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 			{
 				if (rt==PT_GLAS)
 				{
-					if (rand() < RAND_MAX/10)
+					if (rng.chance<1,10>())
 						Element_PHOT::create_cherenkov_photon(this, i);
 				}
 			}
@@ -1095,7 +1119,7 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 			{
 				if (rt==PT_FILT)
 				{
-					parts[i].ctype = Element_FILT::interactWavelengths(&parts[ri], parts[i].ctype);
+					parts[i].ctype = Element_FILT::interactWavelengths(this, &parts[ri], parts[i].ctype);
 				}
 			}
 			else if (t==PT_ELEC)
@@ -1299,7 +1323,7 @@ void Simulation::UpdateParticles()
 		return;
 		
 	// TODO: doesn't work with linked lists pmap yet
-	/*if (force_stacking_check || (rand()%10)==0)
+	/*if (force_stacking_check || rng.chance<1,10>())
 	{
 		force_stacking_check = 0;
 		excessive_stacking_found = 0;
@@ -1321,7 +1345,7 @@ void Simulation::UpdateParticles()
 						}
 					}
 					// Random chance to turn into BHOL that increases with the amount of stacking, up to a threshold where it is certain to turn into BHOL
-					else if (pmap_count[y][x]>1500 || (rand()%1600)<=(pmap_count[y][x]+100))
+					else if (pmap_count[y][x]>=1500 || rng.randInt<0,1600>()<=(pmap_count[y][x]+100))
 					{
 						pmap_count[y][x] = pmap_count[y][x] + NPART;
 						excessive_stacking_found = 1;
@@ -1764,11 +1788,11 @@ void Simulation::UpdateParticles()
 			{
 #ifdef REALISTIC
 				//The magic number controlls diffusion speed
-				parts[i].vx += 0.05f*sqrtf(parts[i].temp)*elements[t].Diffusion*(rand()/(0.5f*RAND_MAX)-1.0f);
-				parts[i].vy += 0.05f*sqrtf(parts[i].temp)*elements[t].Diffusion*(rand()/(0.5f*RAND_MAX)-1.0f);
+				parts[i].vx += 0.05f*sqrtf(parts[i].temp)*elements[t].Diffusion*rng.randFloat(-1.0f,1.0f);
+				parts[i].vy += 0.05f*sqrtf(parts[i].temp)*elements[t].Diffusion*rng.randFloat(-1.0f,1.0f);
 #else
-				parts[i].vx += elements[t].Diffusion*(rand()/(0.5f*RAND_MAX)-1.0f);
-				parts[i].vy += elements[t].Diffusion*(rand()/(0.5f*RAND_MAX)-1.0f);
+				parts[i].vx += elements[t].Diffusion*rng.randFloat(-1.0f,1.0f);
+				parts[i].vy += elements[t].Diffusion*rng.randFloat(-1.0f,1.0f);
 #endif
 			}
 
@@ -1778,7 +1802,7 @@ void Simulation::UpdateParticles()
 
 			if (!legacy_enable)
 			{
-				if (y-2 >= 0 && y-2 < YRES && (elements[t].Properties&TYPE_LIQUID) && (t!=PT_GEL || gel_scale>(1+rand()%255))) {//some heat convection for liquids
+				if (y-2 >= 0 && y-2 < YRES && (elements[t].Properties&TYPE_LIQUID) && (t!=PT_GEL || rng.chance(parts[i].tmp,100))) {//some heat convection for liquids
 					int swapIndex = pmap_find_one(x,y-2,t);
 					if (swapIndex>=0) {
 						if (parts[i].temp>parts[swapIndex].temp) {
@@ -1808,7 +1832,7 @@ void Simulation::UpdateParticles()
 			{
 				//heat transfer code
 				//this is probably a bit slower now, with the removal of the fixed size surround_hconduct array
-				if (t&&(t!=PT_HSWC||parts[i].life==10)&&(elements[t].HeatConduct*gel_scale)>(rand()%250))
+				if (t&&(t!=PT_HSWC||parts[i].life==10) && rng.chance(elements[t].HeatConduct*gel_scale,250))
 				{
 					if (aheat_enable && !(elements[t].Properties&PROP_NOAMBHEAT))
 					{
@@ -1903,7 +1927,7 @@ void Simulation::UpdateParticles()
 							else s = 0;
 						}
 						else if (t==PT_SLTW) {
-							if (rand()%4==0) t = PT_SALT;
+							if (rng.chance<1,4>()) t = PT_SALT;
 							else t = PT_WTRV;
 						}
 						else if (t == PT_BRMT)
@@ -1976,13 +2000,13 @@ void Simulation::UpdateParticles()
 						}
 						part_change_type(i,x,y,t);
 						if (t==PT_FIRE||t==PT_PLSM||t==PT_HFLM)
-							parts[i].life = rand()%50+120;
+							parts[i].life = rng.randInt<120,120+49>();
 						if (t==PT_LAVA) {
 							if (parts[i].ctype==PT_BRMT) parts[i].ctype = PT_BMTL;
 							else if (parts[i].ctype==PT_SAND) parts[i].ctype = PT_GLAS;
 							else if (parts[i].ctype==PT_BGLA) parts[i].ctype = PT_GLAS;
 							else if (parts[i].ctype==PT_PQRT) parts[i].ctype = PT_QRTZ;
-							parts[i].life = rand()%120+240;
+							parts[i].life = rng.randInt<240,240+119>();
 						}
 						transitionOccurred = true;
 					}
@@ -2049,7 +2073,7 @@ void Simulation::UpdateParticles()
 			//the basic explosion, from the .explosive variable
 			if ((elements[t].Explosive&2) && pv[y/CELL][x/CELL]>2.5f)
 			{
-				parts[i].life = rand()%80+180;
+				parts[i].life = rng.randInt<180,180+79>();
 				// TODO: add to existing temp instead of setting temp? Might break compatibility.
 				part_set_temp(parts[i], elements[PT_FIRE].DefaultProperties.temp + (elements[t].Flammable/2));
 				t = PT_FIRE;
@@ -2099,7 +2123,7 @@ void Simulation::UpdateParticles()
 				}
 				part_change_type(i,x,y,t);
 				if (t==PT_FIRE)
-					parts[i].life = rand()%50+120;
+					parts[i].life = rng.randInt<120,120+49>();
 				transitionOccurred = true;
 			}
 
@@ -2277,7 +2301,7 @@ killed:
 							continue;
 						}
 
-						r = Element_PHOT::get_wavelength_bin(&parts[i].ctype);
+						r = Element_PHOT::get_wavelength_bin(this, &parts[i].ctype);
 						if (r == -1) {
 							kill_part(i);
 							continue;
@@ -2325,7 +2349,7 @@ killed:
 				{
 					// reflection
 					parts[i].flags |= FLAG_STAGNANT;
-					if (t==PT_NEUT && 100>(rand()%1000))
+					if (t==PT_NEUT && rng.chance<1,10>())
 					{
 						kill_part(i);
 						continue;
@@ -2377,7 +2401,7 @@ killed:
 			}
 			else
 			{
-				if (water_equal_test && elements[t].Falldown == 2 && 1>= rand()%400)//checking stagnant is cool, but then it doesn't update when you change it later.
+				if (water_equal_test && elements[t].Falldown == 2 && rng.chance<1,400>())//checking stagnant is cool, but then it doesn't update when you change it later.
 				{
 					if (!flood_water(x,y,i,y, parts[i].flags&FLAG_WATEREQUAL))
 						goto movedone;
@@ -2408,7 +2432,7 @@ killed:
 					{
 						// Movement in velocity direction is blocked, try moving diagonally and (for liquids) horizontally
 						s = 1;
-						r = (rand()%2)*2-1;// position search direction (left/right first)
+						r = rng.randInt<0,1>()*2 - 1;// position search direction (left/right first)
 						if ((clear_x!=x || clear_y!=y || nt || surround_space) &&
 							(fabsf(parts[i].vx)>0.01f || fabsf(parts[i].vy)>0.01f))
 						{

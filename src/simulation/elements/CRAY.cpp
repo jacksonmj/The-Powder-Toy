@@ -113,7 +113,7 @@ int CRAY_update(UPDATE_FUNC_ARGS)
 												colored = 0xFF000000;
 											else if (parts[ni].tmp==0)
 											{
-												colored = CRAY_wavelengthToDecoColour(Element_FILT::getWavelengths(&parts[ni]));
+												colored = CRAY_wavelengthToDecoColour(Element_FILT::getWavelengths(sim, &parts[ni]));
 											}
 											else if (colored==0xFF000000)
 												colored = 0;

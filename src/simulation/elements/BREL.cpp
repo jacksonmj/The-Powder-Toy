@@ -20,7 +20,7 @@ int BREL_update(UPDATE_FUNC_ARGS)
 	int np;
 	if (parts[i].life>0 && pv[y/CELL][x/CELL] > 10.0f)
 	{
-		if (pv[y/CELL][x/CELL] > 30.0f && parts[i].temp>9000 && !(rand()%200))
+		if (pv[y/CELL][x/CELL] > 30.0f && parts[i].temp>9000 && sim->rng.chance<1,200>())
 		{
 			part_change_type(i, x ,y ,PT_EXOT);
 			parts[i].life = 1000;

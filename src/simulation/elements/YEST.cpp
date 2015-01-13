@@ -25,14 +25,15 @@ int YEST_update(UPDATE_FUNC_ARGS)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if (parts[ri].type==PT_DYST && !(rand()%6) && !legacy_enable)
+					if (parts[ri].type==PT_DYST && sim->rng.chance<1,6>() && !legacy_enable)
 					{
 						part_change_type(i,x,y,PT_DYST);
 					}
 				}
 			}
 	if (parts[i].temp>303&&parts[i].temp<317) {
-		sim->part_create(-1, x+rand()%3-1, y+rand()%3-1, PT_YEST);
+		sim->randomRelPos_1_noCentre(&rx,&ry);
+		sim->part_create(-1, x+rx, y+ry, PT_YEST);
 	}
 	return 0;
 }

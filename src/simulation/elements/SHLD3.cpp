@@ -24,7 +24,7 @@ int SHLD3_update(UPDATE_FUNC_ARGS) {
 			{
 				if (!sim->pmap[y+ry][x+rx].count_notEnergy)
 				{
-					if (!(rand()%2500))
+					if (sim->rng.chance<1,2500>())
 					{
 						np = sim->part_create(-1,x+rx,y+ry,PT_SHLD1);
 						if (np<0) continue;
@@ -43,7 +43,7 @@ int SHLD3_update(UPDATE_FUNC_ARGS) {
 						}
 						else if (parts[ri].type==PT_SPRK&&parts[i].life==0)
 						{
-							if (3>rand()%500)
+							if (sim->rng.chance<3,500>())
 							{
 								part_change_type(i,x,y,PT_SHLD4);
 								parts[i].life = 7;

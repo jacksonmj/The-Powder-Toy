@@ -37,20 +37,22 @@ int IGNT_update(UPDATE_FUNC_ARGS)
 	}
 	else if(parts[i].life > 0)
 	{
-		if(rand()%3)
+		if(sim->rng.chance<2,3>())
 		{
-			int nb = sim->part_create(-1, x+rand()%3-1, y+rand()%3-1, PT_EMBR);
+			sim->randomRelPos_1_noCentre(&rx,&ry);
+			int nb = sim->part_create(-1, x+rx, y+ry, PT_EMBR);
 			if (nb!=-1) {
 				parts[nb].tmp = 0;
 				parts[nb].life = 30;
-				parts[nb].vx = rand()%20-10;
-				parts[nb].vy = rand()%20-10;
+				parts[nb].vx = sim->rng.randInt<-10,10>();
+				parts[nb].vy = sim->rng.randInt<-10,10>();
 				sim->part_set_temp(parts[nb], parts[i].temp-273.15+400.0f);
 			}
 		}
 		else
 		{
-			sim->part_create(-1, x+rand()%3-1, y+rand()%3-1, PT_FIRE);
+			sim->randomRelPos_1_noCentre(&rx,&ry);
+			sim->part_create(-1, x+rx, y+ry, PT_FIRE);
 		}
 		parts[i].life--;
 	}

@@ -20,7 +20,7 @@ int QRTZ_graphics(GRAPHICS_FUNC_ARGS);
 
 void PQRT_create(ELEMENT_CREATE_FUNC_ARGS)
 {
-	sim->parts[i].tmp2 = (rand()%11);
+	sim->parts[i].tmp2 = sim->rng.randInt<0,10>();
 }
 
 void PQRT_init_element(ELEMENT_INIT_FUNC_ARGS)

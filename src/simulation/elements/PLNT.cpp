@@ -31,13 +31,13 @@ int PLNT_update(UPDATE_FUNC_ARGS)
 					switch (parts[ri].type)
 					{
 					case PT_WATR:
-						if (!(rand()%50))
+						if (sim->rng.chance<1,50>())
 						{
 							np = sim->part_create(ri,x+rx,y+ry,PT_PLNT);
 						}
 						break;
 					case PT_LAVA:
-						if (!(rand()%50))
+						if (sim->rng.chance<1,50>())
 						{
 							part_change_type(i,x,y,PT_FIRE);
 							parts[i].life = 4;
@@ -45,20 +45,17 @@ int PLNT_update(UPDATE_FUNC_ARGS)
 						break;
 					case PT_SMKE:
 					case PT_CO2:
-						if (parts[i].life<=0 && !(rand()%50))
+						if (parts[i].life<=0 && sim->rng.chance<1,50>())
 						{
 							kill_part(ri);
-							parts[i].life = rand()%60 + 80;
+							parts[i].life = sim->rng.randInt<80,80+59>();
 						}
 						break;
 					case PT_WOOD:
-						rndstore = rand();
-						if (surround_space && !(rndstore%4) && (abs(rx+ry)<=2) && parts[i].tmp==1)
+						if (surround_space && sim->rng.chance<1,4>() && (abs(rx+ry)<=2) && parts[i].tmp==1)
 						{
-							rndstore >>= 3;
-							int nnx = (rndstore%3) -1;
-							rndstore >>= 2;
-							int nny = (rndstore%3) -1;
+							int nnx, nny;
+							sim->randomRelPos_1(&nnx,&nny);
 							if (x+rx+nnx>=0 && y+ry+nny>=0 && x+rx+nnx<XRES && y+ry+nny<YRES && (nnx || nny))
 							{
 								np = sim->part_create(-1,x+rx+nnx,y+ry+nny,PT_VINE);

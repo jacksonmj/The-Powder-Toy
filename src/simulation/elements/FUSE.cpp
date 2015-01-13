@@ -29,8 +29,9 @@ int FUSE_update(UPDATE_FUNC_ARGS)
 	else if (parts[i].life < 40)
 	{
 		parts[i].life--;
-		if (!(rand()%100)) {
-			r = sim->part_create(-1, x+rand()%3-1, y+rand()%3-1, PT_PLSM);
+		if (sim->rng.chance<1,100>()) {
+			sim->randomRelPos_1_noCentre(&rx,&ry);
+			r = sim->part_create(-1, x+rx, y+ry, PT_PLSM);
 			if (r>=0)
 				parts[r].life = 50;
 		}
@@ -43,7 +44,7 @@ int FUSE_update(UPDATE_FUNC_ARGS)
 				{
 					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
-						if (parts[ri].type==PT_SPRK || (parts[i].temp>=973.15 && !(rand()%20)))
+						if (parts[ri].type==PT_SPRK || (parts[i].temp>=973.15 && sim->rng.chance<1,20>()))
 						{
 							parts[i].life = 39;
 							goto doneTriggerCheck;

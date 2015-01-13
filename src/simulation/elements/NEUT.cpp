@@ -30,8 +30,8 @@ int NEUT_DeutExplosion(Simulation *sim, int n, int x, int y, float vx, float vy,
 		return -1;
 
 	for (c=0; c<n; c++) {
-		float r = (rand()%128+128)/127.0f;
-		float a = (rand()%360)*M_PI/180.0f;
+		float r = sim->rng.randInt<128,128+127>()/127.0f;
+		float a = sim->rng.randInt<0,359>()*M_PI/180.0f;
 		i = sim->part_alloc();
 		if (i<0)
 			return -1;
@@ -44,7 +44,7 @@ int NEUT_DeutExplosion(Simulation *sim, int n, int x, int y, float vx, float vy,
 		parts[i].lastY = (float)y;
 #endif
 		parts[i].type = PT_NEUT;
-		parts[i].life = rand()%480+480;
+		parts[i].life = sim->rng.randInt<480,480+479>();
 		parts[i].vx = r*cosf(a);
 		parts[i].vy = r*sinf(a);
 		sim->pmap_add(i, x, y, PT_NEUT);
@@ -69,7 +69,7 @@ int NEUT_update(UPDATE_FUNC_ARGS)
 					switch (parts[ri].type)
 					{
 					case PT_WATR:
-						if (3>(rand()%20))
+						if (sim->rng.chance<3,20>())
 							part_change_type(ri,x+rx,y+ry,PT_DSTW);
 						// fallthrough
 					case PT_ICEI:
@@ -78,12 +78,12 @@ int NEUT_update(UPDATE_FUNC_ARGS)
 						parts[i].vy *= 0.995;
 						break;
 					case PT_PLUT:
-						if (pressureFactor>(rand()%1000))
+						if (sim->rng.chance(pressureFactor,1000))
 						{
-							if (!(rand()%3))
+							if (sim->rng.chance<1,3>())
 							{
-								sim->part_create(ri, x+rx, y+ry, rand()%3 ? PT_LAVA : PT_URAN);
-								parts[ri].temp = MAX_TEMP;
+								sim->part_create(ri, x+rx, y+ry, sim->rng.chance<2,3>() ? PT_LAVA : PT_URAN);
+								sim->part_set_temp(parts[ri], MAX_TEMP);
 								if (parts[ri].type==PT_LAVA) {
 									parts[ri].tmp = 100;
 									parts[ri].ctype = PT_PLUT;
@@ -100,76 +100,70 @@ int NEUT_update(UPDATE_FUNC_ARGS)
 						}
 						break;
 					case PT_DEUT:
-						if ((pressureFactor+1+(parts[ri].life/100))>(rand()%1000))
+						if (sim->rng.chance(pressureFactor+1+(parts[ri].life/100),1000))
 						{
 							NEUT_DeutExplosion(sim, parts[ri].life, x+rx, y+ry, parts[i].vx, parts[i].vy, tptmath::clamp_flt(parts[ri].temp + parts[ri].life*500.0f, MIN_TEMP, MAX_TEMP));
 							kill_part(ri);
 						}
 						break;
 					case PT_GUNP:
-						if (3>(rand()%200))
+						if (sim->rng.chance<3,200>())
 							part_change_type(ri,x+rx,y+ry,PT_DUST);
 						break;
 					case PT_DYST:
-						if (3>(rand()%200))
+						if (sim->rng.chance<3,200>())
 							part_change_type(ri,x+rx,y+ry,PT_YEST);
 						break;
 					case PT_YEST:
 						part_change_type(ri,x+rx,y+ry,PT_DYST);
 						break;
 					case PT_PLEX:
-						if (3>(rand()%200))
+						if (sim->rng.chance<3,200>())
 							part_change_type(ri,x+rx,y+ry,PT_GOO);
 						break;
 					case PT_NITR:
-						if (3>(rand()%200))
+						if (sim->rng.chance<3,200>())
 							part_change_type(ri,x+rx,y+ry,PT_DESL);
 						break;
 					case PT_PLNT:
-						if (!(rand()%20))
+						if (sim->rng.chance<1,20>())
 							sim->part_create(ri, x+rx, y+ry, PT_WOOD);
 						break;
 					case PT_DESL:
 					case PT_OIL:
-						if (3>(rand()%200))
+						if (sim->rng.chance<3,200>())
 							part_change_type(ri,x+rx,y+ry,PT_GAS);
 						break;
 					case PT_COAL:
-						if (!(rand()%20))
+						if (sim->rng.chance<1,20>())
 							sim->part_create(ri, x+rx, y+ry, PT_WOOD);
 						break;
 					case PT_DUST:
-						if (!(rand()%20))
+						if (sim->rng.chance<1,20>())
 							part_change_type(ri, x+rx, y+ry, PT_FWRK);
 						break;
 					case PT_FWRK:
-						if (!(rand()%20))
+						if (sim->rng.chance<1,20>())
 							parts[ri].ctype = PT_DUST;
 						break;
 					case PT_ACID:
-						if (!(rand()%20))
+						if (sim->rng.chance<1,20>())
 							sim->part_create(ri, x+rx, y+ry, PT_ISOZ);
 						break;
 					case PT_TTAN:
-						if (!(rand()%20))
+						if (sim->rng.chance<1,20>())
 						{
 							kill_part(i);
 							return 1;
 						}
 						break;
 					case PT_EXOT:
-						if (!(rand()%20))
+						if (sim->rng.chance<1,20>())
 							parts[ri].life = 1500;
 						break;
 					default:
 						break;
 					}
-					/*if(parts[r>>8].type>1 && parts[r>>8].type!=PT_NEUT && parts[r>>8].type-1!=PT_NEUT && parts[r>>8].type-1!=PT_STKM &&
-					  (ptypes[parts[r>>8].type-1].menusection==SC_LIQUID||
-					  ptypes[parts[r>>8].type-1].menusection==SC_EXPLOSIVE||
-					  ptypes[parts[r>>8].type-1].menusection==SC_GAS||
-					  ptypes[parts[r>>8].type-1].menusection==SC_POWDERS) && 15>(rand()%1000))
-					  parts[r>>8].type--;*/
 				}
 			}
 	return 0;
@@ -189,9 +183,9 @@ int NEUT_graphics(GRAPHICS_FUNC_ARGS)
 
 void NEUT_create(ELEMENT_CREATE_FUNC_ARGS)
 {
-	float r = (rand()%128+128)/127.0f;
-	float a = (rand()%360)*3.14159f/180.0f;
-	sim->parts[i].life = rand()%480+480;
+	float r = sim->rng.randInt<128,128+127>()/127.0f;
+	float a = sim->rng.randInt<0,359>()*3.14159f/180.0f;
+	sim->parts[i].life = sim->rng.randInt<480,480+479>();
 	sim->parts[i].vx = r*cosf(a);
 	sim->parts[i].vy = r*sinf(a);
 }

@@ -34,31 +34,31 @@ int SPNG_update(UPDATE_FUNC_ARGS)
 						case PT_WATR:
 						case PT_DSTW:
 						case PT_FRZW:
-							if (parts[i].life<limit && 500>rand()%absorbChanceDenom)
+							if (parts[i].life<limit && sim->rng.chance(500,absorbChanceDenom))
 							{
 								parts[i].life++;
 								kill_part(ri);
 							}
 							break;
 						case PT_SLTW:
-							if (parts[i].life<limit && 50>rand()%absorbChanceDenom)
+							if (parts[i].life<limit && sim->rng.chance(50,absorbChanceDenom))
 							{
 								parts[i].life++;
-								if (rand()%4)
+								if (sim->rng.chance<3,4>())
 									kill_part(ri);
 								else
 									part_change_type(ri, x+rx, y+ry, PT_SALT);
 							}
 							break;
 						case PT_CBNW:
-							if (parts[i].life<limit && 100>rand()%absorbChanceDenom)
+							if (parts[i].life<limit && sim->rng.chance(100,absorbChanceDenom))
 							{
 								parts[i].life++;
 								part_change_type(ri, x+rx, y+ry, PT_CO2);
 							}
 							break;
 						case PT_PSTE:
-							if (parts[i].life<limit && 20>rand()%absorbChanceDenom)
+							if (parts[i].life<limit && sim->rng.chance(20,absorbChanceDenom))
 							{
 								parts[i].life++;
 								sim->part_create(ri, x+rx, y+ry, PT_CLST);
@@ -84,9 +84,8 @@ int SPNG_update(UPDATE_FUNC_ARGS)
 				}
 	for ( trade = 0; trade<9; trade ++)
 	{
-		rx = rand()%5-2;
-		ry = rand()%5-2;
-		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+		sim->randomRelPos_2_noCentre(&rx,&ry);
+		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES)
 		{
 			FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 			{

@@ -28,40 +28,43 @@ int O2_update(UPDATE_FUNC_ARGS)
 					rt = parts[ri].type;
 					if (rt==PT_FIRE)
 					{
-						parts[ri].temp+=(rand()%100);
+						sim->part_add_temp(parts[ri], sim->rng.randInt<0,99>());
 						if(parts[ri].tmp&0x01)
-						parts[ri].temp=3473;
+							sim->part_set_temp(parts[ri],3473);
 						parts[ri].tmp |= 2;
 
 						sim->part_create(i,x,y,PT_FIRE);
-						parts[i].temp+=(rand()%100);
+						sim->part_add_temp(parts[ri], sim->rng.randInt<0,99>());
 						parts[i].tmp |= 2;
 					}
 					else if (rt==PT_PLSM && !(parts[ri].tmp&4))
 					{
 						sim->part_create(i,x,y,PT_FIRE);
-						parts[i].temp += (rand()%100);
+						sim->part_add_temp(parts[ri], sim->rng.randInt<0,99>());
 						parts[i].tmp |= 2;
 					}
 				}
 			}
 	if (parts[i].temp > 9973.15 && pv[y/CELL][x/CELL] > 250.0f && fabsf(gravx[((y/CELL)*(XRES/CELL))+(x/CELL)]) + fabsf(gravy[((y/CELL)*(XRES/CELL))+(x/CELL)]) > 20)
 	{
-		if (!(rand()%5))
+		if (sim->rng.chance<1,5>())
 		{
 			int j;
 			sim->part_create(i,x,y,PT_BRMT);
 
-			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_NEUT);
+			sim->randomRelPos_1(&rx,&ry);
+			j = sim->part_create(-3,x+rx,y+ry,PT_NEUT);
 			if (j >= 0)
 				parts[j].temp = MAX_TEMP;
-			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_PHOT);
+			sim->randomRelPos_1(&rx,&ry);
+			j = sim->part_create(-3,x+rx,y+ry,PT_PHOT);
 			if (j >= 0)
 			{
 				parts[j].temp = MAX_TEMP;
 				parts[j].tmp = 0x1;
 			}
-			j = sim->part_create(-3,x+rand()%3-1,y+rand()%3-1,PT_PLSM);
+			sim->randomRelPos_1(&rx,&ry);
+			j = sim->part_create(-3,x+rx,y+ry,PT_PLSM);
 			if (j >= 0)
 			{
 				parts[j].temp = MAX_TEMP;

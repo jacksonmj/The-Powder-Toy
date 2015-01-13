@@ -18,7 +18,7 @@
 int GOO_update(UPDATE_FUNC_ARGS)
 {
 	if (!parts[i].life && pv[y/CELL][x/CELL]>1.0f)
-		parts[i].life = rand()%80+300;
+		parts[i].life = sim->rng.randInt<300,379>();
 	if (parts[i].life)
 	{
 		float advection = 0.1f;

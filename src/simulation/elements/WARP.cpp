@@ -24,14 +24,13 @@ int WARP_update(UPDATE_FUNC_ARGS)
 	{
 		parts[i].temp = 10000;
 		pv[y/CELL][x/CELL] += (parts[i].tmp2/5000) * CFDS;
-		if (!(rand()%50))
+		if (sim->rng.chance<1,50>())
 			sim->part_create(-3, x, y, PT_ELEC);
 	}
 	for ( trade = 0; trade<5; trade ++)
 	{
-		rx = rand()%3-1;
-		ry = rand()%3-1;
-		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+		sim->randomRelPos_1_noCentre(&rx,&ry);
+		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES)
 		{
 			FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 			{
@@ -41,8 +40,8 @@ int WARP_update(UPDATE_FUNC_ARGS)
 					float tmpx = parts[i].x, tmpy = parts[i].y;
 					sim->part_set_pos(i, x, y, parts[ri].x, parts[ri].y);
 					sim->part_set_pos(ri, x+rx, y+ry, tmpx, tmpy);
-					parts[ri].vx = (rand()%4)-1.5;
-					parts[ri].vy = (rand()%4)-2;
+					parts[ri].vx = sim->rng.randInt<0,3>()-1.5;
+					parts[ri].vy = sim->rng.randInt<0,3>()-1.5;
 					parts[i].life += 4;
 					trade = 5;
 					break;
@@ -62,7 +61,7 @@ int WARP_graphics(GRAPHICS_FUNC_ARGS)
 
 void WARP_create(ELEMENT_CREATE_FUNC_ARGS)
 {
-	sim->parts[i].life = rand()%95+70;
+	sim->parts[i].life = sim->rng.randInt<70,70+94>();
 }
 
 void WARP_init_element(ELEMENT_INIT_FUNC_ARGS)

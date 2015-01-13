@@ -32,7 +32,7 @@ public:
 		float lpv = (int)pv[(y+ry)/CELL][(x+rx)/CELL];
 		if (lpv < 1) lpv = 1;
 		if (sim->elements[rt].Meltable  && ((rt!=PT_RBDM && rt!=PT_LRBD) || t!=PT_SPRK) && ((t!=PT_FIRE&&t!=PT_PLSM) || (rt!=PT_METL && rt!=PT_IRON && rt!=PT_ETRD && rt!=PT_PSCN && rt!=PT_NSCN && rt!=PT_NTCT && rt!=PT_PTCT && rt!=PT_BMTL && rt!=PT_BRMT && rt!=PT_SALT && rt!=PT_INWR)) &&
-				sim->elements[rt].Meltable*lpv>(rand()%1000))
+				sim->rng.chance(sim->elements[rt].Meltable*lpv,1000))
 		{
 			if (t!=PT_LAVA || parts[i].life>0)
 			{
@@ -43,7 +43,7 @@ public:
 				else
 					parts[ri].ctype = rt;
 				sim->part_change_type(ri,x+rx,y+ry,PT_LAVA);
-				parts[ri].life = rand()%120+240;
+				parts[ri].life = sim->rng.randInt<240,240+119>();
 			}
 			else
 			{

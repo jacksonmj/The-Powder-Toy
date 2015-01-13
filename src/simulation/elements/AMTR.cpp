@@ -34,7 +34,7 @@ int AMTR_update(UPDATE_FUNC_ARGS)
 							kill_part(i);
 							return 1;
 						}
-						if (10>(rand()/(RAND_MAX/100)))
+						if (sim->rng.chance<1,10>())
 							sim->part_create(ri, x+rx, y+ry, PT_PHOT);
 						else
 							kill_part(ri);

@@ -56,7 +56,7 @@ int SING_update(UPDATE_FUNC_ARGS) {
 		spawncount = spawncount*spawncount*M_PI;
 		for (j=0;j<spawncount;j++)
 		{
-			switch(rand()%3)
+			switch(sim->rng.randInt<0,2>())
 			{
 				case 0:
 					nb = sim->part_create(-3, x, y, PT_PHOT);
@@ -69,10 +69,10 @@ int SING_update(UPDATE_FUNC_ARGS) {
 					break;
 			}
 			if (nb!=-1) {
-				parts[nb].life = (rand()%300);
-				parts[nb].temp = MAX_TEMP/2;
-				angle = rand()*2.0f*M_PI/RAND_MAX;
-				v = (float)(rand())*5.0f/RAND_MAX;
+				parts[nb].life = sim->rng.randInt<0,299>();
+				sim->part_set_temp(parts[nb], MAX_TEMP/2);
+				angle = sim->rng.randFloat(0, 2*M_PI);
+				v = sim->rng.randFloat(0, 5.0f);
 				parts[nb].vx = v*cosf(angle);
 				parts[nb].vy = v*sinf(angle);
 			}
@@ -88,7 +88,7 @@ int SING_update(UPDATE_FUNC_ARGS) {
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if (parts[ri].type!=PT_DMND && !(rand()%3))
+					if (parts[ri].type!=PT_DMND && sim->rng.chance<1,3>())
 					{
 						if (parts[ri].type==PT_SING && parts[ri].life >10)
 						{
@@ -100,11 +100,10 @@ int SING_update(UPDATE_FUNC_ARGS) {
 						{
 							if (parts[i].life+3 > 255)
 							{
-								if (parts[ri].type!=PT_SING && !(rand()%100))
+								if (parts[ri].type!=PT_SING && sim->rng.chance<1,100>())
 								{
 									int np;
 									np = sim->part_create(ri,x+rx,y+ry,PT_SING);
-									parts[np].life = rand()%50+60;
 								}
 								continue;
 							}
@@ -121,7 +120,7 @@ int SING_update(UPDATE_FUNC_ARGS) {
 
 void SING_create(ELEMENT_CREATE_FUNC_ARGS)
 {
-	sim->parts[i].life = rand()%50+60;
+	sim->parts[i].life = sim->rng.randInt<60,60+49>();
 }
 
 void SING_init_element(ELEMENT_INIT_FUNC_ARGS)

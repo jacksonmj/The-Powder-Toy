@@ -20,9 +20,7 @@ int DEST_update(UPDATE_FUNC_ARGS)
 	int rx,ry;
 	int rcount, ri, rnext;
 	float topv = 40.0f;
-	rx=rand()%5-2;
-	ry=rand()%5-2;
-
+	sim->randomRelPos_2_noCentre(&rx,&ry);
 	FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 	{
 		int rt = parts[ri].type;
@@ -32,7 +30,7 @@ int DEST_update(UPDATE_FUNC_ARGS)
 
 	if (parts[i].life<=0 || parts[i].life>37)
 	{
-		parts[i].life=30+rand()%20;
+		parts[i].life=sim->rng.randInt<30,30+19>();
 		pv[y/CELL][x/CELL]+=60.0f;
 	}
 	FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
@@ -41,7 +39,7 @@ int DEST_update(UPDATE_FUNC_ARGS)
 		if (rt==PT_PLUT || rt==PT_DEUT)
 		{
 			pv[y/CELL][x/CELL]+=20.0f;
-			if (rand()%2)
+			if (sim->rng.chance<1,2>())
 			{
 				sim->part_create(ri, x+rx, y+ry, PT_NEUT);
 				parts[ri].temp = MAX_TEMP;
@@ -53,7 +51,7 @@ int DEST_update(UPDATE_FUNC_ARGS)
 		{
 			sim->part_create(ri, x+rx, y+ry, PT_PLSM);
 		}
-		else if (!(rand()%3))
+		else if (sim->rng.chance<1,3>())
 		{
 			kill_part(ri);
 			parts[i].life -= 4*((ptypes[rt].properties&TYPE_SOLID)?3:1);

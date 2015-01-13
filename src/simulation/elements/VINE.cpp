@@ -17,14 +17,11 @@
 
 int VINE_update(UPDATE_FUNC_ARGS)
 {
-	int r, np, rx, ry, rndstore = rand();
-	rx = (rndstore % 3) - 1;
-	rndstore >>= 2;
-	ry = (rndstore % 3) - 1;
-	rndstore >>= 2;
-	if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+	int np, rx, ry;
+	sim->randomRelPos_1_noCentre(&rx,&ry);
+	if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES)
 	{
-		if (!(rndstore % 15))
+		if (sim->rng.chance<1,15>())
 			part_change_type(i,x,y,PT_PLNT);
 		else
 		{

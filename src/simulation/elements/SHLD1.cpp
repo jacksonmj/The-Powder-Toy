@@ -27,7 +27,7 @@ int SHLD1_update(UPDATE_FUNC_ARGS)
 				{
 					if (parts[ri].type==PT_SPRK&&parts[i].life==0)
 					{
-						if (11>rand()%40&&parts[i].life==0)
+						if (sim->rng.chance<11,40>() && parts[i].life==0)
 						{
 							part_change_type(i,x,y,PT_SHLD2);
 							parts[i].life = 7;
@@ -42,7 +42,7 @@ int SHLD1_update(UPDATE_FUNC_ARGS)
 								}
 							}
 					}
-					else if (parts[ri].type==PT_SHLD3&&2>rand()%5)
+					else if (parts[ri].type==PT_SHLD3 && sim->rng.chance<2,5>())
 					{
 						part_change_type(i,x,y,PT_SHLD2);
 						parts[i].life = 7;

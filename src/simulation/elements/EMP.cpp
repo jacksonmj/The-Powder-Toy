@@ -51,11 +51,11 @@ ok:
 			        parts[r].ctype==PT_NTCT || parts[r].ctype==PT_INST || parts[r].ctype==PT_SWCH || t==PT_WIRE || t==PT_SWCH)
 			{
 				is_elec=1;
-				if (!(rand()%100))
+				if (sim->rng.chance<1,100>())
 					sim->part_add_temp(parts[r], 3000.0f);
-				if (!(rand()%80))
+				if (sim->rng.chance<1,80>())
 					part_change_type(r, rx, ry, PT_BREL);
-				else if (!(rand()%120))
+				else if (sim->rng.chance<1,120>())
 					part_change_type(r, rx, ry, PT_NTCT);
 			}
 			
@@ -74,27 +74,27 @@ ok:
 								switch (rt)
 								{
 								case PT_METL:
-									if (!(rand()%280))
+									if (sim->rng.chance<1,280>())
 										sim->part_add_temp(parts[ri], 3000.0f);
-									if (!(rand()%300))
+									if (sim->rng.chance<1,300>())
 										sim->part_change_type(ri, rx+nx, ry+ny, PT_BMTL);
 									break;
 								case PT_BMTL:
-									if (!(rand()%280))
+									if (sim->rng.chance<1,280>())
 										sim->part_add_temp(parts[ri], 3000.0f);
-									if (!(rand()%160))
+									if (sim->rng.chance<1,160>())
 									{
 										sim->part_change_type(ri, rx+nx, ry+ny, PT_BRMT);
 										sim->part_add_temp(parts[ri], 1000.0f);
 									}
 									break;
 								case PT_WIFI:
-									if (!(rand()%8))
+									if (sim->rng.chance<1,8>())
 									{
 										//Randomise channel
-										sim->part_set_temp(parts[ri], MIN_TEMP+(rand()%int(TEMP_RANGE)));
+										sim->part_set_temp(parts[ri],sim->rng.randInt<MIN_TEMP,MAX_TEMP>());
 									}
-									if (!(rand()%16))
+									if (sim->rng.chance<1,16>())
 									{
 										sim->part_create(ri, rx+nx, ry+ny, PT_BREL);
 										sim->part_add_temp(parts[ri], 1000.0f);
@@ -107,23 +107,23 @@ ok:
 							switch (rt)
 							{
 							case PT_SWCH:
-								if (!(rand()%100))
+								if (sim->rng.chance<1,100>())
 									part_change_type(ri, rx+nx, ry+ny, PT_BREL);
-								if (!(rand()%100))
+								if (sim->rng.chance<1,100>())
 									sim->part_add_temp(parts[ri], 2000.0f);
 								break;
 							case PT_ARAY:
-								if (rt==PT_ARAY && !(rand()%60))
+								if (rt==PT_ARAY && sim->rng.chance<1,60>())
 								{
 									sim->part_create(ri, rx+nx, ry+ny, PT_BREL);
 									sim->part_add_temp(parts[ri], 1000.0f);
 								}
 								break;
 							case PT_DLAY:
-								if (rt==PT_DLAY && !(rand()%70))
+								if (rt==PT_DLAY && sim->rng.chance<1,70>())
 								{
 									//Randomise delay
-									sim->part_set_temp(parts[ri], (rand()%256) + 273.15f);
+									sim->part_set_temp(parts[ri], sim->rng.randInt<0,255>() + 273.15f);
 								}
 								break;
 							default:

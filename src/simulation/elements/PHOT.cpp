@@ -22,11 +22,9 @@
 void Element_PHOT::create_gain_photon(Simulation *sim, int pp)//photons from PHOT going through GLOW
 {
 	float xx, yy;
-	int i, lr, temp_bin, nx, ny;
+	int i, temp_bin, nx, ny;
 
-	lr = rand() % 2;
-
-	if (lr) {
+	if (sim->rng.chance<1,2>()) {
 		xx = sim->parts[pp].x - 0.3*sim->parts[pp].vy;
 		yy = sim->parts[pp].y + 0.3*sim->parts[pp].vx;
 	} else {
@@ -62,7 +60,7 @@ void Element_PHOT::create_gain_photon(Simulation *sim, int pp)//photons from PHO
 
 void Element_PHOT::create_cherenkov_photon(Simulation *sim, int pp)//photons from NEUT going through GLAS
 {
-	int i, lr, nx, ny;
+	int i, nx, ny;
 	float r;
 
 	nx = (int)(parts[pp].x + 0.5f);
@@ -78,14 +76,12 @@ void Element_PHOT::create_cherenkov_photon(Simulation *sim, int pp)//photons fro
 	if (i<0)
 		return;
 
-	lr = rand() % 2;
-
 	sim->parts[i].ctype = 0x00000F80;
 	sim->parts[i].life = 680;
 	sim->parts[i].temp = sim->parts[glass_i].temp;
 	sim->parts[i].pavg[0] = sim->parts[i].pavg[1] = 0.0f;
 
-	if (lr) {
+	if (sim->rng.chance<1,2>()) {
 		sim->parts[i].vx = sim->parts[pp].vx - 2.5f*sim->parts[pp].vy;
 		sim->parts[i].vy = sim->parts[pp].vy + 2.5f*sim->parts[pp].vx;
 	} else {
@@ -109,7 +105,7 @@ int PHOT_update(UPDATE_FUNC_ARGS)
 		return 1;
 	}
 	if (parts[i].temp > 506)
-		if (!(rand()%10))
+		if (sim->rng.chance<1,10>())
 		{
 			if (ElementsShared_pyro::update(UPDATE_FUNC_SUBCALL_ARGS)==1)
 				return 1;
@@ -128,11 +124,11 @@ int PHOT_update(UPDATE_FUNC_ARGS)
 						parts[i].vx *= 0.90;
 						parts[i].vy *= 0.90;
 						sim->part_create(ri, x+rx, y+ry, PT_PHOT);
-						rrr = (rand()%360)*3.14159f/180.0f;
+						rrr = sim->rng.randInt<0,359>()*3.14159f/180.0f;
 						if (rt==PT_ISOZ)
-							rr = (rand()%128+128)/127.0f;
+							rr = sim->rng.randInt<128,128+127>()/127.0f;
 						else
-							rr = (rand()%228+128)/127.0f;
+							rr = sim->rng.randInt<128,128+227>()/127.0f;
 						parts[ri].vx = rr*cosf(rrr);
 						parts[ri].vy = rr*sinf(rrr);
 						pv[y/CELL][x/CELL] -= 15.0f * CFDS;
@@ -141,18 +137,18 @@ int PHOT_update(UPDATE_FUNC_ARGS)
 						isQuartz = true;
 					else if (rt == PT_FILT && parts[ri].tmp==9)
 					{
-						parts[i].vx += ((float)(rand()%1000-500))/1000.0f;
-						parts[i].vy += ((float)(rand()%1000-500))/1000.0f;
+						parts[i].vx += sim->rng.randFloat(0.5f,-0.5f);
+						parts[i].vy += sim->rng.randFloat(0.5f,-0.5f);
 					}
 				}
 			}
 	if (isQuartz)
 	{
-		float a = (rand()%360)*3.14159f/180.0f;
+		float a = sim->rng.randInt<0,359>()*3.14159f/180.0f;
 		parts[i].vx = 3.0f*cosf(a);
 		parts[i].vy = 3.0f*sinf(a);
 		if(parts[i].ctype == 0x3FFFFFFF)
-			parts[i].ctype = 0x1F<<(rand()%26);
+			parts[i].ctype = 0x1F << (sim->rng.randInt<0,26>());
 		parts[i].life++; //Delay death
 	}
 
@@ -190,14 +186,19 @@ int PHOT_graphics(GRAPHICS_FUNC_ARGS)
 
 void PHOT_create(ELEMENT_CREATE_FUNC_ARGS)
 {
-	float a = (rand()%8) * 0.78540f;
-	sim->parts[i].vx = 3.0f*cosf(a);
-	sim->parts[i].vy = 3.0f*sinf(a);
+	// default velocity angle is a multiple of 45 degrees, so can use randomRelPos_1 to select it
+	int rx, ry;
+	sim->randomRelPos_1_noCentre(&rx,&ry);
+	// scale so that magnitude of velocity is 3
+	constexpr float diagScale = 3.0f/sqrtf(2);
+	float scale = (rx && ry) ? diagScale : 3.0f;
+	sim->parts[i].vx = scale*rx;
+	sim->parts[i].vy = scale*ry;
 	int rcount, ri, rnext;
 	FOR_PMAP_POSITION_NOENERGY(sim, x, y, rcount, ri, rnext)
 	{
 		if (parts[ri].type==PT_FILT)
-			sim->parts[i].ctype = Element_FILT::interactWavelengths(&(sim->parts[ri]), sim->parts[i].ctype);
+			sim->parts[i].ctype = Element_FILT::interactWavelengths(sim, &(sim->parts[ri]), sim->parts[i].ctype);
 	}
 }
 

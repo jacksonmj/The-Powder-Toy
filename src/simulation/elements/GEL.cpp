@@ -37,31 +37,31 @@ int GEL_update(UPDATE_FUNC_ARGS)
 					case PT_WATR:
 					case PT_DSTW:
 					case PT_FRZW:
-						if (parts[i].tmp<100 && 500>rand()%absorbChanceDenom)
+						if (parts[i].tmp<100 && sim->rng.chance(500,absorbChanceDenom))
 						{
 							parts[i].tmp++;
 							kill_part(ri);
 						}
 						break;
 					case PT_PSTE:
-						if (parts[i].tmp<100 && 20>rand()%absorbChanceDenom)
+						if (parts[i].tmp<100 && sim->rng.chance(20,absorbChanceDenom))
 						{
 							parts[i].tmp++;
 							sim->part_create(ri, x+rx, y+ry, PT_CLST);
 						}
 						break;
 					case PT_SLTW:
-						if (parts[i].tmp<100 && 50>rand()%absorbChanceDenom)
+						if (parts[i].tmp<100 && sim->rng.chance(50,absorbChanceDenom))
 						{
 							parts[i].tmp++;
-							if (rand()%4)
+							if (sim->rng.chance<1,4>())
 								kill_part(ri);
 							else
 								part_change_type(ri, x+rx, y+ry, PT_SALT);
 						}
 						break;
 					case PT_CBNW:
-						if (parts[i].tmp<100 && 100>rand()%absorbChanceDenom)
+						if (parts[i].tmp<100 && sim->rng.chance(100,absorbChanceDenom))
 						{
 							parts[i].tmp++;
 							part_change_type(ri, x+rx, y+ry, PT_CO2);

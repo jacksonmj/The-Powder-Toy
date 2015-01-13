@@ -23,7 +23,7 @@ class Element_FILT
 public:
 	// Returns the effective wavelengths value of a FILT particle
 	// (ctype if set, otherwise temperature based wavelengths)
-	static int getWavelengths(particle* cpart)
+	static int getWavelengths(Simulation *sim, particle* cpart)
 	{
 		if (cpart->ctype&0x3FFFFFFF)
 		{
@@ -40,10 +40,10 @@ public:
 
 	// Returns the wavelengths in a particle after FILT interacts with it (e.g. a photon)
 	// cpart is the FILT particle, origWl the original wavelengths in the interacting particle
-	static int interactWavelengths(particle *cpart, int origWl)
+	static int interactWavelengths(Simulation *sim, particle *cpart, int origWl)
 	{
 		const int mask = 0x3FFFFFFF;
-		int filtWl = getWavelengths(cpart);
+		int filtWl = getWavelengths(sim,cpart);
 		switch (cpart->tmp)
 		{
 			case 0:
@@ -78,9 +78,9 @@ public:
 				return (~origWl) & mask; // Invert colours
 			case 9:
 			{
-				int t1 = (origWl & 0x0000FF)+(rand()%5)-2;
-				int t2 = ((origWl & 0x00FF00)>>8)+(rand()%5)-2;
-				int t3 = ((origWl & 0xFF0000)>>16)+(rand()%5)-2;
+				int t1 = (origWl & 0x0000FF)+sim->rng.randInt<-2,2>();
+				int t2 = ((origWl & 0x00FF00)>>8)+sim->rng.randInt<-2,2>();
+				int t3 = ((origWl & 0xFF0000)>>16)+sim->rng.randInt<-2,2>();
 				return (origWl & 0xFF000000) | (t3<<16) | (t2<<8) | t1;
 			}
 			default:

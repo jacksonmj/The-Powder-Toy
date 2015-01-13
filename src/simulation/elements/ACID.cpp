@@ -37,14 +37,14 @@ int ACID_update(UPDATE_FUNC_ARGS)
 						}
 						else if (rt==PT_WTRV)
 						{
-							if(!(rand()%250))
+							if(sim->rng.chance<1,250>())
 							{
 								part_change_type(i, x, y, PT_CAUS);
-								parts[i].life = (rand()%50)+25;
+								parts[i].life = sim->rng.randInt<25,25+49>();
 								kill_part(ri);
 							}
 						}
-						else if ((rt!=PT_CLNE && rt!=PT_PCLN && sim->elements[rt].Hardness>(rand()%1000))&&parts[i].life>=50)
+						else if (rt!=PT_CLNE && rt!=PT_PCLN && sim->elements[rt].Hardness && sim->rng.chance(sim->elements[rt].Hardness,1000) && parts[i].life>=50)
 						{
 							if (!sim->check_middle_particle_type(i, ri, PT_GLAS))//GLAS protects stuff from acid
 							{
@@ -67,9 +67,8 @@ int ACID_update(UPDATE_FUNC_ARGS)
 			}
 	for ( trade = 0; trade<2; trade ++)
 	{
-		rx = rand()%5-2;
-		ry = rand()%5-2;
-		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+		sim->randomRelPos_2_noCentre(&rx, &ry);
+		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES)
 		{
 			FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 			{

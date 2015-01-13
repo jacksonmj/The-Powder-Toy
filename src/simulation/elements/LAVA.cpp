@@ -38,7 +38,7 @@ int LAVA_graphics(GRAPHICS_FUNC_ARGS)
 
 void LAVA_create(ELEMENT_CREATE_FUNC_ARGS)
 {
-	sim->parts[i].life = rand()%120+240;
+	sim->parts[i].life = sim->rng.randInt<240,240+119>();
 }
 
 int LAVA_update(UPDATE_FUNC_ARGS)

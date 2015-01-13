@@ -38,12 +38,13 @@ int ELEC_update(UPDATE_FUNC_ARGS)
 										parts[nb].tmp = 0;
 										parts[nb].life = 50;
 										parts[nb].temp = parts[i].temp*0.8f;
-										parts[nb].vx = rand()%20-10;
-										parts[nb].vy = rand()%20-10;
+										parts[nb].vx = sim->rng.randInt<-10,10>();
+										parts[nb].vy = sim->rng.randInt<-10,10>();
 									}
 								}
 							}
 						}
+						// graphics, so not using sim->rng:
 						fire_r[y/CELL][x/CELL] += rand()%200;   //D: Doesn't work with OpenGL, also shouldn't be here
 						fire_g[y/CELL][x/CELL] += rand()%200;
 						fire_b[y/CELL][x/CELL] += rand()%200;
@@ -56,13 +57,13 @@ int ELEC_update(UPDATE_FUNC_ARGS)
 						kill_part(i);
 						return 1;
 					case PT_LCRY:
-						parts[ri].tmp2 = 5+rand()%5;
+						parts[ri].tmp2 = sim->rng.randInt<5,9>();
 						break;
 					case PT_WATR:
 					case PT_DSTW:
 					case PT_SLTW:
 					case PT_CBNW:
-						if(!(rand()%3))
+						if(sim->rng.chance<1,3>())
 							sim->part_create(ri, x+rx, y+ry, PT_O2);
 						else
 							sim->part_create(ri, x+rx, y+ry, PT_H2);
@@ -116,7 +117,7 @@ int ELEC_graphics(GRAPHICS_FUNC_ARGS)
 
 void ELEC_create(ELEMENT_CREATE_FUNC_ARGS)
 {
-	float a = (rand()%360)*3.14159f/180.0f;
+	float a = sim->rng.randInt<0,359>()*3.14159f/180.0f;
 	sim->parts[i].life = 680;
 	sim->parts[i].vx = 2.0f*cosf(a);
 	sim->parts[i].vy = 2.0f*sinf(a);

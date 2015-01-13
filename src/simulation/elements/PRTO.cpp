@@ -23,7 +23,7 @@
    7 . 3
    6 5 4
    PRTO does (count+4)%8, so that it will come out at the opposite place to where it came in
-   PRTO does +/-1 to the count, so it doesn't jam as easily
+   PRTO adds random +1/0/-1 to the count, so it doesn't jam as easily
 */
 int PRTO_update(UPDATE_FUNC_ARGS)
 {
@@ -41,14 +41,13 @@ int PRTO_update(UPDATE_FUNC_ARGS)
 			if (!sim->pmap[y+ry][x+rx].count_notEnergy)
 			{
 				fe = 1;
-				//add -1,0,or 1 to count
-				int randomness = (count + rand()%3-1 + 4)%8;
-				if (!channel->particleCount[randomness])
+				int slot = (count + sim->rng.randInt<-1,1>() + 4)%8;
+				if (!channel->particleCount[slot])
 					continue;
 				for ( nnx =0 ; nnx<PortalChannel::storageSize; nnx++)
 				{
-					if (!channel->portalp[randomness][nnx].type) continue;
-					particle *storedPart = &(channel->portalp[randomness][nnx]);
+					if (!channel->portalp[slot][nnx].type) continue;
+					particle *storedPart = &(channel->portalp[slot][nnx]);
 					if (storedPart->type==PT_SPRK)// TODO: make it look better, spark creation
 					{
 						sim->spark_position_conductiveOnly(x+1, y+1);
@@ -60,7 +59,7 @@ int PRTO_update(UPDATE_FUNC_ARGS)
 						sim->spark_position_conductiveOnly(x-1, y);
 						sim->spark_position_conductiveOnly(x-1, y-1);
 						storedPart->type = 0;
-						channel->particleCount[randomness]--;
+						channel->particleCount[slot]--;
 						break;
 					}
 					else if (storedPart->type)
@@ -111,7 +110,7 @@ int PRTO_update(UPDATE_FUNC_ARGS)
 							sim->part_copy_properties(*storedPart, parts[np]);
 						}
 						storedPart->type = 0;
-						channel->particleCount[randomness]--;
+						channel->particleCount[slot]--;
 						break;
 					}
 				}
@@ -121,22 +120,17 @@ int PRTO_update(UPDATE_FUNC_ARGS)
 	if (fe) {
 		int orbd[4] = {0, 0, 0, 0};	//Orbital distances
 		int orbl[4] = {0, 0, 0, 0};	//Orbital locations
-		if (!parts[i].life) parts[i].life = rand()*rand()*rand();
-		if (!parts[i].ctype) parts[i].ctype = rand()*rand()*rand();
+		if (!parts[i].life) parts[i].life = sim->rng.randUint32();
+		if (!parts[i].ctype) parts[i].ctype = sim->rng.randUint32();
 		Element_PRTI::orbitalparts_get(parts[i].life, parts[i].ctype, orbd, orbl);
 		for (r = 0; r < 4; r++) {
-			if (orbd[r]<254) {
+			if (orbd[r]<=255-16) {
+				// effect pixels move outwards while rotating slightly
 				orbd[r] += 16;
-				if (orbd[r]>254) {
-					orbd[r] = 0;
-					orbl[r] = rand()%255;
-				} else {
-					orbl[r] += 1;
-					orbl[r] = orbl[r]%255;
-				}
+				orbl[r] = (orbl[r]+1)%256;
 			} else {
 				orbd[r] = 0;
-				orbl[r] = rand()%255;
+				orbl[r] = sim->rng.randInt<0,255>();
 			}
 		}
 		Element_PRTI::orbitalparts_set(&parts[i].life, &parts[i].ctype, orbd, orbl);

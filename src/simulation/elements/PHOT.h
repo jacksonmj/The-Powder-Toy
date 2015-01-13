@@ -38,7 +38,7 @@ public:
 	// If too large a range of wavelengths are present, the wavelengths in the value are set to a random subset
 	//   e.g. white photons -> photons with all different rainbow colours
 	//        purple photons -> red and blue photons
-	static int get_wavelength_bin(int *wm)
+	static int get_wavelength_bin(Simulation *sim, int *wm)
 	{
 		int i;
 		int w0=30, wM=0;
@@ -59,7 +59,7 @@ public:
 			return (wM+w0)/2;
 
 		// Too large a range of wavelengths are present, choose a random subset
-		i = rand() % (wM-w0-3);
+		i = sim->rng.randInt(0,wM-w0-4);
 		i += w0;
 
 		*wm &= 0x1F << i;

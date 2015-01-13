@@ -30,19 +30,19 @@ int IRON_update(UPDATE_FUNC_ARGS)
 					switch (parts[ri].type)
 					{
 					case PT_SALT:
-						if (!(rand()%47))
+						if (sim->rng.chance<1,47>())
 							goto succ;
 						break;
 					case PT_SLTW:
-						if (!(rand()%67))
+						if (sim->rng.chance<1,67>())
 							goto succ;
 						break;
 					case PT_WATR:
-						if (!(rand()%1200))
+						if (sim->rng.chance<1,1200>())
 							goto succ;
 						break;
 					case PT_O2:
-						if (!(rand()%250))
+						if (sim->rng.chance<1,250>())
 							goto succ;
 						break;
 					case PT_LO2:
@@ -55,7 +55,7 @@ int IRON_update(UPDATE_FUNC_ARGS)
 	return 0;
 succ:
 	sim->part_change_type(i,x,y,PT_BMTL);
-	parts[i].tmp=(rand()%10)+20;				
+	parts[i].tmp = sim->rng.randInt<20,29>();
 	return 1;
 }
 

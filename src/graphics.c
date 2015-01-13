@@ -2798,7 +2798,7 @@ void render_parts(pixel *vid)
 					Element_PRTI::orbitalparts_get(parts[i].life, parts[i].ctype, orbd, orbl);
 					for (r = 0; r < 4; r++) {
 						ddist = ((float)orbd[r])/16.0f;
-						drad = (M_PI * ((float)orbl[r]) / 180.0f)*1.41f;
+						drad = float(orbl[r]) * M_PI / 128;
 						nxo = (int)(ddist*cos(drad));
 						nyo = (int)(ddist*sin(drad));
 						if (ny+nyo>0 && ny+nyo<YRES && nx+nxo>0 && nx+nxo<XRES && globalSim->pmap_find_one(nx+nxo, ny+nyo, PT_PRTI)<0)
@@ -2816,7 +2816,7 @@ void render_parts(pixel *vid)
 					Element_PRTI::orbitalparts_get(parts[i].life, parts[i].ctype, orbd, orbl);
 					for (r = 0; r < 4; r++) {
 						ddist = ((float)orbd[r])/16.0f;
-						drad = (M_PI * ((float)orbl[r]) / 180.0f)*1.41f;
+						drad = float(orbl[r]) * M_PI / 128;
 						nxo = (int)(ddist*cos(drad));
 						nyo = (int)(ddist*sin(drad));
 						if (ny+nyo>0 && ny+nyo<YRES && nx+nxo>0 && nx+nxo<XRES && globalSim->pmap_find_one(nx+nxo, ny+nyo, PT_PRTO)<0)

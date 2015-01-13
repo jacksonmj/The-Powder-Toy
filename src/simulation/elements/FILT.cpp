@@ -47,7 +47,7 @@ public:
 
 int FILT_graphics(GRAPHICS_FUNC_ARGS)
 {
-	int x, ctype = Element_FILT::getWavelengths(cpart);
+	int x, ctype = Element_FILT::getWavelengths(sim, cpart);
 	*colg = 0;
 	*colb = 0;
 	*colr = 0;

@@ -19,46 +19,16 @@ int COAL_graphics(GRAPHICS_FUNC_ARGS);
 
 int BCOL_update(UPDATE_FUNC_ARGS)
 {
-	int rx, ry, trade, temp;
-	int rcount, ri, rnext;
 	if (parts[i].life<=0) {
 		sim->part_create(i, x, y, PT_FIRE);
 		return 1;
 	} else if (parts[i].life < 100) {
 		parts[i].life--;
-		sim->part_create(-1, x+rand()%3-1, y+rand()%3-1, PT_FIRE);
+		int rx, ry;
+		sim->randomRelPos_1_noCentre(&rx,&ry);
+		sim->part_create(-1, x+rx, y+ry, PT_FIRE);
 	}
 
-	/*if(100-parts[i].life > parts[i].tmp2)
-		parts[i].tmp2 = 100-parts[i].life;
-	if(parts[i].tmp2 < 0) parts[i].tmp2 = 0;
-	for ( trade = 0; trade<4; trade ++)
-	{
-		rx = rand()%5-2;
-		ry = rand()%5-2;
-		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
-		{
-			r = pmap[y+ry][x+rx];
-			if (!r)
-				continue;
-			if (((r&0xFF)==PT_COAL || (r&0xFF)==PT_BCOL)&&(parts[i].tmp2>parts[r>>8].tmp2)&&parts[i].tmp2>0)//diffusion
-			{
-				int temp = parts[i].tmp2 - parts[r>>8].tmp2;
-				if(temp < 10)
-					continue;
-				if (temp ==1)
-				{
-					parts[r>>8].tmp2 ++;
-					parts[i].tmp2 --;
-				}
-				else if (temp>0)
-				{
-					parts[r>>8].tmp2 += temp/2;
-					parts[i].tmp2 -= temp/2;
-				}
-			}
-		}
-	}*/
 	if(parts[i].temp > parts[i].tmp2)
 		parts[i].tmp2 = parts[i].temp;
 	return 0;

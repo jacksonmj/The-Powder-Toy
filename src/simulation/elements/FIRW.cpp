@@ -35,12 +35,12 @@ int FIRW_update(UPDATE_FUNC_ARGS)
 							if (gx*gx+gy*gy < 0.001f)
 							{
 								// in low gravity, use a vector with random direction instead
-								float angle = (rand()%6284)*0.001f;//(in radians, between 0 and 2*pi)
+								float angle = sim->rng.randFloat(0, 2*M_PI);
 								gx += sinf(angle)*sim->elements[PT_FIRW].Gravity*0.5f;
 								gy += cosf(angle)*sim->elements[PT_FIRW].Gravity*0.5f;
 							}
 							parts[i].tmp = 1;
-							parts[i].life = rand()%10+20;
+							parts[i].life = sim->rng.randInt<20,29>();
 							multiplier = (parts[i].life+20)*0.2f/sqrtf(gx*gx+gy*gy);
 							parts[i].vx -= gx*multiplier;
 							parts[i].vy -= gy*multiplier;
@@ -59,7 +59,7 @@ int FIRW_update(UPDATE_FUNC_ARGS)
 	else
 	{
 		float angle, magnitude;
-		int caddress = (rand()%200)*3;
+		int caddress = sim->rng.randInt<0,199>()*3;
 		int n;
 		unsigned col = (((unsigned char)(firw_data[caddress]))<<16) | (((unsigned char)(firw_data[caddress+1]))<<8) | ((unsigned char)(firw_data[caddress+2]));
 		for (n=0; n<40; n++)
@@ -67,14 +67,14 @@ int FIRW_update(UPDATE_FUNC_ARGS)
 			np = sim->part_create(-3, x, y, PT_EMBR);
 			if (np>-1)
 			{
-				magnitude = ((rand()%60)+40)*0.05f;
-				angle = (rand()%6284)*0.001f;//(in radians, between 0 and 2*pi)
+				magnitude = sim->rng.randInt<40,100>()*0.05f;
+				angle = sim->rng.randFloat(0, 2*M_PI);
 				parts[np].vx = parts[i].vx*0.5f + cosf(angle)*magnitude;
 				parts[np].vy = parts[i].vy*0.5f + sinf(angle)*magnitude;
 				parts[np].ctype = col;
 				parts[np].tmp = 1;
-				parts[np].life = rand()%40+70;
-				parts[np].temp = (rand()%500)+5750.0f;
+				parts[np].life = sim->rng.randInt<70,70+39>();
+				parts[np].temp = sim->rng.randInt<0,499>()+5750.0f;
 				parts[np].dcolour = parts[i].dcolour;
 			}
 		}

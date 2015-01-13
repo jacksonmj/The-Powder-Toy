@@ -31,15 +31,15 @@ int ElementsShared_noHeatSim::update(UPDATE_FUNC_ARGS) {
 					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						rt = parts[ri].type;
-						if ((rt==PT_WATR||rt==PT_DSTW||rt==PT_SLTW) && 1>(rand()%1000))
+						if ((rt==PT_WATR||rt==PT_DSTW||rt==PT_SLTW) && sim->rng.chance<1,1000>())
 						{
 							sim->part_change_type(i,x,y,PT_WATR);
 							sim->part_change_type(ri,x+rx,y+ry,PT_WATR);
 						}
-						if ((rt==PT_ICEI || rt==PT_SNOW) && 1>(rand()%1000))
+						if ((rt==PT_ICEI || rt==PT_SNOW) && sim->rng.chance<1,1000>())
 						{
 							sim->part_change_type(i,x,y,PT_WATR);
-							if (!(rand()%1000))
+							if (sim->rng.chance<1,1000>())
 								sim->part_change_type(ri,x+rx,y+ry,PT_WATR);
 						}
 					}
@@ -54,7 +54,7 @@ int ElementsShared_noHeatSim::update(UPDATE_FUNC_ARGS) {
 					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						rt = parts[ri].type;
-						if ((rt==PT_FIRE || rt==PT_LAVA) && 1>(rand()%10))
+						if ((rt==PT_FIRE || rt==PT_LAVA) && sim->rng.chance<1,10>())
 						{
 							sim->part_change_type(i,x,y,PT_WTRV);
 						}
@@ -70,9 +70,9 @@ int ElementsShared_noHeatSim::update(UPDATE_FUNC_ARGS) {
 					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						rt = parts[ri].type;
-						if ((rt==PT_FIRE || rt==PT_LAVA) && !(rand()%10))
+						if ((rt==PT_FIRE || rt==PT_LAVA) && sim->rng.chance<1,10>())
 						{
-							if (rand()%4==0) sim->part_change_type(i,x,y,PT_SALT);
+							if (sim->rng.chance<1,4>()) sim->part_change_type(i,x,y,PT_SALT);
 							else sim->part_change_type(i,x,y,PT_WTRV);
 						}
 					}
@@ -87,7 +87,7 @@ int ElementsShared_noHeatSim::update(UPDATE_FUNC_ARGS) {
 					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						rt = parts[ri].type;
-						if ((rt==PT_FIRE || rt==PT_LAVA) && !(rand()%10))
+						if ((rt==PT_FIRE || rt==PT_LAVA) && sim->rng.chance<1,10>())
 						{
 							sim->part_change_type(i,x,y,PT_WTRV);
 						}
@@ -102,7 +102,7 @@ int ElementsShared_noHeatSim::update(UPDATE_FUNC_ARGS) {
 					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						rt = parts[ri].type;
-						if ((rt==PT_WATR || rt==PT_DSTW) && (rand()%1000))
+						if ((rt==PT_WATR || rt==PT_DSTW) && sim->rng.chance<1,1000>())
 						{
 							sim->part_change_type(i,x,y,PT_ICEI);
 							sim->part_change_type(ri,x+rx,y+ry,PT_ICEI);
@@ -118,12 +118,12 @@ int ElementsShared_noHeatSim::update(UPDATE_FUNC_ARGS) {
 					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
 						rt = parts[ri].type;
-						if ((rt==PT_WATR || rt==PT_DSTW) && !(rand()%1000))
+						if ((rt==PT_WATR || rt==PT_DSTW) && sim->rng.chance<1,1000>())
 						{
 							sim->part_change_type(i,x,y,PT_ICEI);
 							sim->part_change_type(ri,x+rx,y+ry,PT_ICEI);
 						}
-						if ((rt==PT_WATR || rt==PT_DSTW) && 15>(rand()%1000))
+						if ((rt==PT_WATR || rt==PT_DSTW) && sim->rng.chance<3,200>())
 							sim->part_change_type(i,x,y,PT_WATR);
 					}
 				}
@@ -137,7 +137,7 @@ int ElementsShared_noHeatSim::update(UPDATE_FUNC_ARGS) {
 	if (t==PT_DESL && pv[y/CELL][x/CELL]>12.0f)
 	{
 		sim->part_change_type(i,x,y,PT_FIRE);
-		parts[i].life = rand()%50+120;
+		parts[i].life = sim->rng.randInt<120,120+49>();
 	}
 	return 0;
 }

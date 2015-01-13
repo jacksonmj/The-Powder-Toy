@@ -26,6 +26,7 @@
 #include <memory>
 #include "common/Observer.h"
 #include "common/tptmath.h"
+#include "common/tpt-rng.h"
 
 #include "simulation/ElementNumbers.h"
 
@@ -192,22 +193,31 @@ class Simulation
 protected:
 	ElemDataSim *elemDataSim_[PT_NUM];
 public:
+	Element *elements;
 	std::shared_ptr<SimulationSharedData> simSD;
-	particle parts[NPART];
+	//simulation random number generator, should only be used for simulation, not graphics or scripts
+	tpt_rng rngBase;
+	RandomStore_auto rng;
 	int parts_lastActiveIndex;
+	int pfree;
+
+	short heat_mode;//Will be a replacement for legacy_enable at some point. 0=heat sim off, 1=heat sim on, 2=realistic heat on (todo)
+	short edgeMode;
+
+	particle parts[NPART];
 #ifdef DEBUG_PARTSALLOC
 	bool partsFree[NPART];
 #endif
 	int elementCount[PT_NUM];
-	Element *elements;
 	pmap_entry pmap[YRES][XRES];
 	MoveResult::Code can_move[PT_NUM][PT_NUM];
-	int pfree;
 
 	static constexpr float maxVelocity = 1e4f;
-
-	short heat_mode;//Will be a replacement for legacy_enable at some point. 0=heat sim off, 1=heat sim on, 2=realistic heat on (todo)
-	short edgeMode;
+	static Vec2sc const relPos_1[9];
+	static Vec2sc const relPos_1_noCentre[8];
+	static Vec2sc const relPos_1_noDiag_noCentre[4];
+	static Vec2sc const relPos_2[25];
+	static Vec2sc const relPos_2_noCentre[24];
 
 	ObserverSubject hook_cleared;
 	ObserverSubject hook_beforeUpdate;
@@ -594,6 +604,33 @@ public:
 				return i;
 		}
 		return -1;
+	}
+
+	// Generate a random relative position
+	void randomRelPos_1(int *rx, int *ry)//radius 1
+	{
+		uint_fast32_t i = rng.randInt<0,8>();
+		*rx = relPos_1[i].x, *ry = relPos_1[i].y;
+	}
+	void randomRelPos_1_noCentre(int *rx, int *ry)//radius 1, excluding (0,0)
+	{
+		uint_fast32_t i = rng.randInt<0,7>();
+		*rx = relPos_1_noCentre[i].x, *ry = relPos_1_noCentre[i].y;
+	}
+	void randomRelPos_1_noDiag_noCentre(int *rx, int *ry)//radius 1, excluding (0,0) and diagonals
+	{
+		uint_fast32_t i = rng.randInt<0,3>();
+		*rx = relPos_1_noDiag_noCentre[i].x, *ry = relPos_1_noDiag_noCentre[i].y;
+	}
+	void randomRelPos_2(int *rx, int *ry)//radius 2
+	{
+		uint_fast32_t i = rng.randInt<0,25>();
+		*rx = relPos_2[i].x, *ry = relPos_2[i].y;
+	}
+	void randomRelPos_2_noCentre(int *rx, int *ry)//radius 2, excluding (0,0)
+	{
+		uint_fast32_t i = rng.randInt<0,24>();
+		*rx = relPos_2_noCentre[i].x, *ry = relPos_2_noCentre[i].y;
 	}
 };
 

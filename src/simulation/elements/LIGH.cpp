@@ -68,8 +68,8 @@ bool create_LIGH_line_part(Simulation * sim, int x, int y, int temp, int life, i
 		sim->parts[p].tmp = tmp;
 		if (last)
 		{
-			sim->parts[p].tmp2=1+(rand()%200>tmp2*tmp2/10+60);
-			sim->parts[p].life=(int)(life/1.5-rand()%2);
+			sim->parts[p].tmp2=1+(sim->rng.randInt<0,199>() > tmp2*tmp2/10+60);
+			sim->parts[p].life=(int)(life/1.5-sim->rng.randInt<0,1>());
 		}
 		else
 		{
@@ -222,12 +222,12 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 					{
 						sim->part_add_temp(parts[ri], powderful);
 						pv[y/CELL][x/CELL] +=powderful/35;
-						if (!(rand()%3))
+						if (sim->rng.chance<1,3>())
 						{
 							part_change_type(ri,x+rx,y+ry,PT_NEUT);
-							parts[ri].life = rand()%480+480;
-							parts[ri].vx=rand()%10-5;
-							parts[ri].vy=rand()%10-5;
+							parts[ri].life = sim->rng.randInt<480,480+479>();
+							parts[ri].vx = sim->rng.randInt<-10,10>();
+							parts[ri].vy = sim->rng.randInt<-10,10>();
 						}
 					}
 					if (rt==PT_COAL || rt==PT_BCOL) // ignite coal
@@ -298,22 +298,20 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 		else near=-1;
 	}
 
-	//if (parts[i].tmp2==1/* || near!=-1*/)
-	//angle=0;//parts[i].tmp-30+rand()%60;
-	angle = (parts[i].tmp+330+rand()%60)%360;
+	angle = (parts[i].tmp+360+sim->rng.randInt<-30,30>())%360;
 	if (parts[i].tmp2==2 && near==-1)
 	{
-		angle2=(angle+460-rand()%200)%360;
+		angle2=(angle+360+sim->rng.randInt<-100,100>())%360;
 	}
 
-	multipler=parts[i].life*1.5+rand()%((int)(parts[i].life+1));
+	multipler=parts[i].life*1.5+sim->rng.randInt(0,parts[i].life);
 	rx=cos(angle*M_PI/180)*multipler;
 	ry=-sin(angle*M_PI/180)*multipler;
 	create_LIGH_line(sim, x, y, x+rx, y+ry, parts[i].temp, parts[i].life, angle, parts[i].tmp2);
 
 	if (angle2!=-1)
 	{
-		multipler=parts[i].life*1.5+rand()%((int)(parts[i].life+1));
+		multipler=parts[i].life*1.5+sim->rng.randInt(0,parts[i].life);
 		rx=cos(angle2*M_PI/180)*multipler;
 		ry=-sin(angle2*M_PI/180)*multipler;
 		create_LIGH_line(sim, x, y, x+rx, y+ry, parts[i].temp, parts[i].life, angle2, parts[i].tmp2);
@@ -342,13 +340,13 @@ void LIGH_create(ELEMENT_CREATE_FUNC_ARGS)
 	gsize = gx*gx+gy*gy;
 	if (gsize<0.0016f)
 	{
-		float angle = (rand()%6284)*0.001f;//(in radians, between 0 and 2*pi)
+		float angle = sim->rng.randFloat(0,2*M_PI);
 		gsize = sqrtf(gsize);
 		// randomness in weak gravity fields (more randomness with weaker fields)
 		gx += cosf(angle)*(0.04f-gsize);
 		gy += sinf(angle)*(0.04f-gsize);
 	}
-	sim->parts[i].tmp = (((int)(atan2f(-gy, gx)*(180.0f/M_PI)))+rand()%40-20+360)%360;
+	sim->parts[i].tmp = (((int)(atan2f(-gy, gx)*(180.0f/M_PI)))+sim->rng.randInt<-20,20>()+360)%360;
 	sim->parts[i].tmp2 = 4;
 }
 

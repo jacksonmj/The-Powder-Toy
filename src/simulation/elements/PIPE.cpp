@@ -200,7 +200,7 @@ void PIPE_transfer_pipe_to_pipe(Simulation *sim, particle *src, particle *dest)
 
 void pushParticle(Simulation *sim, int i, int count, int original)
 {
-	int rndstore, rnd, rx, ry, rt, x, y, np, q, notctype=(((parts[i].ctype)%3)+2);
+	int rx, ry, rt, x, y, np, q, notctype=(((parts[i].ctype)%3)+2);
 	int rcount, ri, rnext;
 	if ((parts[i].tmp&0xFF) == 0 || count >= 2)//don't push if there is nothing there, max speed of 2 per frame
 		return;
@@ -209,15 +209,9 @@ void pushParticle(Simulation *sim, int i, int count, int original)
 	if( !(parts[i].tmp&0x200) )
 	{ 
 		//normal random push
-		rndstore = rand();
-		// RAND_MAX is at least 32767 on all platforms i.e. pow(8,5)-1
-		// so can go 5 cycles without regenerating rndstore
 		for (q=0; q<3; q++)//try to push 3 times
 		{
-			rnd = rndstore&7;
-			rndstore = rndstore>>3;
-			rx = pos_1_rx[rnd];
-			ry = pos_1_ry[rnd];
+			sim->randomRelPos_1_noCentre(&rx,&ry);
 			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
@@ -295,7 +289,6 @@ void pushParticle(Simulation *sim, int i, int count, int original)
 int PIPE_update(UPDATE_FUNC_ARGS)
 {
 	int rx, ry, np;
-	int rnd, rndstore;
 	int rcount, ri, rnext;
 	if (!sim->IsValidElement(parts[i].tmp&0xFF))
 		parts[i].tmp &= ~0xFF;
@@ -411,11 +404,7 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 
 			if (nt)//there is something besides PIPE around current particle
 			{
-				rndstore = rand();
-				rnd = rndstore&7;
-				rndstore = rndstore>>3;
-				rx = pos_1_rx[rnd];
-				ry = pos_1_ry[rnd];
+				sim->randomRelPos_1_noCentre(&rx,&ry);
 				if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES)
 				{
 					// TODO: normal particles in pmap should block creation

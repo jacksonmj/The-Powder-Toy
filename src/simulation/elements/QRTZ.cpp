@@ -40,7 +40,7 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 				{
 					FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 					{
-						if (parts[ri].type==PT_SLTW && !(rand()%500))
+						if (parts[ri].type==PT_SLTW && sim->rng.chance<1,500>())
 						{
 							kill_part(ri);
 							parts[i].tmp ++;
@@ -51,16 +51,11 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 	if (parts[i].tmp > 0 && (parts[i].vx*parts[i].vx + parts[i].vy*parts[i].vy)<0.2f && parts[i].life<=0)
 	{
 		bool stopgrow=false;
-		int rnd, sry, srx;
+		int sry, srx;
 		for ( trade = 0; trade<9; trade ++)
 		{
-			rnd = rand()%0x3FF;
-			rx = (rnd%5)-2;
-			srx = (rnd%3)-1;
-			rnd = rnd>>3;
-			ry = (rnd%5)-2;
-			sry = (rnd%3)-1;
-			if (x+srx>=0 && y+sry>=0 && x+srx<XRES && y+sry<YRES && (srx || sry))
+			sim->randomRelPos_1_noCentre(&srx,&sry);
+			if (x+srx>=0 && y+sry>=0 && x+srx<XRES && y+sry<YRES)
 			{
 				if (!stopgrow && !sim->pmap[y+sry][x+srx].count_notEnergy && parts[i].tmp!=0)
 				{
@@ -75,11 +70,11 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 							// If PQRT is stationary and has started growing particles of QRTZ, the PQRT is basically part of a new QRTZ crystal. So turn it back into QRTZ so that it behaves more like part of the crystal.
 							sim->part_change_type(i,x,y,PT_QRTZ);
 						}
-						if (rand()%2)
+						if (sim->rng.chance<1,2>())
 						{
 							parts[np].tmp=-1;//dead qrtz
 						}
-						else if (!parts[i].tmp && 1>rand()%15)
+						else if (!parts[i].tmp && sim->rng.chance<1,15>())
 						{
 							parts[i].tmp=-1;
 						}
@@ -87,7 +82,8 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 					}
 				}
 			}
-			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+			sim->randomRelPos_2_noCentre(&rx,&ry);
+			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
@@ -136,7 +132,7 @@ int QRTZ_graphics(GRAPHICS_FUNC_ARGS) //QRTZ and PQRT
 
 void QRTZ_create(ELEMENT_CREATE_FUNC_ARGS)
 {
-	sim->parts[i].tmp2 = (rand()%11);
+	sim->parts[i].tmp2 = sim->rng.randInt<0,10>();
 	sim->parts[i].pavg[1] = pv[y/CELL][x/CELL];
 }
 

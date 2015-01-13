@@ -53,9 +53,7 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 		//Release sparks before explode
 		if (parts[i].life < 300)
 		{
-			int random = rand();
-			rx = random%3-1;
-			ry = (random>>3)%3-1;
+			sim->randomRelPos_1(&rx,&ry);
 			if(x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
@@ -68,9 +66,8 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 		//Release all heat
 		if (parts[i].life < 500)
 		{
-			int random = rand();
-			rx = random%7-3;
-			ry = (random>>3)%7-3;
+			rx = sim->rng.randInt<-3,3>();
+			ry = sim->rng.randInt<-3,3>();
 			if(x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
@@ -89,19 +86,22 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 		{
 			if (!parts[i].tmp2)
 			{
-				int random = rand(), index;
+				int index;
 				sim->part_create(i, x, y, PT_EXOT);
-				parts[i].tmp2 = rand()%1000;
-				index = sim->part_create(-3,x+((random>>4)&3)-1,y+((random>>6)&3)-1,PT_ELEC);
+				parts[i].tmp2 = sim->rng.randInt<0,999>();
+				sim->randomRelPos_1(&rx,&ry);
+				index = sim->part_create(-3,x+rx, y+ry,PT_ELEC);
 				if (index != -1)
-					parts[index].temp = 7000;
-				index = sim->part_create(-3,x+((random>>8)&3)-1,y+((random>>10)&3)-1,PT_PHOT);
+					sim->part_set_temp(parts[index], 7000);
+				sim->randomRelPos_1(&rx,&ry);
+				index = sim->part_create(-3,x+rx,y+ry,PT_PHOT);
 				if (index != -1)
-					parts[index].temp = 7000;
-				index = sim->part_create(-1,x+((random>>12)&3)-1,y+rand()%3-1,PT_BREL);
+					sim->part_set_temp(parts[index], 7000);
+				sim->randomRelPos_1(&rx,&ry);
+				index = sim->part_create(-1,x+rx,y+ry,PT_BREL);
 				if (index != -1)
-					parts[index].temp = 7000;
-				parts[i].temp=9000;
+					sim->part_set_temp(parts[index], 7000);
+				sim->part_set_temp(parts[i], 9000);
 				pv[y/CELL][x/CELL] += 50;
 
 				return 1;
@@ -131,7 +131,7 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 								// spread explosion
 								parts[ri].tmp += 10;
 							}
-							else if (parts[i].tmp2 && parts[i].life > 75 && rand()%2)
+							else if (parts[i].tmp2 && parts[i].life > 75 && sim->rng.chance<1,2>())
 							{
 								// spread defuse
 								parts[ri].tmp2 = 1;
@@ -149,7 +149,7 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 						//Melts into EXOT
 						if (rt == PT_EXOT)
 						{
-							if (!(rand()%25))
+							if (sim->rng.chance<1,25>())
 							{
 								sim->part_create(i, x, y, PT_EXOT);
 								return 1;
@@ -175,12 +175,9 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 		int random;
 		for (trade = 0; trade < 9; trade++)
 		{
-			if (!(trade%2))
-				random = rand();
-			rx = random%7-3;
-			random >>= 3;
-			ry = random%7-3;
-			random >>= 3;
+			rx = sim->rng.randInt<-3,3>();
+			ry = sim->rng.randInt<-3,3>();
+
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)

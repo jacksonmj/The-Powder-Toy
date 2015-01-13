@@ -68,12 +68,12 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 	case PT_NBLE:
 		if (parts[i].life<=1 && !(parts[i].tmp&0x1))
 		{
-			parts[i].life = rand()%150+50;
+			parts[i].life = sim->rng.randInt<50,199>();
 			part_change_type(i,x,y,PT_PLSM);
 			parts[i].ctype = PT_NBLE;
 			if (parts[i].temp > 5273.15)
 				parts[i].tmp |= 0x4;
-			parts[i].temp = 3500;
+			sim->part_set_temp(parts[i], 3500);
 			pv[y/CELL][x/CELL] += 1;
 		}
 		break;
@@ -85,12 +85,12 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 				if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
 					// TODO: pmap: if (!r)
-					if (parts[i].tmp>4 && rand()%(parts[i].tmp*parts[i].tmp/20+6)==0)
+					if (parts[i].tmp>4 && sim->rng.chance(1,parts[i].tmp*parts[i].tmp/20+6))
 					{
 						int p=sim->part_create(-1, x+rx*2, y+ry*2, PT_LIGH);
 						if (p!=-1)
 						{
-							parts[p].life=rand()%(2+parts[i].tmp/15)+parts[i].tmp/7;
+							parts[p].life = parts[i].tmp/7 + sim->rng.randInt(0,1+parts[i].tmp/15);
 							if (parts[i].life>60)
 								parts[i].life=60;
 							parts[p].temp=parts[p].life*parts[i].tmp/2.5;
@@ -118,7 +118,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 						int rt = parts[ri].type;
 						if (rt == PT_DSTW || rt == PT_SLTW || rt == PT_WATR)
 						{
-							int rnd = rand()%100;
+							int rnd = sim->rng.randInt<0,99>();
 							if (!rnd)
 								part_change_type(ri,x+rx,y+ry,PT_O2);
 							else if (3>rnd)
@@ -129,7 +129,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 		break;
 	case PT_TUNG:
 		if(parts[i].temp < 3595.0f){
-			parts[i].temp += (rand()%20)-4;
+			sim->part_add_temp(parts[i], sim->rng.randInt<-4,15>());
 		}
 		break;
 	default:

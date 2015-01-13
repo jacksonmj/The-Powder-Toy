@@ -28,17 +28,17 @@ int WATR_update(UPDATE_FUNC_ARGS)
 					rt = parts[ri].type;
 					if (rt==PT_SALT)
 					{
-						if (!(rand()%50))
+						if (sim->rng.chance<1,50>())
 						{
 							part_change_type(i,x,y,PT_SLTW);
 							// on average, convert 3 WATR to SLTW before SALT turns into SLTW
-							if (!(rand()%3))
+							if (sim->rng.chance<1,3>())
 								part_change_type(ri,x+rx,y+ry,PT_SLTW);
 						}
 					}
 					else if (rt==PT_RBDM||rt==PT_LRBD)
 					{
-						if ((legacy_enable||parts[i].temp>(273.15f+12.0f)) && !(rand()%100))
+						if ((legacy_enable||parts[i].temp>(273.15f+12.0f)) && sim->rng.chance<1,100>())
 						{
 							part_change_type(i,x,y,PT_FIRE);
 							parts[i].life = 4;
@@ -50,7 +50,7 @@ int WATR_update(UPDATE_FUNC_ARGS)
 						kill_part(ri);
 						if (parts[ri].ctype!=PT_WATR)
 						{
-							if(!(rand()%30)){
+							if(sim->rng.chance<1,30>()){
 								kill_part(i);
 								return 1;
 							}
@@ -58,7 +58,7 @@ int WATR_update(UPDATE_FUNC_ARGS)
 					}
 					else if (rt==PT_SLTW)
 					{
-						if (!(rand()%2000))
+						if (sim->rng.chance<1,2000>())
 						{
 							part_change_type(i,x,y,PT_SLTW);
 						}

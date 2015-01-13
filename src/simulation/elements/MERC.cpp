@@ -20,7 +20,7 @@ int MERC_update(UPDATE_FUNC_ARGS)
 	int rx, ry, trade, np;
 	int rcount, ri, rnext;
 	int maxtmp = ((10000/(parts[i].temp + 1))-1);
-	if ((10000%((int)parts[i].temp+1))>rand()%((int)parts[i].temp+1))
+	if (sim->rng.chance(10000%((int)parts[i].temp+1), parts[i].temp+1))
 		maxtmp ++;
 	if (parts[i].tmp < maxtmp)
 	{
@@ -32,7 +32,7 @@ int MERC_update(UPDATE_FUNC_ARGS)
 					{
 						if (parts[i].tmp >=maxtmp)
 							break;
-						if (parts[ri].type==PT_MERC && !(rand()%3))
+						if (parts[ri].type==PT_MERC && sim->rng.chance<1,3>())
 						{
 							if ((parts[i].tmp + parts[ri].tmp + 1) <= maxtmp)
 							{
@@ -62,9 +62,8 @@ int MERC_update(UPDATE_FUNC_ARGS)
 				}
 	for ( trade = 0; trade<4; trade ++)
 	{
-		rx = rand()%5-2;
-		ry = rand()%5-2;
-		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
+		sim->randomRelPos_2_noCentre(&rx,&ry);
+		if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES)
 		{
 			FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 			{
