@@ -44,7 +44,7 @@ int ACID_update(UPDATE_FUNC_ARGS)
 								kill_part(ri);
 							}
 						}
-						else if (rt!=PT_CLNE && rt!=PT_PCLN && sim->elements[rt].Hardness && sim->rng.chance(sim->elements[rt].Hardness,1000) && parts[i].life>=50)
+						else if (sim->elements[rt].Hardness && sim->rng.chance(sim->elements[rt].Hardness,1000) && parts[i].life>=50)
 						{
 							if (!sim->check_middle_particle_type(i, ri, PT_GLAS))//GLAS protects stuff from acid
 							{

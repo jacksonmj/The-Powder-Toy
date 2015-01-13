@@ -28,7 +28,7 @@ int CAUS_update(UPDATE_FUNC_ARGS)
 					int rt = parts[ri].type;
 					if (rt!=PT_ACID && rt!=PT_CAUS)
 					{
-						if (rt!=PT_CLNE && rt!=PT_PCLN && sim->elements[rt].Hardness && sim->rng.chance(sim->elements[rt].Hardness,1000) && parts[i].life>=50)
+						if (sim->elements[rt].Hardness && sim->rng.chance(sim->elements[rt].Hardness,1000) && parts[i].life>=50)
 						{
 							if (!sim->check_middle_particle_type(i, ri, PT_GLAS))//GLAS protects stuff from acid
 							{

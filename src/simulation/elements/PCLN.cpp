@@ -144,7 +144,7 @@ void PCLN_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Flammable = 0;
 	elem->Explosive = 0;
 	elem->Meltable = 0;
-	elem->Hardness = 1;
+	elem->Hardness = 0;
 
 	elem->Weight = 100;
 
