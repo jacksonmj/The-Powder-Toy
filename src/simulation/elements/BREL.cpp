@@ -22,7 +22,7 @@ int BREL_update(UPDATE_FUNC_ARGS)
 	{
 		if (pv[y/CELL][x/CELL] > 30.0f && parts[i].temp>9000 && sim->rng.chance<1,200>())
 		{
-			part_change_type(i, x ,y ,PT_EXOT);
+			sim->part_change_type(i, x ,y ,PT_EXOT);
 			parts[i].life = 1000;
 		}
 		parts[i].temp = parts[i].temp + (pv[y/CELL][x/CELL])/8;

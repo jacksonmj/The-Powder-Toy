@@ -53,14 +53,14 @@ int DEST_update(UPDATE_FUNC_ARGS)
 		}
 		else if (sim->rng.chance<1,3>())
 		{
-			kill_part(ri);
-			parts[i].life -= 4*((ptypes[rt].properties&TYPE_SOLID)?3:1);
+			sim->part_kill(ri);
+			parts[i].life -= 4*((sim->elements[rt].Properties&TYPE_SOLID)?3:1);
 			if (parts[i].life<=0)
 				parts[i].life=1;
 		}
 		else
 		{
-			if (ptypes[rt].hconduct)
+			if (sim->elements[rt].HeatConduct)
 				parts[ri].temp = MAX_TEMP;
 		}
 		topv += pv[y/CELL][x/CELL]/9+parts[ri].temp/900;

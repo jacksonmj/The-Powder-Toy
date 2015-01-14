@@ -54,9 +54,9 @@ ok:
 				if (sim->rng.chance<1,100>())
 					sim->part_add_temp(parts[r], 3000.0f);
 				if (sim->rng.chance<1,80>())
-					part_change_type(r, rx, ry, PT_BREL);
+					sim->part_change_type(r, rx, ry, PT_BREL);
 				else if (sim->rng.chance<1,120>())
-					part_change_type(r, rx, ry, PT_NTCT);
+					sim->part_change_type(r, rx, ry, PT_NTCT);
 			}
 			
 			for (nx=-2; nx<3; nx++)
@@ -108,7 +108,7 @@ ok:
 							{
 							case PT_SWCH:
 								if (sim->rng.chance<1,100>())
-									part_change_type(ri, rx+nx, ry+ny, PT_BREL);
+									sim->part_change_type(ri, rx+nx, ry+ny, PT_BREL);
 								if (sim->rng.chance<1,100>())
 									sim->part_add_temp(parts[ri], 2000.0f);
 								break;

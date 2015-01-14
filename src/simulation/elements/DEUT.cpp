@@ -43,7 +43,7 @@ int DEUT_update(UPDATE_FUNC_ARGS)
 							if (parts[ri].life <= maxlife - parts[i].life - 1)
 							{
 								parts[i].life += parts[ri].life + 1;
-								kill_part(ri);
+								sim->part_kill(ri);
 							}
 						}
 					}

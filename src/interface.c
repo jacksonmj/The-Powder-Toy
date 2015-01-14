@@ -54,6 +54,8 @@
 #include "simulation/Simulation.h"
 #include "simulation/elements/STKM.h"
 
+#include <algorithm>
+
 SDLMod sdl_mod;
 int sdl_key, sdl_rkey, sdl_wheel, sdl_ascii, sdl_zoom_trig=0;
 #if (defined(LIN32) || defined(LIN64)) && defined(SDL_VIDEO_DRIVER_X11)
@@ -186,9 +188,9 @@ void menu_count(void)//puts the number of elements in each section into .itemcou
 	msections[SC_WALL].itemcount = UI_WALLCOUNT-4;
 	for (i=0; i<PT_NUM; i++)
 	{
-		if (ptypes[i].menusection<SC_TOTAL)
+		if (globalSim->elements[i].ui->MenuSection<SC_TOTAL && globalSim->elements[i].ui->MenuVisible)
 		{
-			msections[ptypes[i].menusection].itemcount+=ptypes[i].menu;
+			msections[globalSim->elements[i].ui->MenuSection].itemcount++;
 		}
 	}
 
@@ -1135,13 +1137,11 @@ void element_search_ui(pixel *vid_buf, int * slp, int * srp)
 		hover = -1;
 		for(i = 0; i < PT_NUM; i++)
 		{
-			c = 0;
-			while (ptypes[i].name[c]) { tempCompare[c] = tolower(ptypes[i].name[c]); c++; } tempCompare[c] = 0;
-			if(strstr(tempCompare, tempString)!=0 && ptypes[i].enabled)
+			if(globalSim->elements[i].ui->getLowercaseName().find(tempString)!=std::string::npos && globalSim->elements[i].Enabled)
 			{
 				if(firstResult==-1)
 					firstResult = i;
-				toolx += draw_tool_xy(vid_buf, toolx+xoff, tooly+yoff, i, ptypes[i].pcolors)+5;
+				toolx += draw_tool_xy(vid_buf, toolx+xoff, tooly+yoff, i, ARGBColour_TO_PIXEL(globalSim->elements[i].Colour))+5;
 				if (!bq && mx>=xoff+toolx-32 && mx<xoff+toolx && my>=yoff+tooly && my<yoff+tooly+15)
 				{
 					drawrect(vid_buf, xoff+toolx-32, yoff+tooly-1, 29, 17, 255, 55, 55, 255);
@@ -1181,8 +1181,9 @@ void element_search_ui(pixel *vid_buf, int * slp, int * srp)
 			for(i = 0; i < PT_NUM; i++)
 			{
 				c = 0;
-				while (ptypes[i].descs[c]) { tempCompare[c] = tolower(ptypes[i].descs[c]); c++; } tempCompare[c] = 0;
-				if(strstr(tempCompare, tempString)!=0 && ptypes[i].enabled)
+				std::string lowerDesc = globalSim->elements[i].ui->Description;
+				std::transform(lowerDesc.begin(), lowerDesc.end(), lowerDesc.begin(), ::tolower);
+				if(lowerDesc.find(tempString)!=std::string::npos && globalSim->elements[i].Enabled)
 				{
 					tempInts[found].first = (strstr(tempCompare, tempString)==NULL)?0:1;
 					tempInts[found++].second = i;
@@ -1195,7 +1196,7 @@ void element_search_ui(pixel *vid_buf, int * slp, int * srp)
 			{
 				if(firstResult==-1)
 					firstResult = tempInts[i].second;
-				toolx += draw_tool_xy(vid_buf, toolx+xoff, tooly+yoff, tempInts[i].second, ptypes[tempInts[i].second].pcolors)+5;
+				toolx += draw_tool_xy(vid_buf, toolx+xoff, tooly+yoff, tempInts[i].second, ARGBColour_TO_PIXEL(globalSim->elements[tempInts[i].second].Colour))+5;
 				if (!bq && mx>=xoff+toolx-32 && mx<xoff+toolx && my>=yoff+tooly && my<yoff+tooly+15)
 				{
 					drawrect(vid_buf, xoff+toolx-32, yoff+tooly-1, 29, 17, 255, 55, 55, 255);
@@ -2457,14 +2458,14 @@ void menu_ui_v3(pixel *vid_buf, int i, int *sl, int *sr, int *su, int *dae, int 
 		}
 		for (n = 0; n<PT_NUM; n++)
 		{
-			if (ptypes[n].menusection==i&&ptypes[n].menu==1)
+			if (globalSim->elements[n].ui->MenuSection==i && globalSim->elements[n].ui->MenuVisible)
 			{
 				/*if (x-18<=0)
 				{
 					x = XRES-BARSIZE-18;
 					y += 19;
 				}*/
-				x -= draw_tool_xy(vid_buf, x-xoff, y, n, ptypes[n].pcolors)+5;
+				x -= draw_tool_xy(vid_buf, x-xoff, y, n, ARGBColour_TO_PIXEL(globalSim->elements[n].Colour))+5;
 				if (!bq && mx>=x+32-xoff && mx<x+58-xoff && my>=y && my< y+15)
 				{
 					drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 255, 55, 55, 255);
@@ -2533,9 +2534,9 @@ void menu_ui_v3(pixel *vid_buf, int i, int *sl, int *sr, int *su, int *dae, int 
 		}
 		for (n = 0; n<PT_NUM; n++)
 		{
-			if (ptypes[n].menusection==i&&ptypes[n].menu==1)
+			if (globalSim->elements[n].ui->MenuSection==i && globalSim->elements[n].ui->MenuVisible)
 			{
-				x -= draw_tool_xy(vid_buf, x-xoff, y, n, ptypes[n].pcolors)+5;
+				x -= draw_tool_xy(vid_buf, x-xoff, y, n, ARGBColour_TO_PIXEL(globalSim->elements[n].Colour))+5;
 				if (!bq && mx>=x+32-xoff && mx<x+58-xoff && my>=y && my< y+15)
 				{
 					drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 255, 55, 55, 255);
@@ -2580,7 +2581,7 @@ void menu_ui_v3(pixel *vid_buf, int i, int *sl, int *sr, int *su, int *dae, int 
 	}
 	else if (h<PT_NUM)
 	{
-		drawtext(vid_buf, XRES-textwidth((char *)ptypes[h].descs)-BARSIZE, sy-10, (char *)ptypes[h].descs, 255, 255, 255, 255);
+		drawtext(vid_buf, XRES-textwidth(globalSim->elements[h].ui->Description.c_str())-BARSIZE, sy-10, globalSim->elements[h].ui->Description.c_str(), 255, 255, 255, 255);
 	}
 	//these are click events, b=1 is left click, b=4 is right
 	//h has the value of the element it is over, and -1 if not over an element

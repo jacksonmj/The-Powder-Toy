@@ -46,13 +46,13 @@ int FIRE_update(UPDATE_FUNC_ARGS)
 	{
 		if ((parts[i].tmp&3)==3)
 		{
-			part_change_type(i,x,y,PT_DSTW);
+			sim->part_change_type(i,x,y,PT_DSTW);
 			parts[i].life = 0;
 			parts[i].ctype = PT_FIRE;
 		}
 		else if (parts[i].temp<625)
 		{
-			part_change_type(i,x,y,PT_SMKE);
+			sim->part_change_type(i,x,y,PT_SMKE);
 			parts[i].life = sim->rng.randInt<250,250+19>();
 		}
 	}

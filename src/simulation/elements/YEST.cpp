@@ -27,7 +27,7 @@ int YEST_update(UPDATE_FUNC_ARGS)
 				{
 					if (parts[ri].type==PT_DYST && sim->rng.chance<1,6>() && !legacy_enable)
 					{
-						part_change_type(i,x,y,PT_DYST);
+						sim->part_change_type(i,x,y,PT_DYST);
 					}
 				}
 			}

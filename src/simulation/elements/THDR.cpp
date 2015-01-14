@@ -27,7 +27,7 @@ int THDR_update(UPDATE_FUNC_ARGS)
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
-					if ((ptypes[rt].properties&PROP_CONDUCTS) && parts[ri].life==0 && !(rt==PT_WATR||rt==PT_SLTW))
+					if ((sim->elements[rt].Properties&PROP_CONDUCTS) && parts[ri].life==0 && !(rt==PT_WATR||rt==PT_SLTW))
 					{
 						killPart = true;
 						sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
@@ -38,7 +38,7 @@ int THDR_update(UPDATE_FUNC_ARGS)
 						if (legacy_enable && sim->rng.chance<1,200>())
 						{
 							parts[i].life = sim->rng.randInt<120,120+49>();
-							part_change_type(i,x,y,PT_FIRE);
+							sim->part_change_type(i,x,y,PT_FIRE);
 						}
 						else
 						{
@@ -48,7 +48,7 @@ int THDR_update(UPDATE_FUNC_ARGS)
 				}
 			}
 	if (killPart) {
-		kill_part(i);
+		sim->part_kill(i);
 		return 1;
 	}
 	return 0;

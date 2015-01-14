@@ -30,8 +30,8 @@ int ACID_update(UPDATE_FUNC_ARGS)
 					{
 						if (rt==PT_PLEX || rt==PT_NITR || rt==PT_GUNP || rt==PT_RBDM || rt==PT_LRBD)
 						{
-							part_change_type(i,x,y,PT_FIRE);
-							part_change_type(ri,x+rx,y+ry,PT_FIRE);
+							sim->part_change_type(i,x,y,PT_FIRE);
+							sim->part_change_type(ri,x+rx,y+ry,PT_FIRE);
 							parts[i].life = 4;
 							parts[ri].life = 4;
 						}
@@ -39,9 +39,9 @@ int ACID_update(UPDATE_FUNC_ARGS)
 						{
 							if(sim->rng.chance<1,250>())
 							{
-								part_change_type(i, x, y, PT_CAUS);
+								sim->part_change_type(i, x, y, PT_CAUS);
 								parts[i].life = sim->rng.randInt<25,25+49>();
-								kill_part(ri);
+								sim->part_kill(ri);
 							}
 						}
 						else if (sim->elements[rt].Hardness && sim->rng.chance(sim->elements[rt].Hardness,1000) && parts[i].life>=50)
@@ -59,7 +59,7 @@ int ACID_update(UPDATE_FUNC_ARGS)
 						}
 						else if (parts[i].life<=50)
 						{
-							kill_part(i);
+							sim->part_kill(i);
 							return 1;
 						}
 					}

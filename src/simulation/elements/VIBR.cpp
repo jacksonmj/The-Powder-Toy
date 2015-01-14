@@ -159,13 +159,13 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 						else if ((sim->elements[rt].Properties & TYPE_ENERGY))
 						{
 							parts[i].tmp += 20;
-							kill_part(ri);
+							sim->part_kill(ri);
 						}
 					}
 					//VIBR+ANAR=BVBR
 					if (rt == PT_ANAR && parts[i].type != PT_BVBR)
 					{
-						part_change_type(i,x,y,PT_BVBR);
+						sim->part_change_type(i,x,y,PT_BVBR);
 						pv[y/CELL][x/CELL] -= 1;
 					}
 				}

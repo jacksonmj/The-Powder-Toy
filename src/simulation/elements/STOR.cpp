@@ -30,7 +30,7 @@ int STOR_update(UPDATE_FUNC_ARGS)
 				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
-					if (!parts[i].tmp && !parts[i].life && rt!=PT_STOR && !(ptypes[rt].properties&TYPE_SOLID) && (!parts[i].ctype || rt==parts[i].ctype))
+					if (!parts[i].tmp && !parts[i].life && rt!=PT_STOR && !(sim->elements[rt].Properties&TYPE_SOLID) && (!parts[i].ctype || rt==parts[i].ctype))
 					{
 						if (rt == PT_SOAP)
 							SOAP_detach(sim, ri);
@@ -39,7 +39,7 @@ int STOR_update(UPDATE_FUNC_ARGS)
 						parts[i].tmp2 = parts[ri].life;
 						parts[i].pavg[0] = parts[ri].tmp;
 						parts[i].pavg[1] = parts[ri].ctype;
-						kill_part(ri);
+						sim->part_kill(ri);
 					}
 					if(parts[i].tmp && rt==PT_SPRK && parts[ri].ctype==PT_PSCN && parts[ri].life>0 && parts[ri].life<4)
 					{

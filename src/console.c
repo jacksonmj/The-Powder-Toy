@@ -16,6 +16,7 @@
  */
 
 #include "simulation/ElementNumbers.h"
+#include "simulation/Simulation.h"
 #include <powder.h>
 #include <console.h>
 #include <math.h>
@@ -36,14 +37,14 @@ int console_parse_type(const char *txt, int *element, char *err)
 	if (strcasecmp(txt,"C4")==0) i = PT_PLEX;
 	else if (strcasecmp(txt,"C5")==0) i = PT_C5;
 	else if (strcasecmp(txt,"NONE")==0) i = PT_NONE;
-	if (i>=0 && i<PT_NUM && ptypes[i].enabled)
+	if (globalSim->IsValidElement(i))
 	{
 		if (element) *element = i;
 		if (err) strcpy(err,"");
 		return 1;
 	}
 	for (i=1; i<PT_NUM; i++) {
-		if (strcasecmp(txt,ptypes[i].name)==0 && ptypes[i].enabled)
+		if (globalSim->elements[i].ui->getLowercaseName()==txt && globalSim->elements[i].Enabled)
 		{
 			if (element) *element = i;
 			if (err) strcpy(err,"");
@@ -286,7 +287,7 @@ int process_command_old(pixel *vid_buf, char *console, char *console_error)
 			else if ((strcmp(console2, "delete")==0 || strcmp(console2, "kill")==0) && console3[0])
 			{
 				if (console_parse_partref(console3, &i, console_error))
-					kill_part(i);
+					globalSim->part_kill(i);
 			}
 			else if (strcmp(console2, "reset")==0 && console3[0])
 			{
@@ -324,7 +325,7 @@ int process_command_old(pixel *vid_buf, char *console, char *console_error)
 					{
 						if (parts[i].type)
 						{
-							parts[i].temp = ptypes[parts[i].type].heat;
+							parts[i].temp = globalSim->elements[parts[i].type].DefaultProperties.temp;
 						}
 					}
 				}

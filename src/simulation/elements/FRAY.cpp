@@ -34,7 +34,7 @@ int FRAY_update(UPDATE_FUNC_ARGS)
 							}
 							FOR_PMAP_POSITION(sim, x+nxi+nxx, y+nyi+nyy, ncount, ni, nnext)
 							{
-								if (!(ptypes[parts[ri].type].properties & TYPE_SOLID)){
+								if (!(sim->elements[parts[ri].type].Properties & TYPE_SOLID)){
 									parts[ri].vx += nxi*((parts[i].temp-273.15)/10.0f);
 									parts[ri].vy += nyi*((parts[i].temp-273.15)/10.0f);
 								}

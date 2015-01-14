@@ -32,9 +32,9 @@ int EMBR_update(UPDATE_FUNC_ARGS)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if ((ptypes[parts[ri].type].properties & (TYPE_SOLID | TYPE_PART | TYPE_LIQUID)) && !(ptypes[parts[ri].type].properties & PROP_SPARKSETTLE))
+					if ((sim->elements[parts[ri].type].Properties & (TYPE_SOLID | TYPE_PART | TYPE_LIQUID)) && !(sim->elements[parts[ri].type].Properties & PROP_SPARKSETTLE))
 					{
-						kill_part(i);
+						sim->part_kill(i);
 						return 1;
 					}
 				}

@@ -179,7 +179,7 @@ void Simulation::RecalcFreeParticles()
 			y = (int)(parts[i].y+0.5f);
 			if (x>=0 && y>=0 && x<XRES && y<YRES)
 			{
-				if (ptypes[t].properties & TYPE_ENERGY)
+				if (elements[t].Properties & TYPE_ENERGY)
 					photons[y][x] = t|(i<<8);
 				else
 				{
@@ -766,26 +766,26 @@ void Simulation::InitCanMove()
 		for (destinationType=1; destinationType < PT_NUM; destinationType++)
 		{
 			// weight check, also prevents particles of same type displacing each other
-			if (ptypes[movingType].weight <= ptypes[destinationType].weight || destinationType==PT_GEL)
+			if (elements[movingType].Weight <= elements[destinationType].Weight || destinationType==PT_GEL)
 				can_move[movingType][destinationType] = MoveResult::BLOCK;
 
 			//other checks for NEUT and energy particles
-			if (movingType==PT_NEUT && ptypes[destinationType].properties&PROP_NEUTPASS)
+			if (movingType==PT_NEUT && elements[destinationType].Properties&PROP_NEUTPASS)
 				can_move[movingType][destinationType] = MoveResult::ALLOW;
-			if (movingType==PT_NEUT && ptypes[destinationType].properties&PROP_NEUTABSORB)
+			if (movingType==PT_NEUT && elements[destinationType].Properties&PROP_NEUTABSORB)
 				can_move[movingType][destinationType] = MoveResult::DESTROY;
-			if (movingType==PT_NEUT && ptypes[destinationType].properties&PROP_NEUTPENETRATE)
+			if (movingType==PT_NEUT && elements[destinationType].Properties&PROP_NEUTPENETRATE)
 				can_move[movingType][destinationType] = MoveResult::DISPLACE;
-			if (destinationType==PT_NEUT && ptypes[movingType].properties&PROP_NEUTPENETRATE)
+			if (destinationType==PT_NEUT && elements[movingType].Properties&PROP_NEUTPENETRATE)
 				can_move[movingType][destinationType] = MoveResult::BLOCK;
-			if (ptypes[movingType].properties&TYPE_ENERGY && ptypes[destinationType].properties&TYPE_ENERGY)
+			if (elements[movingType].Properties&TYPE_ENERGY && elements[destinationType].Properties&TYPE_ENERGY)
 				can_move[movingType][destinationType] = MoveResult::ALLOW;
 		}
 	}
 	for (destinationType = 0; destinationType < PT_NUM; destinationType++)
 	{
 		MoveResult::Code stkm_move = MoveResult::BLOCK;
-		if (ptypes[destinationType].properties & (TYPE_LIQUID | TYPE_GAS))
+		if (elements[destinationType].Properties & (TYPE_LIQUID | TYPE_GAS))
 			stkm_move = MoveResult::ALLOW; // TODO: when breaking compatibility, maybe make STKM slow down when moving through these?
 		if (!destinationType || destinationType==PT_SPAWN || destinationType==PT_SPAWN2)
 			stkm_move = MoveResult::ALLOW;
@@ -818,7 +818,7 @@ void Simulation::InitCanMove()
 		//nothing moves through EMBR (although it's killed when it touches anything)
 		can_move[movingType][PT_EMBR] = MoveResult::BLOCK;
 		can_move[PT_EMBR][movingType] = MoveResult::BLOCK;
-		if (ptypes[movingType].properties&TYPE_ENERGY)
+		if (elements[movingType].Properties&TYPE_ENERGY)
 		{
 			//VIBR and BVBR absorb energy particles
 			can_move[movingType][PT_VIBR] = MoveResult::DESTROY;
@@ -995,7 +995,7 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 
 	if (nx<CELL || nx>=XRES-CELL || ny<CELL || ny>=YRES-CELL)
 	{
-		kill_part(i);
+		part_kill(i);
 		return MoveResult::DESTROYED;
 	}
 	if (x==nx && y==ny)
@@ -1362,7 +1362,7 @@ void Simulation::UpdateParticles()
 					t = parts[i].type;
 					x = (int)(parts[i].x+0.5f);
 					y = (int)(parts[i].y+0.5f);
-					if (x>=0 && y>=0 && x<XRES && y<YRES && !(ptypes[t].properties&TYPE_ENERGY))
+					if (x>=0 && y>=0 && x<XRES && y<YRES && !(elements[t].Properties&TYPE_ENERGY))
 					{
 						if (pmap_count[y][x]>=NPART)
 						{
@@ -1376,7 +1376,7 @@ void Simulation::UpdateParticles()
 							}
 							else
 							{
-								kill_part(i);
+								part_kill(i);
 							}
 						}
 					}
@@ -1441,7 +1441,7 @@ void Simulation::UpdateParticles()
 				if (r>=0)
 				{
 					if (ny<9||nx<9||ny>YRES-7||nx>XRES-10)
-						kill_part(r);
+						part_kill(r);
 					else
 						love[nx/9][ny/9] = 1;
 				}
@@ -1468,7 +1468,7 @@ void Simulation::UpdateParticles()
 								}
 								else if (loverule[nnx][nny]==0)
 								{
-									kill_part(r);
+									part_kill(r);
 								}
 							}
 						}
@@ -1488,7 +1488,7 @@ void Simulation::UpdateParticles()
 				if (r>=0)
 				{
 					if (ny<9||nx<9||ny>YRES-7||nx>XRES-10)
-						kill_part(r);
+						part_kill(r);
 					else
 						lolz[nx/9][ny/9] = 1;
 				}
@@ -1515,7 +1515,7 @@ void Simulation::UpdateParticles()
 								}
 								else if (lolzrule[nny][nnx]==0)
 								{
-									kill_part(r);
+									part_kill(r);
 								}
 							}
 						}
@@ -1566,7 +1566,7 @@ void Simulation::UpdateParticles()
 				{
 					golnum = parts[r].ctype+1;
 					if (golnum<=0 || golnum>NGOL) {
-						kill_part(r);
+						part_kill(r);
 						continue;
 					}
 					gol[ny][nx] = golnum;
@@ -1641,7 +1641,7 @@ void Simulation::UpdateParticles()
 				}
 				//we still need to kill things with 0 neighbors (higher state life)
 				if (r>=0 && parts[r].tmp<=0)
-						kill_part(r);
+						part_kill(r);
 			}
 		}
 	}
@@ -1656,7 +1656,7 @@ void Simulation::UpdateParticles()
 #endif
 			if (t<0 || t>=PT_NUM)
 			{
-				kill_part(i);
+				part_kill(i);
 				continue;
 			}
 			elem_properties = elements[t].Properties;
@@ -1667,14 +1667,14 @@ void Simulation::UpdateParticles()
 				if (parts[i].life<=0 && (elem_properties&(PROP_LIFE_KILL_DEC|PROP_LIFE_KILL)))
 				{
 					// kill on change to no life
-					kill_part(i);
+					part_kill(i);
 					continue;
 				}
 			}
 			else if (parts[i].life<=0 && (elem_properties&PROP_LIFE_KILL))
 			{
 				// kill if no life
-				kill_part(i);
+				part_kill(i);
 				continue;
 			}
 		}
@@ -1695,12 +1695,12 @@ void Simulation::UpdateParticles()
 			          (bmap[y/CELL][x/CELL]==WL_DESTROYALL) ||
 			          (bmap[y/CELL][x/CELL]==WL_ALLOWLIQUID && elements[t].Falldown!=2) ||
 			          (bmap[y/CELL][x/CELL]==WL_ALLOWSOLID && elements[t].Falldown!=1) ||
-			          (bmap[y/CELL][x/CELL]==WL_ALLOWGAS && !(elements[t].Properties&TYPE_GAS)) || //&& ptypes[t].falldown!=0 && parts[i].type!=PT_FIRE && parts[i].type!=PT_SMKE && parts[i].type!=PT_HFLM) ||
+					  (bmap[y/CELL][x/CELL]==WL_ALLOWGAS && !(elements[t].Properties&TYPE_GAS)) ||
 			          (bmap[y/CELL][x/CELL]==WL_ALLOWENERGY && !(elements[t].Properties&TYPE_ENERGY)) ||
 					  (bmap[y/CELL][x/CELL]==WL_DETECT && (t==PT_METL || t==PT_SPRK)) ||
 			          (bmap[y/CELL][x/CELL]==WL_EWALL && !emap[y/CELL][x/CELL])) && (t!=PT_STKM) && (t!=PT_STKM2) && (t!=PT_FIGH)))
 			{
-				kill_part(i);
+				part_kill(i);
 				continue;
 			}
 			if (bmap[y/CELL][x/CELL]==WL_DETECT && emap[y/CELL][x/CELL]<8)
@@ -1761,7 +1761,7 @@ void Simulation::UpdateParticles()
 				//Get some gravity from the gravity map
 				if (t==PT_ANAR)
 				{
-					// perhaps we should have a ptypes variable for this
+					// perhaps we should have a elements variable for this
 					pGravX -= gravx[(y/CELL)*(XRES/CELL)+(x/CELL)];
 					pGravY -= gravy[(y/CELL)*(XRES/CELL)+(x/CELL)];
 				}
@@ -1995,7 +1995,7 @@ void Simulation::UpdateParticles()
 							pv[y/CELL][x/CELL] += 0.50f;
 						if (t==PT_NONE)
 						{
-							kill_part(i);
+							part_kill(i);
 							goto killed;
 						}
 						part_change_type(i,x,y,t);
@@ -2118,7 +2118,7 @@ void Simulation::UpdateParticles()
 				parts[i].life = 0;
 				if (t==PT_NONE)
 				{
-					kill_part(i);
+					part_kill(i);
 					goto killed;
 				}
 				part_change_type(i,x,y,t);
@@ -2297,13 +2297,13 @@ killed:
 
 					if (MoveResult::WillSucceed(part_canMove(PT_PHOT, fin_x, fin_y)) && ((ri>=0 && li<0) || (ri<0 && li>=0))) {
 						if (!get_normal_interp(REFRACT|t, parts[i].x, parts[i].y, parts[i].vx, parts[i].vy, &nrx, &nry)) {
-							kill_part(i);
+							part_kill(i);
 							continue;
 						}
 
 						r = Element_PHOT::get_wavelength_bin(this, &parts[i].ctype);
 						if (r == -1) {
-							kill_part(i);
+							part_kill(i);
 							continue;
 						}
 						nn = GLASS_IOR - GLASS_DISP*(r-15)/15.0f;
@@ -2351,7 +2351,7 @@ killed:
 					parts[i].flags |= FLAG_STAGNANT;
 					if (t==PT_NEUT && rng.chance<1,10>())
 					{
-						kill_part(i);
+						part_kill(i);
 						continue;
 					}
 
@@ -2362,11 +2362,11 @@ killed:
 						// leave the actual movement until next frame so that reflection of fast particles and refraction happen correctly
 					} else {
 						if (t!=PT_NEUT)
-							kill_part(i);
+							part_kill(i);
 						continue;
 					}
 					if (!(parts[i].ctype&0x3FFFFFFF) && t == PT_PHOT) {
-						kill_part(i);
+						part_kill(i);
 						continue;
 					}
 				}
@@ -2705,46 +2705,4 @@ void Simulation_Compat_CopyData(Simulation* sim)
 {
 	// TODO: this can be removed once all the code uses Simulation instead of global variables
 	parts = sim->parts;
-
-
-	for (int t=0; t<PT_NUM; t++)
-	{
-		ptypes[t].name = mystrdup(sim->elements[t].ui->Name.c_str());
-		ptypes[t].pcolors = PIXRGB(COLR(sim->elements[t].Colour), COLG(sim->elements[t].Colour), COLB(sim->elements[t].Colour));
-		ptypes[t].menu = sim->elements[t].ui->MenuVisible;
-		ptypes[t].menusection = sim->elements[t].ui->MenuSection;
-		ptypes[t].enabled = sim->elements[t].Enabled;
-		ptypes[t].advection = sim->elements[t].Advection;
-		ptypes[t].airdrag = sim->elements[t].AirDrag;
-		ptypes[t].airloss = sim->elements[t].AirLoss;
-		ptypes[t].loss = sim->elements[t].Loss;
-		ptypes[t].collision = sim->elements[t].Collision;
-		ptypes[t].gravity = sim->elements[t].Gravity;
-		ptypes[t].diffusion = sim->elements[t].Diffusion;
-		ptypes[t].hotair = sim->elements[t].PressureAdd_NoAmbHeat;
-		ptypes[t].falldown = sim->elements[t].Falldown;
-		ptypes[t].flammable = sim->elements[t].Flammable;
-		ptypes[t].explosive = sim->elements[t].Explosive;
-		ptypes[t].meltable = sim->elements[t].Meltable;
-		ptypes[t].hardness = sim->elements[t].Hardness;
-		ptypes[t].weight = sim->elements[t].Weight;
-		ptypes[t].heat = sim->elements[t].DefaultProperties.temp;
-		ptypes[t].hconduct = sim->elements[t].HeatConduct;
-		ptypes[t].descs = mystrdup(sim->elements[t].ui->Description.c_str());
-		ptypes[t].state = sim->elements[t].State;
-		ptypes[t].properties = sim->elements[t].Properties;
-		ptypes[t].update_func = sim->elements[t].Update;
-		ptypes[t].graphics_func = sim->elements[t].Graphics;
-
-		ptransitions[t].plt = sim->elements[t].LowPressureTransitionElement;
-		ptransitions[t].plv = sim->elements[t].LowPressureTransitionThreshold;
-		ptransitions[t].pht = sim->elements[t].HighPressureTransitionElement;
-		ptransitions[t].phv = sim->elements[t].HighPressureTransitionThreshold;
-		ptransitions[t].tlt = sim->elements[t].LowTemperatureTransitionElement;
-		ptransitions[t].tlv = sim->elements[t].LowTemperatureTransitionThreshold;
-		ptransitions[t].tht = sim->elements[t].HighTemperatureTransitionElement;
-		ptransitions[t].thv = sim->elements[t].HighTemperatureTransitionThreshold;
-
-		platent[t] = sim->elements[t].Latent;
-	}
 }

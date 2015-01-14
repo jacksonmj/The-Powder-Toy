@@ -32,18 +32,18 @@ int CAUS_update(UPDATE_FUNC_ARGS)
 						{
 							if (!sim->check_middle_particle_type(i, ri, PT_GLAS))//GLAS protects stuff from acid
 							{
-								float newtemp = ((60.0f-(float)ptypes[rt].hardness))*7.0f;
+								float newtemp = ((60.0f-(float)sim->elements[rt].Hardness))*7.0f;
 								if(newtemp < 0){
 									newtemp = 0;
 								}
 								parts[i].temp += newtemp;
 								parts[i].life--;
-								kill_part(ri);
+								sim->part_kill(ri);
 							}
 						}
 						else if (parts[i].life<=50)
 						{
-							kill_part(i);
+							sim->part_kill(i);
 							return 1;
 						}
 					}

@@ -54,7 +54,7 @@ int ELEC_update(UPDATE_FUNC_ARGS)
 						parts[i].life = 2;
 						parts[i].ctype = ((rand()%200)<<16) | ((rand()%200)<<8) | (rand()%200);
 						*/
-						kill_part(i);
+						sim->part_kill(i);
 						return 1;
 					case PT_LCRY:
 						parts[ri].tmp2 = sim->rng.randInt<5,9>();
@@ -67,7 +67,7 @@ int ELEC_update(UPDATE_FUNC_ARGS)
 							sim->part_create(ri, x+rx, y+ry, PT_O2);
 						else
 							sim->part_create(ri, x+rx, y+ry, PT_H2);
-						kill_part(i);
+						sim->part_kill(i);
 						return 1;
 					case PT_NEUT:
 						if (parts[ri].tmp2 & 0x1)
@@ -75,7 +75,7 @@ int ELEC_update(UPDATE_FUNC_ARGS)
 					case PT_PROT: // this is the correct reaction, not NEUT, but leaving NEUT in anyway
 						if (!sim->pmap[y+ry][x+rx].count_notEnergy)
 						{
-							part_change_type(ri, x+rx, y+ry, PT_H2);
+							sim->part_change_type(ri, x+rx, y+ry, PT_H2);
 							parts[ri].life = 0;
 							parts[ri].ctype = 0;
 						}
@@ -84,17 +84,17 @@ int ELEC_update(UPDATE_FUNC_ARGS)
 						if(parts[ri].life < 6000)
 							parts[ri].life += 1;
 						parts[ri].temp = 0;
-						kill_part(i);
+						sim->part_kill(i);
 						return 1;
 					case PT_EXOT:
 						parts[ri].tmp2 += 5;
 						parts[ri].life = 1000;
 						break;
 					default:
-						if ((ptypes[rt].properties & PROP_CONDUCTS) && (rt!=PT_NBLE||parts[i].temp<2273.15))
+						if ((sim->elements[rt].Properties & PROP_CONDUCTS) && (rt!=PT_NBLE||parts[i].temp<2273.15))
 						{
 							sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
-							kill_part(i);
+							sim->part_kill(i);
 							return 1;
 						}
 						break;

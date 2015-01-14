@@ -35,6 +35,7 @@ public:
 	int MenuSection;
 
 	virtual std::string getHUDText(Simulation *sim, int i, bool debugMode);
+	std::string getLowercaseName();
 	Element_UI(Element *el);
 	virtual ~Element_UI() {}
 };

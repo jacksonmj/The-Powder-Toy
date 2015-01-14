@@ -29,26 +29,26 @@ int SLTW_update(UPDATE_FUNC_ARGS) {
 					{
 					case PT_SALT:
 						if (sim->rng.chance<1,2000>())
-							part_change_type(ri,x+rx,y+ry,PT_SLTW);
+							sim->part_change_type(ri,x+rx,y+ry,PT_SLTW);
 						break;
 					case PT_PLNT:
 						if (sim->rng.chance<1,40>())
-							kill_part(ri);
+							sim->part_kill(ri);
 						break;
 					case PT_RBDM:
 					case PT_LRBD:
 						if ((!sim->heat_mode || parts[i].temp>(273.15f+12.0f)) && sim->rng.chance<1,100>())
 						{
-							part_change_type(i,x,y,PT_FIRE);
+							sim->part_change_type(i,x,y,PT_FIRE);
 							parts[i].life = 4;
 							parts[i].ctype = PT_WATR;
 						}
 						break;
 					case PT_FIRE:
 						if (parts[ri].ctype!=PT_WATR){
-							kill_part(ri);
+							sim->part_kill(ri);
 							if(sim->rng.chance<1,30>()){
-								kill_part(i);
+								sim->part_kill(i);
 								return 1;
 							}
 						}

@@ -27,7 +27,7 @@ int RPEL_update(UPDATE_FUNC_ARGS)
 		{
 			FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 			{
-				if (!(ptypes[parts[ri].type].properties & TYPE_SOLID)){
+				if (!(sim->elements[parts[ri].type].Properties & TYPE_SOLID)){
 					parts[ri].vx += tptmath::isign(rx)*((parts[i].temp-273.15)/10.0f);
 					parts[ri].vy += tptmath::isign(ry)*((parts[i].temp-273.15)/10.0f);
 				}

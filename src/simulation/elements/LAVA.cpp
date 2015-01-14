@@ -69,10 +69,7 @@ public:
 		int ctypeElem = sim->parts[i].ctype;
 		if (!ctypeElem || !sim->IsValidElement(ctypeElem) || ctypeElem==PT_LAVA)
 			ctypeElem = PT_STNE;
-		std::string ctypeName = sim->elements[ctypeElem].ui->Name;
-
-		std::transform(ctypeName.begin(), ctypeName.end(), ctypeName.begin(), ::tolower);
-		return "Molten " + ctypeName;
+		return "Molten " + sim->elements[ctypeElem].ui->getLowercaseName();
 	}
 };
 

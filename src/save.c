@@ -412,7 +412,7 @@ pixel *prerender_save_OPS(void *save, int size, int *width, int *height)
 						fprintf(stderr, "Out of range [%d]: %d %d, [%d, %d], [%d, %d]\n", i, x, y, (unsigned)partsData[i+1], (unsigned)partsData[i+2], (unsigned)partsData[i+3], (unsigned)partsData[i+4]);
 						goto fail;
 					}
-					if(partsData[i] >= PT_NUM || !ptypes[partsData[i]].enabled)
+					if(!globalSim->IsValidElement(partsData[i]))
 						partsData[i] = PT_DMND;	//Replace all invalid elements with diamond
 					
 					//Draw type
@@ -451,7 +451,7 @@ pixel *prerender_save_OPS(void *save, int size, int *width, int *height)
 						}
 					}
 					else
-						vidBuf[(fullY+y)*fullW+(fullX+x)] = ptypes[partsData[i]].pcolors;
+						vidBuf[(fullY+y)*fullW+(fullX+x)] = ARGBColour_TO_PIXEL(globalSim->elements[partsData[i]].Colour);
 					i+=3; //Skip Type and Descriptor
 
 					//Skip temp
@@ -1437,7 +1437,7 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 						fprintf(stderr, "Out of range [%d]: %d %d, [%d, %d], [%d, %d]\n", i, x, y, (unsigned)partsData[i+1], (unsigned)partsData[i+2], (unsigned)partsData[i+3], (unsigned)partsData[i+4]);
 						goto fail;
 					}
-					if(partsData[i] >= PT_NUM || !ptypes[partsData[i]].enabled)
+					if(!globalSim->IsValidElement(partsData[i]))
 						partsData[i] = PT_DMND;	//Replace all invalid elements with diamond
 					if(pmap[y][x] && posCount==0) // Check posCount to make sure an existing particle is not replaced twice if two particles are saved in that position
 					{
@@ -1604,7 +1604,7 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 						//Clear soap links, links will be added back in if soapLinkData is present
 						partsptr[newIndex].ctype &= ~6;
 					}
-					if (!ptypes[partsptr[newIndex].type].enabled)
+					if (!globalSim->IsValidElement(partsptr[newIndex].type))
 						partsptr[newIndex].type = PT_NONE;
 					
 					
@@ -1880,7 +1880,7 @@ pixel *prerender_save_PSv(void *save, int size, int *width, int *height)
 					}
 				}
 				else
-					fb[y*w+x] = ptypes[j].pcolors;
+					fb[y*w+x] = ARGBColour_TO_PIXEL(globalSim->elements[j].Colour);
 			}
 		}
 
@@ -2309,7 +2309,7 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned c
 			}
 			else
 			{
-				parts[i-1].temp = ptypes[parts[i-1].type].heat;
+				parts[i-1].temp = globalSim->elements[parts[i-1].type].DefaultProperties.temp;
 			}
 		}
 	} 
@@ -2401,7 +2401,7 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned c
 					parts[i-1].tmp2 = parts[i-1].life;
 				}
 			}
-			if (!ptypes[parts[i-1].type].enabled)
+			if (!globalSim->IsValidElement(parts[i-1].type))
 				parts[i-1].type = PT_NONE;
 			
 			if (ver<81)

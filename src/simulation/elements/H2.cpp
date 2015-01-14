@@ -29,8 +29,8 @@ int H2_update(UPDATE_FUNC_ARGS)
 					rt = parts[ri].type;
 					if (pv[y/CELL][x/CELL] > 8.0f && rt == PT_DESL) // This will not work well. DESL turns to fire above 5.0 pressure
 					{
-						part_change_type(ri,x+rx,y+ry,PT_WATR);
-						part_change_type(i,x,y,PT_OIL);
+						sim->part_change_type(ri,x+rx,y+ry,PT_WATR);
+						sim->part_change_type(i,x,y,PT_OIL);
 						typeChanged = true;
 					}
 					if (pv[y/CELL][x/CELL] > 45.0f)

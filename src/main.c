@@ -1578,13 +1578,13 @@ int main(int argc, char *argv[])
 					for (i=0; i<NPART; i++)
 						if (parts[i].type==PT_SPRK)
 						{
-							if (parts[i].ctype >= 0 && parts[i].ctype < PT_NUM && ptypes[parts[i].ctype].enabled)
+							if (parts[i].ctype >= 0 && parts[i].ctype < PT_NUM && globalSim->elements[parts[i].ctype].Enabled)
 							{
 								parts[i].type = parts[i].ctype;
 								parts[i].ctype = parts[i].life = 0;
 							}
 							else
-								kill_part(i);
+								globalSim->part_kill(i);
 						}
 				}
 				else
@@ -2714,7 +2714,7 @@ int main(int argc, char *argv[])
 				drawtext(vid_buf, 16, YRES-24, "Click-and-drag to specify a rectangle to copy and then cut (right click = cancel).", 255, 216, 32, da*5);
 				break;
 			default:
-				drawtext(vid_buf, 16, YRES-24, (char *)ptypes[db].descs, 255, 255, 255, da*5);
+				drawtext(vid_buf, 16, YRES-24, globalSim->elements[db].ui->Description.c_str(), 255, 255, 255, da*5);
 			}
 		if (itc)//message in the middle of the screen, such as view mode changes
 		{

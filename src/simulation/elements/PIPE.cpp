@@ -417,14 +417,14 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 						FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 						{
 							//try eating particle at entrance
-							if ((parts[i].tmp&0xFF) == 0 && (ptypes[parts[ri].type].properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY)))
+							if ((parts[i].tmp&0xFF) == 0 && (sim->elements[parts[ri].type].Properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY)))
 							{
 								if (parts[ri].type==PT_SOAP)
 									SOAP_detach(sim, ri);
 								PIPE_transfer_part_to_pipe(sim, parts+ri, parts+i);
-								kill_part(ri);
+								sim->part_kill(ri);
 							}
-							else if ((parts[i].tmp&0xFF) == 0 && parts[ri].type==PT_STOR && parts[ri].tmp && (ptypes[parts[ri].tmp].properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY)))
+							else if ((parts[i].tmp&0xFF) == 0 && parts[ri].type==PT_STOR && parts[ri].tmp && (sim->elements[parts[ri].tmp].Properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY)))
 							{
 								// STOR stores properties in the same places as PIPE does
 								PIPE_transfer_pipe_to_pipe(sim, parts+ri, parts+i);
@@ -595,8 +595,7 @@ std::string Element_UI_PIPE::getHUDText(Simulation *sim, int i, bool debugMode)
 	if (!storedElem)
 		return Name;
 
-	std::string storedName = sim->elements[storedElem].ui->Name;
-	std::transform(storedName.begin(), storedName.end(), storedName.begin(), ::tolower);
+	std::string storedName = sim->elements[storedElem].ui->getLowercaseName();
 	if (sim->parts[i].type==PT_PPIP)
 		return "PPIP with " + storedName;
 	else

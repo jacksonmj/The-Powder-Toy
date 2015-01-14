@@ -36,7 +36,7 @@ int DCEL_update(UPDATE_FUNC_ARGS)
 			{
 				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if(ptypes[parts[ri].type].properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY))
+					if(sim->elements[parts[ri].type].Properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY))
 					{
 						parts[ri].vx *= multiplier;
 						parts[ri].vy *= multiplier;

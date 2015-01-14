@@ -210,7 +210,7 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 					}
 					else
 					{
-						if ((ptypes[rt].properties&PROP_CONDUCTS) && parts[ri].life==0)
+						if ((sim->elements[rt].Properties&PROP_CONDUCTS) && parts[ri].life==0)
 						{
 							sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
 						}
@@ -224,7 +224,7 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 						pv[y/CELL][x/CELL] +=powderful/35;
 						if (sim->rng.chance<1,3>())
 						{
-							part_change_type(ri,x+rx,y+ry,PT_NEUT);
+							sim->part_change_type(ri,x+rx,y+ry,PT_NEUT);
 							parts[ri].life = sim->rng.randInt<480,480+479>();
 							parts[ri].vx = sim->rng.randInt<-10,10>();
 							parts[ri].vy = sim->rng.randInt<-10,10>();
@@ -249,7 +249,7 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 	}
 	else if (parts[i].tmp2<=-1)
 	{
-		kill_part(i);
+		sim->part_kill(i);
 		return 1;
 	}
 	else if (parts[i].tmp2<=0 || parts[i].life<=1)

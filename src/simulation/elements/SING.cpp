@@ -79,7 +79,7 @@ int SING_update(UPDATE_FUNC_ARGS) {
 			else if (sim->pfree==-1)
 				break;//if we've run out of particles, stop trying to create them - saves a lot of lag on "sing bomb" saves
 		}
-		kill_part(i);
+		sim->part_kill(i);
 		return 1;
 	}
 	for (rx=-1; rx<2; rx++)

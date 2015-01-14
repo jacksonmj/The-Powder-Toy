@@ -87,56 +87,6 @@ void TRON_init_graphics();
 
 void PPIP_flood_trigger(Simulation* sim, int x, int y, int sparkedBy);
 
-struct part_type
-{
-	char *name;
-	pixel pcolors;
-	float advection;
-	float airdrag;
-	float airloss;
-	float loss;
-	float collision;
-	float gravity;
-	float diffusion;
-	float hotair;
-	int falldown;
-	int flammable;
-	int explosive;
-	int meltable;
-	int hardness;
-	int menu;
-	int enabled;
-	int weight;
-	int menusection;
-	float heat;
-	unsigned char hconduct;
-	char *descs;
-	char state;
-	unsigned int properties;
-	int (*update_func) (UPDATE_FUNC_ARGS);
-	int (*graphics_func) (GRAPHICS_FUNC_ARGS);
-};
-typedef struct part_type part_type;
-
-struct part_transition
-{
-	float plv; // transition occurs if pv is lower than this
-	int plt;
-	float phv; // transition occurs if pv is higher than this
-	int pht;
-	float tlv; // transition occurs if t is lower than this
-	int tlt;
-	float thv; // transition occurs if t is higher than this
-	int tht;
-};
-typedef struct part_transition part_transition;
-
-// TODO: falldown, properties, state - should at least one of these be removed?
-extern part_type ptypes[PT_NUM];
-extern unsigned int platent[PT_NUM];
-
-extern part_transition ptransitions[PT_NUM];
-
 //Old IDs for GOL types
 #define GT_GOL 78
 #define GT_HLIF 79
@@ -265,11 +215,7 @@ extern int lighting_recreate;
 
 int get_normal_interp(int pt, float x0, float y0, float dx, float dy, float *nx, float *ny);
 
-void kill_part(int i);
-
 int flood_prop(int x, int y, int parttype, size_t propoffset, void * propvalue, int proptype);
-
-void part_change_type(int i, int x, int y, int t);
 
 int InCurrentBrush(int i, int j, int rx, int ry);
 

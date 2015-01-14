@@ -39,7 +39,7 @@ int PLNT_update(UPDATE_FUNC_ARGS)
 					case PT_LAVA:
 						if (sim->rng.chance<1,50>())
 						{
-							part_change_type(i,x,y,PT_FIRE);
+							sim->part_change_type(i,x,y,PT_FIRE);
 							parts[i].life = 4;
 						}
 						break;
@@ -47,7 +47,7 @@ int PLNT_update(UPDATE_FUNC_ARGS)
 					case PT_CO2:
 						if (parts[i].life<=0 && sim->rng.chance<1,50>())
 						{
-							kill_part(ri);
+							sim->part_kill(ri);
 							parts[i].life = sim->rng.randInt<80,80+59>();
 						}
 						break;

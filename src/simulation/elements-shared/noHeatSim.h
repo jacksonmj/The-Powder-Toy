@@ -58,7 +58,7 @@ public:
 			sim->part_change_type(ri,x+rx,y+ry,PT_WATR);
 			if (t==PT_FIRE)
 			{
-				kill_part(i);
+				sim->part_kill(i);
 				return 1;
 			}
 			if (t==PT_LAVA)
@@ -69,10 +69,10 @@ public:
 		}
 		if (rt==PT_WATR || rt==PT_DSTW || rt==PT_SLTW)
 		{
-			kill_part(ri);
+			sim->part_kill(ri);
 			if (t==PT_FIRE)
 			{
-				kill_part(i);
+				sim->part_kill(i);
 				return 1;
 			}
 			if (t==PT_LAVA)

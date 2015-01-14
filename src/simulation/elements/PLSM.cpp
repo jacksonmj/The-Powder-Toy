@@ -45,13 +45,13 @@ int PLSM_update(UPDATE_FUNC_ARGS)
 	{
 		if (parts[i].ctype == PT_NBLE)
 		{
-			part_change_type(i,x,y,PT_NBLE);
+			sim->part_change_type(i,x,y,PT_NBLE);
 			parts[i].life = 0;
 			return 1;
 		}
 		else if ((parts[i].tmp&3)==3)
 		{
-			part_change_type(i,x,y,PT_DSTW);
+			sim->part_change_type(i,x,y,PT_DSTW);
 			parts[i].life = 0;
 			parts[i].ctype = PT_FIRE;
 			return 1;

@@ -1031,7 +1031,9 @@ int draw_tool_xy(pixel *vid_buf, int x, int y, int b, unsigned pc)
 				vid_buf[(XRES+BARSIZE)*(y+j)+(x-j+22)] = PIXPACK(0xFF0000);
 			}
 		}
-		c = PIXB(ptypes[b].pcolors) + 3*PIXG(ptypes[b].pcolors) + 2*PIXR(ptypes[b].pcolors);
+
+		ARGBColour col = globalSim->elements[b].Colour;
+		c = COLB(col) + 3*COLG(col) + 2*COLR(col);
 		if (c<544)
 		{
 			c = 255;
@@ -1040,7 +1042,7 @@ int draw_tool_xy(pixel *vid_buf, int x, int y, int b, unsigned pc)
 		{
 			c = 0;
 		}
-		drawtext(vid_buf, x+14-textwidth((char *)ptypes[b].name)/2, y+4, (char *)ptypes[b].name, c, c, c, 255);
+		drawtext(vid_buf, x+14-textwidth(globalSim->elements[b].ui->Name.c_str())/2, y+4, globalSim->elements[b].ui->Name.c_str(), c, c, c, 255);
 	}
 	return 26;
 }
@@ -1994,6 +1996,7 @@ GLfloat ablurLineC[(((YRES*XRES)*2)*4)];
 void render_parts(pixel *vid)
 {
 	Simulation *sim = globalSim;
+	pixel defaultColour;
 	int deca, decr, decg, decb, cola, colr, colg, colb, firea, firer=0, fireg=0, fireb=0, pixel_mode, q, i, t, nx, ny, x, y;
 	int orbd[4] = {0, 0, 0, 0}, orbl[4] = {0, 0, 0, 0};
 	float gradv, flicker, fnx, fny, flx, fly;
@@ -2040,15 +2043,16 @@ void render_parts(pixel *vid)
 
 
 			// TODO: fix this (fixing would be easier if normal parts and energy parts were separated in pmap)
-			//if(photons[ny][nx]&0xFF && !(ptypes[t].properties & TYPE_ENERGY) && t!=PT_STKM && t!=PT_STKM2 && t!=PT_FIGH)
+			//if(photons[ny][nx]&0xFF && !(globalSim->elements[t].Properties & TYPE_ENERGY) && t!=PT_STKM && t!=PT_STKM2 && t!=PT_FIGH)
 			//	continue;
 				
 			//Defaults
+			defaultColour = sim->elements[t].Colour;
 			pixel_mode = 0 | PMODE_FLAT;
 			cola = 255;
-			colr = PIXR(ptypes[t].pcolors);
-			colg = PIXG(ptypes[t].pcolors);
-			colb = PIXB(ptypes[t].pcolors);
+			colr = COLR(defaultColour);
+			colg = COLG(defaultColour);
+			colb = COLB(defaultColour);
 			firea = 0;
 			
 			deca = (parts[i].dcolour>>24)&0xFF;
@@ -2109,13 +2113,13 @@ void render_parts(pixel *vid)
 							graphicscache[t].fireb = fireb;
 						}
 					}
-					else if (ptypes[t].graphics_func)
+					else if (sim->elements[t].Graphics)
 					{
 #else
-					if (ptypes[t].graphics_func)
+					if (sim->elements[t].Graphics)
 					{
 #endif
-						if ((*(ptypes[t].graphics_func))(sim, &(parts[i]), nx, ny, &pixel_mode, &cola, &colr, &colg, &colb, &firea, &firer, &fireg, &fireb)) //That's a lot of args, a struct might be better
+						if ((*(sim->elements[t].Graphics))(sim, &(parts[i]), nx, ny, &pixel_mode, &cola, &colr, &colg, &colb, &firea, &firer, &fireg, &fireb)) //That's a lot of args, a struct might be better
 						{
 							graphicscache[t].isready = 1;
 							graphicscache[t].pixel_mode = pixel_mode;
@@ -2146,10 +2150,11 @@ void render_parts(pixel *vid)
 						}
 					}
 				}
-				if(ptypes[t].properties & PROP_HOT_GLOW && parts[i].temp>(ptransitions[t].thv-800.0f))
+				if(sim->elements[t].Properties & PROP_HOT_GLOW && parts[i].temp>(globalSim->elements[t].HighTemperatureTransitionThreshold-800.0f))
 				{
-					gradv = 3.1415/(2*ptransitions[t].thv-(ptransitions[t].thv-800.0f));
-					float caddress = fminf(800.0f, parts[i].temp-(ptransitions[t].thv-800.0f));
+					float thresh = globalSim->elements[t].HighTemperatureTransitionThreshold;
+					gradv = 3.1415/(2*thresh-(thresh-800.0f));
+					float caddress = fminf(800.0f, parts[i].temp-(thresh-800.0f));
 					colr += sin(gradv*caddress) * 226;
 					colg += sin(gradv*caddress*4.55f +3.14f) * 34;
 					colb += sin(gradv*caddress*2.22f +3.14f) * 64;
@@ -2195,9 +2200,9 @@ void render_parts(pixel *vid)
 				}
 				else if (colour_mode & COLOUR_BASC)
 				{
-					colr = PIXR(ptypes[t].pcolors);
-					colg = PIXG(ptypes[t].pcolors);
-					colb = PIXB(ptypes[t].pcolors);
+					colr = COLR(defaultColour);
+					colg = COLG(defaultColour);
+					colb = COLB(defaultColour);
 					pixel_mode = PMODE_FLAT;
 				}
 								
@@ -2274,9 +2279,9 @@ void render_parts(pixel *vid)
 					{
 						if (cplayer->elem<PT_NUM)
 						{
-							colr = PIXR(ptypes[cplayer->elem].pcolors);
-							colg = PIXG(ptypes[cplayer->elem].pcolors);
-							colb = PIXB(ptypes[cplayer->elem].pcolors);
+							colr = COLR(sim->elements[cplayer->elem].Colour);
+							colg = COLG(sim->elements[cplayer->elem].Colour);
+							colb = COLB(sim->elements[cplayer->elem].Colour);
 						}
 						else
 						{
@@ -4270,9 +4275,9 @@ int render_thumb(void *thumb, int size, int bzip2, pixel *vid_buf, int px, int p
 					{
 						if (t>=PT_NUM)
 							goto corrupt;
-						r += PIXR(ptypes[t].pcolors);
-						g += PIXG(ptypes[t].pcolors);
-						b += PIXB(ptypes[t].pcolors);
+						r += COLR(globalSim->elements[t].Colour);
+						g += COLG(globalSim->elements[t].Colour);
+						b += COLB(globalSim->elements[t].Colour);
 						a ++;
 					}
 				}

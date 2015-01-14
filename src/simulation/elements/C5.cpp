@@ -26,11 +26,11 @@ int C5_update(UPDATE_FUNC_ARGS)
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					int rt = parts[ri].type;
-					if ((rt!=PT_C5 && parts[ri].temp<100 && ptypes[rt].hconduct && (rt!=PT_HSWC||parts[ri].life==10)) || rt==PT_HFLM)
+					if ((rt!=PT_C5 && parts[ri].temp<100 && sim->elements[rt].HeatConduct && (rt!=PT_HSWC||parts[ri].life==10)) || rt==PT_HFLM)
 					{
 						if (sim->rng.chance<1,6>())
 						{
-							part_change_type(i,x,y,PT_HFLM);
+							sim->part_change_type(i,x,y,PT_HFLM);
 							parts[ri].temp = parts[i].temp = 0;
 							parts[i].life = sim->rng.randInt<50,50+149>();
 							pv[y/CELL][x/CELL] += 1.5;

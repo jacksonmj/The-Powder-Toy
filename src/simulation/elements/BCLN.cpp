@@ -25,7 +25,7 @@ int BCLN_update(UPDATE_FUNC_ARGS)
 		parts[i].vx += advection*vx[y/CELL][x/CELL];
 		parts[i].vy += advection*vy[y/CELL][x/CELL];
 	}
-	if (parts[i].ctype<=0 || parts[i].ctype>=PT_NUM || !ptypes[parts[i].ctype].enabled || (parts[i].ctype==PT_LIFE && (parts[i].tmp<0 || parts[i].tmp>=NGOLALT)))
+	if (parts[i].ctype<=0 || !sim->IsValidElement(parts[i].ctype) || (parts[i].ctype==PT_LIFE && (parts[i].tmp<0 || parts[i].tmp>=NGOLALT)))
 	{
 		int rx, ry;
 		int rcount, ri, rnext;
@@ -57,7 +57,7 @@ int BCLN_update(UPDATE_FUNC_ARGS)
 			int np = sim->part_create(-1, x+rx, y+ry, parts[i].ctype);
 			if (np>=0)
 			{
-				if (parts[i].ctype==PT_LAVA && parts[i].tmp>0 && parts[i].tmp<PT_NUM && ptransitions[parts[i].tmp].tht==PT_LAVA)
+				if (parts[i].ctype==PT_LAVA && parts[i].tmp>0 && parts[i].tmp<PT_NUM && sim->elements[parts[i].tmp].HighTemperatureTransitionElement==PT_LAVA)
 					parts[np].ctype = parts[i].tmp;
 			}
 		}

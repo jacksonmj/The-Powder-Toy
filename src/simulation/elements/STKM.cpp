@@ -166,7 +166,7 @@ int run_stickman(Stickman_data* playerp, UPDATE_FUNC_ARGS)
 			sim->part_create(-1, x-2, y+r+1, playerp->elem);
 			sim->part_create(-1, x+2, y+r, playerp->elem);
 		}
-		kill_part(i);  //Kill him
+		sim->part_kill(i);  //Kill him
 		return 1;
 	}
 
@@ -414,9 +414,9 @@ int run_stickman(Stickman_data* playerp, UPDATE_FUNC_ARGS)
 				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
-					if (ptypes[rt].falldown!=0 || ptypes[rt].state == ST_GAS 
-							|| (ptypes[rt].properties&TYPE_GAS)
-							|| (ptypes[rt].properties&TYPE_LIQUID)
+					if (sim->elements[rt].Falldown!=0 || sim->elements[rt].State == ST_GAS
+							|| (sim->elements[rt].Properties&TYPE_GAS)
+							|| (sim->elements[rt].Properties&TYPE_LIQUID)
 							|| rt == PT_NEUT || rt == PT_PHOT)
 					{
 						if (!playerp->rocketBoots || rt!=PT_PLSM)
@@ -430,14 +430,14 @@ int run_stickman(Stickman_data* playerp, UPDATE_FUNC_ARGS)
 							parts[i].life += 5;
 						else
 							parts[i].life = 100;
-						kill_part(ri);
+						sim->part_kill(ri);
 					}
 
 					if (rt == PT_NEUT)
 					{
 						if (parts[i].life<=100) parts[i].life -= (102-parts[i].life)/2;
 						else parts[i].life *= 0.9f;
-						kill_part(ri);
+						sim->part_kill(ri);
 					}
 					if (rt==PT_PRTI)
 						STKM_interact(sim, playerp, i, rx, ry);
@@ -457,7 +457,7 @@ int run_stickman(Stickman_data* playerp, UPDATE_FUNC_ARGS)
 		bool solidFound = false;
 		FOR_PMAP_POSITION_NOENERGY(sim, rx, ry, rcount, ri, rnext)
 		{
-			if (ptypes[parts[ri].type].state == ST_SOLID)
+			if (sim->elements[parts[ri].type].State == ST_SOLID)
 			{
 				solidFound = true;
 				break;
@@ -512,7 +512,7 @@ int run_stickman(Stickman_data* playerp, UPDATE_FUNC_ARGS)
 				{
 					parts[np].vx -= -gvy*(5*((((int)playerp->pcomm)&0x02) == 0x02) - 5*(((int)(playerp->pcomm)&0x01) == 0x01));
 					parts[np].vy -= gvx*(5*((((int)playerp->pcomm)&0x02) == 0x02) - 5*(((int)(playerp->pcomm)&0x01) == 0x01));
-					parts[i].vx -= (ptypes[(int)playerp->elem].weight*parts[np].vx)/1000;
+					parts[i].vx -= (sim->elements[(int)playerp->elem].Weight*parts[np].vx)/1000;
 				}
 			}
 
@@ -637,7 +637,7 @@ void STKM_interact(Simulation *sim, Stickman_data* playerp, int i, int x, int y)
 			playerp->accs[3] -= 1;
 		}
 			
-		if (ptypes[rt].properties&PROP_DEADLY)
+		if (sim->elements[rt].Properties&PROP_DEADLY)
 			switch (rt)
 			{
 				case PT_ACID:
@@ -647,7 +647,7 @@ void STKM_interact(Simulation *sim, Stickman_data* playerp, int i, int x, int y)
 					parts[i].life -= 1;
 			}
 
-		if (ptypes[rt].properties&PROP_RADIOACTIVE)
+		if (sim->elements[rt].Properties&PROP_RADIOACTIVE)
 			parts[i].life -= 1;
 
 		if (rt==PT_PRTI && parts[i].type)

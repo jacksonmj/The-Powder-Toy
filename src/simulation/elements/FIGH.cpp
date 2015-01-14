@@ -63,8 +63,8 @@ int FIGH_update(UPDATE_FUNC_ARGS)
 			if ((pow(tarx-x, 2) + pow(tary-y, 2))<600)
 			{
 				if (figh->elem == PT_LIGH || figh->elem == PT_NEUT 
-						|| ptypes[figh->elem].properties&(PROP_DEADLY|PROP_RADIOACTIVE) 
-						|| ptypes[figh->elem].heat>=323 || ptypes[figh->elem].heat<=243)
+						|| sim->elements[figh->elem].Properties&(PROP_DEADLY|PROP_RADIOACTIVE)
+						|| sim->elements[figh->elem].DefaultProperties.temp>=323 || sim->elements[figh->elem].DefaultProperties.temp<=243)
 					figh->commandOn(STKM_commands::Action);
 			}
 			else if (tarx<x)

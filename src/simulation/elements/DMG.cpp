@@ -32,7 +32,7 @@ int DMG_update(UPDATE_FUNC_ARGS)
 					rt = parts[ri].type;
 					if (rt!=PT_DMG && rt!=PT_EMBR && rt!=PT_DMND && rt!=PT_CLNE && rt!=PT_PCLN && rt!=PT_BCLN)
 					{
-						kill_part(i);
+						sim->part_kill(i);
 						for (nxj=-rad; nxj<=rad; nxj++)
 							for (nxi=-rad; nxi<=rad; nxi++)
 								if (x+nxi>=0 && y+nxj>=0 && x+nxi<XRES && y+nxj<YRES && (nxi || nxj))
@@ -55,19 +55,19 @@ int DMG_update(UPDATE_FUNC_ARGS)
 											pv[(y+nxj)/CELL][(x+nxi)/CELL] += 1.0f;
 											
 											t = parts[rri].type;
-											if(t && ptransitions[t].pht>-1 && ptransitions[t].pht<PT_NUM)
-												part_change_type(rri, x+nxi, y+nxj, ptransitions[t].pht);
+											if(t && sim->IsValidElement(sim->elements[t].HighPressureTransitionElement))
+												sim->part_change_type(rri, x+nxi, y+nxj, sim->elements[t].HighPressureTransitionElement);
 											else if(t == PT_BMTL)
-												part_change_type(rri, x+nxi, y+nxj, PT_BRMT);
+												sim->part_change_type(rri, x+nxi, y+nxj, PT_BRMT);
 											else if(t == PT_GLAS)
-												part_change_type(rri, x+nxi, y+nxj, PT_BGLA);
+												sim->part_change_type(rri, x+nxi, y+nxj, PT_BGLA);
 											else if(t == PT_COAL)
-												part_change_type(rri, x+nxi, y+nxj, PT_BCOL);
+												sim->part_change_type(rri, x+nxi, y+nxj, PT_BCOL);
 											else if(t == PT_QRTZ)
-												part_change_type(rri, x+nxi, y+nxj, PT_PQRT);
+												sim->part_change_type(rri, x+nxi, y+nxj, PT_PQRT);
 											else if(t == PT_TUNG)
 											{
-												part_change_type(rri, x+nxi, y+nxj, PT_BRMT);
+												sim->part_change_type(rri, x+nxi, y+nxj, PT_BRMT);
 												parts[rri].ctype = PT_TUNG;
 											}
 										}

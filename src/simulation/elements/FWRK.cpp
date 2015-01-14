@@ -76,7 +76,7 @@ int FWRK_update(UPDATE_FUNC_ARGS)
 			}
 		}
 		pv[y/CELL][x/CELL] += 8.0f;
-		kill_part(i);
+		sim->part_kill(i);
 		return 1;
 	}
 	if (parts[i].life>=45)

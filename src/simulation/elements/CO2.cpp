@@ -32,19 +32,19 @@ int CO2_update(UPDATE_FUNC_ARGS)
 				{
 					int rt = parts[ri].type;
 					if (rt==PT_FIRE){
-						kill_part(ri);
+						sim->part_kill(ri);
 						if(sim->rng.chance<1,30>()){
-							kill_part(i);
+							sim->part_kill(i);
 							return 1;
 						}
 					}
 					if ((rt==PT_WATR || rt==PT_DSTW) && sim->rng.chance<1,50>())
 					{
-						part_change_type(ri, x+rx, y+ry, PT_CBNW);
+						sim->part_change_type(ri, x+rx, y+ry, PT_CBNW);
 						if (parts[i].ctype==5) //conserve number of water particles - ctype=5 means this CO2 hasn't released the water particle from BUBW yet
 							sim->part_create(i, x, y, PT_WATR);
 						else
-							kill_part(i);
+							sim->part_kill(i);
 						return 1;
 					}
 				}

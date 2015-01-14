@@ -26,7 +26,7 @@ int BTRY_update(UPDATE_FUNC_ARGS)
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
-					if ((ptypes[rt].properties&PROP_CONDUCTS) && !(rt==PT_WATR||rt==PT_SLTW||rt==PT_NTCT||rt==PT_PTCT||rt==PT_INWR) && parts[ri].life==0 && !sim->is_spark_blocked(x,y,x+rx,y+ry))
+					if ((sim->elements[rt].Properties&PROP_CONDUCTS) && !(rt==PT_WATR||rt==PT_SLTW||rt==PT_NTCT||rt==PT_PTCT||rt==PT_INWR) && parts[ri].life==0 && !sim->is_spark_blocked(x,y,x+rx,y+ry))
 					{
 						sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
 					}

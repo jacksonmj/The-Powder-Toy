@@ -23,7 +23,7 @@ int CBNW_update(UPDATE_FUNC_ARGS)
     {
 		if(pv[y/CELL][x/CELL]<=-0.5 || sim->rng.chance<1,4000>())
     	{
-            part_change_type(i,x,y,PT_CO2);
+			sim->part_change_type(i,x,y,PT_CO2);
            	parts[i].ctype = 5;
         	pv[y/CELL][x/CELL] += 0.5f;
         }
@@ -41,7 +41,7 @@ int CBNW_update(UPDATE_FUNC_ARGS)
 		//Explode
 		if(parts[i].tmp==1 && sim->rng.chance<1,4>())
 		{
-            part_change_type(i,x,y,PT_CO2);
+			sim->part_change_type(i,x,y,PT_CO2);
            	parts[i].ctype = 5;
         	pv[y/CELL][x/CELL] += 0.2f;
 		}
@@ -54,14 +54,14 @@ int CBNW_update(UPDATE_FUNC_ARGS)
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					int rt = parts[ri].type;
-					if ((ptypes[rt].properties&TYPE_PART) && parts[i].tmp == 0 && sim->rng.chance<1,50>())
+					if ((sim->elements[rt].Properties&TYPE_PART) && parts[i].tmp == 0 && sim->rng.chance<1,50>())
 					{
 						//Start explode
 						parts[i].tmp = sim->rng.randInt<0,24>();
 					}
-					else if ((ptypes[rt].properties&TYPE_SOLID) && rt!=PT_DMND && rt!=PT_GLAS && parts[i].tmp == 0 && sim->rng.chance(2-pv[y/CELL][x/CELL], 8000))
+					else if ((sim->elements[rt].Properties&TYPE_SOLID) && rt!=PT_DMND && rt!=PT_GLAS && parts[i].tmp == 0 && sim->rng.chance(2-pv[y/CELL][x/CELL], 8000))
 					{
-						part_change_type(i,x,y,PT_CO2);
+						sim->part_change_type(i,x,y,PT_CO2);
 						parts[i].ctype = 5;
 						pv[y/CELL][x/CELL] += 0.2f;
 					}
@@ -87,16 +87,16 @@ int CBNW_update(UPDATE_FUNC_ARGS)
 					{
 						if ((legacy_enable||parts[i].temp>(285.15f)) && sim->rng.chance<1,100>())
 						{
-							part_change_type(i,x,y,PT_FIRE);
+							sim->part_change_type(i,x,y,PT_FIRE);
 							parts[i].life = 4;
 							parts[i].ctype = PT_WATR;
 						}
 					}
 					else if (rt==PT_FIRE && parts[ri].ctype!=PT_WATR)
 					{
-						kill_part(ri);
+						sim->part_kill(ri);
 						if(sim->rng.chance<1,30>()){
-							kill_part(i);
+							sim->part_kill(i);
 							return 1;
 						}
 					}

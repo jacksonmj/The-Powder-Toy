@@ -26,7 +26,7 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 		parts[i].pavg[1] = pv[y/CELL][x/CELL];
 		if (parts[i].pavg[1]-parts[i].pavg[0] > 0.05*(parts[i].temp/3) || parts[i].pavg[1]-parts[i].pavg[0] < -0.05*(parts[i].temp/3))
 		{
-			part_change_type(i,x,y,PT_PQRT);
+			sim->part_change_type(i,x,y,PT_PQRT);
 			parts[i].life = 5; //timer before it can grow or diffuse again
 		}
 	}
@@ -42,7 +42,7 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 					{
 						if (parts[ri].type==PT_SLTW && sim->rng.chance<1,500>())
 						{
-							kill_part(ri);
+							sim->part_kill(ri);
 							parts[i].tmp ++;
 						}
 					}
@@ -113,10 +113,11 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 int QRTZ_graphics(GRAPHICS_FUNC_ARGS) //QRTZ and PQRT
 {
 	int t = cpart->type, z = cpart->tmp2 - 5;//speckles!
-	if (cpart->temp>(ptransitions[t].thv-800.0f))//hotglow for quartz
+	float thresh = sim->elements[t].HighTemperatureTransitionThreshold;
+	if (cpart->temp>(thresh-800.0f))//hotglow for quartz
 	{
-		float frequency = 3.1415/(2*ptransitions[t].thv-(ptransitions[t].thv-800.0f));
-		int q = (cpart->temp>ptransitions[t].thv)?ptransitions[t].thv-(ptransitions[t].thv-800.0f):cpart->temp-(ptransitions[t].thv-800.0f);
+		float frequency = 3.1415/(2*thresh-(thresh-800.0f));
+		int q = (cpart->temp>thresh)?thresh-(thresh-800.0f):cpart->temp-(thresh-800.0f);
 		*colr += sin(frequency*q) * 226 + (z * 16);
 		*colg += sin(frequency*q*4.55 +3.14) * 34 + (z * 16);
 		*colb += sin(frequency*q*2.22 +3.14) * 64 + (z * 16);

@@ -83,7 +83,7 @@ int EXOT_update(UPDATE_FUNC_ARGS)
 		parts[i].tmp2 = 10000;
 		if (parts[i].life<1001)
 		{
-			part_change_type(i, x, y, PT_WARP);
+			sim->part_change_type(i, x, y, PT_WARP);
 			return 1;
 		}
 	}
@@ -92,7 +92,7 @@ int EXOT_update(UPDATE_FUNC_ARGS)
 	if (pv[y/CELL][x/CELL]>200 && parts[i].temp>9000 && parts[i].tmp2>200)
 	{
 		parts[i].tmp2 = 6000;
-		part_change_type(i, x, y, PT_WARP);
+		sim->part_change_type(i, x, y, PT_WARP);
 		return 1;
 	}		
 	if (parts[i].tmp2>100)

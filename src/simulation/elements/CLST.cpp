@@ -31,8 +31,8 @@ int CLST_update(UPDATE_FUNC_ARGS)
 					{
 						if (sim->rng.chance<1,1500>())
 						{
-							part_change_type(i,x,y,PT_PSTS);
-							kill_part(ri);
+							sim->part_change_type(i,x,y,PT_PSTS);
+							sim->part_kill(ri);
 						}
 					}
 					if (rt==PT_NITR)

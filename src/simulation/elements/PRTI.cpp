@@ -132,7 +132,7 @@ int PRTI_update(UPDATE_FUNC_ARGS)
 			FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 			{
 				rt = parts[ri].type;
-				if (rt==PT_PRTI || rt==PT_PRTO || (!(ptypes[rt].properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY)) && rt!=PT_SPRK))
+				if (rt==PT_PRTI || rt==PT_PRTO || (!(sim->elements[rt].Properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY)) && rt!=PT_SPRK))
 					continue;
 
 				if (channel->StoreParticle(sim, ri, count))

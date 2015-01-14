@@ -37,7 +37,7 @@ int MERC_update(UPDATE_FUNC_ARGS)
 							if ((parts[i].tmp + parts[ri].tmp + 1) <= maxtmp)
 							{
 								parts[i].tmp += parts[ri].tmp + 1;
-								kill_part(ri);
+								sim->part_kill(ri);
 							}
 						}
 					}

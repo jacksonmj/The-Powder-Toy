@@ -32,10 +32,6 @@
 #include "simulation/ElemDataSim.h"
 #include "simulation/elements/PHOT.h"
 
-part_type ptypes[PT_NUM];
-part_transition ptransitions[PT_NUM];
-unsigned int platent[PT_NUM];
-
 int lighting_recreate = 0;
 int force_stacking_check = 0;//whether to force a check for excessively stacked particles
 
@@ -250,16 +246,6 @@ int get_normal_interp(int pt, float x0, float y0, float dx, float dy, float *nx,
 	return get_normal(pt, x, y, dx, dy, nx, ny);
 }
 
-void kill_part(int i)//kills particle number i
-{
-	globalSim->part_kill(i);
-}
-
-void part_change_type(int i, int x, int y, int t)//changes the type of particle number i, to t.  This also changes pmap at the same time.
-{
-	globalSim->part_change_type(i, x, y, t);
-}
-
 int create_part(int p, int x, int y, int tv)//the function for creating a particle, use p=-1 for creating a new particle, -2 is from a brush, or a particle number to replace a particle.
 {
 	int rcount, ri, rnext;
@@ -270,7 +256,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 	
 	if (x<0 || y<0 || x>=XRES || y>=YRES || ((t<=0 || t>=PT_NUM)&&t!=SPC_HEAT&&t!=SPC_COOL&&t!=SPC_AIR&&t!=SPC_VACUUM&&t!=SPC_PGRV&&t!=SPC_NGRV))
 		return -1;
-	if (t>=0 && t<PT_NUM && !ptypes[t].enabled)
+	if (!globalSim->IsValidElement(t))
 		return -1;
 	if(t==SPC_PROP) {
 		return -1;	//Prop tool works on a mouse click basic, make sure it doesn't do anything here
@@ -363,7 +349,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 				normalParticleFound = true;
 
 			if (((globalSim->elements[drawOn].Properties & PROP_DRAWONCTYPE) ||
-				(drawOn==PT_STOR&&!(ptypes[t].properties&TYPE_SOLID))||
+				(drawOn==PT_STOR&&!(globalSim->elements[t].Properties&TYPE_SOLID))||
 				(drawOn==PT_PCLN&&t!=PT_PSCN&&t!=PT_NSCN)||
 				(drawOn==PT_PBCN&&t!=PT_PSCN&&t!=PT_NSCN)
 				) && !(globalSim->elements[t].Properties & PROP_NOCTYPEDRAW)
@@ -416,7 +402,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 	return i;
 }
 
-TPT_INLINE void delete_part(int x, int y, int flags)//calls kill_part with the particle located at x,y
+TPT_INLINE void delete_part(int x, int y, int flags)//calls part_kill with the particle located at x,y
 {
 	if (x<0 || y<0 || x>=XRES || y>=YRES)
 		return;
@@ -426,7 +412,7 @@ TPT_INLINE void delete_part(int x, int y, int flags)//calls kill_part with the p
 
 	if (!(flags&BRUSH_SPECIFIC_DELETE))
 	{
-		kill_part(globalSim->pmap[y][x].first);
+		globalSim->part_kill(globalSim->pmap[y][x].first);
 	}
 	else
 	{
@@ -435,11 +421,11 @@ TPT_INLINE void delete_part(int x, int y, int flags)//calls kill_part with the p
 		{
 			if (parts[i].type==SLALT || SLALT==0)//specific deletion
 			{
-				kill_part(i);
+				globalSim->part_kill(i);
 			}
-			else if (ptypes[parts[i].type].menusection==SEC)//specific menu deletion
+			else if (globalSim->elements[parts[i].type].ui->MenuSection==SEC)//specific menu deletion
 			{
-				kill_part(i);
+				globalSim->part_kill(i);
 			}
 		}
 	}

@@ -27,7 +27,7 @@ int WTRV_update(UPDATE_FUNC_ARGS)
 				{
 					if ((parts[ri].type==PT_RBDM||parts[ri].type==PT_LRBD) && !legacy_enable && parts[i].temp>(273.15f+12.0f) && sim->rng.chance<1,100>())
 					{
-						part_change_type(i,x,y,PT_FIRE);
+						sim->part_change_type(i,x,y,PT_FIRE);
 						parts[i].life = 4;
 						parts[i].ctype = PT_WATR;
 						return 1;

@@ -141,7 +141,7 @@ int SOAP_update(UPDATE_FUNC_ARGS)
 
 								if (parts[i].temp>SOAP_freezetemp)
 								{
-									if (ptypes[rt].state != ST_GAS && rt != PT_SOAP && rt != PT_GLAS)
+									if (sim->elements[rt].State != ST_GAS && rt != PT_SOAP && rt != PT_GLAS)
 									{
 										SOAP_detach(sim, i);
 										continue;

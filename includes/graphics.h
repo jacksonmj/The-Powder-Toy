@@ -67,6 +67,8 @@
 #endif
 #endif
 
+#define ARGBColour_TO_PIXEL(x) (PIXRGB(COLR(x),COLG(x),COLB(x)))
+
 extern int emp_decor;
 
 extern unsigned int *render_modes;

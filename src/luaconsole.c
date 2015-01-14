@@ -46,7 +46,6 @@ int tptElements; //Table for TPT element names
 int tptParts, tptPartsMeta, tptElementTransitions, tptPartsCData, tptPartMeta, tptPart, cIndex;
 void luacon_open(){
 	int i = 0, j;
-	char tmpname[12];
 	int currentElementMeta, currentElement;
 	const static struct luaL_reg tptluaapi [] = {
 		{"test", &luatpt_test},
@@ -181,9 +180,7 @@ tpt.partsdata = nil");
 	tptElements = lua_gettop(l);
 	for(i = 1; i < PT_NUM; i++)
 	{
-		for(j = 0; j < strlen(ptypes[i].name); j++)
-			tmpname[j] = tolower(ptypes[i].name[j]);
-		tmpname[strlen(ptypes[i].name)] = 0;
+		std::string lowername = globalSim->elements[i].ui->getLowercaseName().c_str();
 		
 		lua_newtable(l);
 		currentElement = lua_gettop(l);
@@ -198,7 +195,7 @@ tpt.partsdata = nil");
 		lua_setfield(l, currentElementMeta, "__index");
 		lua_setmetatable(l, currentElement);
 		
-		lua_setfield(l, tptElements, tmpname);
+		lua_setfield(l, tptElements, lowername.c_str());
 	}
 	lua_setfield(l, tptProperties, "el");
 	
@@ -206,9 +203,7 @@ tpt.partsdata = nil");
 	tptElementTransitions = lua_gettop(l);
 	for(i = 1; i < PT_NUM; i++)
 	{
-		for(j = 0; j < strlen(ptypes[i].name); j++)
-			tmpname[j] = tolower(ptypes[i].name[j]);
-		tmpname[strlen(ptypes[i].name)] = 0;
+		std::string lowername = globalSim->elements[i].ui->getLowercaseName().c_str();
 		
 		lua_newtable(l);
 		currentElement = lua_gettop(l);		
@@ -222,7 +217,7 @@ tpt.partsdata = nil");
 		lua_setfield(l, currentElementMeta, "__index");
 		lua_setmetatable(l, currentElement);
 		
-		lua_setfield(l, tptElementTransitions, tmpname);
+		lua_setfield(l, tptElementTransitions, lowername.c_str());
 	}
 	lua_setfield(l, tptProperties, "eltransition");
 	
@@ -372,6 +367,7 @@ int luacon_particle_getproperty(char * key, int * format)
 }
 int luacon_transition_getproperty(char * key, int * format)
 {
+	/*TODO: fix
 	int offset;
 	if (strcmp(key, "presHighValue")==0){
 		offset = offsetof(part_transition, phv);
@@ -400,7 +396,8 @@ int luacon_transition_getproperty(char * key, int * format)
 	} else {
 		offset = -1;
 	}
-	return offset;
+	return offset;*/
+	return -1;
 }
 int luacon_transitionread(lua_State* l){
 	int format, offset;
@@ -423,6 +420,7 @@ int luacon_transitionread(lua_State* l){
 	{
 		return luaL_error(l, "Invalid property");
 	}
+	/* TODO: fix
 	switch(format)
 	{
 	case 0:
@@ -434,7 +432,8 @@ int luacon_transitionread(lua_State* l){
 		lua_pushnumber(l, tempfloat);
 		break;
 	}
-	return 1;
+	return 1;*/
+	return 0;
 }
 int luacon_transitionwrite(lua_State* l){
 	int format, offset;
@@ -457,6 +456,7 @@ int luacon_transitionwrite(lua_State* l){
 	{
 		return luaL_error(l, "Invalid property");
 	}
+	/* TODO: fix
 	switch(format)
 	{
 	case 0:
@@ -465,11 +465,12 @@ int luacon_transitionwrite(lua_State* l){
 	case 1:
 		*((float*)(((char*)&ptransitions[i])+offset)) = luaL_optnumber(l, 3, 0);
 		break;
-	}
+	}*/
 	return 0;
 }
 int luacon_element_getproperty(char * key, int * format, unsigned int * modified_stuff)
 {
+	/* TODO: fix
 	int offset;
 	if (strcmp(key, "name")==0){
 		offset = offsetof(part_type, name);
@@ -586,7 +587,8 @@ int luacon_element_getproperty(char * key, int * format, unsigned int * modified
 	else {
 		return -1;
 	}
-	return offset;
+	return offset;*/
+	return -1;
 }
 int luacon_elementread(lua_State* l){
 	int format, offset;
@@ -610,6 +612,7 @@ int luacon_elementread(lua_State* l){
 	{
 		return luaL_error(l, "Invalid property");
 	}
+	/* TODO: fix
 	switch(format)
 	{
 	case 0:
@@ -629,7 +632,8 @@ int luacon_elementread(lua_State* l){
 		lua_pushnumber(l, tempinteger);
 		break;
 	}
-	return 1;
+	return 1;*/
+	return 0;
 }
 int luacon_elementwrite(lua_State* l){
 	int format, offset;
@@ -654,6 +658,7 @@ int luacon_elementwrite(lua_State* l){
 		free(key);
 		return luaL_error(l, "Invalid property");
 	}
+	/* TODO: fix
 	switch(format)
 	{
 	case 0:
@@ -699,7 +704,7 @@ int luacon_elementwrite(lua_State* l){
 		if (modified_stuff & LUACON_EL_MODIFIED_GRAPHICS)
 			memset(graphicscache, 0, sizeof(gcache_item)*PT_NUM);
 	}
-	free(key);
+	free(key);*/
 	return 0;
 }
 int luacon_keyevent(int key, int modifier, int event){
@@ -899,12 +904,12 @@ int luatpt_test(lua_State* l)
 int luatpt_getelement(lua_State *l)
 {
 	int t;
-	char* name;
+	const char* name;
 	if(lua_isnumber(l, 1)){
 		t = luaL_optint(l, 1, 1);
-		if (t<0 || t>=PT_NUM)
+		if (!globalSim->IsValidElement(t))
 			return luaL_error(l, "Unrecognised element number '%d'", t);
-		name = ptypes[t&0xFF].name;
+		name = globalSim->elements[t].ui->Name.c_str();
 		lua_pushstring(l, name);
 	} else {
 		name = (char*)luaL_optstring(l, 1, "dust");
@@ -1011,7 +1016,7 @@ int luatpt_create(lua_State* l)
 	if(x < XRES && y < YRES){
 		if(lua_isnumber(l, 3)){
 			t = luaL_optint(l, 3, 0);
-			if (t<0 || t >= PT_NUM || !ptypes[t].enabled)
+			if (t<0 || t >= PT_NUM || !globalSim->elements[t].Enabled)
 				return luaL_error(l, "Unrecognised element number '%d'", t);
 		} else {
 			name = luaL_optstring(l, 3, "dust");
@@ -1188,7 +1193,7 @@ int luatpt_reset_spark(lua_State* l)
 				parts[i].ctype = parts[i].life = 0;
 			}
 			else
-				kill_part(i);
+				globalSim->part_kill(i);
 		}
 	}
 	return 0;
@@ -1381,7 +1386,7 @@ int luatpt_set_property(lua_State* l)
 		} else {
 			t = luaL_optint(l, 2, 0);
 		}
-		if (format == 3 && (t<0 || t>=PT_NUM || !ptypes[t].enabled))
+		if (format == 3 && (t<0 || t>=PT_NUM || !globalSim->elements[t].Enabled))
 			return luaL_error(l, "Unrecognised element number '%d'", t);
 	} else {
 		name = luaL_optstring(l, 2, "dust");
@@ -1694,7 +1699,7 @@ int luatpt_delete(lua_State* l)
 	arg1 = abs(luaL_optint(l, 1, 0));
 	arg2 = luaL_optint(l, 2, -1);
 	if(arg2 == -1 && arg1 < NPART){
-		kill_part(arg1);
+		globalSim->part_kill(arg1);
 		return 0;
 	}
 	arg2 = abs(arg2);

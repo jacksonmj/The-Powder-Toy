@@ -37,7 +37,7 @@ int SPNG_update(UPDATE_FUNC_ARGS)
 							if (parts[i].life<limit && sim->rng.chance(500,absorbChanceDenom))
 							{
 								parts[i].life++;
-								kill_part(ri);
+								sim->part_kill(ri);
 							}
 							break;
 						case PT_SLTW:
@@ -45,16 +45,16 @@ int SPNG_update(UPDATE_FUNC_ARGS)
 							{
 								parts[i].life++;
 								if (sim->rng.chance<3,4>())
-									kill_part(ri);
+									sim->part_kill(ri);
 								else
-									part_change_type(ri, x+rx, y+ry, PT_SALT);
+									sim->part_change_type(ri, x+rx, y+ry, PT_SALT);
 							}
 							break;
 						case PT_CBNW:
 							if (parts[i].life<limit && sim->rng.chance(100,absorbChanceDenom))
 							{
 								parts[i].life++;
-								part_change_type(ri, x+rx, y+ry, PT_CO2);
+								sim->part_change_type(ri, x+rx, y+ry, PT_CO2);
 							}
 							break;
 						case PT_PSTE:

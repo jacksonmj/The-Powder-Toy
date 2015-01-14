@@ -22,14 +22,14 @@ int VINE_update(UPDATE_FUNC_ARGS)
 	if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES)
 	{
 		if (sim->rng.chance<1,15>())
-			part_change_type(i,x,y,PT_PLNT);
+			sim->part_change_type(i,x,y,PT_PLNT);
 		else
 		{
 			np = sim->part_create(-1,x+rx,y+ry,PT_VINE);
 			if (np>=0)
 			{
 				parts[np].temp = parts[i].temp;
-				part_change_type(i,x,y,PT_PLNT);
+				sim->part_change_type(i,x,y,PT_PLNT);
 			}
 		}
 	}

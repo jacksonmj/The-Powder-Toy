@@ -70,7 +70,7 @@ int NEUT_update(UPDATE_FUNC_ARGS)
 					{
 					case PT_WATR:
 						if (sim->rng.chance<3,20>())
-							part_change_type(ri,x+rx,y+ry,PT_DSTW);
+							sim->part_change_type(ri,x+rx,y+ry,PT_DSTW);
 						// fallthrough
 					case PT_ICEI:
 					case PT_SNOW:
@@ -103,27 +103,27 @@ int NEUT_update(UPDATE_FUNC_ARGS)
 						if (sim->rng.chance(pressureFactor+1+(parts[ri].life/100),1000))
 						{
 							NEUT_DeutExplosion(sim, parts[ri].life, x+rx, y+ry, parts[i].vx, parts[i].vy, tptmath::clamp_flt(parts[ri].temp + parts[ri].life*500.0f, MIN_TEMP, MAX_TEMP));
-							kill_part(ri);
+							sim->part_kill(ri);
 						}
 						break;
 					case PT_GUNP:
 						if (sim->rng.chance<3,200>())
-							part_change_type(ri,x+rx,y+ry,PT_DUST);
+							sim->part_change_type(ri,x+rx,y+ry,PT_DUST);
 						break;
 					case PT_DYST:
 						if (sim->rng.chance<3,200>())
-							part_change_type(ri,x+rx,y+ry,PT_YEST);
+							sim->part_change_type(ri,x+rx,y+ry,PT_YEST);
 						break;
 					case PT_YEST:
-						part_change_type(ri,x+rx,y+ry,PT_DYST);
+						sim->part_change_type(ri,x+rx,y+ry,PT_DYST);
 						break;
 					case PT_PLEX:
 						if (sim->rng.chance<3,200>())
-							part_change_type(ri,x+rx,y+ry,PT_GOO);
+							sim->part_change_type(ri,x+rx,y+ry,PT_GOO);
 						break;
 					case PT_NITR:
 						if (sim->rng.chance<3,200>())
-							part_change_type(ri,x+rx,y+ry,PT_DESL);
+							sim->part_change_type(ri,x+rx,y+ry,PT_DESL);
 						break;
 					case PT_PLNT:
 						if (sim->rng.chance<1,20>())
@@ -132,7 +132,7 @@ int NEUT_update(UPDATE_FUNC_ARGS)
 					case PT_DESL:
 					case PT_OIL:
 						if (sim->rng.chance<3,200>())
-							part_change_type(ri,x+rx,y+ry,PT_GAS);
+							sim->part_change_type(ri,x+rx,y+ry,PT_GAS);
 						break;
 					case PT_COAL:
 						if (sim->rng.chance<1,20>())
@@ -140,7 +140,7 @@ int NEUT_update(UPDATE_FUNC_ARGS)
 						break;
 					case PT_DUST:
 						if (sim->rng.chance<1,20>())
-							part_change_type(ri, x+rx, y+ry, PT_FWRK);
+							sim->part_change_type(ri, x+rx, y+ry, PT_FWRK);
 						break;
 					case PT_FWRK:
 						if (sim->rng.chance<1,20>())
@@ -153,7 +153,7 @@ int NEUT_update(UPDATE_FUNC_ARGS)
 					case PT_TTAN:
 						if (sim->rng.chance<1,20>())
 						{
-							kill_part(i);
+							sim->part_kill(i);
 							return 1;
 						}
 						break;

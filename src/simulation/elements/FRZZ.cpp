@@ -28,14 +28,14 @@ int FRZZ_update(UPDATE_FUNC_ARGS)
 				{
 					if (parts[ri].type==PT_WATR && sim->rng.chance<1,20>())
 					{
-						part_change_type(ri,x+rx,y+ry,PT_FRZW);
+						sim->part_change_type(ri,x+rx,y+ry,PT_FRZW);
 						parts[ri].life = 100;
 						killPart = true;
 					}
 				}
 			}
 	if (killPart) {
-		kill_part(i);
+		sim->part_kill(i);
 		return 1;
 	}
 	return 0;

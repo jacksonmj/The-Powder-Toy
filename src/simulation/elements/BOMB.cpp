@@ -42,7 +42,7 @@ int BOMB_update(UPDATE_FUNC_ARGS)
 										int nrt = parts[nri].type;
 										if (nri!=i && nrt!=PT_DMND && nrt!=PT_CLNE && nrt!=PT_PCLN && nrt!=PT_BCLN && nrt!=PT_VIBR)
 										{
-											kill_part(nri);
+											sim->part_kill(nri);
 											posExplode = true;
 										}
 									}
@@ -69,7 +69,7 @@ int BOMB_update(UPDATE_FUNC_ARGS)
 										parts[nb].vy = sim->rng.randInt<-20,20>();
 									}
 								}
-						kill_part(i);
+						sim->part_kill(i);
 						return 1;
 					}
 				}

@@ -30,7 +30,7 @@ int BMTL_update(UPDATE_FUNC_ARGS)
 					{
 						if ((parts[ri].type==PT_METL || parts[ri].type==PT_IRON) && sim->rng.chance<1,100>())
 						{
-							part_change_type(ri,x+rx,y+ry,PT_BMTL);
+							sim->part_change_type(ri,x+rx,y+ry,PT_BMTL);
 							if (parts[i].tmp<=7)
 								parts[ri].tmp = parts[i].tmp = 1;
 							else
@@ -42,7 +42,7 @@ int BMTL_update(UPDATE_FUNC_ARGS)
 	else if (parts[i].tmp==1 && sim->rng.chance<1,1000>())
 	{
 		parts[i].tmp = 0;
-		part_change_type(i,x,y,PT_BRMT);
+		sim->part_change_type(i,x,y,PT_BRMT);
 	}
 	return 0;
 }

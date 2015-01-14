@@ -29,13 +29,13 @@ int GLOW_update(UPDATE_FUNC_ARGS)
 					if (parts[ri].type==PT_WATR && sim->rng.chance<1,400>())
 					{
 						killPart = true;
-						part_change_type(ri,x+rx,y+ry,PT_DEUT);
+						sim->part_change_type(ri,x+rx,y+ry,PT_DEUT);
 						parts[ri].life = 10;
 					}
 				}
 			}
 	if (killPart) {
-		kill_part(i);
+		sim->part_kill(i);
 		return 1;
 	}
 

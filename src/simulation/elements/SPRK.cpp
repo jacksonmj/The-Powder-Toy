@@ -28,9 +28,9 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 	{
 		if (ct==PT_WATR||ct==PT_SLTW||ct==PT_PSCN||ct==PT_NSCN||ct==PT_ETRD||ct==PT_INWR)
 			parts[i].temp = R_TEMP + 273.15f;
-		if (ct<=0 || ct>=PT_NUM || !ptypes[ct].enabled)
+		if (ct<=0 || !sim->IsValidElement(ct))
 			ct = PT_METL;
-		part_change_type(i,x,y,ct);
+		sim->part_change_type(i,x,y,ct);
 		parts[i].ctype = PT_NONE;
 		parts[i].life = 4;
 		if (ct == PT_WATR)
@@ -44,7 +44,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 	switch (ct)
 	{
 	case PT_SPRK:
-		kill_part(i);
+		sim->part_kill(i);
 		return 1;
 	case PT_NTCT:
 	case PT_PTCT:
@@ -57,7 +57,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 			if (nearp!=-1&& !sim->is_spark_blocked(i, nearp))
 			{
 				create_line(x, y, (int)(parts[nearp].x+0.5f), (int)(parts[nearp].y+0.5f), 0, 0, PT_PLSM, 0);
-				part_change_type(i,x,y,ct);
+				sim->part_change_type(i,x,y,ct);
 				ct = parts[i].ctype = PT_NONE;
 				parts[i].life = 20;
 				sim->spark_particle_conductiveOnly(nearp, (int)(parts[nearp].x+0.5f),(int)(parts[nearp].y+0.5f));
@@ -69,7 +69,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 		if (parts[i].life<=1 && !(parts[i].tmp&0x1))
 		{
 			parts[i].life = sim->rng.randInt<50,199>();
-			part_change_type(i,x,y,PT_PLSM);
+			sim->part_change_type(i,x,y,PT_PLSM);
 			parts[i].ctype = PT_NBLE;
 			if (parts[i].temp > 5273.15)
 				parts[i].tmp |= 0x4;
@@ -120,9 +120,9 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 						{
 							int rnd = sim->rng.randInt<0,99>();
 							if (!rnd)
-								part_change_type(ri,x+rx,y+ry,PT_O2);
+								sim->part_change_type(ri,x+rx,y+ry,PT_O2);
 							else if (3>rnd)
-								part_change_type(ri,x+rx,y+ry,PT_H2);
+								sim->part_change_type(ri,x+rx,y+ry,PT_H2);
 						}
 					}
 				}
@@ -174,7 +174,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 							{
 								if (sender==PT_NSCN)
 								{
-									part_change_type(ri,x+rx,y+ry,PT_SWCH);
+									sim->part_change_type(ri,x+rx,y+ry,PT_SWCH);
 									parts[ri].ctype = PT_NONE;
 									parts[ri].life = 9;
 								}
@@ -223,7 +223,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 
 					if (spark_blocked)
 						continue;//Insulation blocks everything past here
-					if (!((ptypes[receiver].properties&PROP_CONDUCTS)||receiver==PT_INST||receiver==PT_QRTZ))
+					if (!((sim->elements[receiver].Properties&PROP_CONDUCTS)||receiver==PT_INST||receiver==PT_QRTZ))
 						continue; //Stop non-conducting recievers, allow INST and QRTZ as special cases
 					if (abs(rx)+abs(ry)>=4 &&sender!=PT_SWCH&&receiver!=PT_SWCH)
 						continue; //Only switch conducts really far

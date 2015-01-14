@@ -27,12 +27,12 @@ int RIME_update(UPDATE_FUNC_ARGS)
 				{
 					if (parts[ri].type==PT_SPRK)
 					{
-						part_change_type(i,x,y,PT_FOG);
+						sim->part_change_type(i,x,y,PT_FOG);
 						parts[i].life = sim->rng.randInt<60,60+49>();
 					}
 					else if (parts[ri].type==PT_FOG&&parts[ri].life>0)
 					{
-						part_change_type(i,x,y,PT_FOG);
+						sim->part_change_type(i,x,y,PT_FOG);
 						parts[i].life = parts[ri].life;
 					}
 				}

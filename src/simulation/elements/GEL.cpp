@@ -40,7 +40,7 @@ int GEL_update(UPDATE_FUNC_ARGS)
 						if (parts[i].tmp<100 && sim->rng.chance(500,absorbChanceDenom))
 						{
 							parts[i].tmp++;
-							kill_part(ri);
+							sim->part_kill(ri);
 						}
 						break;
 					case PT_PSTE:
@@ -55,16 +55,16 @@ int GEL_update(UPDATE_FUNC_ARGS)
 						{
 							parts[i].tmp++;
 							if (sim->rng.chance<1,4>())
-								kill_part(ri);
+								sim->part_kill(ri);
 							else
-								part_change_type(ri, x+rx, y+ry, PT_SALT);
+								sim->part_change_type(ri, x+rx, y+ry, PT_SALT);
 						}
 						break;
 					case PT_CBNW:
 						if (parts[i].tmp<100 && sim->rng.chance(100,absorbChanceDenom))
 						{
 							parts[i].tmp++;
-							part_change_type(ri, x+rx, y+ry, PT_CO2);
+							sim->part_change_type(ri, x+rx, y+ry, PT_CO2);
 						}
 						break;
 					case PT_SPNG:
@@ -95,20 +95,20 @@ int GEL_update(UPDATE_FUNC_ARGS)
 					dy = parts[i].y - parts[ri].y;
 
 					//Stickness
-					if ((dx*dx + dy*dy)>1.5 && (rt==PT_GEL || !ptypes[rt].falldown || (fabs(rx)<2 && fabs(ry)<2)))
+					if ((dx*dx + dy*dy)>1.5 && (rt==PT_GEL || !sim->elements[rt].Falldown || (fabs(rx)<2 && fabs(ry)<2)))
 					{
 						float per, nd;
 						nd = dx*dx + dy*dy - 0.5;
 
 						per = 5*(1 - parts[i].tmp/100)*(nd/(dx*dx + dy*dy + nd) - 0.5);
-						if (ptypes[rt].state==ST_LIQUID)
+						if (sim->elements[rt].State==ST_LIQUID)
 							per *= 0.1;
 						
 						dx *= per; dy *= per;
 						parts[i].vx += dx; 
 						parts[i].vy += dy; 
 
-						if ((ptypes[rt].properties&TYPE_PART) || rt==PT_GOO)
+						if ((sim->elements[rt].Properties&TYPE_PART) || rt==PT_GOO)
 						{
 							parts[ri].vx -= dx;
 							parts[ri].vy -= dy;

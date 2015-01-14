@@ -27,13 +27,13 @@ int FRZW_update(UPDATE_FUNC_ARGS)
 				{
 					if (parts[ri].type==PT_WATR && sim->rng.chance<1,14>())
 					{
-						part_change_type(ri,x+rx,y+ry,PT_FRZW);
+						sim->part_change_type(ri,x+rx,y+ry,PT_FRZW);
 					}
 				}
 			}
 	if ((parts[i].life==0 && sim->rng.chance<1,192>()) || sim->rng.chance(100-parts[i].life, 50000))
 	{
-		part_change_type(i,x,y,PT_ICEI);
+		sim->part_change_type(i,x,y,PT_ICEI);
 		parts[i].ctype=PT_FRZW;
 		sim->part_add_temp(parts[i], -200.0f);
 	}

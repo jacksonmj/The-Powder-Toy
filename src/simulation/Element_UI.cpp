@@ -19,6 +19,7 @@
 
 #include "powdergraphics.h"
 
+#include <algorithm>
 
 Element_UI::Element_UI(Element *el) :
 	elem(el),
@@ -42,4 +43,11 @@ std::string Element_UI::getHUDText(Simulation *sim, int i, bool debugMode)
 	{
 		return Name;
 	}
+}
+
+std::string Element_UI::getLowercaseName()
+{
+	std::string lowername = Name;
+	std::transform(lowername.begin(), lowername.end(), lowername.begin(), ::tolower);
+	return lowername;
 }
