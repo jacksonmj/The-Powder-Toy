@@ -28,8 +28,8 @@
 const int portal_rx[8] = {-1, 0, 1, 1, 1, 0,-1,-1};
 const int portal_ry[8] = {-1,-1,-1, 0, 1, 1, 1, 0};
 
-PRTI_ElemDataSim::PRTI_ElemDataSim(Simulation *s, float chanStep, int chanCount)
-	: ElemDataSim_channels(s),
+PRTI_ElemDataSim::PRTI_ElemDataSim(Simulation *s, int t, float chanStep, int chanCount)
+	: ElemDataSim_channels(s,t),
 	  obs_simCleared(sim->hook_cleared, this, &PRTI_ElemDataSim::ClearPortalContents),
 	  channelStep(chanStep),
 	  channelCount(chanCount)

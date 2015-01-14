@@ -17,8 +17,8 @@
 #include "simulation/ElemDataSim.h"
 #include "simulation/elements/WIFI.h"
 
-WIFI_ElemDataSim::WIFI_ElemDataSim(Simulation *s, float chanStep, int chanCount)
-	: ElemDataSim_channels(s),
+WIFI_ElemDataSim::WIFI_ElemDataSim(Simulation *s, int t, float chanStep, int chanCount)
+	: ElemDataSim_channels(s,t),
 	  obs_simCleared(sim->hook_cleared, this, &WIFI_ElemDataSim::Simulation_Cleared),
 	  obs_simBeforeUpdate(sim->hook_beforeUpdate, this, &WIFI_ElemDataSim::Simulation_BeforeUpdate),
 	  channelStep(chanStep),
@@ -112,11 +112,6 @@ int WIFI_graphics(GRAPHICS_FUNC_ARGS)
 	*colb = sin(frequency*q + 4) * 127 + 128;
 	*pixel_mode |= EFFECT_LINES;
 	return 0;
-}
-
-void WIFI_Simulation_Init(ELEMENT_SIMINIT_FUNC_ARGS)
-{
-	sim->elemData_create<WIFI_ElemDataSim>(t, sim);
 }
 
 void WIFI_init_element(ELEMENT_INIT_FUNC_ARGS)

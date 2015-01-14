@@ -22,8 +22,9 @@ class ElemDataShared
 {
 protected:
 	SimulationSharedData *simSD;
+	int elementId;
 public:
-	ElemDataShared(SimulationSharedData *sd) : simSD(sd) {}
+	ElemDataShared(SimulationSharedData *sd, int t_) : simSD(sd), elementId(t_) {}
 	virtual ~ElemDataShared() {}
 };
 

@@ -18,6 +18,7 @@
 
 #include "Config.h"
 #include "simulation/Element.h"
+#include "simulation/ElemDataShared.h"
 #include "simulation/ElemDataSim.h"
 #include <cmath>
 #include "powder.h"
@@ -192,6 +193,7 @@ class Simulation
 {
 protected:
 	ElemDataSim *elemDataSim_[PT_NUM];
+	ElemDataShared **elemDataShared_;
 public:
 	Element *elements;
 	std::shared_ptr<SimulationSharedData> simSD;
@@ -236,8 +238,14 @@ public:
 	template<class ElemDataClass_T, typename... Args>
 	void elemData_create(int elementId, Args&&... args) {
 		delete elemDataSim_[elementId];
-		elemDataSim_[elementId] = new ElemDataClass_T(args...);
+		elemDataSim_[elementId] = new ElemDataClass_T(this, elementId, args...);
 	}
+
+	template <class ElemDataClass_T>
+	ElemDataClass_T * elemDataShared(int elementId) {
+		return static_cast<ElemDataClass_T*>(elemDataShared_[elementId]);
+	}
+	ElemDataShared * elemDataShared(int elementId) { return elemDataShared_[elementId]; }
 
 	Simulation(std::shared_ptr<SimulationSharedData> sd);
 	~Simulation();

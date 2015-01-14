@@ -84,7 +84,7 @@ private:
 public:
 	float channelStep;
 	int channelCount;
-	PRTI_ElemDataSim(Simulation *s, float chanStep=100, int chanCount=-1);
+	PRTI_ElemDataSim(Simulation *s, int t, float chanStep=100, int chanCount=-1);
 	~PRTI_ElemDataSim();
 	void ClearPortalContents();
 	int GetChannelId(particle &p)

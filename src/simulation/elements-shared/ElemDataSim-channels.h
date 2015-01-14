@@ -23,7 +23,7 @@ class particle;
 class ElemDataSim_channels : public ElemDataSim
 {
 public:
-	ElemDataSim_channels(Simulation *s) : ElemDataSim(s) {}
+	ElemDataSim_channels(Simulation *s, int t_) : ElemDataSim(s, t_) {}
 	virtual int GetChannelId(particle &p) = 0;
 };
 

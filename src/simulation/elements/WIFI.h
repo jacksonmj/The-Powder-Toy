@@ -43,7 +43,7 @@ public:
 		p.tmp = tptmath::clamp_int(int((p.temp-73.15f)/channelStep+1), 0, channelCount-1);
 		return &channels[p.tmp];
 	}
-	WIFI_ElemDataSim(Simulation *s, float chanStep=100, int chanCount=-1);
+	WIFI_ElemDataSim(Simulation *s, int t, float chanStep=100, int chanCount=-1);
 	~WIFI_ElemDataSim();
 	bool wifi_lastframe;
 	void Simulation_Cleared();

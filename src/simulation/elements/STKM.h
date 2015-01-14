@@ -68,7 +68,7 @@ class STK_common_ElemDataSim : public ElemDataSim
 {
 public:
 	bool storageActionPending;// is this stickman about to be stored/retrieved from a portal - overrides existence check in STKM_create_allowed function
-	STK_common_ElemDataSim(Simulation *s) : ElemDataSim(s), storageActionPending(false) {}
+	STK_common_ElemDataSim(Simulation *s, int t) : ElemDataSim(s, t), storageActionPending(false) {}
 	virtual void on_part_create(particle & p) = 0;
 	virtual void on_part_kill(particle & p) = 0;
 };
@@ -79,7 +79,7 @@ private:
 	Observer_ClassMember<Stickman_data> obs_simCleared;
 public:
 	Stickman_data player;
-	STKM_ElemDataSim(Simulation *s);
+	STKM_ElemDataSim(Simulation *s, int t);
 	bool create_allowed()
 	{
 		return storageActionPending || !player.exists();

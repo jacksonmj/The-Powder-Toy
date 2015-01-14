@@ -36,8 +36,8 @@ public:
 		usedCount = 0;
 		storageActionPending = false;
 	}
-	FIGH_ElemDataSim(Simulation *s) :
-		STK_common_ElemDataSim(s),
+	FIGH_ElemDataSim(Simulation *s, int t) :
+		STK_common_ElemDataSim(s, t),
 		usedCount(0),
 		obs_simCleared(sim->hook_cleared, this, &FIGH_ElemDataSim::Simulation_Cleared)
 	{

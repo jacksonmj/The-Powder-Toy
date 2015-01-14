@@ -22,8 +22,9 @@ class ElemDataSim
 {
 protected:
 	Simulation *sim;
+	int elementId;
 public:
-	ElemDataSim(Simulation *s) : sim(s) {}
+	ElemDataSim(Simulation *s, int t_) : sim(s), elementId(t_) {}
 	virtual ~ElemDataSim() {}
 };
 

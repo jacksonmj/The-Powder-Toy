@@ -69,6 +69,7 @@ Simulation::Simulation(std::shared_ptr<SimulationSharedData> sd) :
 {
 	int t;
 	elements = simSD->elements;
+	elemDataShared_ = simSD->elemDataShared_;
 	std::fill(elemDataSim_, elemDataSim_+PT_NUM, nullptr);
 
 	for (t=0; t<PT_NUM; t++)
@@ -1431,99 +1432,6 @@ void Simulation::UpdateParticles()
 
 	}
 
-	if (elementCount[PT_LOVE])//LOVE element handling
-	{
-		for (ny=0; ny<YRES-4; ny++)
-		{
-			for (nx=0; nx<XRES-4; nx++)
-			{
-				r = pmap_find_one(nx, ny, PT_LOVE);
-				if (r>=0)
-				{
-					if (ny<9||nx<9||ny>YRES-7||nx>XRES-10)
-						part_kill(r);
-					else
-						love[nx/9][ny/9] = 1;
-				}
-			}
-		}
-		for (nx=9; nx<=XRES-18; nx++)
-		{
-			for (ny=9; ny<=YRES-7; ny++)
-			{
-				if (love[nx/9][ny/9]==1)
-				{
-					for ( nnx=0; nnx<9; nnx++)
-						for ( nny=0; nny<9; nny++)
-						{
-							if (ny+nny>=0&&ny+nny<YRES&&nx+nnx>=0&&nx+nnx<XRES)
-							{
-								r = pmap_find_one(nx+nnx, ny+nny, PT_LOVE);
-								if (r<0)
-								{
-									if (loverule[nnx][nny]==1)
-									{
-										create_part(-1,nx+nnx,ny+nny,PT_LOVE);
-									}
-								}
-								else if (loverule[nnx][nny]==0)
-								{
-									part_kill(r);
-								}
-							}
-						}
-				}
-				love[nx/9][ny/9]=0;
-			}
-		}
-	}
-
-	if (elementCount[PT_LOLZ])//LOLZ element handling
-	{
-		for (ny=0; ny<YRES-4; ny++)
-		{
-			for (nx=0; nx<XRES-4; nx++)
-			{
-				r = pmap_find_one(nx, ny, PT_LOLZ);
-				if (r>=0)
-				{
-					if (ny<9||nx<9||ny>YRES-7||nx>XRES-10)
-						part_kill(r);
-					else
-						lolz[nx/9][ny/9] = 1;
-				}
-			}
-		}
-		for (nx=9; nx<=XRES-18; nx++)
-		{
-			for (ny=9; ny<=YRES-7; ny++)
-			{
-				if (lolz[nx/9][ny/9]==1)
-				{
-					for ( nnx=0; nnx<9; nnx++)
-						for ( nny=0; nny<9; nny++)
-						{
-							if (ny+nny>0&&ny+nny<YRES&&nx+nnx>=0&&nx+nnx<XRES)
-							{
-								r = pmap_find_one(nx+nnx, ny+nny, PT_LOLZ);
-								if (r<0)
-								{
-									if (lolzrule[nny][nnx]==1)
-									{
-										create_part(-1,nx+nnx,ny+nny,PT_LOLZ);
-									}
-								}
-								else if (lolzrule[nny][nnx]==0)
-								{
-									part_kill(r);
-								}
-							}
-						}
-				}
-				lolz[nx/9][ny/9]=0;
-			}
-		}
-	}
 	//wire!
 	if (elementCount[PT_WIRE])
 	{

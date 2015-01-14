@@ -61,8 +61,6 @@ int GSPEED = 1;
 int GENERATION = 0;
 int CGOL = 0;
 
-int love[XRES/9][YRES/9];
-int lolz[XRES/9][YRES/9];
 unsigned char gol[YRES][XRES];
 unsigned short gol2[YRES][XRES][9];
 

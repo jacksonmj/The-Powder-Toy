@@ -19,8 +19,8 @@
 
 #define INBOND(x, y) ((x)>=0 && (y)>=0 && (x)<XRES && (y)<YRES)
 
-STKM_ElemDataSim::STKM_ElemDataSim(Simulation *s)
-	: STK_common_ElemDataSim(s),
+STKM_ElemDataSim::STKM_ElemDataSim(Simulation *s, int t)
+	: STK_common_ElemDataSim(s, t),
 	  obs_simCleared(sim->hook_cleared, &player, &Stickman_data::reset)
 {}
 

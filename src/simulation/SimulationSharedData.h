@@ -27,9 +27,8 @@ class ElemDataShared;
 
 class SimulationSharedData
 {
-protected:
-	ElemDataShared *elemDataShared_[PT_NUM];
 public:
+	ElemDataShared *elemDataShared_[PT_NUM];
 	pthread_rwlock_t data_rwlock;
 	Element elements[PT_NUM];
 
@@ -47,7 +46,7 @@ public:
 	template<class ElemDataClass_T, typename... Args>
 	void elemData_create(int elementId, Args&&... args) {
 		delete elemDataShared_[elementId];
-		elemDataShared_[elementId] = new ElemDataClass_T(args...);
+		elemDataShared_[elementId] = new ElemDataClass_T(this, elementId, args...);
 	}
 
 	class DataReadLock

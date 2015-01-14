@@ -23,11 +23,12 @@
 #include "simulation/ElementNumbers.h"
 #include "simulation/Element.h"
 #include "simulation/Simulation.h"
+#include "simulation/SimulationSharedData.h"
 
 template<class ElemDataClass_T>
 void SimInit_createElemData(ELEMENT_SIMINIT_FUNC_ARGS)
 {
-	sim->elemData_create<ElemDataClass_T>(t, sim);
+	sim->elemData_create<ElemDataClass_T>(t);
 }
 
 #include "powder.h"

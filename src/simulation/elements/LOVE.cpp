@@ -14,6 +14,28 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/elements-shared/GridBasedPattern.h"
+
+class LOVE_pattern : public GridBasedPattern_Pattern<9,9>
+{
+public:
+	LOVE_pattern(SimulationSharedData *sd, int t) :
+		GridBasedPattern_Pattern(sd,t)
+	{
+		bool pattern[9][9] = {
+			{0,0,1,1,0,1,1,0,0},
+			{0,1,0,0,1,0,0,1,0},
+			{1,0,0,0,0,0,0,0,1},
+			{1,0,0,0,0,0,0,0,1},
+			{0,1,0,0,0,0,0,1,0},
+			{0,1,0,0,0,0,0,1,0},
+			{0,0,1,0,0,0,1,0,0},
+			{0,0,0,1,0,1,0,0,0},
+			{0,0,0,0,1,0,0,0,0},
+		};
+		setPattern(pattern);
+	}
+};
 
 void LOVE_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
@@ -61,5 +83,7 @@ void LOVE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionElement = NT;
 
 	elem->Graphics = NULL;
+	simSD->elemData_create<LOVE_pattern>(t);
+	elem->Func_SimInit = &SimInit_createElemData< GridBasedPattern_ElemDataSim<9,9, 9,CELL,9,CELL> >;
 }
 

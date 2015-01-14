@@ -240,8 +240,6 @@ extern int frameidx;
 extern int MSIGN;
 extern int CGOL;
 extern int GSPEED;
-extern int love[XRES/9][YRES/9];
-extern int lolz[XRES/9][YRES/9];
 extern unsigned char gol[YRES][XRES];
 extern unsigned short gol2[YRES][XRES][9];
 extern int SEC;

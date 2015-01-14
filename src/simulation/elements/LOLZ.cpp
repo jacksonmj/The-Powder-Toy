@@ -14,6 +14,28 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/elements-shared/GridBasedPattern.h"
+
+class LOLZ_pattern : public GridBasedPattern_Pattern<9,9>
+{
+public:
+	LOLZ_pattern(SimulationSharedData *sd, int t) :
+			GridBasedPattern_Pattern(sd,t)
+	{
+		bool pattern[9][9] = {
+			{0,0,0,0,0,0,0,0,0},
+			{1,0,0,0,0,0,1,0,0},
+			{1,0,0,0,0,0,1,0,0},
+			{1,0,0,1,1,0,0,1,0},
+			{1,0,1,0,0,1,0,1,0},
+			{1,0,1,0,0,1,0,1,0},
+			{0,1,0,1,1,0,0,1,0},
+			{0,1,0,0,0,0,0,1,0},
+			{0,1,0,0,0,0,0,1,0},
+		};
+		setPattern(pattern);
+	}
+};
 
 void LOLZ_init_element(ELEMENT_INIT_FUNC_ARGS)
 {
@@ -61,5 +83,7 @@ void LOLZ_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionElement = NT;
 
 	elem->Graphics = NULL;
+	simSD->elemData_create<LOLZ_pattern>(t);
+	elem->Func_SimInit = &SimInit_createElemData< GridBasedPattern_ElemDataSim<9,9, 9,CELL,9,CELL> >;
 }
 
