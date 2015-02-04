@@ -119,13 +119,17 @@ int CRAY_update(UPDATE_FUNC_ARGS)
 												colored = 0;
 											parts[ni].life = 4;
 										}
-										else if(destroy && (parts[ni].type != PT_DMND))
+										else if (parts[ni].type==PT_CRAY)
+										{
+											// ignore CRAY - don't destroy or treat as an obstacle
+										}
+										else if (destroy && (parts[ni].type != PT_DMND))
 										{
 											sim->part_kill(ni);
 											if(!--partsRemaining)
 												docontinue = 0;
 										}
-										else if (parts[ni].type != PT_CRAY && !nostop)
+										else if (!nostop)
 											docontinue = 0;// stop at obstacles
 									}
 								}
