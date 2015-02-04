@@ -83,7 +83,10 @@ int ARAY_update(UPDATE_FUNC_ARGS)
 											{
 												colored = Element_FILT::interactWavelengths(sim, &parts[ri], colored);
 												if (!colored)
+												{
+													docontinue = 0;
 													break;
+												}
 											}
 											isBlackDeco = (parts[ri].dcolour==0xFF000000);
 											parts[ri].life = 4;
