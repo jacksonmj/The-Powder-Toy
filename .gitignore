@@ -29,4 +29,9 @@ src/python/stdlib/*
 *.manifest
 *.manifest.res
 *.pdb
+.kdev4
+*.kdev4
+callgrind.*
 utility/convert-elements
+utility/tpt-libs
+build*

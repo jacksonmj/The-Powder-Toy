@@ -17,7 +17,7 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 #include <SDL/SDL.h>
-#if (defined(LIN32) || defined(LIN64)) && defined(SDL_VIDEO_DRIVER_X11)
+#ifdef CLIPBOARD_X11
 #include <SDL/SDL_syswm.h>
 #endif
 #include "graphics.h"
@@ -152,7 +152,7 @@ typedef struct ui_richtext ui_richtext;
 extern int SLALT;
 extern SDLMod sdl_mod;
 extern int sdl_key, sdl_rkey, sdl_wheel, sdl_ascii, sdl_zoom_trig;
-#if (defined(LIN32) || defined(LIN64)) && defined(SDL_VIDEO_DRIVER_X11)
+#ifdef CLIPBOARD_X11
 extern SDL_SysWMinfo sdl_wminfo;
 extern Atom XA_CLIPBOARD, XA_TARGETS;
 #endif

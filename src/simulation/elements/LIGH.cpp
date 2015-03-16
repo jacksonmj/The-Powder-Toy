@@ -182,7 +182,7 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 	int rx, ry, rt, multipler, powderful;
 	int rcount, ri, rnext;
 	int angle, angle2=-1;
-	int near;
+	int near_i;
 	powderful = parts[i].temp*(1+parts[i].life/40)*LIGHTING_POWER;
 	if (aheat_enable)
 	{
@@ -262,14 +262,14 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 
 	angle2=-1;
 
-	near = LIGH_nearest_part(sim, i, parts[i].life*2.5);
-	if (near!=-1)
+	near_i = LIGH_nearest_part(sim, i, parts[i].life*2.5);
+	if (near_i!=-1)
 	{
-		int t=parts[near].type;
+		int t=parts[near_i].type;
 		float n_angle; // angle to nearest part
 		float angle_diff;
-		rx=parts[near].x-x;
-		ry=parts[near].y-y;
+		rx=parts[near_i].x-x;
+		ry=parts[near_i].y-y;
 		if (rx!=0 || ry!=0)
 			n_angle = atan2f(-ry, rx);
 		else
@@ -285,21 +285,21 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 
 			if (t!=PT_TESC)
 			{
-				near=contact_part(sim, near, PT_LIGH);
-				if (near!=-1)
+				near_i=contact_part(sim, near_i, PT_LIGH);
+				if (near_i!=-1)
 				{
-					parts[near].tmp2=3;
-					parts[near].life=(int)(1.0*parts[i].life/2-1);
-					parts[near].tmp=parts[i].tmp-180;
-					parts[near].temp=parts[i].temp;
+					parts[near_i].tmp2=3;
+					parts[near_i].life=(int)(1.0*parts[i].life/2-1);
+					parts[near_i].tmp=parts[i].tmp-180;
+					parts[near_i].temp=parts[i].temp;
 				}
 			}
 		}
-		else near=-1;
+		else near_i=-1;
 	}
 
 	angle = (parts[i].tmp+360+sim->rng.randInt<-30,30>())%360;
-	if (parts[i].tmp2==2 && near==-1)
+	if (parts[i].tmp2==2 && near_i==-1)
 	{
 		angle2=(angle+360+sim->rng.randInt<-100,100>())%360;
 	}

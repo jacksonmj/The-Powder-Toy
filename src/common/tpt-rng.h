@@ -296,7 +296,7 @@ public:
 		static_assert(numerator>0, "constant chance with numerator<=0 is equivalent to false");
 		static_assert(numerator<denominator, "constant chance with numerator>=denominator is equivalent to true");
 		// TODO: static_assert check gcd==1
-		return (randInt<0,denominator-1>() < numerator);
+		return (uint_fast32_t(randInt<0,denominator-1>()) < numerator);
 	}
 
 	// Can't handle these using a limited number of bits, so call tpt_rng functions instead:

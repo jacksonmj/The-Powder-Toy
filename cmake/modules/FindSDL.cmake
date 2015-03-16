@@ -1,11 +1,12 @@
+# This is nearly identical to the FindSDL included with cmake
+# This is in Powder Toy to allow overriding FindThreads
+
+
 # Locate SDL library
 # This module defines
 # SDL_LIBRARY, the name of the library to link against
 # SDL_FOUND, if false, do not try to link to SDL
 # SDL_INCLUDE_DIR, where to find SDL.h
-#
-# This is nearly identical to the FindSDL included with cmake
-# This is in Powder Toy to avoid warnings when FindThreads is overridden
 #
 # This module responds to the the flag:
 # SDL_BUILDING_LIBRARY

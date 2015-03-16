@@ -26,29 +26,35 @@ So far, compiling with cmake has only been tested on Linux (both
 native compiling and cross compiling for Windows), and MinGW+MSYS 
 running in Wine. 
 
+To turn debug symbols on or off, set CMAKE_BUILD_TYPE:
+cmake .. -DCMAKE_BUILD_TYPE=DEBUG
+cmake .. -DCMAKE_BUILD_TYPE=RELEASE
 
 
 Several options are available:
 
-Cmake option name              Default
+CMake option name              Default
 -----------------------------------------
 GravityFFT                       ON
 LuaConsole                       ON
 PreferStatic                     ON
-NoWarnings                       ON
-Debug                            ON
+NoWarnings                       OFF
 Optimisations                    ON
+CheckPartsAlloc                  ON
+Tests                            OFF
 
 To change an option, add -DOptionName=value to the end of the cmake 
 command. For example, disable optimisations by adding 
 -DOptimisations=OFF
+
+To see help for each option, and the current option values, run cmake -LH
 
 
 GravityFFT and LuaConsole are optional, and Powder Toy will function 
 fine if they are disabled. However, enabling them is recommended, since 
 GravityFFT allows part of the game (the Newtonian gravity 
 calculations) to run a lot faster, and LuaConsole adds useful extra 
-functionality. 
+functionality.
 
 GravityFFT requires the single precision version of the FFTW3 library 
 (fftw3f), and LuaConsole requires Lua 5.1.
@@ -57,9 +63,4 @@ Most libraries are linked statically where available, to avoid having
 to mess around with DLLs for Windows, and to try to avoid issues due to 
 differences in libbz2 naming conventions between Linux distros. Change 
 this with -DPreferStatic=OFF
-
-The Debug option enables or disables the "-g" compiler option for 
-gcc/g++. If it's turned off, you may also want to strip the binaries 
-after compiling them to further reduce the executable size, as this 
-isn't done automatically.
 

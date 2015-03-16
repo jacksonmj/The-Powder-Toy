@@ -12,7 +12,7 @@ if(CC_GNUHOST)
 else()
 	find_program(CC_W64 NAMES i686-w64-mingw32-gcc)
 	if(CC_W64)
-		# for 32 or 64 bits mingw-w64
+		# for 32 or 64 bit mingw-w64
 		# see http://mingw-w64.sourceforge.net/
 		set(COMPILER_PREFIX "i686-w64-mingw32")
 	else()
@@ -22,18 +22,12 @@ else()
 	endif()
 endif()
 
-#set(COMPILER_PREFIX "x86_64-w64-mingw32"
-
 # which compilers to use for C and C++
 find_program(CMAKE_RC_COMPILER NAMES ${COMPILER_PREFIX}-windres)
-#SET(CMAKE_RC_COMPILER ${COMPILER_PREFIX}-windres)
 find_program(CMAKE_C_COMPILER NAMES ${COMPILER_PREFIX}-gcc)
-#SET(CMAKE_C_COMPILER ${COMPILER_PREFIX}-gcc)
 find_program(CMAKE_CXX_COMPILER NAMES ${COMPILER_PREFIX}-g++)
-#SET(CMAKE_CXX_COMPILER ${COMPILER_PREFIX}-g++)
 
 
-# here is the target environment located
 SET(CMAKE_FIND_ROOT_PATH  /usr/${COMPILER_PREFIX} /usr/${COMPILER_PREFIX}/sys-root/${COMPILER_PREFIX} /usr/${COMPILER_PREFIX}/sys-root/mingw)
 SET(CMAKE_SYSTEM_PREFIX_PATH ${CMAKE_FIND_ROOT_PATH}) # needed to make FindSDL find includes
 

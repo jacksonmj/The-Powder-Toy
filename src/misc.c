@@ -584,7 +584,7 @@ void clipboard_push_text(char * text)
 		SetClipboardData(CF_TEXT, cbuffer);
 		CloseClipboard();
 	}
-#elif (defined(LIN32) || defined(LIN64)) && defined(SDL_VIDEO_DRIVER_X11)
+#elif defined(CLIPBOARD_X11)
 	if (clipboard_text!=NULL) {
 		free(clipboard_text);
 		clipboard_text = NULL;
@@ -619,7 +619,7 @@ char * clipboard_pull_text()
 			return "";
 		}
 	}
-#elif (defined(LIN32) || defined(LIN64)) && defined(SDL_VIDEO_DRIVER_X11)
+#elif defined(CLIPBOARD_X11)
 	printf("Not implemented: get text from clipboard\n");
 #else
 	printf("Not implemented: get text from clipboard\n");

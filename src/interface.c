@@ -58,7 +58,7 @@
 
 SDLMod sdl_mod;
 int sdl_key, sdl_rkey, sdl_wheel, sdl_ascii, sdl_zoom_trig=0;
-#if (defined(LIN32) || defined(LIN64)) && defined(SDL_VIDEO_DRIVER_X11)
+#ifdef CLIPBOARD_X11
 SDL_SysWMinfo sdl_wminfo;
 Atom XA_CLIPBOARD, XA_TARGETS;
 #endif
@@ -2816,7 +2816,7 @@ int sdl_poll(void)
 		case SDL_QUIT:
 			return 1;
 		case SDL_SYSWMEVENT:
-#if (defined(LIN32) || defined(LIN64)) && defined(SDL_VIDEO_DRIVER_X11)
+#ifdef CLIPBOARD_X11
 			if (event.syswm.msg->subsystem != SDL_SYSWM_X11)
 				break;
 			sdl_wminfo.info.x11.lock_func();

@@ -1,3 +1,7 @@
+# custom FindThreads to allow static linking of PTW32
+# (prefers static PTW32 library)
+
+
 # - This module determines the thread library of the system.
 # The following variables are set
 #  CMAKE_THREAD_LIBS_INIT     - the thread library
@@ -5,9 +9,6 @@
 #  CMAKE_USE_WIN32_THREADS_INIT - using WIN32 threads?
 #  CMAKE_USE_PTHREADS_INIT    - are we using pthreads
 #  CMAKE_HP_PTHREADS_INIT     - are we using hp pthreads
-
-# custom FindThreads to allow static linking of PTW32
-# (prefers static PTW32 library)
 
 INCLUDE (CheckIncludeFiles)
 INCLUDE (CheckLibraryExists)
