@@ -224,13 +224,20 @@ public:
 		return ret;
 	}
 
-	static constexpr int countBitsOccupied_dynamic(uint_fast32_t x)
+	// Calculate index of most significant bit set (index of LSB=1, MSB=32)
+	static int countBitsOccupied_dynamic(uint_fast32_t x)
 	{
-		// Calculate index of most significant bit set (index of LSB=1, MSB=32)
+		// Version using compiler builtins
 		// TODO: add case for MSVC (_BitScanReverse)?
 #if defined(__GNUC__)
 		return (x==0) ? 0 : 32-__builtin_clz(x);
 #else
+		return countBitsOccupied_dynamic_fallback(x);
+#endif
+	}
+	static int countBitsOccupied_dynamic_fallback(uint_fast32_t x)
+	{
+		// Version to use if no compiler builtins are available
 		int bits = 0;
 		if (x&0xFFFF0000)
 			x >>= 16, bits += 16;
@@ -241,10 +248,12 @@ public:
 		if (x&0xC)
 			x >>= 2, bits += 2;
 		if (x&0x2)
+			x >>=1, bits += 1;
+		if (x&0x1)
 			bits += 1;
-		return x;
-#endif
+		return bits;
 	}
+
 	static constexpr int decideBitsToUse(int minBits, int minVal, int maxVal)
 	{
 		// If there is a high chance of rejecting the random number, use an extra bit
