@@ -3841,7 +3841,7 @@ void render_fire(pixel *vid)
 						{
 							if (!globalSim->InBounds(i*CELL+x, j*CELL+y))
 								continue;
-#if defined(__SSE__) and defined(__GNUC__)
+#if defined(__SSE__) and defined(__GNUC__) and !defined(__clang__)
 							// unsigned multiply allows a slight optimisation, but is not available in the MMX instruction set
 							// With SSE, alpha is multiplied by 2^8 when initialised, and the high 16 bits of the answer are stored (equivalent to dividing the answer by 2^16), so the answer stored is alpha*colour/256
 							__m64 tmp = (__m64)(fire_alpha_mmx[y+CELL][x+CELL]);
@@ -3931,7 +3931,7 @@ void prepare_alpha(int size, float intensity)
 #if defined(__MMX__) and defined(PIXELBYTES)
 			if (tmp>255)
 				fire_mmx = false;
-#if defined(__SSE__) and defined(__GNUC__)
+#if defined(__SSE__) and defined(__GNUC__) and !defined(__clang__)
 			tmp *= 256;
 #endif
 			// Now duplicate the alpha value (which is less than 65535 so a 16 bit value) 4 times in tmp for MMX optimisations

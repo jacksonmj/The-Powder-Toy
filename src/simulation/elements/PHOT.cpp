@@ -190,7 +190,7 @@ void PHOT_create(ELEMENT_CREATE_FUNC_ARGS)
 	int rx, ry;
 	sim->randomRelPos_1_noCentre(&rx,&ry);
 	// scale so that magnitude of velocity is 3
-	constexpr float diagScale = 3.0f/sqrtf(2);
+	const float diagScale = 3.0f/sqrtf(2);
 	float scale = (rx && ry) ? diagScale : 3.0f;
 	sim->parts[i].vx = scale*rx;
 	sim->parts[i].vy = scale*ry;
