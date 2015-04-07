@@ -13,10 +13,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <vector>
 #include "common/tpt-rng.h"
 #include "catch.hpp"
-#include <functional>
-
 
 TEST_CASE("CountBitsOccupied dynamic", "[tptrng]")
 {
@@ -29,14 +28,16 @@ TEST_CASE("CountBitsOccupied dynamic", "[tptrng]")
 	testData.push_back({4,3});
 	testData.push_back({0xFF,8});
 	testData.push_back({0x100,9});
+	testData.push_back({0x103,9});
+	testData.push_back({0xFFFFFFFE,32});
 	testData.push_back({0xFFFFFFFF,32});
 
-	SECTION("compiler builtin")
+	SECTION("compiler builtins allowed")
 	{
 		for (auto it=testData.begin(); it<testData.end(); ++it)
 			CHECK( RandomStore_auto::countBitsOccupied_dynamic(it->x) == it->bits);
 	}
-	SECTION("fallback")
+	SECTION("no builtins (fallback)")
 	{
 		for (auto it=testData.begin(); it<testData.end(); ++it)
 			CHECK( RandomStore_auto::countBitsOccupied_dynamic_fallback(it->x) == it->bits);
@@ -53,5 +54,7 @@ TEST_CASE("CountBitsOccupied template", "[tptrng]")
 	CHECK( CountBitsOccupied<4>::bits == 3);
 	CHECK( CountBitsOccupied<0xFF>::bits == 8);
 	CHECK( CountBitsOccupied<0x100>::bits == 9);
+	CHECK( CountBitsOccupied<0x103>::bits == 9);
+	CHECK( CountBitsOccupied<0xFFFFFFFE>::bits == 32);
 	CHECK( CountBitsOccupied<0xFFFFFFFF>::bits == 32);
 }
