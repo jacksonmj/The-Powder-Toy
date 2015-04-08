@@ -19,23 +19,14 @@ int BOYL_update(UPDATE_FUNC_ARGS)
 {
 	int rx, ry;
 	int rcount, ri, rnext;
-	if (pv[y/CELL][x/CELL]<(parts[i].temp/100))
-		pv[y/CELL][x/CELL] += 0.001f*((parts[i].temp/100)-pv[y/CELL][x/CELL]);
-	if (y+CELL<YRES && pv[y/CELL+1][x/CELL]<(parts[i].temp/100))
-		pv[y/CELL+1][x/CELL] += 0.001f*((parts[i].temp/100)-pv[y/CELL+1][x/CELL]);
-	if (x+CELL<XRES)
+	for (ry=-1; ry<2; ry++)
 	{
-		pv[y/CELL][x/CELL+1] += 0.001f*((parts[i].temp/100)-pv[y/CELL][x/CELL+1]);
-		if (y+CELL<YRES)
-			pv[y/CELL+1][x/CELL+1] += 0.001f*((parts[i].temp/100)-pv[y/CELL+1][x/CELL+1]);
-	}
-	if (y-CELL>=0 && pv[y/CELL-1][x/CELL]<(parts[i].temp/100))
-		pv[y/CELL-1][x/CELL] += 0.001f*((parts[i].temp/100)-pv[y/CELL-1][x/CELL]);
-	if (x-CELL>=0)
-	{
-		pv[y/CELL][x/CELL-1] += 0.001f*((parts[i].temp/100)-pv[y/CELL][x/CELL-1]);
-		if (y-CELL>=0)
-			pv[y/CELL-1][x/CELL-1] += 0.001f*((parts[i].temp/100)-pv[y/CELL-1][x/CELL-1]);
+		for (rx=-1; rx<2; rx++)
+		{
+			SimCellCoord c(x/CELL+rx,y/CELL+ry);
+			if (sim->InBounds(c))
+				sim->air.pv.blend_legacy(c, (parts[i].temp/100), 0.001f);
+		}
 	}
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
@@ -53,7 +44,7 @@ int BOYL_update(UPDATE_FUNC_ARGS)
 					{
 						sim->part_kill(ri);
 						sim->part_change_type(i,x,y,PT_WATR);
-						pv[y/CELL][x/CELL] += 4.0;
+						sim->air.pv.add(SimCoordI(x,y), 4.0f);
 					}
 				}
 			}

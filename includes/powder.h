@@ -19,7 +19,6 @@
 
 #include "Config.h"
 
-#include "air.h"
 #include "graphics.h"
 #include "defines.h"
 #include "interface.h"
@@ -167,8 +166,6 @@ extern const particle emptyparticle;
 
 extern int force_stacking_check;
 extern int ppip_changed;
-
-extern int airMode;
 
 extern particle *parts;
 extern particle *cb_parts;

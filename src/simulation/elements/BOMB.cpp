@@ -48,7 +48,7 @@ int BOMB_update(UPDATE_FUNC_ARGS)
 									}
 									if (posExplode)
 									{
-										pv[(y+nxj)/CELL][(x+nxi)/CELL] += 0.1f;
+										sim->air.pv.add(SimCoordI(x+nxi,y+nxj), 0.1f);
 										nb = sim->part_create(-3, x+nxi, y+nxj, PT_EMBR);
 										if (nb!=-1) {
 											parts[nb].tmp = 2;

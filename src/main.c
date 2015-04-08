@@ -53,7 +53,6 @@
 #include <md5.h>
 #include <update.h>
 #include <hmap.h>
-#include <air.h>
 #include "images.h"
 #include <console.h>
 #ifdef LUACONSOLE
@@ -220,7 +219,6 @@ int do_open = 0;
 int sys_pause = 0;
 int sys_shortcuts = 1;
 int legacy_enable = 0; //Used to disable new features such as heat, will be set by save.
-int aheat_enable; //Ambient heat
 int decorations_enable = 1;
 int hud_enable = 1;
 int active_menu = 0;
@@ -333,11 +331,8 @@ void clear_sim(void)
 	memset(emap, 0, sizeof(emap));
 	memset(signs, 0, sizeof(signs));
 	MSIGN = -1;
-	memset(pv, 0, sizeof(pv));
-	memset(vx, 0, sizeof(vx));
-	memset(vy, 0, sizeof(vy));
-	memset(fvx, 0, sizeof(fvx));
-	memset(fvy, 0, sizeof(fvy));
+	CellsData_fill<float>(fvx, 0);
+	CellsData_fill<float>(fvy, 0);
 	memset(gol2, 0, sizeof(gol2));
 	emp_decor = 0;
 	memset(pers_bg, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
@@ -353,11 +348,6 @@ void clear_sim(void)
 	if(gravp)
 		memset(gravp, 0, (XRES/CELL)*(YRES/CELL)*sizeof(float));
 	gravity_cleared = 1;
-	for(x = 0; x < XRES/CELL; x++){
-		for(y = 0; y < YRES/CELL; y++){
-			hv[y][x] = 273.15f+22.0f; //Set to room temperature
-		}
-	}
 }
 
 // stamps library
@@ -450,7 +440,7 @@ void stamp_save(int x, int y, int w, int h)
 	FILE *f;
 	int n;
 	char fn[64], sn[16];
-	void *s=build_save(&n, x, y, w, h, bmap, vx, vy, pv, fvx, fvy, signs, parts);
+	void *s=build_save(&n, x, y, w, h, bmap, fvx, fvy, signs, parts);
 	if (!s)
 		return;
 
@@ -956,8 +946,6 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	make_kernel();
-
 	stamp_init();
 
 	if (!sdl_open())
@@ -1015,9 +1003,8 @@ int main(int argc, char *argv[])
 		frameidx %= 30;
 		if (!sys_pause||framerender) //only update air if not paused
 		{
-			update_air();
-			if(aheat_enable)
-				update_airh();
+			globalSim->air.applyChanges();
+			globalSim->air.simulate_sync();
 		}
 
 		if(gravwl_timeout)
@@ -1162,11 +1149,11 @@ int main(int argc, char *argv[])
 			svf_tags[0] = 0;
 			svf_description[0] = 0;
 			gravityMode = 0;
-			airMode = 0;
+			globalSim->airMode = 0;
 			
 			svf_last = saveDataOpen;
 			svf_lsize = saveDataOpenSize;
-			if(parse_save(saveDataOpen, saveDataOpenSize, 1, 0, 0, bmap, fvx, fvy, vx, vy, pv, signs, parts))
+			if(parse_save(saveDataOpen, saveDataOpenSize, 1, 0, 0, bmap, fvx, fvy, signs, parts))
 			{
 				saveOpenError = 1;
 				svf_last = NULL;
@@ -1515,14 +1502,7 @@ int main(int argc, char *argv[])
 				DEBUG_MODE = !DEBUG_MODE;
 			if (sdl_key=='i')
 			{
-				int nx, ny;
-				for (nx = 0; nx<XRES/CELL; nx++)
-					for (ny = 0; ny<YRES/CELL; ny++)
-					{
-						pv[ny][nx] = -pv[ny][nx];
-						vx[ny][nx] = -vx[ny][nx];
-						vy[ny][nx] = -vy[ny][nx];
-					}
+				globalSim->air.invert();
 			}
 			if (sdl_key==SDLK_INSERT || sdl_key == SDLK_SEMICOLON)// || sdl_key==SDLK_BACKQUOTE)
 				REPLACE_MODE = !REPLACE_MODE;
@@ -1589,13 +1569,8 @@ int main(int argc, char *argv[])
 				}
 				else
 				{
-					for (nx = 0; nx<XRES/CELL; nx++)
-						for (ny = 0; ny<YRES/CELL; ny++)
-						{
-							pv[ny][nx] = 0;
-							vx[ny][nx] = 0;
-							vy[ny][nx] = 0;
-						}
+					globalSim->air.clearPressure();
+					globalSim->air.clearVelocity();
 					for (int i = 0; i < NPART; i++)
 					{
 						if (globalSim->parts[i].type == PT_QRTZ || globalSim->parts[i].type == PT_GLAS || globalSim->parts[i].type == PT_TUNG)
@@ -1629,13 +1604,13 @@ int main(int argc, char *argv[])
 			}
 			if (sdl_key=='y')
 			{
-				++airMode;
+				++globalSim->airMode;
 				itc = 52;
 
-				switch (airMode)
+				switch (globalSim->airMode)
 				{
 				default:
-					airMode = 0;
+					globalSim->airMode = 0;
 				case 0:
 					strcpy(itc_msg, "Air: On");
 					break;
@@ -1657,7 +1632,7 @@ int main(int argc, char *argv[])
 			if (sdl_key==SDLK_SPACE)
 				sys_pause = !sys_pause;
 			if (sdl_key=='u')
-				aheat_enable = !aheat_enable;
+				globalSim->ambientHeatEnabled = !globalSim->ambientHeatEnabled;
 			if (sdl_key=='h' && !(sdl_mod & KMOD_LCTRL))
 			{
 				hud_enable = !hud_enable;
@@ -1762,13 +1737,10 @@ int main(int argc, char *argv[])
 						parts[cbi] = cb_parts[cbi];
 					globalSim->parts_lastActiveIndex = NPART-1;
 
+					globalSim->air.setData(undo_airData);
 					for (cby = 0; cby<(YRES/CELL); cby++)
 						for (cbx = 0; cbx<(XRES/CELL); cbx++)
 						{
-							vx[cby][cbx] = cb_vx[cby][cbx];
-							vy[cby][cbx] = cb_vy[cby][cbx];
-							pv[cby][cbx] = cb_pv[cby][cbx];
-							hv[cby][cbx] = cb_hv[cby][cbx];
 							bmap[cby][cbx] = cb_bmap[cby][cbx];
 							emap[cby][cbx] = cb_emap[cby][cbx];
 						}
@@ -1926,21 +1898,21 @@ int main(int argc, char *argv[])
 
 				if (DEBUG_MODE)
 				{
-					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d, Tmp:%d", nametext, pv[y/CELL][x/CELL], parts[cri].temp-273.15f, parts[cri].life, parts[cri].tmp);
+					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d, Tmp:%d", nametext, globalSim->air.pv.get(SimCoordI(x,y)), parts[cri].temp-273.15f, parts[cri].life, parts[cri].tmp);
 					sprintf(coordtext, "#%d, X:%d Y:%d", cri, x, y);
 				}
 				else
 				{
 #ifdef BETA
-					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d, Tmp:%d", nametext, pv[y/CELL][x/CELL], parts[cri].temp-273.15f, parts[cri].life, parts[cri].tmp);
+					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d, Tmp:%d", nametext, globalSim->air.pv.get(SimCoordI(x,y)), parts[cri].temp-273.15f, parts[cri].life, parts[cri].tmp);
 #else
-					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C", nametext, pv[y/CELL][x/CELL], parts[cri].temp-273.15f);
+					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C", nametext, globalSim->air.pv.get(SimCoordI(x,y)), parts[cri].temp-273.15f);
 #endif
 				}
 			}
 			else
 			{
-				sprintf(heattext, "Empty, Pressure: %3.2f", pv[y/CELL][x/CELL]);
+				sprintf(heattext, "Empty, Pressure: %3.2f", globalSim->air.pv.get(SimCoordI(x,y)));
 				if (DEBUG_MODE)
 				{
 					if (ngrav_enable)
@@ -2160,7 +2132,7 @@ int main(int argc, char *argv[])
 			if (load_y<0) load_y=0;
 			if (bq==1 && !b)
 			{
-				parse_save(load_data, load_size, 0, load_x, load_y, bmap, vx, vy, pv, fvx, fvy, signs, parts);
+				parse_save(load_data, load_size, 0, load_x, load_y, bmap, fvx, fvy, signs, parts);
 				free(load_data);
 				free(load_img);
 				load_mode = 0;
@@ -2216,13 +2188,13 @@ int main(int argc, char *argv[])
 				{
 					if (copy_mode==1)//CTRL-C, copy
 					{
-						clipboard_data=build_save(&clipboard_length, save_x, save_y, save_w, save_h, bmap, vx, vy, pv, fvx, fvy, signs, parts);
+						clipboard_data=build_save(&clipboard_length, save_x, save_y, save_w, save_h, bmap, fvx, fvy, signs, parts);
 						if (clipboard_data)
 							clipboard_ready = 1;
 					}
 					else if (copy_mode==2)//CTRL-X, cut
 					{
-						clipboard_data=build_save(&clipboard_length, save_x, save_y, save_w, save_h, bmap, vx, vy, pv, fvx, fvy, signs, parts);
+						clipboard_data=build_save(&clipboard_length, save_x, save_y, save_w, save_h, bmap, fvx, fvy, signs, parts);
 						if (clipboard_data)
 						{
 							clipboard_ready = 1;
@@ -2306,7 +2278,6 @@ int main(int argc, char *argv[])
 						svf_tags[0] = 0;
 						svf_description[0] = 0;
 						gravityMode = 0;
-						airMode = 0;
 						svf_last = NULL;
 						svf_lsize = 0;
 					}
@@ -2360,7 +2331,7 @@ int main(int argc, char *argv[])
 					if (x>=19 && x<=35 && svf_last && !bq) {
 						//int tpval = sys_pause;
 						if (b == 1 || !strncmp(svf_id,"",8))
-							parse_save(svf_last, svf_lsize, 1, 0, 0, bmap, vx, vy, pv, fvx, fvy, signs, parts);
+							parse_save(svf_last, svf_lsize, 1, 0, 0, bmap, fvx, fvy, signs, parts);
 						else
 							open_ui(vid_buf, svf_id, NULL);
 						//sys_pause = tpval;
@@ -2469,10 +2440,11 @@ int main(int argc, char *argv[])
 						{
 							for (j=-bsy; j<=bsy; j++)
 								for (i=-bsx; i<=bsx; i++)
-									if (lx+i>0 && ly+j>0 && lx+i<XRES && ly+j<YRES && InCurrentBrush(i,j,bsx,bsy))
+									if (globalSim->InBounds(lx+i, ly+j) && InCurrentBrush(i,j,bsx,bsy))
 									{
-										vx[(ly+j)/CELL][(lx+i)/CELL] += (line_x-lx)*0.002f;
-										vy[(ly+j)/CELL][(lx+i)/CELL] += (line_y-ly)*0.002f;
+										SimCellCoord c = SimCoordI(lx+i, ly+j);
+										globalSim->air.vx.add(c, (line_x-lx)*0.002f);
+										globalSim->air.vy.add(c, (line_y-ly)*0.002f);
 									}
 						}
 					}
@@ -2489,10 +2461,11 @@ int main(int argc, char *argv[])
 						{
 							for (j=-bsy; j<=bsy; j++)
 								for (i=-bsx; i<=bsx; i++)
-									if (x+i>0 && y+j>0 && x+i<XRES && y+j<YRES && InCurrentBrush(i,j,bsx,bsy))
+									if (globalSim->InBounds(x+i, y+j) && InCurrentBrush(i,j,bsx,bsy))
 									{
-										vx[(y+j)/CELL][(x+i)/CELL] += (x-lx)*0.01f;
-										vy[(y+j)/CELL][(x+i)/CELL] += (y-ly)*0.01f;
+										SimCellCoord c = SimCoordI(x+i, y+j);
+										globalSim->air.vx.add(c, (x-lx)*0.01f);
+										globalSim->air.vy.add(c, (y-ly)*0.01f);
 									}
 						}
 						else
@@ -2565,13 +2538,10 @@ int main(int argc, char *argv[])
 						for (cbi=0; cbi<NPART; cbi++)
 							cb_parts[cbi] = parts[cbi];
 
+						globalSim->air.getData(undo_airData);
 						for (cby = 0; cby<(YRES/CELL); cby++)
 							for (cbx = 0; cbx<(XRES/CELL); cbx++)
 							{
-								cb_vx[cby][cbx] = vx[cby][cbx];
-								cb_vy[cby][cbx] = vy[cby][cbx];
-								cb_pv[cby][cbx] = pv[cby][cbx];
-								cb_hv[cby][cbx] = hv[cby][cbx];
 								cb_bmap[cby][cbx] = bmap[cby][cbx];
 								cb_emap[cby][cbx] = emap[cby][cbx];
 							}
@@ -2773,10 +2743,10 @@ int main(int argc, char *argv[])
 		if (hud_enable)
 		{
 #ifdef BETA
-			sprintf(uitext, "Beta Build %d FPS:%d Parts:%d Gravity:%d Air:%d", BUILD_NUM, FPSB, NUM_PARTS, gravityMode, airMode);
+			sprintf(uitext, "Beta Build %d FPS:%d Parts:%d Gravity:%d Air:%d", BUILD_NUM, FPSB, NUM_PARTS, gravityMode, globalSim->airMode);
 #else
 			if (DEBUG_MODE)
-				sprintf(uitext, "Build %d FPS:%d Parts:%d Gravity:%d Air:%d", BUILD_NUM, FPSB, NUM_PARTS, gravityMode, airMode);
+				sprintf(uitext, "Build %d FPS:%d Parts:%d Gravity:%d Air:%d", BUILD_NUM, FPSB, NUM_PARTS, gravityMode, globalSim->airMode);
 			else
 				sprintf(uitext, "FPS:%d", FPSB);
 #endif

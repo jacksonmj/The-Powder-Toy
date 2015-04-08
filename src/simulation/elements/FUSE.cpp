@@ -53,7 +53,7 @@ int FUSE_update(UPDATE_FUNC_ARGS)
 				}
 	}
 doneTriggerCheck:
-	if ((pv[y/CELL][x/CELL] > 2.7f)&&parts[i].tmp>40)
+	if ((sim->air.pv.get(SimCoordI(x,y)) > 2.7f)&&parts[i].tmp>40)
 		parts[i].tmp=39;
 	else if (parts[i].tmp<=0) {
 		sim->part_create(i, x, y, PT_FSEP);

@@ -23,7 +23,7 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 	if (t == PT_QRTZ)
 	{
 		parts[i].pavg[0] = parts[i].pavg[1];
-		parts[i].pavg[1] = pv[y/CELL][x/CELL];
+		parts[i].pavg[1] = sim->air.pv.get(SimCoordI(x,y));
 		if (parts[i].pavg[1]-parts[i].pavg[0] > 0.05*(parts[i].temp/3) || parts[i].pavg[1]-parts[i].pavg[0] < -0.05*(parts[i].temp/3))
 		{
 			sim->part_change_type(i,x,y,PT_PQRT);
@@ -134,7 +134,7 @@ int QRTZ_graphics(GRAPHICS_FUNC_ARGS) //QRTZ and PQRT
 void QRTZ_create(ELEMENT_CREATE_FUNC_ARGS)
 {
 	sim->parts[i].tmp2 = sim->rng.randInt<0,10>();
-	sim->parts[i].pavg[1] = pv[y/CELL][x/CELL];
+	sim->parts[i].pavg[1] = sim->air.pv.get(SimCoordI(x,y));
 }
 
 void QRTZ_init_element(ELEMENT_INIT_FUNC_ARGS)

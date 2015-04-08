@@ -27,13 +27,13 @@ int H2_update(UPDATE_FUNC_ARGS)
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
-					if (pv[y/CELL][x/CELL] > 8.0f && rt == PT_DESL) // This will not work well. DESL turns to fire above 5.0 pressure
+					if (sim->air.pv.get(SimCoordI(x,y)) > 8.0f && rt == PT_DESL) // This will not work well. DESL turns to fire above 5.0 pressure
 					{
 						sim->part_change_type(ri,x+rx,y+ry,PT_WATR);
 						sim->part_change_type(i,x,y,PT_OIL);
 						typeChanged = true;
 					}
-					if (pv[y/CELL][x/CELL] > 45.0f)
+					if (sim->air.pv.get(SimCoordI(x,y)) > 45.0f)
 					{
 						if (parts[ri].temp > 2273.15)
 							continue;
@@ -62,7 +62,7 @@ int H2_update(UPDATE_FUNC_ARGS)
 					}
 				}
 			}
-	if (parts[i].temp > 2273.15 && pv[y/CELL][x/CELL] > 50.0f)
+	if (parts[i].temp > 2273.15 && sim->air.pv.get(SimCoordI(x,y)) > 50.0f)
 	{
 		if (sim->rng.chance<1,5>())
 		{
@@ -101,7 +101,7 @@ int H2_update(UPDATE_FUNC_ARGS)
 			}
 
 			sim->part_set_temp(parts[i], temp+sim->rng.randInt<750,750+499>());
-			pv[y/CELL][x/CELL] += 30;
+			sim->air.pv.add(SimCoordI(x,y), 30);
 		}
 	}
 	if (typeChanged)

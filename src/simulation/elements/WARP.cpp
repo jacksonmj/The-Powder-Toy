@@ -23,7 +23,7 @@ int WARP_update(UPDATE_FUNC_ARGS)
 	if (parts[i].tmp2>2000)
 	{
 		parts[i].temp = 10000;
-		pv[y/CELL][x/CELL] += (parts[i].tmp2/5000) * CFDS;
+		sim->air.pv.add(SimCoordI(x,y), (parts[i].tmp2/5000) * CFDS);
 		if (sim->rng.chance<1,50>())
 			sim->part_create(-3, x, y, PT_ELEC);
 	}

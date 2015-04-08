@@ -17,7 +17,7 @@
 
 int PLUT_update(UPDATE_FUNC_ARGS)
 {
-	if (sim->rng.chance<1,100>() && sim->rng.chance((int)(5.0f*pv[y/CELL][x/CELL]),1000))
+	if (sim->rng.chance<1,100>() && sim->rng.chance((int)(5.0f*sim->air.pv.get(SimCoordI(x,y))),1000))
 	{
 		sim->part_create(i, x, y, PT_NEUT);
 	}

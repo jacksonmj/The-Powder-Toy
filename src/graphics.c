@@ -37,7 +37,6 @@
 #endif
 
 #include <defines.h>
-#include <air.h>
 #include "gravity.h"
 #include <powder.h>
 #define INCLUDE_SHADERS
@@ -1563,6 +1562,10 @@ void draw_icon(pixel *vid_buf, int x, int y, char ch, int flag)
 }
 void draw_air(pixel *vid)
 {
+	const_CellsFloatRP pv = globalSim->air.pv.getDataPtr();
+	const_CellsFloatRP vx = globalSim->air.vx.getDataPtr();
+	const_CellsFloatRP vy = globalSim->air.vy.getDataPtr();
+	const_CellsFloatRP hv = globalSim->air.hv.getDataPtr();
 #ifndef OGLR
 	int x, y, i, j;
 	pixel c;
@@ -1584,7 +1587,7 @@ void draw_air(pixel *vid)
 			}
 			else if ((display_mode & DISPLAY_AIRH))
 			{
-				if (aheat_enable)
+				if (globalSim->ambientHeatEnabled)
 				{
 					float ttemp = tptmath::clamp_flt(hv[y][x]-MIN_TEMP, 0.0f, TEMP_RANGE);
 					int caddress = tptmath::clamp_int(int(ttemp*1024/TEMP_RANGE)*3, 0, (1024-1)*3);
@@ -3451,6 +3454,8 @@ void draw_walls(pixel *vid)
 			}
 
 	// draw streamlines
+	const_CellsFloatRP vx = globalSim->air.vx.getDataPtr();
+	const_CellsFloatRP vy = globalSim->air.vy.getDataPtr();
 	for (y=0; y<YRES/CELL; y++)
 		for (x=0; x<XRES/CELL; x++)
 			if (bmap[y][x]==WL_STREAM)
@@ -3691,8 +3696,8 @@ void render_signs(pixel *vid_buf)
 			if (strcmp(signs[i].text, "{p}")==0)
 			{
 				float pressure = 0.0f;
-				if (signs[i].x>=0 && signs[i].x<XRES && signs[i].y>=0 && signs[i].y<YRES)
-					pressure = pv[signs[i].y/CELL][signs[i].x/CELL];
+				if (globalSim->InBounds(signs[i].x, signs[i].y))
+					pressure = globalSim->air.pv.get(SimCoordI(signs[i].x,signs[i].y));
 				sprintf(buff, "Pressure: %3.2f", pressure);  //...pressure
 				drawtext(vid_buf, x+3, y+3, buff, 255, 255, 255, 255);
 			}

@@ -19,7 +19,6 @@
 #include <math.h>
 #include <defines.h>
 #include <powder.h>
-#include <air.h>
 #include <misc.h>
 #include "gravity.h"
 #ifdef LUACONSOLE
@@ -39,7 +38,6 @@ particle *parts;
 particle *cb_parts;
 const particle emptyparticle = {};
 
-int airMode = 0;
 int water_equal_test = 0;
 
 unsigned char bmap[YRES/CELL][XRES/CELL];
@@ -291,12 +289,12 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 	}
 	if (t==SPC_AIR)
 	{
-		pv[y/CELL][x/CELL] += 0.10f;
+		globalSim->air.pv.add(SimCoordI(x,y), 0.10f);
 		return -1;
 	}
 	if (t==SPC_VACUUM)
 	{
-		pv[y/CELL][x/CELL] -= 0.10f;
+		globalSim->air.pv.add(SimCoordI(x,y), -0.10f);
 		return -1;
 	}
 	if (t==SPC_PGRV)
@@ -562,10 +560,9 @@ void update_wallmaps()
 			{
 				if (emap[y][x])
 					emap[y][x] --;
-				bmap_blockair[y][x] = (bmap[y][x]==WL_WALL || bmap[y][x]==WL_WALLELEC || bmap[y][x]==WL_BLOCKAIR || (bmap[y][x]==WL_EWALL && !emap[y][x]));
-				bmap_blockairh[y][x] = (bmap[y][x]==WL_WALL || bmap[y][x]==WL_WALLELEC || bmap[y][x]==WL_BLOCKAIR || bmap[y][x]==WL_GRAV || (bmap[y][x]==WL_EWALL && !emap[y][x])) ? 0x8:0;
 			}
 		}
+		globalSim->air.initBlockingData();
 	}
 }
 

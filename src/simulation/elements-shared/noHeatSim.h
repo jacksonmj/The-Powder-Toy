@@ -29,7 +29,7 @@ public:
 		if (bmap[(y+ry)/CELL][(x+rx)/CELL] && bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_STREAM)
 			return 0;
 		int t = parts[i].type;
-		float lpv = (int)pv[(y+ry)/CELL][(x+rx)/CELL];
+		float lpv = (int)sim->air.pv.get(SimCoordI(x+rx,y+ry));
 		if (lpv < 1) lpv = 1;
 		if (sim->elements[rt].Meltable  && ((rt!=PT_RBDM && rt!=PT_LRBD) || t!=PT_SPRK) && ((t!=PT_FIRE&&t!=PT_PLSM) || (rt!=PT_METL && rt!=PT_IRON && rt!=PT_ETRD && rt!=PT_PSCN && rt!=PT_NSCN && rt!=PT_NTCT && rt!=PT_PTCT && rt!=PT_BMTL && rt!=PT_BRMT && rt!=PT_SALT && rt!=PT_INWR)) &&
 				sim->rng.chance(sim->elements[rt].Meltable*lpv,1000))

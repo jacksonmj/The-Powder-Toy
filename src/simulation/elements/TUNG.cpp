@@ -40,7 +40,7 @@ int TUNG_update(UPDATE_FUNC_ARGS)
 	{
 		if(sim->rng.chance<1,50>())
 		{
-			pv[y/CELL][x/CELL] += 50.0f;
+			sim->air.pv.add(SimCoordI(x,y), 50.0f);
 		}
 		else if(sim->rng.chance<1,100>())
 		{
@@ -63,7 +63,7 @@ int TUNG_update(UPDATE_FUNC_ARGS)
 		return 1;
 	} 
 	parts[i].pavg[0] = parts[i].pavg[1];
-	parts[i].pavg[1] = pv[y/CELL][x/CELL];
+	parts[i].pavg[1] = sim->air.pv.get(SimCoordI(x,y));
 	if (parts[i].pavg[1]-parts[i].pavg[0] > 0.50f || parts[i].pavg[1]-parts[i].pavg[0] < -0.50f)
 	{
 		sim->part_change_type(i,x,y,PT_BRMT);
@@ -74,7 +74,7 @@ int TUNG_update(UPDATE_FUNC_ARGS)
 
 void TUNG_create(ELEMENT_CREATE_FUNC_ARGS)
 {
-	sim->parts[i].pavg[1] = pv[y/CELL][x/CELL];
+	sim->parts[i].pavg[1] = sim->air.pv.get(SimCoordI(x,y));
 }
 
 int TUNG_graphics(GRAPHICS_FUNC_ARGS)

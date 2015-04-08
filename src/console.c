@@ -293,20 +293,11 @@ int process_command_old(pixel *vid_buf, char *console, char *console_error)
 			{
 				if (strcmp(console3, "pressure")==0)
 				{
-					for (nx = 0; nx<XRES/CELL; nx++)
-						for (ny = 0; ny<YRES/CELL; ny++)
-						{
-							pv[ny][nx] = 0;
-						}
+					globalSim->air.clearPressure();
 				}
 				else if (strcmp(console3, "velocity")==0)
 				{
-					for (nx = 0; nx<XRES/CELL; nx++)
-						for (ny = 0; ny<YRES/CELL; ny++)
-						{
-							vx[ny][nx] = 0;
-							vy[ny][nx] = 0;
-						}
+					globalSim->air.clearVelocity();
 				}
 				else if (strcmp(console3, "sparks")==0)
 				{

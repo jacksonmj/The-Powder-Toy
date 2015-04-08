@@ -65,7 +65,12 @@ Simulation::Simulation(std::shared_ptr<SimulationSharedData> sd) :
 	rngBase(),
 	rng(&rngBase),
 	pfree(-1),
-	heat_mode(1)
+	air(this),
+	heat_mode(1),
+	edgeMode(0),
+	airMode(0),
+	ambientHeatEnabled(false),
+	ambientTemp(295.15f)
 {
 	int t;
 	elements = simSD->elements;
@@ -96,6 +101,8 @@ void Simulation::Clear()
 	int i;
 
 	option_edgeMode(0);
+	airMode = 0;
+	air.clear();
 
 	hook_cleared.Trigger();
 	memset(elementCount, 0, sizeof(elementCount));
@@ -885,7 +892,8 @@ MoveResult::Code Simulation::part_canMove_dynamic(int pt, int nx, int ny, int ri
 	}
 	else if (rt==PT_INVIS)
 	{
-		if (pv[ny/CELL][nx/CELL]>4.0f || pv[ny/CELL][nx/CELL]<-4.0f) result = MoveResult::ALLOW;
+		float pressure = air.pv.get(SimCoordI(nx,ny));
+		if (pressure>4.0f || pressure<-4.0f) result = MoveResult::ALLOW;
 		else result = MoveResult::BLOCK;
 	}
 	else if (rt==PT_PVOD)
@@ -1073,7 +1081,8 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 				}
 				else if (rt==PT_INVIS)
 				{
-					if (pv[ny/CELL][nx/CELL]<=4.0f && pv[ny/CELL][nx/CELL]>=-4.0f)
+					float pressure = air.pv.get(SimCoordI(nx,ny));
+					if (pressure<=4.0f && pressure>=-4.0f)
 					{
 						part_change_type(i,x,y,PT_NEUT);
 						parts[i].ctype = 0;
@@ -1594,6 +1603,8 @@ void Simulation::UpdateParticles()
 			x = (int)(parts[i].x+0.5f);
 			y = (int)(parts[i].y+0.5f);
 
+			SimCellCoord cellCoord = SimCoordI(x,y);
+
 			//this kills any particle out of the screen, or in a wall where it isn't supposed to go
 			if (x<CELL || y<CELL || x>=XRES-CELL || y>=YRES-CELL ||
 			        (bmap[y/CELL][x/CELL] &&
@@ -1615,35 +1626,46 @@ void Simulation::UpdateParticles()
 				set_emap(x/CELL, y/CELL);
 
 			//adding to velocity from the particle's velocity
-			vx[y/CELL][x/CELL] = vx[y/CELL][x/CELL]*elements[t].AirLoss + elements[t].AirDrag*parts[i].vx;
-			vy[y/CELL][x/CELL] = vy[y/CELL][x/CELL]*elements[t].AirLoss + elements[t].AirDrag*parts[i].vy;
+			air.vx.multiply(cellCoord, elements[t].AirLoss);
+			air.vy.multiply(cellCoord, elements[t].AirLoss);
+			air.vx.add(cellCoord, elements[t].AirDrag*parts[i].vx);
+			air.vy.add(cellCoord, elements[t].AirDrag*parts[i].vy);
 
 			if (elements[t].PressureAdd_NoAmbHeat)
 			{
 				if (t==PT_GAS||t==PT_NBLE)
 				{
-					if (pv[y/CELL][x/CELL]<3.5f)
-						pv[y/CELL][x/CELL] += elements[t].PressureAdd_NoAmbHeat*(3.5f-pv[y/CELL][x/CELL]);
-					if (y+CELL<YRES && pv[y/CELL+1][x/CELL]<3.5f)
-						pv[y/CELL+1][x/CELL] += elements[t].PressureAdd_NoAmbHeat*(3.5f-pv[y/CELL+1][x/CELL]);
+					if (air.pv.get(cellCoord)<3.5f)
+						air.pv.blend_legacy(cellCoord, 3.5f, elements[t].PressureAdd_NoAmbHeat);
+					if (y+CELL<YRES)
+					{
+						SimCellCoord c = SimCellCoord(cellCoord.x,cellCoord.y+1);
+						if (air.pv.get(c)<3.5f)
+							air.pv.blend_legacy(c, 3.5f, elements[t].PressureAdd_NoAmbHeat);
+					}
 					if (x+CELL<XRES)
 					{
-						if (pv[y/CELL][x/CELL+1]<3.5f)
-							pv[y/CELL][x/CELL+1] += elements[t].PressureAdd_NoAmbHeat*(3.5f-pv[y/CELL][x/CELL+1]);
-						if (y+CELL<YRES && pv[y/CELL+1][x/CELL+1]<3.5f)
-							pv[y/CELL+1][x/CELL+1] += elements[t].PressureAdd_NoAmbHeat*(3.5f-pv[y/CELL+1][x/CELL+1]);
+						SimCellCoord c = SimCellCoord(cellCoord.x+1,cellCoord.y);
+						if (air.pv.get(c)<3.5f)
+							air.pv.blend_legacy(c, 3.5f, elements[t].PressureAdd_NoAmbHeat);
+						if (y+CELL<YRES)
+						{
+							SimCellCoord c = SimCellCoord(cellCoord.x+1,cellCoord.y+1);
+							if (air.pv.get(c)<3.5f)
+								air.pv.blend_legacy(c, 3.5f, elements[t].PressureAdd_NoAmbHeat);
+						}
 					}
 				}
 				else//add the hotair variable to the pressure map, like black hole, or white hole.
 				{
-					pv[y/CELL][x/CELL] += elements[t].PressureAdd_NoAmbHeat;
+					air.pv.add(cellCoord, elements[t].PressureAdd_NoAmbHeat);
 					if (y+CELL<YRES)
-						pv[y/CELL+1][x/CELL] += elements[t].PressureAdd_NoAmbHeat;
+						air.pv.add(SimCellCoord(cellCoord.x,cellCoord.y+1), elements[t].PressureAdd_NoAmbHeat);
 					if (x+CELL<XRES)
 					{
-						pv[y/CELL][x/CELL+1] += elements[t].PressureAdd_NoAmbHeat;
+						air.pv.add(SimCellCoord(cellCoord.x+1,cellCoord.y), elements[t].PressureAdd_NoAmbHeat);
 						if (y+CELL<YRES)
-							pv[y/CELL+1][x/CELL+1] += elements[t].PressureAdd_NoAmbHeat;
+							air.pv.add(SimCellCoord(cellCoord.x+1,cellCoord.y+1), elements[t].PressureAdd_NoAmbHeat);
 					}
 				}
 			}
@@ -1688,8 +1710,8 @@ void Simulation::UpdateParticles()
 				parts[i].vy *= elements[t].Loss;
 			}
 			//particle gets velocity from the vx and vy maps
-			parts[i].vx += elements[t].Advection*vx[y/CELL][x/CELL] + pGravX;
-			parts[i].vy += elements[t].Advection*vy[y/CELL][x/CELL] + pGravY;
+			parts[i].vx += elements[t].Advection*air.vx.get(cellCoord) + pGravX;
+			parts[i].vy += elements[t].Advection*air.vy.get(cellCoord) + pGravY;
 
 
 			if (elements[t].Diffusion)//the random diffusion that gases have
@@ -1742,12 +1764,12 @@ void Simulation::UpdateParticles()
 				//this is probably a bit slower now, with the removal of the fixed size surround_hconduct array
 				if (t&&(t!=PT_HSWC||parts[i].life==10) && rng.chance(elements[t].HeatConduct*gel_scale,250))
 				{
-					if (aheat_enable && !(elements[t].Properties&PROP_NOAMBHEAT))
+					if (ambientHeatEnabled && !(elements[t].Properties&PROP_NOAMBHEAT))
 					{
-						c_heat = (hv[y/CELL][x/CELL]-parts[i].temp)*0.04;
+						c_heat = (air.hv.get(cellCoord)-parts[i].temp)*0.04;
 						c_heat = tptmath::clamp_flt(c_heat, -TEMP_RANGE, TEMP_RANGE);
 						part_add_temp(parts[i], c_heat);
-						hv[y/CELL][x/CELL] -= c_heat;
+						air.hv.add(cellCoord, -c_heat);
 					}
 
 					h_count = 0;
@@ -1799,11 +1821,11 @@ void Simulation::UpdateParticles()
 					if ((elements[t].State==ST_LIQUID && elements[t].HighTemperatureTransitionElement>-1 && elements[t].HighTemperatureTransitionElement<PT_NUM
 							&& elements[elements[t].HighTemperatureTransitionElement].State==ST_GAS)
 					        || t==PT_LNTG || t==PT_SLTW)
-						ctemph -= 2.0f*pv[y/CELL][x/CELL];
+						ctemph -= 2.0f*air.pv.get(cellCoord);
 					else if ((elements[t].State==ST_GAS && elements[t].LowTemperatureTransitionElement>-1 && elements[t].LowTemperatureTransitionElement<PT_NUM
 							 && elements[elements[t].LowTemperatureTransitionElement].State==ST_LIQUID)
 					         || t==PT_WTRV)
-						ctempl -= 2.0f*pv[y/CELL][x/CELL];
+						ctempl -= 2.0f*air.pv.get(cellCoord);
 					s = 1;
 
 					//A fix for ice with ctype = 0
@@ -1903,7 +1925,7 @@ void Simulation::UpdateParticles()
 							parts[i].ctype = parts[i].type;
 						if (!(t==PT_ICEI&&parts[i].ctype==PT_FRZW)) parts[i].life = 0;
 						if (elements[t].State==ST_GAS&&elements[parts[i].type].State!=ST_GAS)
-							pv[y/CELL][x/CELL] += 0.50f;
+							air.pv.add(cellCoord, 0.50f);
 						if (t==PT_NONE)
 						{
 							part_kill(i);
@@ -1939,8 +1961,7 @@ void Simulation::UpdateParticles()
 				}
 				else
 				{
-					if (!(bmap_blockairh[y/CELL][x/CELL]&0x8))
-						bmap_blockairh[y/CELL][x/CELL]++;
+					air.blockh_inc(cellCoord);
 					parts[i].temp = tptmath::clamp_flt(parts[i].temp, MIN_TEMP, MAX_TEMP);
 				}
 			}
@@ -1982,32 +2003,32 @@ void Simulation::UpdateParticles()
 			}
 
 			//the basic explosion, from the .explosive variable
-			if ((elements[t].Explosive&2) && pv[y/CELL][x/CELL]>2.5f)
+			if ((elements[t].Explosive&2) && air.pv.get(cellCoord)>2.5f)
 			{
 				parts[i].life = rng.randInt<180,180+79>();
 				// TODO: add to existing temp instead of setting temp? Might break compatibility.
 				part_set_temp(parts[i], elements[PT_FIRE].DefaultProperties.temp + (elements[t].Flammable/2));
 				t = PT_FIRE;
 				part_change_type(i,x,y,t);
-				pv[y/CELL][x/CELL] += 0.25f * CFDS;
+				air.pv.add(cellCoord, 0.25f * CFDS);
 			}
 
 
 			s = 1;
 			gravtot = fabs(gravy[(y/CELL)*(XRES/CELL)+(x/CELL)])+fabs(gravx[(y/CELL)*(XRES/CELL)+(x/CELL)]);
-			if (pv[y/CELL][x/CELL]>elements[t].HighPressureTransitionThreshold && elements[t].HighPressureTransitionElement>-1) {
+			if (air.pv.get(cellCoord)>elements[t].HighPressureTransitionThreshold && elements[t].HighPressureTransitionElement>-1) {
 				// particle type change due to high pressure
 				if (elements[t].HighPressureTransitionElement!=PT_NUM)
 					t = elements[t].HighPressureTransitionElement;
 				else if (t==PT_BMTL) {
-					if (pv[y/CELL][x/CELL]>2.5f)
+					if (air.pv.get(cellCoord)>2.5f)
 						t = PT_BRMT;
-					else if (pv[y/CELL][x/CELL]>1.0f && parts[i].tmp==1)
+					else if (air.pv.get(cellCoord)>1.0f && parts[i].tmp==1)
 						t = PT_BRMT;
 					else s = 0;
 				}
 				else s = 0;
-			} else if (pv[y/CELL][x/CELL]<elements[t].LowPressureTransitionThreshold && elements[t].LowPressureTransitionElement>-1) {
+			} else if (air.pv.get(cellCoord)<elements[t].LowPressureTransitionThreshold && elements[t].LowPressureTransitionElement>-1) {
 				// particle type change due to low pressure
 				if (elements[t].LowPressureTransitionElement!=PT_NUM)
 					t = elements[t].LowPressureTransitionElement;
@@ -2612,8 +2633,18 @@ void Simulation::option_edgeMode(short newMode)
 
 #include "simulation/Element_UI.h"
 
+// TODO: remove this
+CellsFloat fvx, fvy;
+AirData undo_airData;
+
 void Simulation_Compat_CopyData(Simulation* sim)
 {
 	// TODO: this can be removed once all the code uses Simulation instead of global variables
+	globalSim = sim;
 	parts = sim->parts;
+	for (int i=0; quickmenu[i].icon!=nullptr; i++)
+	{
+		if (quickmenu[i].name==std::string("Ambient heat"))
+			quickmenu[i].variable = &sim->ambientHeatEnabled;
+	}
 }

@@ -84,7 +84,7 @@ int VIRS_update(UPDATE_FUNC_ARGS)
 					}
 					else if (rt == PT_PLSM)
 					{
-						if (surround_space && sim->rng.chance(10 + (int)(pv[(y+ry)/CELL][(x+rx)/CELL]), 100))
+						if (surround_space && sim->rng.chance(10 + (int)sim->air.pv.get(SimCoordI(x+rx,y+ry)), 100))
 						{
 							sim->part_create(i, x, y, PT_PLSM);
 							return 1;

@@ -184,11 +184,9 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 	int angle, angle2=-1;
 	int near_i;
 	powderful = parts[i].temp*(1+parts[i].life/40)*LIGHTING_POWER;
-	if (aheat_enable)
+	if (sim->ambientHeatEnabled)
 	{
-		hv[y/CELL][x/CELL]+=powderful/50;
-		if (hv[y/CELL][x/CELL]>MAX_TEMP)
-			hv[y/CELL][x/CELL]=MAX_TEMP;
+		sim->air.hv.add(SimCoordI(x,y), powderful/50);
 	}
 
 	for (rx=-2; rx<3; rx++)
@@ -214,14 +212,14 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 						{
 							sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
 						}
-						pv[y/CELL][x/CELL] += powderful/400;
+						sim->air.pv.add(SimCoordI(x,y), powderful/400);
 						if (sim->elements[rt].HeatConduct)
 							sim->part_add_temp(parts[ri], powderful/1.3f);
 					}
 					if (rt==PT_DEUT || rt==PT_PLUT) // start nuclear reactions
 					{
 						sim->part_add_temp(parts[ri], powderful);
-						pv[y/CELL][x/CELL] +=powderful/35;
+						sim->air.pv.add(SimCoordI(x,y), powderful/35);
 						if (sim->rng.chance<1,3>())
 						{
 							sim->part_change_type(ri,x+rx,y+ry,PT_NEUT);

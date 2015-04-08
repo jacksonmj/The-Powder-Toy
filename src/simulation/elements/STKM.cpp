@@ -156,7 +156,7 @@ int run_stickman(Stickman_data* playerp, UPDATE_FUNC_ARGS)
 		parts[i].temp += 1;
 
 	//Death
-	if (parts[i].life<1 || (pv[y/CELL][x/CELL]>=4.5f && playerp->elem != SPC_AIR) ) //If his HP is less that 0 or there is very big wind...
+	if (parts[i].life<1 || (sim->air.pv.get(SimCoordI(x,y))>=4.5f && playerp->elem != SPC_AIR) ) //If his HP is less that 0 or there is very big wind...
 	{
 		int r;
 		for (r=-2; r<=1; r++)

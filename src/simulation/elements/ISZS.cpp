@@ -18,7 +18,7 @@
 int ISZ_update(UPDATE_FUNC_ARGS) // for both ISZS and ISOZ
 {
 	float rr, rrr;
-	if (sim->rng.chance<1,200>() && sim->rng.chance((int)(-4.0f*(pv[y/CELL][x/CELL])),1000))
+	if (sim->rng.chance<1,200>() && sim->rng.chance((int)(-4.0f*sim->air.pv.get(SimCoordI(x,y))),1000))
 	{
 		sim->part_create(i, x, y, PT_PHOT);
 		rr =  sim->rng.randInt<128,128+227>()/127.0f;

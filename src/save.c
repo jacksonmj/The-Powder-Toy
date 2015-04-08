@@ -158,12 +158,12 @@ pixel *prerender_save(void *save, int size, int *width, int *height)
 	return NULL;
 }
 
-void *build_save(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h, unsigned char bmap[YRES/CELL][XRES/CELL], float vx[YRES/CELL][XRES/CELL], float vy[YRES/CELL][XRES/CELL], float pv[YRES/CELL][XRES/CELL], float fvx[YRES/CELL][XRES/CELL], float fvy[YRES/CELL][XRES/CELL], sign signs[MAXSIGNS], void* partsptr)
+void *build_save(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h, unsigned char bmap[YRES/CELL][XRES/CELL], float fvx[YRES/CELL][XRES/CELL], float fvy[YRES/CELL][XRES/CELL], sign signs[MAXSIGNS], void* partsptr)
 {
-	return build_save_OPS(size, orig_x0, orig_y0, orig_w, orig_h, bmap, vx, vy, pv, fvx, fvy, signs, partsptr);
+	return build_save_OPS(size, orig_x0, orig_y0, orig_w, orig_h, bmap, fvx, fvy, signs, partsptr);
 }
 
-int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char bmap[YRES/CELL][XRES/CELL], float vx[YRES/CELL][XRES/CELL], float vy[YRES/CELL][XRES/CELL], float pv[YRES/CELL][XRES/CELL], float fvx[YRES/CELL][XRES/CELL], float fvy[YRES/CELL][XRES/CELL], sign signs[MAXSIGNS], void* partsptr, unsigned pmap[YRES][XRES])
+int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char bmap[YRES/CELL][XRES/CELL], float fvx[YRES/CELL][XRES/CELL], float fvy[YRES/CELL][XRES/CELL], sign signs[MAXSIGNS], void* partsptr, unsigned pmap[YRES][XRES])
 {
 	unsigned char * saveData = (unsigned char*)save;
 	if (!pmap)
@@ -177,7 +177,7 @@ int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char 
 	ppip_changed = 1;
 	if(saveData[0] == 'O' && saveData[1] == 'P' && saveData[2] == 'S')
 	{
-		result = parse_save_OPS(save, size, replace, x0, y0, bmap, vx, vy, pv, fvx, fvy, signs, partsptr, pmap);
+		result = parse_save_OPS(save, size, replace, x0, y0, bmap, fvx, fvy, signs, partsptr, pmap);
 	}
 	else if((saveData[0]==0x66 && saveData[1]==0x75 && saveData[2]==0x43) || (saveData[0]==0x50 && saveData[1]==0x53 && saveData[2]==0x76))
 	{
@@ -558,7 +558,7 @@ fin:
 	return vidBuf;
 }
 
-void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h, unsigned char bmap[YRES/CELL][XRES/CELL], float vx[YRES/CELL][XRES/CELL], float vy[YRES/CELL][XRES/CELL], float pv[YRES/CELL][XRES/CELL], float fvx[YRES/CELL][XRES/CELL], float fvy[YRES/CELL][XRES/CELL], sign signs[MAXSIGNS], void* o_partsptr)
+void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h, unsigned char bmap[YRES/CELL][XRES/CELL], float fvx[YRES/CELL][XRES/CELL], float fvy[YRES/CELL][XRES/CELL], sign signs[MAXSIGNS], void* o_partsptr)
 {
 	particle *partsptr = (particle*)o_partsptr;
 	unsigned char *partsData = NULL, *partsPosData = NULL, *fanData = NULL, *wallData = NULL, *finalData = NULL, *outputData = NULL, *soapLinkData = NULL;
@@ -927,11 +927,11 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 	bson_append_bool(&b, "waterEEnabled", water_equal_test);
 	bson_append_bool(&b, "legacyEnable", legacy_enable);
 	bson_append_bool(&b, "gravityEnable", ngrav_enable);
-	bson_append_bool(&b, "aheat_enable", aheat_enable);
+	bson_append_bool(&b, "aheat_enable", globalSim->ambientHeatEnabled);
 	bson_append_bool(&b, "paused", sys_pause);
 	bson_append_int(&b, "gravityMode", gravityMode);
-	bson_append_int(&b, "airMode", airMode);
-	bson_append_int(&b, "edgeMode", airMode);
+	bson_append_int(&b, "airMode", globalSim->airMode);
+	bson_append_int(&b, "edgeMode", globalSim->option_edgeMode());
 	
 	//bson_append_int(&b, "leftSelectedElement", sl);
 	//bson_append_int(&b, "rightSelectedElement", sr);
@@ -1028,7 +1028,7 @@ fin:
 	return outputData;
 }
 
-int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned char bmap[YRES/CELL][XRES/CELL], float vx[YRES/CELL][XRES/CELL], float vy[YRES/CELL][XRES/CELL], float pv[YRES/CELL][XRES/CELL], float fvx[YRES/CELL][XRES/CELL], float fvy[YRES/CELL][XRES/CELL], sign signs[MAXSIGNS], void* o_partsptr, unsigned pmap[YRES][XRES])
+int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned char bmap[YRES/CELL][XRES/CELL], float fvx[YRES/CELL][XRES/CELL], float fvy[YRES/CELL][XRES/CELL], sign signs[MAXSIGNS], void* o_partsptr, unsigned pmap[YRES][XRES])
 {
 	particle *partsptr = (particle*)o_partsptr;
 	unsigned char * inputData = (unsigned char*)save, *bsonData = NULL, *partsData = NULL, *partsPosData = NULL, *fanData = NULL, *wallData = NULL, *soapLinkData = NULL;
@@ -1272,7 +1272,7 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 		{
 			if(bson_iterator_type(&iter)==BSON_BOOL)
 			{
-				aheat_enable = (bson_iterator_bool(&iter))?1:0;
+				globalSim->ambientHeatEnabled = (bson_iterator_bool(&iter))?1:0;
 			}
 			else
 			{
@@ -1305,7 +1305,7 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 		{
 			if(bson_iterator_type(&iter)==BSON_INT)
 			{
-				airMode = bson_iterator_int(&iter);
+				globalSim->airMode = bson_iterator_int(&iter);
 			}
 			else
 			{
@@ -1931,7 +1931,7 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned c
 			}
 			if (ver>=46 && replace) {
 				gravityMode = ((c[3]>>2)&0x03);// | ((c[3]>>2)&0x01);
-				airMode = ((c[3]>>4)&0x07);// | ((c[3]>>4)&0x02) | ((c[3]>>4)&0x01);
+				globalSim->airMode = ((c[3]>>4)&0x07);// | ((c[3]>>4)&0x02) | ((c[3]>>4)&0x01);
 			}
 			if (ver>=49 && replace) {
 				tempGrav = ((c[3]>>7)&0x01);		
@@ -1988,7 +1988,7 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned c
 	{
 		if (ver<46) {
 			gravityMode = 0;
-			airMode = 0;
+			globalSim->airMode = 0;
 		}
 		clear_sim();
 	}
@@ -2595,18 +2595,12 @@ void *transform_save(void *odata, int *size, matrix2d transform, vector2d transl
 	float (*fvyo)[XRES/CELL] = (float(*)[XRES/CELL])calloc((YRES/CELL)*(XRES/CELL), sizeof(float));
 	float (*fvxn)[XRES/CELL] = (float(*)[XRES/CELL])calloc((YRES/CELL)*(XRES/CELL), sizeof(float));
 	float (*fvyn)[XRES/CELL] = (float(*)[XRES/CELL])calloc((YRES/CELL)*(XRES/CELL), sizeof(float));
-	float (*vxo)[XRES/CELL] = (float(*)[XRES/CELL])calloc((YRES/CELL)*(XRES/CELL), sizeof(float));
-	float (*vyo)[XRES/CELL] = (float(*)[XRES/CELL])calloc((YRES/CELL)*(XRES/CELL), sizeof(float));
-	float (*vxn)[XRES/CELL] = (float(*)[XRES/CELL])calloc((YRES/CELL)*(XRES/CELL), sizeof(float));
-	float (*vyn)[XRES/CELL] = (float(*)[XRES/CELL])calloc((YRES/CELL)*(XRES/CELL), sizeof(float));
-	float (*pvo)[XRES/CELL] = (float(*)[XRES/CELL])calloc((YRES/CELL)*(XRES/CELL), sizeof(float));
-	float (*pvn)[XRES/CELL] = (float(*)[XRES/CELL])calloc((YRES/CELL)*(XRES/CELL), sizeof(float));
 	int i, x, y, nx, ny, w, h, nw, nh;
 	vector2d pos, tmp, ctl, cbr;
 	vector2d vel;
 	vector2d cornerso[4];
 	unsigned char *odatac = (unsigned char*)odata;
-	if (parse_save(odata, *size, 0, 0, 0, bmapo, vxo, vyo, pvo, fvxo, fvyo, signst, partst, pmapt))
+	if (parse_save(odata, *size, 0, 0, 0, bmapo, fvxo, fvyo, signst, partst, pmapt))
 	{
 		free(bmapo);
 		free(bmapn);
@@ -2617,12 +2611,6 @@ void *transform_save(void *odata, int *size, matrix2d transform, vector2d transl
 		free(fvyo);
 		free(fvxn);
 		free(fvyn);
-		free(vxo);
-		free(vyo);
-		free(vxn);
-		free(vyn);
-		free(pvo);
-		free(pvn);
 		return odata;
 	}
 	w = odatac[6]*CELL;
@@ -2683,7 +2671,7 @@ void *transform_save(void *odata, int *size, matrix2d transform, vector2d transl
 		partst[i].vx = vel.x;
 		partst[i].vy = vel.y;
 	}
-	for (y=0; y<YRES/CELL; y++)
+	/*for (y=0; y<YRES/CELL; y++)
 		for (x=0; x<XRES/CELL; x++)
 		{
 			pos = v2d_new(x*CELL+CELL*0.4f, y*CELL+CELL*0.4f);
@@ -2708,8 +2696,8 @@ void *transform_save(void *odata, int *size, matrix2d transform, vector2d transl
 			vxn[ny][nx] = vel.x;
 			vyn[ny][nx] = vel.y;
 			pvn[ny][nx] = pvo[y][x];
-		}
-	ndata = build_save(size,0,0,nw,nh,bmapn,vxn,vyn,pvn,fvxn,fvyn,signst,partst);
+		}*/
+	ndata = build_save(size,0,0,nw,nh,bmapn,fvxn,fvyn,signst,partst);
 	free(bmapo);
 	free(bmapn);
 	free(partst);
@@ -2719,11 +2707,5 @@ void *transform_save(void *odata, int *size, matrix2d transform, vector2d transl
 	free(fvyo);
 	free(fvxn);
 	free(fvyn);
-	free(vxo);
-	free(vyo);
-	free(vxn);
-	free(vyn);
-	free(pvo);
-	free(pvn);
 	return ndata;
 }

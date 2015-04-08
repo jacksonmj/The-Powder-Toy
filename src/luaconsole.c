@@ -1093,7 +1093,7 @@ int luatpt_set_pressure(lua_State* l)
 	for (nx = x1; nx<x1+width; nx++)
 		for (ny = y1; ny<y1+height; ny++)
 		{
-			pv[ny][nx] = value;
+			globalSim->air.pv.set(SimCellCoord(nx,ny), value);
 		}
 	return 0;
 }
@@ -1174,8 +1174,8 @@ int luatpt_reset_velocity(lua_State* l)
 	for (nx = x1; nx<x1+width; nx++)
 		for (ny = y1; ny<y1+height; ny++)
 		{
-			vx[ny][nx] = 0;
-			vy[ny][nx] = 0;
+			globalSim->air.vx.set(SimCellCoord(nx,ny), 0);
+			globalSim->air.vy.set(SimCellCoord(nx,ny), 0);
 		}
 	return 0;
 }
@@ -1966,7 +1966,7 @@ int luatpt_airheat(lua_State* l)
 {
     int aheatstate;
     aheatstate = luaL_optint(l, 1, 0);
-    aheat_enable = (aheatstate==0?0:1);
+	globalSim->ambientHeatEnabled = (aheatstate==0?0:1);
     return 0;
 }
 int luatpt_active_menu(lua_State* l)

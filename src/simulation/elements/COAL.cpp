@@ -26,7 +26,7 @@ int COAL_update(UPDATE_FUNC_ARGS)
 		sim->randomRelPos_1_noCentre(&rx, &ry);
 		sim->part_create(-1, x+rx, y+ry, PT_FIRE);
 	}
-	if ((pv[y/CELL][x/CELL] > 4.3f)&&parts[i].tmp>40)
+	if ((sim->air.pv.get(SimCoordI(x,y)) > 4.3f)&&parts[i].tmp>40)
 		parts[i].tmp=39;
 	else if (parts[i].tmp<40&&parts[i].tmp>0)
 		parts[i].tmp--;

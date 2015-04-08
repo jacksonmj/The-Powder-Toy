@@ -31,19 +31,19 @@ int DEST_update(UPDATE_FUNC_ARGS)
 	if (parts[i].life<=0 || parts[i].life>37)
 	{
 		parts[i].life=sim->rng.randInt<30,30+19>();
-		pv[y/CELL][x/CELL]+=60.0f;
+		sim->air.pv.add(SimCoordI(x,y), 60.0f);
 	}
 	FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 	{
 		int rt = parts[ri].type;
 		if (rt==PT_PLUT || rt==PT_DEUT)
 		{
-			pv[y/CELL][x/CELL]+=20.0f;
+			sim->air.pv.add(SimCoordI(x,y), 20.0f);
 			if (sim->rng.chance<1,2>())
 			{
 				sim->part_create(ri, x+rx, y+ry, PT_NEUT);
 				parts[ri].temp = MAX_TEMP;
-				pv[y/CELL][x/CELL] += 10.0f;
+				sim->air.pv.add(SimCoordI(x,y), 10.0f);
 				parts[i].life-=4;
 			}
 		}
@@ -63,11 +63,11 @@ int DEST_update(UPDATE_FUNC_ARGS)
 			if (sim->elements[rt].HeatConduct)
 				parts[ri].temp = MAX_TEMP;
 		}
-		topv += pv[y/CELL][x/CELL]/9+parts[ri].temp/900;
+		topv += sim->air.pv.get(SimCoordI(x,y))/9+parts[ri].temp/900;
 	}
 	if (topv>80.0f)
 		topv = 80.0f;
-	pv[y/CELL][x/CELL]+=topv;
+	sim->air.pv.add(SimCoordI(x,y), topv);
 	parts[i].temp = MAX_TEMP;
 	return 0;
 }

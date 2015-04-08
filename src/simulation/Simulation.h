@@ -20,6 +20,7 @@
 #include "simulation/Element.h"
 #include "simulation/ElemDataShared.h"
 #include "simulation/ElemDataSim.h"
+#include "simulation/air/SimAir.hpp"
 #include <cmath>
 #include "powder.h"
 #include "gravity.h"
@@ -203,8 +204,7 @@ public:
 	int parts_lastActiveIndex;
 	int pfree;
 
-	short heat_mode;//Will be a replacement for legacy_enable at some point. 0=heat sim off, 1=heat sim on, 2=realistic heat on (todo)
-	short edgeMode;
+	SimAir air;
 
 	particle parts[NPART];
 #ifdef DEBUG_PARTSALLOC
@@ -220,6 +220,12 @@ public:
 	static Vec2sc const relPos_1_noDiag_noCentre[4];
 	static Vec2sc const relPos_2[25];
 	static Vec2sc const relPos_2_noCentre[24];
+
+	short heat_mode;//Will be a replacement for legacy_enable at some point. 0=heat sim off, 1=heat sim on, 2=realistic heat on (todo)
+	short edgeMode;
+	short airMode;
+	int ambientHeatEnabled;// TODO: should really be bool, but quickmenu can only handle ints
+	float ambientTemp;
 
 	ObserverSubject hook_cleared;
 	ObserverSubject hook_beforeUpdate;
@@ -307,6 +313,14 @@ public:
 	bool InBounds(int x, int y) const
 	{
 		return (x>=0 && y>=0 && x<XRES && y<YRES);
+	}
+	bool InBounds(SimCoordI c) const
+	{
+		return (c.x>=0 && c.y>=0 && c.x<XRES && c.y<YRES);
+	}
+	bool InBounds(SimCellCoord c) const
+	{
+		return (c.x>=0 && c.y>=0 && c.x<XRES/CELL && c.y<YRES/CELL);
 	}
 	// Copy particle properties, except for position and pmap list links
 	static void part_copy_properties(const particle& src, particle& dest)
@@ -644,6 +658,9 @@ public:
 
 void Simulation_Compat_CopyData(Simulation *sim);
 
-extern Simulation *globalSim; // TODO: remove this
+// TODO: remove these
+extern Simulation *globalSim;
+extern CellsFloat fvx, fvy;
+extern AirData undo_airData;
 
 #endif

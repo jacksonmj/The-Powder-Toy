@@ -50,7 +50,7 @@ int NEUT_DeutExplosion(Simulation *sim, int n, int x, int y, float vx, float vy,
 		sim->pmap_add(i, x, y, PT_NEUT);
 		sim->elementCount[PT_NEUT]++;
 
-		pv[y/CELL][x/CELL] += 6.0f * CFDS;
+		sim->air.pv.add(SimCoordI(x,y), 6.0f * CFDS);
 	}
 	return 0;
 }
@@ -59,7 +59,7 @@ int NEUT_update(UPDATE_FUNC_ARGS)
 {
 	int rx, ry;
 	int rcount, ri, rnext;
-	int pressureFactor = 3 + (int)pv[y/CELL][x/CELL];
+	int pressureFactor = 3 + (int)sim->air.pv.get(SimCoordI(x,y));
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES)
@@ -95,7 +95,7 @@ int NEUT_update(UPDATE_FUNC_ARGS)
 								parts[ri].vx = 0.25f*parts[ri].vx + parts[i].vx;
 								parts[ri].vy = 0.25f*parts[ri].vy + parts[i].vy;
 							}
-							pv[y/CELL][x/CELL] += 10.0f * CFDS; //Used to be 2, some people said nukes weren't powerful enough
+							sim->air.pv.add(SimCoordI(x,y), 10.0f * CFDS); //Used to be 2, some people said nukes weren't powerful enough
 							ElementsShared_pyro::update(UPDATE_FUNC_SUBCALL_ARGS);
 						}
 						break;

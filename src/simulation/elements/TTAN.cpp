@@ -33,8 +33,8 @@ int TTAN_update(UPDATE_FUNC_ARGS)
 		}
 		
 	if(ttan>=2) {
-		bmap_blockair[y/CELL][x/CELL] = 1;
-		bmap_blockairh[y/CELL][x/CELL] = 0x8;
+		sim->air.block(SimCoordI(x,y), true);
+		sim->air.blockh(SimCoordI(x,y), true);
 	}
 	return 0;
 }

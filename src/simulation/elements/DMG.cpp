@@ -49,10 +49,10 @@ int DMG_update(UPDATE_FUNC_ARGS)
 											parts[rri].vx += fx;
 											parts[rri].vy += fy;
 											
-											vx[(y+nxj)/CELL][(x+nxi)/CELL] += fx;
-											vy[(y+nxj)/CELL][(x+nxi)/CELL] += fy;
+											sim->air.vx.add(SimCoordI(x+nxi,y+nxj), fx);
+											sim->air.vy.add(SimCoordI(x+nxi,y+nxj), fy);
 
-											pv[(y+nxj)/CELL][(x+nxi)/CELL] += 1.0f;
+											sim->air.pv.add(SimCoordI(x+nxi,y+nxj), 1.0f);
 											
 											t = parts[rri].type;
 											if(t && sim->IsValidElement(sim->elements[t].HighPressureTransitionElement))

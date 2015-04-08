@@ -147,7 +147,7 @@ quick_option quickmenu[] =
 	{"G", "Draw gravity grid", QM_TOGGLE, &drawgrav_enable},
 	{"D", "Show decorations", QM_TOGGLE, &decorations_enable},
 	{"N", "Newtonian gravity", QM_TOGGLE, &ngrav_enable},
-	{"A", "Ambient heat", QM_TOGGLE, &aheat_enable},
+	{"A", "Ambient heat", QM_TOGGLE, nullptr},
 	{"C", "Show Console", QM_TOGGLE, &console_mode},
 	{NULL}
 };
@@ -4419,7 +4419,7 @@ int open_ui(pixel *vid_buf, char *save_id, char *save_date)
 		if (queue_open) {
 			if (info_ready && data_ready) {
 				// Do Open!
-				status = parse_save(data, data_size, 1, 0, 0, bmap, vx, vy, pv, fvx, fvy, signs, parts);
+				status = parse_save(data, data_size, 1, 0, 0, bmap, fvx, fvy, signs, parts);
 				if (!status) {
 					if(svf_last)
 						free(svf_last);
@@ -4984,7 +4984,7 @@ void execute_save(pixel *vid_buf)
 	plens[0] = strlen(svf_name);
 	uploadparts[1] = svf_description;
 	plens[1] = strlen(svf_description);
-	uploadparts[2] = (char*)build_save(plens+2, 0, 0, XRES, YRES, bmap, vx, vy, pv, fvx, fvy, signs, parts);
+	uploadparts[2] = (char*)build_save(plens+2, 0, 0, XRES, YRES, bmap, fvx, fvy, signs, parts);
 	if (!uploadparts[2])
 	{
 		error_ui(vid_buf, 0, "Error creating save");
@@ -6133,7 +6133,7 @@ int save_filename_ui(pixel *vid_buf)
 	pixel *save = NULL;//calloc((XRES/3)*(YRES/3), PIXELSIZE);
 	ui_edit ed;
 
-	save_data = build_save(&save_size, 0, 0, XRES, YRES, bmap, vx, vy, pv, fvx, fvy, signs, parts);
+	save_data = build_save(&save_size, 0, 0, XRES, YRES, bmap, fvx, fvy, signs, parts);
 	save_data_image = prerender_save(save_data, save_size, &imgw, &imgh);
 	if(save_data_image!=NULL)
 	{
@@ -6407,7 +6407,7 @@ void catalogue_ui(pixel * vid_buf)
 						void *data;
 						data = file_load(csave->filename, &size);
 						if(data){
-							status = parse_save(data, size, 1, 0, 0, bmap, vx, vy, pv, fvx, fvy, signs, parts);
+							status = parse_save(data, size, 1, 0, 0, bmap, fvx, fvy, signs, parts);
 							if(!status)
 							{
 								//svf_filename[0] = 0;
@@ -6924,7 +6924,7 @@ void simulation_ui(pixel * vid_buf)
 	cb5.x = x0+xsize-16;	//Ambient heat
 	cb5.y = y0+51;
 	cb5.focus = 0;
-	cb5.checked = aheat_enable;
+	cb5.checked = globalSim->ambientHeatEnabled;
 
 	cb6.x = x0+xsize-16;	//Water equalisation
 	cb6.y = y0+107;
@@ -6936,7 +6936,7 @@ void simulation_ui(pixel * vid_buf)
 	list.w = 72;
 	list.h = 16;
 	list.def = "[air mode]";
-	list.selected = airMode;
+	list.selected = globalSim->airMode;
 	list.items = airModeList;
 	list.count = airModeListCount;
 	
@@ -7046,11 +7046,11 @@ void simulation_ui(pixel * vid_buf)
 
 	water_equal_test = cb6.checked;
 	legacy_enable = !cb.checked;
-	aheat_enable = cb5.checked;
+	globalSim->ambientHeatEnabled = cb5.checked;
 	new_scale = (cb3.checked)?2:1;
 	new_kiosk = (cb4.checked)?1:0;
 	if(list.selected>=0 && list.selected<=4)
-		airMode = list.selected;
+		globalSim->airMode = list.selected;
 	if(list2.selected>=0 && list2.selected<=2)
 		gravityMode = list2.selected;
 	if(list3.selected>=0 && list3.selected<=2)

@@ -128,13 +128,13 @@ int ElementsShared_noHeatSim::update(UPDATE_FUNC_ARGS) {
 					}
 				}
 	}
-	if (t==PT_WTRV && pv[y/CELL][x/CELL]>4.0f)
+	if (t==PT_WTRV && sim->air.pv.get(SimCoordI(x,y))>4.0f)
 		sim->part_change_type(i,x,y,PT_DSTW);
-	if (t==PT_OIL && pv[y/CELL][x/CELL]<-6.0f)
+	if (t==PT_OIL && sim->air.pv.get(SimCoordI(x,y))<-6.0f)
 		sim->part_change_type(i,x,y,PT_GAS);
-	if (t==PT_GAS && pv[y/CELL][x/CELL]>6.0f)
+	if (t==PT_GAS && sim->air.pv.get(SimCoordI(x,y))>6.0f)
 		sim->part_change_type(i,x,y,PT_OIL);
-	if (t==PT_DESL && pv[y/CELL][x/CELL]>12.0f)
+	if (t==PT_DESL && sim->air.pv.get(SimCoordI(x,y))>12.0f)
 	{
 		sim->part_change_type(i,x,y,PT_FIRE);
 		parts[i].life = sim->rng.randInt<120,120+49>();
