@@ -43,7 +43,7 @@ template<typename DataType>
 void CellsData_fill(DataType (*dest)[XRES/CELL], DataType value);
 
 template<typename DataType>
-void CellsData_copy(const DataType (*src)[XRES/CELL], DataType (*dest)[XRES/CELL]);
+void CellsData_copy(const DataType (* TPT_RESTRICT src)[XRES/CELL], DataType (* TPT_RESTRICT dest)[XRES/CELL]);
 
 template<typename DataType>
 void CellsData_invert(const DataType (*src)[XRES/CELL], DataType (*dest)[XRES/CELL]);

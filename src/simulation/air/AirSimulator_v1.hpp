@@ -37,7 +37,7 @@ protected:
 	void blur_centreData(const_CellsFloatRP src, CellsFloatRP dest, CellsFloatRP tmp);
 
 	void blur_pressureAndVelocity(const_AirDataP src, AirDataP dest, const AirSimulator_params_base &params);
-	void blur_pressureAndVelocity(const_CellsFloatRP src_vx, const_CellsFloatRP src_vy, const_CellsFloatRP src_pv, const_CellsUCharRP blockair, CellsFloatRP dest_vx, CellsFloatRP dest_vy, CellsFloatRP dest_pv);
+	void blur_pressureAndVelocity(const_CellsFloatRP src_vx, const_CellsFloatRP src_vy, const_CellsFloatRP src_pv, const_CellsUCharP blockair, CellsFloatRP dest_vx, CellsFloatRP dest_vy, CellsFloatRP dest_pv);
 	void blur_cell_vp(int x, int y, const_CellsFloatRP src_vx, const_CellsFloatRP src_vy, const_CellsFloatRP src_pv, const_CellsUCharRP blockair, CellsFloatRP dest_vx, CellsFloatRP dest_vy, CellsFloatRP dest_pv);
 	void blur_heat(const_AirDataP src, AirDataP dest, const AirSimulator_params_base &params);
 	void blur_heat(const_CellsFloatRP src_hv, const_CellsUCharRP blockairh, CellsFloatRP dest_hv);

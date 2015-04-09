@@ -19,6 +19,103 @@
 
 #include "powder.h" // for WL_FAN
 
+#define FOR_UCHAR2D_NONZERO(DATA, X, X_BEGIN, X_END, Y, Y_BEGIN, Y_END, LOOP_BODY) \
+{\
+	/* Run LOOP_BODY for coordinates where char DATA[Y][X] is non-zero */\
+	\
+	const int stepSize = sizeof(uint_fast32_t)/sizeof(unsigned char);\
+	for (int Y=(Y_BEGIN); Y<(Y_END); Y++)\
+	{\
+		int X = (X_BEGIN);\
+		/* Check unaligned bytes at beginning of row */\
+		for (; ( uintptr_t(&((DATA)[Y][X])) % stepSize)!=0 && X<(X_END); X++)\
+		{\
+			if ((DATA)[Y][X])\
+			{\
+				LOOP_BODY\
+			}\
+		}\
+		int startX = X;\
+		int bigStepCount = ((X_END)-startX)/stepSize;\
+		for (int bigStep=0; bigStep<bigStepCount; bigStep++)\
+		{\
+			/* Simultaneously check multiple bytes != 0 (likely to be 4 bytes on 32 bit, 8 bytes on 64 bit) */\
+			if (!(reinterpret_cast<const uint_fast32_t*>(&(DATA)[Y][startX])[bigStep]))\
+				continue;\
+			/* At least one byte was non-zero, so go through and check each one */\
+			for (unsigned int i=0; i<stepSize; i++)\
+			{\
+				if ((DATA)[y][startX+bigStep*stepSize+i])\
+				{\
+					int X = startX+bigStep*stepSize+i;\
+					LOOP_BODY\
+				}\
+			}\
+		}\
+		X += stepSize*bigStepCount;\
+		/* Check unaligned bytes at end of row */\
+		for (; X<X_END; X++)\
+		{\
+			if ((DATA)[Y][X])\
+			{\
+				LOOP_BODY\
+			}\
+		}\
+	}\
+}
+
+#define FOR_CELLSUCHAR_NONZERO(DATA, X, Y, LOOP_BODY) FOR_UCHAR2D_NONZERO((DATA), X, 0, XRES/CELL, Y, 0, YRES/CELL, LOOP_BODY)
+
+#define FOR_UCHAR2D_MASKED(DATA, MASK, X, X_BEGIN, X_END, Y, Y_BEGIN, Y_END, LOOP_BODY) \
+{\
+	/* Run LOOP_BODY for coordinates where (char DATA[Y][X])&MASK is non-zero */\
+	\
+	const int stepSize = sizeof(uint_fast32_t)/sizeof(unsigned char);\
+	uint_fast32_t bigMask = 0;\
+	for (int i=0; i<stepSize; i++)\
+		bigMask |= uint_fast32_t((unsigned char)(MASK)) << (8*sizeof(unsigned char)*i);\
+	for (int Y=(Y_BEGIN); Y<(Y_END); Y++)\
+	{\
+		int X = (X_BEGIN);\
+		/* Check unaligned bytes at beginning of row */\
+		for (; ( uintptr_t(&((DATA)[Y][X])) % stepSize)!=0 && X<(X_END); X++)\
+		{\
+			if ((DATA)[Y][X] & (MASK))\
+			{\
+				LOOP_BODY\
+			}\
+		}\
+		int startX = X;\
+		int bigStepCount = ((X_END)-startX)/stepSize;\
+		for (int bigStep=0; bigStep<bigStepCount; bigStep++)\
+		{\
+			/* Simultaneously check multiple bytes (likely to be 4 bytes on 32 bit, 8 bytes on 64 bit) */\
+			if (!(reinterpret_cast<const uint_fast32_t*>(&(DATA)[Y][startX])[bigStep] & bigMask))\
+				continue;\
+			/* At least one byte was non-zero after masking, so go through and check each one */\
+			for (unsigned int i=0; i<stepSize; i++)\
+			{\
+				if ((DATA)[Y][startX+bigStep*stepSize+i] & (MASK))\
+				{\
+					int X = startX+bigStep*stepSize+i;\
+					LOOP_BODY\
+				}\
+			}\
+		}\
+		X += stepSize*bigStepCount;\
+		/* Check unaligned bytes at end of row */\
+		for (; X<X_END; X++)\
+		{\
+			if ((DATA)[Y][X] & (MASK))\
+			{\
+				LOOP_BODY\
+			}\
+		}\
+	}\
+}
+
+
+
 // TPT_NOINLINE is used in some of these functions (the ones which aren't called inside a loop) to make it easier to use callgrind to track where time is spent
 
 TPT_NOINLINE void AirSimulator_v1::setEdges_h(CellsFloatRP data, float value)
@@ -140,19 +237,13 @@ TPT_NOINLINE void AirSimulator_v1::wallsBlockAir(CellsFloatRP vx, CellsFloatRP v
 	//clear some velocities near walls
 	// vx[y][x] is the velocity of air flow out of cell (x,y) into cell (x+1,y)
 
-	for (int y=1; y<YRES/CELL; y++)
-	{
-		for (int x=1; x<XRES/CELL; x++)
-		{
-			if (blockair[y][x])
-			{
-				vx[y][x] = 0.0f;// no x flow out of wall
-				vx[y][x-1] = 0.0f;// no x flow into wall
-				vy[y][x] = 0.0f;
-				vy[y-1][x] = 0.0f;
-			}
-		}
-	}
+	FOR_UCHAR2D_NONZERO(blockair, x, 1, XRES/CELL, y, 1, YRES/CELL, {
+		vx[y][x] = 0.0f;// no x flow out of wall
+		vx[y][x-1] = 0.0f;// no x flow into wall
+		vy[y][x] = 0.0f;
+		vy[y-1][x] = 0.0f;
+	})
+
 	for (int y=0; y<YRES/CELL; y++)
 	{
 		if (blockair[y][0])
@@ -270,7 +361,7 @@ void AirSimulator_v1::blur_pressureAndVelocity(const_AirDataP src, AirDataP dest
 
 TPT_NOINLINE void AirSimulator_v1::blur_pressureAndVelocity(
 	const_CellsFloatRP src_vx, const_CellsFloatRP src_vy, const_CellsFloatRP src_pv,
-	const_CellsUCharRP blockair,
+	const_CellsUCharP blockair,
 	CellsFloatRP dest_vx, CellsFloatRP dest_vy, CellsFloatRP dest_pv
 )
 {
@@ -317,34 +408,22 @@ TPT_NOINLINE void AirSimulator_v1::blur_pressureAndVelocity(
 		}
 
 		//  around air blocking walls
-		for (int y=0; y<YRES/CELL; y++)
-			for (int x=0; x<XRES/CELL; x++)
-			{
-				if (blockair[y][x])
+		FOR_CELLSUCHAR_NONZERO(blockair, x, y, {
+			for (int j=-1; j<2; j++)
+				for (int i=-1; i<2; i++)
 				{
-					for (int j=-1; j<2; j++)
-						for (int i=-1; i<2; i++)
-						{
-							if (y+j>=0 && y+j<YRES/CELL &&
-							x+i>=0 && x+i<XRES/CELL)
-							{
-								recalcLocations[y+j][x+i] = 1;
-							}
-						}
+					if (y+j>=0 && y+j<YRES/CELL &&
+					x+i>=0 && x+i<XRES/CELL)
+					{
+						recalcLocations[y+j][x+i] = 1;
+					}
 				}
-			}
+		})
 
 		// recalculate
-		for (int y=0; y<YRES/CELL; y++)
-		{
-			for (int x=0; x<XRES/CELL; x++)
-			{
-				if (recalcLocations[y][x])
-				{
-					blur_cell_vp(x, y, src_vx, src_vy, src_pv, blockair, dest_vx, dest_vy, dest_pv);
-				}
-			}
-		}
+		FOR_CELLSUCHAR_NONZERO(recalcLocations, x, y, {
+			blur_cell_vp(x, y, src_vx, src_vy, src_pv, blockair, dest_vx, dest_vy, dest_pv);
+		})
 	}
 }
 
@@ -396,34 +475,22 @@ TPT_NOINLINE void AirSimulator_v1::blur_heat(const_CellsFloatRP src_hv, const_Ce
 		}
 
 		//  around air blocking walls
-		for (int y=0; y<YRES/CELL; y++)
-			for (int x=0; x<XRES/CELL; x++)
-			{
-				if (blockairh[y][x]&8)
+		FOR_UCHAR2D_MASKED(blockairh, 0x8, x, 0, XRES/CELL, y, 0, YRES/CELL, {
+			for (int j=-1; j<2; j++)
+				for (int i=-1; i<2; i++)
 				{
-					for (int j=-1; j<2; j++)
-						for (int i=-1; i<2; i++)
-						{
-							if (y+j>=0 && y+j<YRES/CELL &&
-							x+i>=0 && x+i<XRES/CELL)
-							{
-								recalcLocations[y+j][x+i] = 1;
-							}
-						}
+					if (y+j>=0 && y+j<YRES/CELL &&
+					x+i>=0 && x+i<XRES/CELL)
+					{
+						recalcLocations[y+j][x+i] = 1;
+					}
 				}
-			}
+		})
 
 		// recalculate
-		for (int y=0; y<YRES/CELL; y++)
-		{
-			for (int x=0; x<XRES/CELL; x++)
-			{
-				if (recalcLocations[y][x])
-				{
-					blur_cell_h(x, y, src_hv, dest_hv, blockairh);
-				}
-			}
-		}
+		FOR_CELLSUCHAR_NONZERO(recalcLocations, x, y, {
+			blur_cell_h(x, y, src_hv, dest_hv, blockairh);
+		})
 	}
 }
 

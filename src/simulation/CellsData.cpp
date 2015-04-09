@@ -43,13 +43,13 @@ void CellsData_fill(DataType (*dest)[XRES/CELL], DataType value)
 }
 
 template<typename DataType>
-void CellsData_copy(const DataType (*src)[XRES/CELL], DataType (*dest)[XRES/CELL])
+void CellsData_copy(const DataType (* TPT_RESTRICT src)[XRES/CELL], DataType (* TPT_RESTRICT dest)[XRES/CELL])
 {
 	std::copy_n(reinterpret_cast<const DataType*>(src), (XRES/CELL)*(YRES/CELL), reinterpret_cast<DataType*>(dest));
 }
 
 template<typename DataType>
-void CellsData_invert(const DataType (*src)[XRES/CELL], DataType (*dest)[XRES/CELL])
+void CellsData_invert(const DataType (* TPT_RESTRICT src)[XRES/CELL], DataType (* TPT_RESTRICT dest)[XRES/CELL])
 {
 	const DataType *psrc = reinterpret_cast<const DataType*>(src);
 	DataType *pdest = reinterpret_cast<DataType*>(dest);
