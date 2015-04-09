@@ -7,7 +7,10 @@ file(GLOB libpowder_SRC
 	"simulation/*.cpp"
 	"simulation/*/*.cpp"
 )
-list(REMOVE_ITEM libpowder_SRC "main.c")
+file(GLOB main_SRC
+	"main.c"
+)
+list(REMOVE_ITEM libpowder_SRC ${main_SRC})
 
 set(powder_SRC "main.c")
 
