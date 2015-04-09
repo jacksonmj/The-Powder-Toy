@@ -17,7 +17,7 @@
 
 int GOLD_update(UPDATE_FUNC_ARGS)
 {
-	int rx, ry, rndstore, blocking = 0;
+	int rx, ry;
 	static int checkCoordsX[] = { -4, 4, 0, 0 };
 	static int checkCoordsY[] = { 0, 0, -4, 4 };
 	int rcount, ri, rnext;

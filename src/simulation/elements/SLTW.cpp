@@ -16,7 +16,7 @@
 #include "simulation/ElementsCommon.h"
 
 int SLTW_update(UPDATE_FUNC_ARGS) {
-	int rx, ry, rt;
+	int rx, ry;
 	int rcount, ri, rnext;
 	for (rx=-1; rx<2; rx++)
 		for (ry=-1; ry<2; ry++)
@@ -24,7 +24,6 @@ int SLTW_update(UPDATE_FUNC_ARGS) {
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					rt = parts[ri].type;
 					switch (parts[ri].type)
 					{
 					case PT_SALT:

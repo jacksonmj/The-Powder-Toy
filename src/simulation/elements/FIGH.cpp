@@ -30,7 +30,7 @@ int FIGH_update(UPDATE_FUNC_ARGS)
 
 	Stickman_data &player = sim->elemData<STKM_ElemDataSim>(PT_STKM)->player;
 	Stickman_data &player2 = sim->elemData<STKM_ElemDataSim>(PT_STKM2)->player;
-	unsigned int tarx, tary;
+	int tarx, tary;
 
 	parts[i].tmp2 = 0; //0 - stay in place, 1 - seek a stick man
 
@@ -40,20 +40,20 @@ int FIGH_update(UPDATE_FUNC_ARGS)
 			if (player.isOnscreen() && (pow(player.legs[2]-x, 2) + pow(player.legs[3]-y, 2))<=
 					(pow(player2.legs[2]-x, 2) + pow(player2.legs[3]-y, 2)))
 			{
-				tarx = (unsigned int)player.legs[2];
-				tary = (unsigned int)player.legs[3];
+				tarx = (int)player.legs[2];
+				tary = (int)player.legs[3];
 			}
 			else
 			{
-				tarx = (unsigned int)player2.legs[2];
-				tary = (unsigned int)player2.legs[3];
+				tarx = (int)player2.legs[2];
+				tary = (int)player2.legs[3];
 			}
 			parts[i].tmp2 = 1;
 	}
 	else if (player.isOnscreen())
 	{
-		tarx = (unsigned int)player.legs[2];
-		tary = (unsigned int)player.legs[3];
+		tarx = (int)player.legs[2];
+		tary = (int)player.legs[3];
 		parts[i].tmp2 = 1;
 	}
 

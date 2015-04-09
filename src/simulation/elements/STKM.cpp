@@ -190,7 +190,6 @@ int run_stickman(Stickman_data* playerp, UPDATE_FUNC_ARGS)
 		rby = 1.0f;
 		tmp = 1.0f;
 	}
-	float rbx1 = rbx/tmp, rby1 = rby/tmp;// scale so that the largest is 1.0
 	tmp = 1.0f/sqrtf(rbx*rbx+rby*rby);
 	rbx *= tmp;// scale to a unit vector
 	rby *= tmp;
@@ -652,8 +651,6 @@ void STKM_interact(Simulation *sim, Stickman_data* playerp, int i, int x, int y)
 
 		if (rt==PT_PRTI && parts[i].type)
 		{
-			int t = parts[i].type;
-			int tmp = parts[i].tmp;
 			PortalChannel *channel = sim->elemData<PRTI_ElemDataSim>(PT_PRTI)->GetParticleChannel(sim->parts[ri]);
 			if (channel->StoreParticle(sim, i, 1))//slot=1 gives rx=0, ry=1 in PRTO_update
 				return;

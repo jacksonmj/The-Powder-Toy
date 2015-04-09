@@ -22,8 +22,7 @@
 #include <memory>
 #include "simulation/Element.h"
 #include "simulation/ElementNumbers.h"
-
-class ElemDataShared;
+#include "simulation/ElemDataShared.h"
 
 class SimulationSharedData
 {

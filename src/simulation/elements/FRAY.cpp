@@ -17,7 +17,7 @@
 
 int FRAY_update(UPDATE_FUNC_ARGS)
 {
-	int nxx, nyy, len, nxi, nyi, rx, ry, nr, ry1, rx1;
+	int nxx, nyy, len, nxi, nyi, rx, ry;
 	int rcount, ri, rnext;
 	int ncount, ni, nnext;
 	for (rx=-1; rx<2; rx++)

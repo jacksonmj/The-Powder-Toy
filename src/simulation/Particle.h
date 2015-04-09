@@ -16,8 +16,9 @@
 #ifndef Particle_h
 #define Particle_h
 
-struct particle
+class particle
 {
+public:
 	int type;
 	int life, ctype;
 	float x, y, vx, vy;
@@ -35,6 +36,5 @@ struct particle
 	int pmap_prev;
 	int pmap_next;
 };
-typedef struct particle particle;
 
 #endif

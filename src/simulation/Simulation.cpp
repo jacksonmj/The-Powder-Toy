@@ -172,16 +172,16 @@ void Simulation::RecalcElementCounts()
  * Does not modify or even read any particles beyond parts_lastActiveIndex */
 void Simulation::RecalcFreeParticles()
 {
-	int i, x, y, t;
 	int lastPartUsed = 0;
 	int lastPartUnused = -1;
 
 	NUM_PARTS = 0;
-	for (i=0; i<=parts_lastActiveIndex; i++)
+	for (int i=0; i<=parts_lastActiveIndex; i++)
 	{
 		if (parts[i].type)
 		{
 			// TODO: do stuff with commented out code below
+			// int x, y, t;
 			/*t = parts[i].type;
 			x = (int)(parts[i].x+0.5f);
 			y = (int)(parts[i].y+0.5f);
@@ -1291,8 +1291,8 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 //the main function for updating particles
 void Simulation::UpdateParticles()
 {
-	int i, j, x, y, t, nx, ny, r, surround_space, s, lt, rt, nt, nnx, nny, q, golnum, goldelete, z, neighbors, createdsomething;
-	float mv, dx, dy, ix, iy, lx, ly, nrx, nry, dp, ctemph, ctempl, gravtot, gel_scale;
+	int i, j, x, y, t, nx, ny, r, surround_space, s, rt, nt, nnx, nny, q, golnum, z, neighbors;
+	float mv, dx, dy, nrx, nry, dp, ctemph, ctempl, gravtot, gel_scale;
 	int fin_x, fin_y, clear_x, clear_y, stagnant;
 	float fin_xf, fin_yf, clear_xf, clear_yf;
 	float nn, ct1, ct2, swappage;

@@ -172,7 +172,6 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 			}
 	if (parts[i].tmp>0)
 	{
-		int random;
 		for (trade = 0; trade < 9; trade++)
 		{
 			rx = sim->rng.randInt<-3,3>();

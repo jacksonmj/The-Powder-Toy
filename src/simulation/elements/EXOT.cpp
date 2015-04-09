@@ -17,7 +17,7 @@
 
 int EXOT_update(UPDATE_FUNC_ARGS)
 {
-	int rt, rx, ry, nb, rrx, rry, trade, tym;
+	int rt, rx, ry, trade, tym;
 	int rcount, ri, rnext;
 	for (rx=-2; rx<=2; rx++)
 		for (ry=-2; ry<=2; ry++)

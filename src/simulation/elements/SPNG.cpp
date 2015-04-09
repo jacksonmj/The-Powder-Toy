@@ -17,7 +17,7 @@
 
 int SPNG_update(UPDATE_FUNC_ARGS)
 {
-	int rt, trade, rx, ry, tmp, np;
+	int trade, rx, ry, tmp, np;
 	int rcount, ri, rnext;
 	int limit = 50;
 	if (parts[i].life<limit && sim->air.pv.get(SimCoordI(x,y))<=3 && sim->air.pv.get(SimCoordI(x,y))>=-3 && parts[i].temp<=374.0f)

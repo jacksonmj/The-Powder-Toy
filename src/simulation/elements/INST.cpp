@@ -34,7 +34,6 @@ int Element_INST::flood_spark(Simulation *sim, int x, int y)
 	const int cm = PT_INST;
 	int created_something = 0;
 	int rcount, ri, rnext;
-	bool found;
 
 	ri = sim->pmap_find_one(x, y, cm);
 	if (ri<0 || parts[ri].life!=0)

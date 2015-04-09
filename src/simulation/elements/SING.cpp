@@ -16,7 +16,7 @@
 #include "simulation/ElementsCommon.h"
 
 int SING_update(UPDATE_FUNC_ARGS) {
-	int rx, ry, cry, crx, rad, nxi, nxj, nb, j, spawncount;
+	int rx, ry, cry, crx, nb, j, spawncount;
 	int rcount, ri, rnext;
 	int singularity = -parts[i].life;
 	float angle, v;
@@ -93,8 +93,7 @@ int SING_update(UPDATE_FUNC_ARGS) {
 							{
 								if (parts[ri].type!=PT_SING && sim->rng.chance<1,100>())
 								{
-									int np;
-									np = sim->part_create(ri,x+rx,y+ry,PT_SING);
+									sim->part_create(ri,x+rx,y+ry,PT_SING);
 								}
 								continue;
 							}

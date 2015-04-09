@@ -142,7 +142,6 @@ int trymovetron(Simulation *sim, int x, int y, int dir, int i, int len)
 
 int TRON_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry, np;
 	if (parts[i].tmp&TRON_WAIT)
 	{
 		parts[i].tmp &= ~TRON_WAIT;
@@ -150,7 +149,7 @@ int TRON_update(UPDATE_FUNC_ARGS)
 	}
 	if (parts[i].tmp&TRON_HEAD)
 	{
-		int firstdircheck = 0,seconddir,seconddircheck = 0,lastdir,lastdircheck = 0;
+		int firstdircheck = 0,seconddir=0,seconddircheck = 0,lastdir=0,lastdircheck = 0;
 		int direction = (parts[i].tmp>>5 & 0x3);
 		int originaldir = direction;
 

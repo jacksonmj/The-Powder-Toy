@@ -17,7 +17,6 @@
 
 int BREL_update(UPDATE_FUNC_ARGS)
 {
-	int np;
 	if (parts[i].life>0 && sim->air.pv.get(SimCoordI(x,y)) > 10.0f)
 	{
 		if (sim->air.pv.get(SimCoordI(x,y)) > 30.0f && parts[i].temp>9000 && sim->rng.chance<1,200>())

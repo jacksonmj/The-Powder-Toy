@@ -17,7 +17,7 @@
 
 int FWRK_update(UPDATE_FUNC_ARGS)
 {
-	int r, rx, ry, np;
+	int np;
 	if (parts[i].life==0 && ((parts[i].temp>400 && sim->rng.chance(9+parts[i].temp/40,100000) && surround_space)||parts[i].ctype==PT_DUST))
 	{
 		float gx, gy, multiplier, gmax;

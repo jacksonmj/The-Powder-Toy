@@ -17,7 +17,7 @@
 
 int WIRE_update(UPDATE_FUNC_ARGS)
 {
-	int s,r,rx,ry,rt,count;    
+	int rx,ry,rt,count;
 	int rcount, ri, rnext;
 	/*
 	0:  wire
@@ -65,13 +65,6 @@ int WIRE_update(UPDATE_FUNC_ARGS)
 
 int WIRE_graphics(GRAPHICS_FUNC_ARGS)
 {
-	if (cpart->ctype==0)
-	{
-		*colr = 255;
-		*colg = 204;
-		*colb = 0;
-		return 0;
-	}
 	if (cpart->ctype==1)
 	{
 		*colr = 50;
@@ -86,6 +79,13 @@ int WIRE_graphics(GRAPHICS_FUNC_ARGS)
 		*colg = 100;
 		*colb = 50;
 		//*pixel_mode |= PMODE_GLOW;
+		return 0;
+	}
+	else
+	{
+		*colr = 255;
+		*colg = 204;
+		*colb = 0;
 		return 0;
 	}
 }

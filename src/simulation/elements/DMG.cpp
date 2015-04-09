@@ -17,7 +17,7 @@
 
 int DMG_update(UPDATE_FUNC_ARGS)
 {
-	int rt, rx, ry, nb, nxi, nxj, t, dist;
+	int rt, rx, ry, nxi, nxj, t, dist;
 	int rcount, ri, rnext;
 	int rrcount, rri, rrnext;
 	int rad = 25;

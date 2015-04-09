@@ -17,7 +17,7 @@
 
 int PLNT_update(UPDATE_FUNC_ARGS)
 {
-	int rx, ry, rt, np, rndstore;
+	int rx, ry, np;
 	int rcount, ri, rnext;
 	if (parts[i].temp > 350 && parts[i].temp > parts[i].tmp2)
 		parts[i].tmp2 = (int)parts[i].temp;
@@ -27,7 +27,6 @@ int PLNT_update(UPDATE_FUNC_ARGS)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					rt = parts[ri].type;
 					switch (parts[ri].type)
 					{
 					case PT_WATR:

@@ -17,7 +17,7 @@
 
 int BANG_update(UPDATE_FUNC_ARGS)
 {
-	int rx, ry, nb;
+	int rx, ry;
 	int rcount, ri, rnext;
 	if(parts[i].tmp==0)
 	{
