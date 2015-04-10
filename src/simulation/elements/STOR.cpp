@@ -21,6 +21,8 @@ int STOR_update(UPDATE_FUNC_ARGS)
 	int rx, ry, rt, np, rx1, ry1;
 	int rcount, ri, rnext;
 	bool doRelease = false;
+	if (!sim->IsValidElement(parts[i].tmp))
+		parts[i].tmp = 0;
 	if(parts[i].life && !parts[i].tmp)
 		parts[i].life--;
 	for (rx=-2; rx<3; rx++)

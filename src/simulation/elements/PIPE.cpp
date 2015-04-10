@@ -424,7 +424,7 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 								PIPE_transfer_part_to_pipe(sim, parts+ri, parts+i);
 								sim->part_kill(ri);
 							}
-							else if ((parts[i].tmp&0xFF) == 0 && parts[ri].type==PT_STOR && parts[ri].tmp && (sim->elements[parts[ri].tmp].Properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY)))
+							else if ((parts[i].tmp&0xFF) == 0 && parts[ri].type==PT_STOR && parts[ri].tmp>0 && sim->IsValidElement(parts[ri].tmp) && (sim->elements[parts[ri].tmp].Properties & (TYPE_PART | TYPE_LIQUID | TYPE_GAS | TYPE_ENERGY)))
 							{
 								// STOR stores properties in the same places as PIPE does
 								PIPE_transfer_pipe_to_pipe(sim, parts+ri, parts+i);
