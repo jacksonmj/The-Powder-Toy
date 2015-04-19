@@ -17,8 +17,8 @@
 #ifndef HMAP_H
 #define HMAP_H
 #include <graphics.h>
-extern char color_data[];
-//extern char plasma_data[];
-extern char hflm_data[];
-extern char firw_data[];
+extern unsigned char color_data[];
+//extern unsigned char plasma_data[];
+extern unsigned char hflm_data[];
+extern unsigned char firw_data[];
 #endif

@@ -25,7 +25,7 @@ extern unsigned char icon_doc_32_png[];
 extern size_t icon_doc_32_png_size;
 extern unsigned char icon_doc_16_png[];
 extern size_t icon_doc_16_png_size;
-extern char save_to_server_image[];
-extern char save_to_disk_image[];
+extern unsigned char save_to_server_image[];
+extern unsigned char save_to_disk_image[];
 
 #endif

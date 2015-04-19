@@ -18,7 +18,7 @@
 #define FONT_H_CHECK
 #define FONT_H 10
 #ifdef INCLUDE_FONTDATA
-extern char font_data[];
-extern short font_ptrs[];
+extern unsigned char font_data[];
+extern unsigned short font_ptrs[];
 #endif
 #endif

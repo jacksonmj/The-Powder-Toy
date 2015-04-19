@@ -1111,7 +1111,7 @@ TPT_INLINE void drawpixel(pixel *vid, int x, int y, int r, int g, int b, int a)
 TPT_INLINE int drawchar(pixel *vid, int x, int y, int c, int r, int g, int b, int a)
 {
 	int i, j, w, bn = 0, ba = 0;
-	char *rp = font_data + font_ptrs[c];
+	unsigned char *rp = font_data + font_ptrs[c];
 	w = *(rp++);
 	for (j=0; j<FONT_H; j++)
 		for (i=0; i<w; i++)
@@ -1131,7 +1131,7 @@ TPT_INLINE int drawchar(pixel *vid, int x, int y, int c, int r, int g, int b, in
 int addchar(pixel *vid, int x, int y, int c, int r, int g, int b, int a)
 {
 	int i, j, w, bn = 0, ba = 0;
-	char *rp = font_data + font_ptrs[c];
+	unsigned char *rp = font_data + font_ptrs[c];
 	w = *(rp++);
 	for (j=0; j<FONT_H; j++)
 		for (i=0; i<w; i++)
