@@ -745,9 +745,7 @@ int main(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
 	std::shared_ptr<SimulationSharedData> simSD = std::make_shared<SimulationSharedData>();
-	Simulation *mainSim = new Simulation(simSD);
-	mainSim->InitCanMove();
-	globalSim = mainSim;
+	std::shared_ptr<Simulation> mainSim = std::make_shared<Simulation>(simSD);
 
 	pixel *part_vbuf; //Extra video buffer
 	pixel *part_vbuf_store;

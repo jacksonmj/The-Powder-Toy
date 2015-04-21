@@ -58,6 +58,7 @@ Element::Element() :
 	Func_Create_Override(NULL),
 	Func_Create_Allowed(NULL),
 	Func_ChangeType(NULL),
+	Func_SimInit(nullptr),
 	DefaultProperties({})
 {
 	DefaultProperties.temp = R_TEMP + 273.15f;

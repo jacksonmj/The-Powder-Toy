@@ -84,6 +84,7 @@ Simulation::Simulation(std::shared_ptr<SimulationSharedData> sd) :
 	}
 
 	Clear();
+	InitCanMove();
 	Simulation_Compat_CopyData(this);
 }
 

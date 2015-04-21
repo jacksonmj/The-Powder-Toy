@@ -16,6 +16,7 @@
 #include "simulation/SimulationSharedData.h"
 #include "simulation/Simulation.h"
 #include <exception>
+#include <algorithm>
 
 // Declare the element initialisation functions
 #define ElementNumbers_Include_Decl
@@ -25,6 +26,7 @@
 
 SimulationSharedData::SimulationSharedData()
 {
+	std::fill_n(elemDataShared_, PT_NUM, nullptr);
 	if (pthread_rwlock_init(&data_rwlock, NULL))
 		throw std::runtime_error("Initialising SimulationSharedData.data_rwlock failed");
 	InitElements();
@@ -33,6 +35,10 @@ SimulationSharedData::SimulationSharedData()
 SimulationSharedData::~SimulationSharedData()
 {
 	pthread_rwlock_destroy(&data_rwlock);
+	for (size_t t=0; t<PT_NUM; t++)
+	{
+		delete elemDataShared_[t];
+	}
 }
 
 void SimulationSharedData::InitElements()
