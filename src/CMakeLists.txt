@@ -193,6 +193,11 @@ if(SDL_IS_X11)
 endif(SDL_IS_X11)
 
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	find_package(ClockGettime REQUIRED)
+	target_link_libraries(PowderToy ${CLOCK_GETTIME_LIBRARIES})
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
 # Winsock
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	find_package_PreferStatic(Winsock WINSOCK_FOUND WINSOCK)
