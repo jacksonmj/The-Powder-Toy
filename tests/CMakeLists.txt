@@ -4,12 +4,17 @@ file(GLOB_RECURSE powdertests_SRC
 
 add_executable(powdertests ${powdertests_SRC})
 
-find_path(CATCH_INCLUDE_DIR catch.hpp PATHS ../extlib/include)
+find_path(CATCH_INCLUDE_DIR catch.hpp PATHS ../lib/include)
 if(NOT CATCH_INCLUDE_DIR)
-	add_subdirectory(../lib/catch ${CMAKE_BINARY_DIR}/lib)
+	set(CATCH_EXTPROJECT 1 CACHE INTERNAL "Use ExternalProject for Catch")
 endif()
 
-add_dependencies(powdertests catch)
+if(CATCH_EXTPROJECT)
+	message(STATUS "Using ExternalProject for Catch")
+	add_subdirectory(../cmake/lib/catch ${CMAKE_BINARY_DIR}/lib)
+	add_dependencies(powdertests catch)
+endif()
+
 target_include_directories(powdertests PRIVATE ${CATCH_INCLUDE_DIR})
 target_link_libraries(powdertests PowderToy)
 

@@ -27,6 +27,7 @@ set_source_files_properties(${libpowder_SRC} PROPERTIES LANGUAGE CXX )
 add_library(PowderToy ${libpowder_SRC})
 target_include_directories(PowderToy PUBLIC ../includes)
 target_include_directories(PowderToy PUBLIC .)
+target_include_directories(PowderToy PUBLIC ../lib/include)
 
 add_executable(powder WIN32 ${powder_SRC})
 target_link_libraries(powder PowderToy)

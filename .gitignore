@@ -4,12 +4,10 @@ powder.def
 powder.pref
 gmon.out
 *.*.orig
-build/stamps/*
 *~
 *.pyc
 utils/*
 *.log
-build/*
 src/python/stdlib/*
 *.exe
 *.dll
@@ -35,3 +33,4 @@ callgrind.*
 utility/convert-elements
 utility/tpt-libs
 build*
+lib/*
