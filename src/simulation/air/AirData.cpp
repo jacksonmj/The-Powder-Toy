@@ -75,3 +75,4 @@ void AirData_copy(const_AirDataP src, AirDataP dest)
 	CellsData_copy<float>(src.pv, dest.pv);
 	CellsData_copy<float>(src.hv, dest.hv);
 }
+

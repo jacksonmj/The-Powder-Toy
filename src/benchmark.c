@@ -159,6 +159,35 @@ void benchmark_run()
 		clear_sim();
 		SDL_Delay(1000);
 
+		CellsUChar c;
+		printf("CellsData_count_and8: ");
+		BENCHMARK_START(benchmark_repeat_count, 10000)
+		{
+			CellsData_count_and8(c);
+		}
+		BENCHMARK_END()
+		printf("CellsData_subtract_sat: ");
+		BENCHMARK_START(benchmark_repeat_count, 10000)
+		{
+			CellsData_subtract_sat(c, c, 1);
+		}
+		BENCHMARK_END()
+
+		CellsFloat f;
+		printf("CellsData_limit: ");
+		BENCHMARK_START(benchmark_repeat_count, 10000)
+		{
+			CellsData_limit(f, -256.0f, 256.0f);
+		}
+		BENCHMARK_END()
+
+		printf("update_wallmaps: ");
+		BENCHMARK_START(benchmark_repeat_count, 10000)
+		{
+			update_wallmaps();
+		}
+		BENCHMARK_END()
+
 		printf("Air (inside sim): ");
 		BENCHMARK_START(benchmark_repeat_count, 3000)
 		{

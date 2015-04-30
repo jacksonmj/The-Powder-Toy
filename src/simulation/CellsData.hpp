@@ -20,6 +20,8 @@
 
 #include "common/Compat.hpp"
 #include "simulation/Coords.hpp"
+#include "common/AlignedAlloc.hpp"
+#include "common/tpt-stdint.h"
 #include <utility>
 #include <cstddef>
 using std::swap;
@@ -36,8 +38,9 @@ CELLSDATA_TYPEDEFS(unsigned char, CellsUChar)
 
 void CellsData_limit(CellsFloatP data, float minVal, float maxVal);
 void CellsData_limit(const_CellsFloatRP src, CellsFloatRP dest, float minVal, float maxVal);
-size_t CellsData_count_and8(const unsigned char (*src)[XRES/CELL]);// Count the number of bytes where (x&8)==true
-size_t CellsData_count_1(const unsigned char (*src)[XRES/CELL]);// Count the number of bytes where x=1, x can only be 0 or 1.
+size_t CellsData_count_and8(const unsigned char (*src)[XRES/CELL]);// Count the number of cells where (x&8)
+size_t CellsData_count_1(const unsigned char (*src)[XRES/CELL]);// Count the number of cells where x==1, x can only be 0 or 1.
+void CellsData_subtract_sat(const unsigned char (*src)[XRES/CELL], unsigned char (*dest)[XRES/CELL], unsigned char value);// Saturating subtraction (if result is less than 0, result is set to 0) of a value from all bytes
 
 template<typename DataType>
 void CellsData_fill(DataType (*dest)[XRES/CELL], DataType value);
@@ -62,17 +65,16 @@ template<typename DataType>
 class CellsData
 {
 protected:
-	//alignas(16) float data[YRES/CELL][XRES/CELL];
 	DataType (*data)[XRES/CELL];
 public:
 	typedef DataType (* DataType_2d)[XRES/CELL];
 	typedef const DataType (* const_DataType_2d)[XRES/CELL];
 
 	CellsData() {
-		data = new DataType[YRES/CELL][XRES/CELL];
+		data = reinterpret_cast<DataType_2d>(tpt_aligned_alloc(16, sizeof(DataType)*(YRES/CELL)*(XRES/CELL)));
 	}
 	~CellsData() {
-		delete[] data;
+		tpt_aligned_free(data);
 	}
 
 	DataType_2d ptr2d() { return data; }

@@ -3955,7 +3955,7 @@ int open_ui(pixel *vid_buf, char *save_id, char *save_date)
 	int lasttime = TIMEOUT, saveTotal, saveDone, infoTotal, infoDone, downloadDone, downloadTotal;
 	int status, status_2, info_ready = 0, data_ready = 0, thumb_data_ready = 0;
 	time_t http_last_use = HTTP_TIMEOUT,  http_last_use_2 = HTTP_TIMEOUT,  http_last_use_3 = HTTP_TIMEOUT;
-	pixel *save_pic;// = malloc((XRES/2)*(YRES/2));
+	pixel *save_pic = NULL;// = malloc((XRES/2)*(YRES/2));
 	pixel *save_pic_thumb = NULL;
 	char *thumb_data = NULL;
 	char viewcountbuffer[11];
@@ -4186,7 +4186,7 @@ int open_ui(pixel *vid_buf, char *save_id, char *save_date)
 		}
 		if (thumb_data_ready && !hasdrawnthumb) {
 			draw_image(vid_buf, save_pic, 51, 51, XRES/2, YRES/2, 255);
-			free(save_pic);
+			delete[] save_pic;
 			save_pic = NULL;
 			hasdrawnthumb = 1;
 			memcpy(old_vid, vid_buf, ((XRES+BARSIZE)*(YRES+MENUSIZE))*PIXELSIZE);

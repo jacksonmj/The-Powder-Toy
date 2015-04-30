@@ -31,6 +31,8 @@
 #include "simulation/ElemDataSim.h"
 #include "simulation/elements/PHOT.h"
 
+#include "algorithm/for_each_i.hpp"
+
 int lighting_recreate = 0;
 int force_stacking_check = 0;//whether to force a check for excessively stacked particles
 
@@ -551,17 +553,9 @@ void create_arc(int sx, int sy, int dx, int dy, int midpoints, int variance, int
 
 void update_wallmaps()
 {
-	int x, y;
 	if (!sys_pause||framerender)
 	{
-		for (y=0; y<YRES/CELL; y++)
-		{
-			for (x=0; x<XRES/CELL; x++)
-			{
-				if (emap[y][x])
-					emap[y][x] --;
-			}
-		}
+		CellsData_subtract_sat(emap, emap, 1);
 		globalSim->air.initBlockingData();
 	}
 }

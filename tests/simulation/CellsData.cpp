@@ -17,7 +17,7 @@
 #include <algorithm>
 #include "catch.hpp"
 
-TEST_CASE("simulation/CellsData count_and8", "[simulation]")
+TEST_CASE("simulation/CellsData count_gte 8", "[simulation]")
 {
 	CellsUChar data;
 	unsigned char * p = data.ptr1d();

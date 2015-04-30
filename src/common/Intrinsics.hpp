@@ -22,4 +22,37 @@
 	#include <x86intrin.h>
 #endif
 
+#ifndef HAVE_LIBSIMDPP
+#define HAVE_LIBSIMDPP 0
+#endif
+
+// TODO: remove
+#undef X86_SSE2
+#undef X86
+
+
+#if defined(__SSE2__)
+#define SIMDPP_ARCH_X86_SSE2 1
+#endif
+#if defined(__SSE3__)
+#define SIMDPP_ARCH_X86_SSE3 1
+#endif
+#if defined(__SSSE3__)
+#define SIMDPP_ARCH_X86_SSSE3 1
+#endif
+#if defined(__SSE4_1__)
+#define SIMDPP_ARCH_X86_SSE4_1 1
+#endif
+#if defined(__AVX__)
+#define SIMDPP_ARCH_X86_AVX 1
+#endif
+#if defined(__AVX2__)
+#define SIMDPP_ARCH_X86_AVX2 1
+#endif
+
+#if HAVE_LIBSIMDPP
+#include "simdpp/setup_arch.h"
+#include "simdpp/simd.h"
+#endif
+
 #endif
