@@ -1078,7 +1078,7 @@ void draw_color_menu(pixel *vid_buf, int i, int hover)
 }
 
 //draws a pixel, identical to blendpixel(), except blendpixel has OpenGL support
-TPT_INLINE void drawpixel(pixel *vid, int x, int y, int r, int g, int b, int a)
+void drawpixel(pixel *vid, int x, int y, int r, int g, int b, int a)
 {
 #ifdef PIXALPHA
 	pixel t;
@@ -1108,7 +1108,7 @@ TPT_INLINE void drawpixel(pixel *vid, int x, int y, int r, int g, int b, int a)
 #endif
 }
 
-TPT_INLINE int drawchar(pixel *vid, int x, int y, int c, int r, int g, int b, int a)
+int drawchar(pixel *vid, int x, int y, int c, int r, int g, int b, int a)
 {
 	int i, j, w, bn = 0, ba = 0;
 	unsigned char *rp = font_data + font_ptrs[c];
@@ -1514,7 +1514,7 @@ int textwrapheight(char *s, int width)
 }
 
 //the most used function for drawing a pixel, because it has OpenGL support, which is not fully implemented.
-TPT_INLINE void blendpixel(pixel *vid, int x, int y, int r, int g, int b, int a)
+void blendpixel(pixel *vid, int x, int y, int r, int g, int b, int a)
 {
 #ifdef PIXALPHA
 	pixel t;

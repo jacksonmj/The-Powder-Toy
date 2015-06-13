@@ -19,14 +19,24 @@
 // Definitions and functions for compatibility with different compilers/platforms
 
 #if defined(__GNUC__)
-
+// GCC
 #define TPT_RESTRICT __restrict
 #define TPT_NOINLINE __attribute__ ((noinline))
+#define TPT_INLINE inline
+#define TPT_FORCEINLINE __attribute__((always_inline))
 
-#else
-
+#elif defined(_MSC_VER)
+// Visual Studio
 #define TPT_RESTRICT
 #define TPT_NOINLINE
+#define TPT_INLINE inline
+#define TPT_FORCEINLINE __forceinline
+
+#else
+#define TPT_RESTRICT
+#define TPT_NOINLINE
+#define TPT_INLINE
+#define TPT_FORCEINLINE
 
 #endif
 
@@ -36,5 +46,9 @@
 #else
 #define TH_ENTRY_POINT
 #endif
+
+
+// TODO: remove this
+#define TPT_GNU_INLINE
 
 #endif

@@ -17,6 +17,8 @@
 #ifndef DEFINE_H
 #define DEFINE_H
 
+#include "common/Compat.hpp"
+
 #ifdef WIN32
 #define PATH_SEP "\\"
 #else
@@ -149,20 +151,6 @@ typedef unsigned int pixel;
 #define fmaxf max
 #else
 #include <algorithm>
-#endif
-#endif
-
-#ifdef __cplusplus
-#define TPT_INLINE
-#define TPT_GNU_INLINE
-#else
-#if defined(WIN32) && !defined(__GNUC__)
-// Visual Studio
-#define TPT_INLINE _inline
-#define TPT_GNU_INLINE
-#else
-#define TPT_INLINE inline
-#define TPT_GNU_INLINE inline
 #endif
 #endif
 

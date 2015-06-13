@@ -396,7 +396,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 	return i;
 }
 
-TPT_INLINE void delete_part(int x, int y, int flags)//calls part_kill with the particle located at x,y
+void delete_part(int x, int y, int flags)//calls part_kill with the particle located at x,y
 {
 	if (x<0 || y<0 || x>=XRES || y>=YRES)
 		return;
