@@ -63,7 +63,7 @@ ok:
 				for (ny=-2; ny<3; ny++)
 					if (rx+nx>=0 && ry+ny>=0 && rx+nx<XRES && ry+ny<YRES && (rx || ry))
 					{
-						FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
+						FOR_PMAP_POSITION_NOENERGY(sim, rx+nx, ry+ny, rcount, ri, rnext)
 						{
 							rt = parts[ri].type;
 
