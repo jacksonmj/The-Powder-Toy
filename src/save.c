@@ -737,13 +737,13 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 				//Store temperature as an offset of 21C(294.15K) or go into a 16byte int and store the whole thing
 				if(fabs(partsptr[i].temp-294.15f)<127)
 				{
-					tempTemp = (partsptr[i].temp-294.15f);
+					tempTemp = floor(partsptr[i].temp-294.15f+0.5f);
 					partsData[partsDataLen++] = tempTemp;
 				}
 				else
 				{
 					fieldDesc |= 1;
-					tempTemp = partsptr[i].temp;
+					tempTemp = (int)(partsptr[i].temp+0.5f);
 					partsData[partsDataLen++] = tempTemp;
 					partsData[partsDataLen++] = tempTemp >> 8;
 				}

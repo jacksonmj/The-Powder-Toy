@@ -36,7 +36,7 @@ int DLAY_update(UPDATE_FUNC_ARGS)
 				{
 					if (parts[ri].type==PT_SPRK && parts[i].life==0 && parts[ri].life>0 && parts[ri].life<4 && parts[ri].ctype==PT_PSCN)
 					{
-						parts[i].life = (int)(parts[i].temp-273.15);
+						parts[i].life = (int)(parts[i].temp-273.15f+0.5f);
 					}
 					else if (parts[ri].type==PT_DLAY)
 					{
