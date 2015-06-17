@@ -152,6 +152,9 @@ find_package_PreferStatic(BZip2 BZIP2_FOUND BZIP2)
 target_include_directories(PowderToy PUBLIC ${BZIP2_INCLUDE_DIR})
 target_link_libraries(PowderToy ${BZIP2_LIBRARIES})
 
+find_package_PreferStatic(JsonCpp JSONCPP_FOUND JSONCPP)
+target_include_directories(PowderToy PUBLIC ${JSONCPP_INCLUDE_DIR})
+target_link_libraries(PowderToy ${JSONCPP_LIBRARIES})
 
 option(LuaConsole "Enable Lua console" ON)
 if(LuaConsole)
