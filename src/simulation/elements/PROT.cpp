@@ -90,9 +90,12 @@ int PROT_update(UPDATE_FUNC_ARGS)
 		//remove active sparks
 		else if (rt == PT_SPRK)
 		{
-			sim->part_change_type(ri, x, y, parts[ri].ctype);
-			parts[ri].life = 44+parts[ri].life;
-			parts[ri].ctype = 0;
+			if (sim->IsValidElement(parts[ri].ctype))
+			{
+				sim->part_change_type(ri, x, y, parts[ri].ctype);
+				parts[ri].life = 44+parts[ri].life;
+				parts[ri].ctype = 0;
+			}
 		}
 		else if (rt == PT_DEUT)
 		{
