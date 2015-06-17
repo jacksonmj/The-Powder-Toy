@@ -1395,52 +1395,6 @@ void Simulation::UpdateParticles()
 			}
 		}
 	}*/
-	
-	if (elementCount[PT_GRAV])//crappy grav color handling, i will change this someday
-	{
-		GRAV ++;
-		GRAV_R = 60;
-		GRAV_G = 0;
-		GRAV_B = 0;
-		GRAV_R2 = 30;
-		GRAV_G2 = 30;
-		GRAV_B2 = 0;
-		for ( q = 0; q <= GRAV; q++)
-		{
-			if (GRAV_R >0 && GRAV_G==0)
-			{
-				GRAV_R--;
-				GRAV_B++;
-			}
-			if (GRAV_B >0 && GRAV_R==0)
-			{
-				GRAV_B--;
-				GRAV_G++;
-			}
-			if (GRAV_G >0 && GRAV_B==0)
-			{
-				GRAV_G--;
-				GRAV_R++;
-			}
-			if (GRAV_R2 >0 && GRAV_G2==0)
-			{
-				GRAV_R2--;
-				GRAV_B2++;
-			}
-			if (GRAV_B2 >0 && GRAV_R2==0)
-			{
-				GRAV_B2--;
-				GRAV_G2++;
-			}
-			if (GRAV_G2 >0 && GRAV_B2==0)
-			{
-				GRAV_G2--;
-				GRAV_R2++;
-			}
-		}
-		if (GRAV>180) GRAV = 0;
-
-	}
 
 	//wire!
 	if (elementCount[PT_WIRE])

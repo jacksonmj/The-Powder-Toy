@@ -14,38 +14,103 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/ElemDataSim.h"
+
+class GRAV_ElemDataSim : public ElemDataSim
+{
+public:
+	float col_r, col_g, col_b;
+	float col2_r, col2_g, col2_b;
+private:
+	Observer_ClassMember<GRAV_ElemDataSim> obs_simCleared, obs_simBeforeUpdate;
+	int tickVal;
+public:
+	int tick()
+	{
+		return tickVal;
+	}
+	void tickToColour(int x, float &r, float &g, float &b)
+	{
+		x = x%180;
+		if (x<60)
+		{
+			r = 60-x;
+			g = 0;
+			b = x;
+		}
+		else if (x<120)
+		{
+			r = 0;
+			g = x-60;
+			b = 120-x;
+		}
+		else
+		{
+			r = x-120;
+			g = 180-x;
+			b = 0;
+		}
+	}
+	void tick(int newVal)
+	{
+		tickVal = newVal%180;
+		tickToColour(tickVal, col_r, col_g, col_b);
+		tickToColour(tickVal*2, col2_r, col2_g, col2_b);
+	}
+
+	void randomTick()
+	{
+		tick(sim->rng.randInt<0,359>());
+	}
+	void incTick()
+	{
+		tick(tick()+1);
+	}
+
+	GRAV_ElemDataSim(Simulation *s, int t) :
+		ElemDataSim(s, t),
+		obs_simCleared(sim->hook_cleared, this, &GRAV_ElemDataSim::randomTick),
+		obs_simBeforeUpdate(sim->hook_beforeUpdate, this, &GRAV_ElemDataSim::incTick)
+	{
+		tick(0);
+	}
+};
 
 int GRAV_graphics(GRAPHICS_FUNC_ARGS)
 {
-	*colr = 20;
-	*colg = 20;
-	*colb = 20;
+	auto ed = sim->elemData<GRAV_ElemDataSim>(PT_GRAV);
+
+	float r=20, g=20, b=20;
+
 	if (cpart->vx>0)
 	{
-		*colr += (cpart->vx)*GRAV_R;
-		*colg += (cpart->vx)*GRAV_G;
-		*colb += (cpart->vx)*GRAV_B;
+		r += (cpart->vx)*ed->col_r;
+		g += (cpart->vx)*ed->col_g;
+		b += (cpart->vx)*ed->col_b;
 	}
+	else
+	{
+		r -= (cpart->vx)*ed->col_b;
+		g -= (cpart->vx)*ed->col_r;
+		b -= (cpart->vx)*ed->col_g;
+	}
+
 	if (cpart->vy>0)
 	{
-		*colr += (cpart->vy)*GRAV_G;
-		*colg += (cpart->vy)*GRAV_B;
-		*colb += (cpart->vy)*GRAV_R;
-
+		r += (cpart->vy)*ed->col_g;
+		g += (cpart->vy)*ed->col_b;
+		b += (cpart->vy)*ed->col_r;
 	}
-	if (cpart->vx<0)
+	else
 	{
-		*colr -= (cpart->vx)*GRAV_B;
-		*colg -= (cpart->vx)*GRAV_R;
-		*colb -= (cpart->vx)*GRAV_G;
+		r -= (cpart->vy)*ed->col2_r;
+		g -= (cpart->vy)*ed->col2_g;
+		b -= (cpart->vy)*ed->col2_b;
+	}
 
-	}
-	if (cpart->vy<0)
-	{
-		*colr -= (cpart->vy)*GRAV_R2;
-		*colg -= (cpart->vy)*GRAV_G2;
-		*colb -= (cpart->vy)*GRAV_B2;
-	}
+	*colr = r;
+	*colg = g;
+	*colb = b;
 	return 0;
 }
 
@@ -95,5 +160,6 @@ void GRAV_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionElement = NT;
 
 	elem->Graphics = &GRAV_graphics;
+	elem->Func_SimInit = &SimInit_createElemData<GRAV_ElemDataSim>;
 }
 

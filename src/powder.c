@@ -50,13 +50,6 @@ unsigned char cb_emap[YRES/CELL][XRES/CELL];
 
 int NUM_PARTS = 0;
 
-int GRAV;
-int GRAV_R;
-int GRAV_G;
-int GRAV_B;
-int GRAV_R2;
-int GRAV_G2;
-int GRAV_B2;
 int GSPEED = 1;
 int GENERATION = 0;
 int CGOL = 0;

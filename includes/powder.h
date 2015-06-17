@@ -176,14 +176,6 @@ extern unsigned char emap[YRES/CELL][XRES/CELL];
 extern unsigned char cb_bmap[YRES/CELL][XRES/CELL];
 extern unsigned char cb_emap[YRES/CELL][XRES/CELL];
 
-extern int GRAV;
-extern int GRAV_R;
-extern int GRAV_G;
-extern int GRAV_B;
-extern int GRAV_R2;
-extern int GRAV_G2;
-extern int GRAV_B2;
-
 extern int lighting_recreate;
 
 int get_normal_interp(int pt, float x0, float y0, float dx, float dy, float *nx, float *ny);
