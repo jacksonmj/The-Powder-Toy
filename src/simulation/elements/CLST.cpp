@@ -31,6 +31,7 @@ int CLST_update(UPDATE_FUNC_ARGS)
 					{
 						if (sim->rng.chance<1,1500>())
 						{
+							parts[i].tmp = 0;
 							sim->part_change_type(i,x,y,PT_PSTS);
 							sim->part_kill(ri);
 						}
