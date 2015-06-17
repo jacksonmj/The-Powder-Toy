@@ -325,7 +325,6 @@ void dump_frame(pixel *src, int w, int h, int pitch)
 
 void clear_sim(void)
 {
-	int i, x, y;
 	globalSim->Clear();
 	memset(bmap, 0, sizeof(bmap));
 	memset(emap, 0, sizeof(emap));
@@ -600,7 +599,7 @@ char http_proxy_string[256] = "";
 
 unsigned char last_major=0, last_minor=0, last_build=0, update_flag=0;
 
-char *tag = "(c) 2008-9 Stanislaw Skowronek";
+const char *tag = "(c) 2008-9 Stanislaw Skowronek";
 int itc = 0;
 char itc_msg[64] = "[?]";
 

@@ -240,7 +240,7 @@ void ui_richtext_process(int mx, int my, int mb, int mbq, ui_richtext *ed);
 
 void draw_svf_ui(pixel *vid_buf, int alternate);
 
-void error_ui(pixel *vid_buf, int err, char *txt);
+void error_ui(pixel *vid_buf, int err, const char *txt);
 
 void element_search_ui(pixel *vid_buf, int * sl, int * sr);
 

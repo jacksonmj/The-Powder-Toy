@@ -91,7 +91,7 @@ void strlist_free(struct strlist **list)
 
 void clean_text(char *text, int vwidth)
 {
-	int i = 0;
+	size_t i = 0;
 	if(vwidth>=0 && textwidth(text) > vwidth){
 		text[textwidthx(text, vwidth)] = 0;	
 	}
@@ -199,7 +199,7 @@ void save_presets(int do_update)
 	fclose(f);*/
 }
 
-int sregexp(const char *str, char *pattern)
+int sregexp(const char *str, const char *pattern)
 {
 	int result;
 	regex_t patternc;
@@ -431,21 +431,21 @@ void strcaturl(char *dst, char *src)
 	*d = 0;
 }
 
-void strappend(char *dst, char *src)
+void strappend(char *dst, const char *src)
 {
 	char *d;
-	unsigned char *s;
+	const char *s;
 
 	for (d=dst; *d; d++) ;
 
-	for (s=(unsigned char *)src; *s; s++)
+	for (s=src; *s; s++)
 	{
 		*(d++) = *s;
 	}
 	*d = 0;
 }
 
-void *file_load(char *fn, int *size)
+void *file_load(const char *fn, int *size)
 {
 	FILE *f = fopen(fn, "rb");
 	void *s;

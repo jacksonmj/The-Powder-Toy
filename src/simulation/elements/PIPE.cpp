@@ -167,7 +167,7 @@ void PIPE_transfer_pipe_to_part(Simulation *sim, particle *pipe, particle *part)
 	part->ctype = pipe->pavg[1];
 	pipe->tmp &= ~0xFF;
 
-	if (!sim->elements[part->type].Properties & TYPE_ENERGY)
+	if (!(sim->elements[part->type].Properties & TYPE_ENERGY))
 	{
 		part->vx = 0.0f;
 		part->vy = 0.0f;

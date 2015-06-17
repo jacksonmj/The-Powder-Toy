@@ -102,7 +102,7 @@ public:
 		if (rx>1 || ry>1 || rx<-1 || ry<-1)
 		{
 			// scale down if larger than +-1
-			float rmax = fmaxf(fabsf(rx), fabsf(ry));
+			float rmax = std::max(std::abs(rx), std::abs(ry));
 			rx = rx/rmax;
 			ry = ry/rmax;
 		}

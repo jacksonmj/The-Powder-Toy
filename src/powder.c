@@ -506,7 +506,7 @@ int nearest_part(int ci, int t, int max_d)
 	{
 		if ((parts[i].type==t||(t==-1&&parts[i].type))&&!parts[i].life&&i!=ci)
 		{
-			ndistance = abs(cx-parts[i].x)+abs(cy-parts[i].y);// Faster but less accurate  Older: sqrt(pow(cx-parts[i].x, 2)+pow(cy-parts[i].y, 2));
+			ndistance = std::abs(cx-parts[i].x)+std::abs(cy-parts[i].y);// Faster but less accurate  Older: sqrt(pow(cx-parts[i].x, 2)+pow(cy-parts[i].y, 2));
 			if (ndistance<distance)
 			{
 				distance = ndistance;
@@ -675,7 +675,6 @@ int flood_parts(int x, int y, int fullc, int cm, int bm, int flags)
 	Simulation *sim = globalSim;
 	int c = fullc&0xFF;
 	int x1, x2, dy = (c<PT_NUM)?1:CELL;
-	int co = c;
 	int created_something = 0;
 
 	if (c==SPC_PROP)
@@ -908,7 +907,7 @@ int create_part_add_props(int p, int x, int y, int tv, int rx, int ry)
 //this creates particles from a brush, don't use if you want to create one particle
 int create_parts(int x, int y, int rx, int ry, int c, int flags, int fill)
 {
-	int i, j, r, f = 0, u, v, oy, ox, b = 0, dw = 0, stemp = 0, p, fn;
+	int i, j, r, f = 0, u, v, oy, ox, b = 0, dw = 0, p, fn;
 
 	int wall = c - 100;
 	if (c==SPC_WIND || c==PT_FIGH)

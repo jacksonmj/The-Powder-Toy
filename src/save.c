@@ -1680,12 +1680,12 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 		if (soapLinkData)
 		{
 			int soapLinkDataPos = 0;
-			for (i=0; i<partsCount; i++)
+			for (size_t i=0; i<partsCount; i++)
 			{
 				if (partsSimIndex[i] && partsptr[partsSimIndex[i]-1].type == PT_SOAP)
 				{
 					// Get the index of the particle forward linked from this one, if present in the save data
-					int linkedIndex = 0;
+					size_t linkedIndex = 0;
 					if (soapLinkDataPos+3 > soapLinkDataLen) break;
 					linkedIndex |= soapLinkData[soapLinkDataPos++]<<16;
 					linkedIndex |= soapLinkData[soapLinkDataPos++]<<8;
@@ -1722,7 +1722,7 @@ fin:
 pixel *prerender_save_PSv(void *save, int size, int *width, int *height)
 {
 	unsigned char *d,*c=(unsigned char*)save;
-	int i,j,k,x,y,rx,ry,p=0, wt, pc, gc;
+	int i,j,k,x,y,rx,ry,p=0, pc, gc;
 	int bw,bh,w,h,new_format = 0;
 	pixel *fb;
 
@@ -2595,7 +2595,7 @@ void *transform_save(void *odata, int *size, matrix2d transform, vector2d transl
 	float (*fvyo)[XRES/CELL] = (float(*)[XRES/CELL])calloc((YRES/CELL)*(XRES/CELL), sizeof(float));
 	float (*fvxn)[XRES/CELL] = (float(*)[XRES/CELL])calloc((YRES/CELL)*(XRES/CELL), sizeof(float));
 	float (*fvyn)[XRES/CELL] = (float(*)[XRES/CELL])calloc((YRES/CELL)*(XRES/CELL), sizeof(float));
-	int i, x, y, nx, ny, w, h, nw, nh;
+	int i, nx, ny, w, h, nw, nh;
 	vector2d pos, tmp, ctl, cbr;
 	vector2d vel;
 	vector2d cornerso[4];

@@ -1006,7 +1006,7 @@ void draw_svf_ui(pixel *vid_buf, int alternate)// all the buttons at the bottom
 	//	drawtext(vid_buf, XRES-45/*465*/, YRES+(MENUSIZE-15), "\x97", 0, 230, 153, 255); Why is this here?
 }
 
-void error_ui(pixel *vid_buf, int err, char *txt)
+void error_ui(pixel *vid_buf, int err, const char *txt)
 {
 	int x0=(XRES-240)/2,y0=YRES/2,b=1,bq,mx,my,textheight;
 	char *msg;

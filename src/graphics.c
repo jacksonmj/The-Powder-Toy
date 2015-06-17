@@ -218,7 +218,6 @@ float plasma_data_pos[] = {1.0f, 0.9f, 0.5f, 0.25, 0.0f};
 
 void init_display_modes()
 {
-	int i;
 	display_modes = (unsigned int*)calloc(1, sizeof(unsigned int));
 	render_modes = (unsigned int*)calloc(2, sizeof(unsigned int));
 	
@@ -1216,7 +1215,6 @@ int drawtextwrap(pixel *vid, int x, int y, int w, const char *s, int r, int g, i
 {
 	int sx = x;
 	int rh = 12;
-	int rw = 0;
 	int cw = x;
 	int wordlen;
 	int charspace;
@@ -1227,7 +1225,6 @@ int drawtextwrap(pixel *vid, int x, int y, int w, const char *s, int r, int g, i
 		if (charspace<wordlen && wordlen && w-(x-cw)<w/3)
 		{
 			x = sx;
-			rw = 0;
 			y+=FONT_H+2;
 			rh+=FONT_H+2;
 		}
@@ -1236,7 +1233,6 @@ int drawtextwrap(pixel *vid, int x, int y, int w, const char *s, int r, int g, i
 			if (*s == '\n')
 			{
 				x = sx;
-				rw = 0;
 				y += FONT_H+2;
 			}
 			else if (*s == '\b')
@@ -1280,7 +1276,6 @@ int drawtextwrap(pixel *vid, int x, int y, int w, const char *s, int r, int g, i
 				if (x-cw>=w)
 				{
 					x = sx;
-					rw = 0;
 					y+=FONT_H+2;
 					rh+=FONT_H+2;
 					if (*s==' ')
@@ -1620,6 +1615,8 @@ void draw_air(pixel *vid)
 					b=255;
 				c  = PIXRGB(r, g, b);
 			}
+			else
+				c = PIXRGB(0,0,0);
 			for (j=0; j<CELL; j++)//draws the colors
 				for (i=0; i<CELL; i++)
 					vid[(x*CELL+i) + (y*CELL+j)*(XRES+BARSIZE)] = c;
@@ -2002,8 +1999,9 @@ void render_parts(pixel *vid)
 	pixel defaultColour;
 	int deca, decr, decg, decb, cola, colr, colg, colb, firea, firer=0, fireg=0, fireb=0, pixel_mode, q, i, t, nx, ny, x, y;
 	int orbd[4] = {0, 0, 0, 0}, orbl[4] = {0, 0, 0, 0};
-	float gradv, flicker, fnx, fny, flx, fly;
+	float gradv, flicker;
 #ifdef OGLR
+	float fnx, fny, flx, fly;
 	int cfireV = 0, cfireC = 0, cfire = 0;
 	int csmokeV = 0, csmokeC = 0, csmoke = 0;
 	int cblobV = 0, cblobC = 0, cblob = 0;
@@ -2037,9 +2035,9 @@ void render_parts(pixel *vid)
 
 			nx = (int)(parts[i].x+0.5f);
 			ny = (int)(parts[i].y+0.5f);
+#ifdef OGLR
 			fnx = parts[i].x;
 			fny = parts[i].y;
-#ifdef OGLR
 			flx = parts[i].lastX;
 			fly = parts[i].lastY;
 #endif
@@ -2800,7 +2798,6 @@ void render_parts(pixel *vid)
 					int nxo = 0;
 					int nyo = 0;
 					int r;
-					int fire_rv = 0;
 					float drad = 0.0f;
 					float ddist = 0.0f;
 					Element_PRTI::orbitalparts_get(parts[i].life, parts[i].ctype, orbd, orbl);
@@ -2818,7 +2815,6 @@ void render_parts(pixel *vid)
 					int nxo = 0;
 					int nyo = 0;
 					int r;
-					int fire_bv = 0;
 					float drad = 0.0f;
 					float ddist = 0.0f;
 					Element_PRTI::orbitalparts_get(parts[i].life, parts[i].ctype, orbd, orbl);
@@ -3482,7 +3478,7 @@ void draw_walls(pixel *vid)
 
 void create_decorations(int x, int y, int rx, int ry, int r, int g, int b, int click, int tool)
 {
-	int i,j,rp;
+	int i,j;
 	if (rx==0 && ry==0)
 	{
 		create_decoration(x,y,r,g,b,click,tool);
@@ -3683,7 +3679,7 @@ void draw_wavelengths(pixel *vid, int x, int y, int h, int wl)
 
 void render_signs(pixel *vid_buf)
 {
-	int i, j, x, y, w, h, dx, dy,mx,my,b=1,bq;
+	int i, j, x, y, w, h, dx, dy,mx,my;
 	for (i=0; i<MAXSIGNS; i++)
 		if (signs[i].text[0])
 		{
@@ -3724,7 +3720,7 @@ void render_signs(pixel *vid_buf)
 
 			if (sregexp(signs[i].text, "^{[ct]:[0-9]*|.*}$")==0)
 			{
-				int sldr, startm;
+				int sldr, startm=0;
 				memset(buff, 0, sizeof(buff));
 				for (sldr=3; signs[i].text[sldr-1] != '|'; sldr++)
 					startm = sldr + 1;
@@ -3765,7 +3761,6 @@ void render_signs(pixel *vid_buf)
 			}
 			if (MSIGN==i)
 			{
-				bq = b;
 				mouse_get_state(&mx, &my);
 				mouse_coords_window_to_sim(&mx, &my, mx, my);
 				signs[i].x = mx;
@@ -3824,7 +3819,7 @@ void render_gravlensing(pixel *src, pixel * dst)
 
 void render_fire(pixel *vid)
 {
-	int i,j,x,y,r,g,b,nx,ny;
+	int i,j,x,y,r,g,b;
 	for (j=0; j<YRES/CELL; j++)
 		for (i=0; i<XRES/CELL; i++)
 		{
@@ -3912,12 +3907,9 @@ void render_fire(pixel *vid)
 void prepare_alpha(int size, float intensity)
 {
 	//TODO: implement size
-	int x,y,i,j,c;
+	int x,y,i,j;
 	float multiplier = 255.0f*intensity;
 	float temp[CELL*3][CELL*3];
-	float fire_alphaf[CELL*3][CELL*3];
-	float glow_alphaf[11][11];
-	float blur_alphaf[7][7];
 	memset(temp, 0, sizeof(temp));
 	for (x=0; x<CELL; x++)
 		for (y=0; y<CELL; y++)
@@ -3947,6 +3939,9 @@ void prepare_alpha(int size, float intensity)
 		}
 			
 #ifdef OGLR
+	float fire_alphaf[CELL*3][CELL*3];
+	float glow_alphaf[11][11];
+	float blur_alphaf[7][7];
 	for (x=0; x<CELL*3; x++)
 		for (y=0; y<CELL*3; y++)
 		{
@@ -4433,7 +4428,6 @@ int sdl_open(void)
 #elif defined(LIN32) || defined(LIN64)
 	SDL_Surface *icon;
 #endif
-	int status;
 	if (SDL_Init(SDL_INIT_VIDEO)<0)
 	{
 		fprintf(stderr, "Initializing SDL: %s\n", SDL_GetError());
@@ -4485,7 +4479,7 @@ int sdl_open(void)
 	else
 	{
 #ifdef WIN32
-		status = glewInit();
+		int status = glewInit();
 		if(status != GLEW_OK)
 		{
 			fprintf(stderr, "Initializing Glew: %d\n", status);
@@ -4804,7 +4798,7 @@ void loadShaders()
 	checkProgram(airProg_Cracker, "AC");
 }
 #endif
-int draw_debug_info(pixel* vid, int lm, int lx, int ly, int cx, int cy, int line_x, int line_y)
+void draw_debug_info(pixel* vid, int lm, int lx, int ly, int cx, int cy, int line_x, int line_y)
 {
 	char infobuf[256];
 	if(debug_flags & DEBUG_PERFORMANCE_FRAME || debug_flags & DEBUG_PERFORMANCE_CALC)
@@ -4813,15 +4807,16 @@ int draw_debug_info(pixel* vid, int lm, int lx, int ly, int cx, int cy, int line
 		float partiavg = 0, frameavg = 0;
 		while(i != debug_perf_iend)
 		{
-			partiavg += abs(debug_perf_partitime[i]/100000);
-			frameavg += abs(debug_perf_frametime[i]/100000);
+			// TODO: this does not appear to be correct. Fix collection of times in main.c.
+			partiavg += std::abs(debug_perf_partitime[i]/100000);
+			frameavg += std::abs(debug_perf_frametime[i]/100000);
 			if(debug_flags & DEBUG_PERFORMANCE_CALC)
-				t1 = abs(debug_perf_partitime[i]/100000);
+				t1 = std::abs(debug_perf_partitime[i]/100000);
 			else
 				t1 = 0;
 				
 			if(debug_flags & DEBUG_PERFORMANCE_FRAME)
-				t2 = abs(debug_perf_frametime[i]/100000);
+				t2 = std::abs(debug_perf_frametime[i]/100000);
 			else
 				t2 = 0;
 				

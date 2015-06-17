@@ -247,7 +247,7 @@ void render_cursor(pixel *vid, int x, int y, int t, int rx, int ry);
 
 int sdl_open(void);
 
-int draw_debug_info(pixel* vid, int lm, int lx, int ly, int cx, int cy, int line_x, int line_y);
+void draw_debug_info(pixel* vid, int lm, int lx, int ly, int cx, int cy, int line_x, int line_y);
 
 void init_display_modes();
 void update_display_modes();

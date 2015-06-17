@@ -469,7 +469,7 @@ void mask_free(mask_el *c_mask_el){
 void gravity_mask()
 {
 	char checkmap[YRES/CELL][XRES/CELL];
-	int x = 0, y = 0, i, j;
+	int x = 0, y = 0;
 	unsigned maskvalue;
 	mask_el *t_mask_el = NULL;
 	mask_el *c_mask_el = NULL;
