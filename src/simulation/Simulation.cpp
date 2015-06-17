@@ -1933,8 +1933,14 @@ void Simulation::UpdateParticles()
 							goto killed;
 						}
 						part_change_type(i,x,y,t);
+						if (t==PT_FIRE)
+						{
+							parts[i].tmp = 0;// if tmp isn't 0 the FIRE might turn into DSTW later
+						}
 						if (t==PT_FIRE||t==PT_PLSM||t==PT_HFLM)
+						{
 							parts[i].life = rng.randInt<120,120+49>();
+						}
 						if (t==PT_LAVA) {
 							if (parts[i].ctype==PT_BRMT) parts[i].ctype = PT_BMTL;
 							else if (parts[i].ctype==PT_SAND) parts[i].ctype = PT_GLAS;
