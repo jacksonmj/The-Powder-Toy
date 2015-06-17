@@ -18,6 +18,7 @@
 #define DEFINE_H
 
 #include "common/Compat.hpp"
+#include "simulation/Config.hpp"
 
 #ifdef WIN32
 #define PATH_SEP "\\"
@@ -51,13 +52,6 @@
 
 #define THUMB_CACHE_SIZE 256
 
-#ifndef M_PI
-#define M_PI 3.14159265f
-#endif
-#ifndef M_GRAV
-#define M_GRAV 6.67300e-1
-#endif
-
 #define IMGCONNS 3
 #define TIMEOUT 100
 #define HTTP_TIMEOUT 10
@@ -69,14 +63,6 @@
 #define MENUSIZE 40
 #define BARSIZE 17
 #endif
-#define XRES	612
-#define YRES	384
-#define NPART XRES*YRES
-
-#define XCNTR   306
-#define YCNTR   192
-
-#define MAX_DISTANCE sqrt(pow(XRES, 2)+pow(YRES, 2))
 
 #define GRAV_DIFF
 
@@ -87,16 +73,6 @@
 #define ZFACTOR_D	8
 extern unsigned char ZFACTOR;
 extern unsigned char ZSIZE;
-
-#define CELL    4
-#define ISTP    (CELL/2)
-#define CFDS	(4.0f/CELL)
-
-#define AIR_TSTEPP 0.3f
-#define AIR_TSTEPV 0.4f
-#define AIR_VADV 0.3f
-#define AIR_VLOSS 0.999f
-#define AIR_PLOSS 0.9999f
 
 #define GRID_X 5
 #define GRID_Y 4
@@ -112,10 +88,7 @@ extern unsigned char ZSIZE;
 #define STAMP_MAX 240
 
 #define SAVE_OPS
-//#define REALISTIC
 
-#define NGOL 25
-#define NGOLALT 24 //NGOL should be 24, but use this var until I find out why
 
 #define CIRCLE_BRUSH 0
 #define SQUARE_BRUSH 1
@@ -127,18 +100,6 @@ typedef unsigned short pixel;
 #else
 typedef unsigned int pixel;
 #endif
-
-#define SURF_RANGE     10
-#define NORMAL_MIN_EST 3
-#define NORMAL_INTERP  20
-#define NORMAL_FRAC    16
-
-#define REFRACT        0x80000000
-
-/* heavy flint glass, for awesome refraction/dispersion
-   this way you can make roof prisms easily */
-#define GLASS_IOR      1.9
-#define GLASS_DISP     0.07
 
 #ifdef WIN32
 #define strcasecmp stricmp
@@ -157,9 +118,6 @@ typedef unsigned int pixel;
 #if defined(DEBUG) || defined(RENDERER) || defined(X86_SSE2)
 #define HIGH_QUALITY_RESAMPLE //High quality image resampling, slower but much higher quality than linear interpolation
 #endif
-
-#define SDEUT
-//#define REALHEAT
 
 #define DEBUG_PARTS		0x0001
 #define DEBUG_PARTCOUNT	0x0002

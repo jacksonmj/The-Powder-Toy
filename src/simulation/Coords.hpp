@@ -16,7 +16,7 @@
 #ifndef Simulation_Coords_h
 #define Simulation_Coords_h
 
-#include "defines.h" // for CELL
+#include "simulation/Config.hpp"
 
 // Some classes to ease converting between integer and float coords and cell coords
 

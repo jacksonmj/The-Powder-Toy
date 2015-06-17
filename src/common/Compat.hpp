@@ -47,8 +47,4 @@
 #define TH_ENTRY_POINT
 #endif
 
-
-// TODO: remove this
-#define TPT_GNU_INLINE
-
 #endif
