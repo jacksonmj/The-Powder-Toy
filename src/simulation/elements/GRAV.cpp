@@ -55,7 +55,7 @@ public:
 	{
 		tickVal = newVal%180;
 		tickToColour(tickVal, col_r, col_g, col_b);
-		tickToColour(tickVal*2, col2_r, col2_g, col2_b);
+		tickToColour(tickVal+150, col2_r, col2_g, col2_b);
 	}
 
 	void randomTick()
