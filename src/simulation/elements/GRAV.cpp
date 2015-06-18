@@ -120,7 +120,7 @@ void GRAV_init_element(ELEMENT_INIT_FUNC_ARGS)
 
 	elem->Identifier = "DEFAULT_PT_GRAV";
 	elem->ui->Name = "GRAV";
-	elem->Colour = COLPACK(0xFFE0A0);
+	elem->Colour = COLPACK(0x202020);
 	elem->ui->MenuVisible = 1;
 	elem->ui->MenuSection = SC_POWDERS;
 	elem->Enabled = 1;
