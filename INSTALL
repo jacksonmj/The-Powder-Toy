@@ -1,3 +1,8 @@
+cmake is used as the build system. Note that after creating or
+deleting source files, you will need to re-run cmake to update the list of
+files to compile.
+
+*** Building ***
 
 To compile on Linux:
 	mkdir -p build
@@ -26,12 +31,14 @@ So far, compiling with cmake has only been tested on Linux (both
 native compiling and cross compiling for Windows), and MinGW+MSYS 
 running in Wine. 
 
+
+*** Build options ***
+
 To turn debug symbols on or off, set CMAKE_BUILD_TYPE:
 cmake .. -DCMAKE_BUILD_TYPE=DEBUG
 cmake .. -DCMAKE_BUILD_TYPE=RELEASE
 
-
-Several options are available:
+Available options include:
 
 CMake option name              Default
 -----------------------------------------
@@ -40,8 +47,9 @@ LuaConsole                       ON
 PreferStatic                     ON
 NoWarnings                       OFF
 Optimisations                    ON
-CheckPartsAlloc                  ON
-Tests                            OFF
+CheckPartsAlloc                  OFF
+Tests                            maybe (tri-state)
+simdpp                           maybe (tri-state)
 
 To change an option, add -DOptionName=value to the end of the cmake 
 command. For example, disable optimisations by adding 
@@ -49,6 +57,8 @@ command. For example, disable optimisations by adding
 
 To see help for each option, and the current option values, run cmake -LH
 
+The "maybe" value for Tests means "only if the relevant library is already
+installed".
 
 GravityFFT and LuaConsole are optional, and Powder Toy will function 
 fine if they are disabled. However, enabling them is recommended, since 
@@ -59,8 +69,12 @@ functionality.
 GravityFFT requires the single precision version of the FFTW3 library 
 (fftw3f), and LuaConsole requires Lua 5.1.
 
+libsimdpp can optionally be used to make some functions faster, by using SIMD
+instructions. 
+
 Most libraries are linked statically where available, to avoid having 
 to mess around with DLLs for Windows, and to try to avoid issues due to 
 differences in libbz2 naming conventions between Linux distros. Change 
 this with -DPreferStatic=OFF
+
 

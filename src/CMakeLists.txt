@@ -33,6 +33,39 @@ add_executable(powder WIN32 ${powder_SRC})
 target_link_libraries(powder PowderToy)
 
 
+fuzzyoption(simdpp "Enable libsimdpp (on/off/maybe, maybe=only if already installed)" "maybe")
+
+if(${simdpp} STREQUAL "maybe")
+	find_path(SIMDPP_ALREADY_INSTALLED simdpp/simd.h PATHS extlib/include)
+	if(SIMDPP_ALREADY_INSTALLED)
+		set(simdpp true)
+	else()
+		set(simdpp false)
+	endif()
+	unset(SIMDPP_ALREADY_INSTALLED CACHE)
+endif()
+
+if(simdpp)
+	message(STATUS "libsimdpp enabled")
+	add_definitions(-DHAVE_LIBSIMDPP=1)
+
+	find_path(SIMDPP_INCLUDE_DIR simdpp/simd.h PATHS ../lib/include)
+	if(NOT SIMDPP_INCLUDE_DIR)
+		set(SIMDPP_EXTPROJECT 1 CACHE INTERNAL "Use ExternalProject for libsimdpp")
+	endif()
+
+	if(SIMDPP_EXTPROJECT)
+		message(STATUS "Using ExternalProject for simdpp")
+		add_subdirectory(../cmake/lib/simdpp ${CMAKE_BINARY_DIR}/lib/simdpp)
+		add_dependencies(PowderToy simdpp)
+		target_include_directories(PowderToy PUBLIC ${SIMDPP_INCLUDE_DIR})
+	endif()
+
+else()
+	message(STATUS "libsimdpp disabled")
+endif()
+
+
 option(PreferStatic "Prefer linking to static libraries in most cases" ON)
 set(CMAKE_FIND_LIBRARY_SUFFIXES_ORIG ${CMAKE_FIND_LIBRARY_SUFFIXES})
 set(CMAKE_FIND_LIBRARY_SUFFIXES_ONLY_STATIC .a;)

@@ -11,7 +11,7 @@ endif()
 
 if(CATCH_EXTPROJECT)
 	message(STATUS "Using ExternalProject for Catch")
-	add_subdirectory(../cmake/lib/catch ${CMAKE_BINARY_DIR}/lib)
+	add_subdirectory(../cmake/lib/catch ${CMAKE_BINARY_DIR}/lib/catch)
 	add_dependencies(powdertests catch)
 endif()
 
