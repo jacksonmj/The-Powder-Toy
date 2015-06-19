@@ -20,7 +20,6 @@
 #include "defines.h"
 
 extern int ngrav_enable; //Newtonian gravity
-extern int gravwl_timeout;
 extern int gravityMode;
 
 extern float *gravmap;//Maps to be used by the main thread

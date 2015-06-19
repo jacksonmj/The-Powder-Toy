@@ -472,7 +472,8 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 				for (ry=-1; ry<2; ry++)
 					if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 					{
-						if (!sim->pmap[y+ry][x+rx].count_notEnergy && bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_ALLOWAIR && bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_WALL && bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_WALLELEC && (bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_EWALL || emap[(y+ry)/CELL][(x+rx)/CELL]))
+						uint8_t wallId = sim->walls.type(SimCoordI(x+rx,y+ry));
+						if (!sim->pmap[y+ry][x+rx].count_notEnergy && (!wallId || (wallId!=WL_ALLOWAIR && wallId!=WL_WALL && wallId!=WL_WALLELEC && (wallId!=WL_EWALL || sim->walls.electricity(SimCoordI(x+rx,y+ry))))))
 							parts[i].life=50;
 					}
 		}

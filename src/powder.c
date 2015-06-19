@@ -42,12 +42,6 @@ const particle emptyparticle = {};
 
 int water_equal_test = 0;
 
-unsigned char bmap[YRES/CELL][XRES/CELL];
-unsigned char emap[YRES/CELL][XRES/CELL];
-
-unsigned char cb_bmap[YRES/CELL][XRES/CELL];
-unsigned char cb_emap[YRES/CELL][XRES/CELL];
-
 int NUM_PARTS = 0;
 
 int GSPEED = 1;
@@ -59,32 +53,15 @@ unsigned short gol2[YRES][XRES][9];
 
 wall_type wtypes[] =
 {
-	{PIXPACK(0xC0C0C0), PIXPACK(0x101010), 0, "Blocks everything. Conductive."},
-	{PIXPACK(0x808080), PIXPACK(0x808080), 0, "E-Wall. Becomes transparent when electricity is connected."},
-	{PIXPACK(0xFF8080), PIXPACK(0xFF2008), 1, "Detector. Generates electricity when a particle is inside."},
-	{PIXPACK(0x808080), PIXPACK(0x000000), 0, "Streamline. Set start point of a streamline."},
 	{PIXPACK(0x808080), PIXPACK(0x000000), 0, "Sign. Displays text. Click on a sign to edit it or anywhere else to place a new one."},
-	{PIXPACK(0x8080FF), PIXPACK(0x000000), 1, "Fan. Accelerates air. Use the line tool to set direction and strength."},
-	{PIXPACK(0xC0C0C0), PIXPACK(0x101010), 2,  "Allows liquids, blocks all other particles. Conductive."},
-	{PIXPACK(0x808080), PIXPACK(0x000000), 1, "Absorbs particles but lets air currents through."},
-	{PIXPACK(0x808080), PIXPACK(0x000000), 0, "Erases walls."},
-	{PIXPACK(0x808080), PIXPACK(0x000000), 3, "Basic wall, blocks everything."},
-	{PIXPACK(0x3C3C3C), PIXPACK(0x000000), 1, "Allows air, but blocks all particles."},
-	{PIXPACK(0x575757), PIXPACK(0x000000), 1, "Allows powders, blocks all other particles."},
-	{PIXPACK(0xFFFF22), PIXPACK(0x101010), 2, "Conductor. Allows all particles to pass through and conducts electricity."},
-	{PIXPACK(0x242424), PIXPACK(0x101010), 0, "E-Hole. absorbs particles, releases them when powered."},
 	{PIXPACK(0xFFFFFF), PIXPACK(0x000000), -1, "Air, creates airflow and pressure"},
 	{PIXPACK(0xFFBB00), PIXPACK(0x000000), -1, "Heats the targeted element."},
 	{PIXPACK(0x00BBFF), PIXPACK(0x000000), -1, "Cools the targeted element."},
 	{PIXPACK(0x303030), PIXPACK(0x000000), -1, "Vacuum, reduces air pressure."},
-	{PIXPACK(0x579777), PIXPACK(0x000000), 1, "Allows gases, blocks all other particles."},
 	{PIXPACK(0x000000), PIXPACK(0x000000), -1, "Creates air movement."},
-	{PIXPACK(0xFFEE00), PIXPACK(0xAA9900), 4, "Gravity wall. Newtonian Gravity has no effect inside a box drawn with this."},
 	{PIXPACK(0x0000BB), PIXPACK(0x000000), -1, "Positive gravity tool."},
 	{PIXPACK(0x000099), PIXPACK(0x000000), -1, "Negative gravity tool."},
-	{PIXPACK(0xFFAA00), PIXPACK(0xAA5500), 4, "Allows energy particles, blocks all other particles."},
 	{PIXPACK(0xFFAA00), PIXPACK(0xAA5500), -1, "Property edit tool"},
-	{PIXPACK(0xDCDCDC), PIXPACK(0x000000), 1, "Allows all particles, but blocks air."},
 };
 
 static unsigned direction_to_map(float dx, float dy, int t)
@@ -244,20 +221,21 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 
 	int t = tv & 0xFF;
 	int v = (tv >> 8) & 0xFF;
+	int toolId = tv-UI_TOOLOFFSET;
 	
-	if (x<0 || y<0 || x>=XRES || y>=YRES || (!globalSim->IsValidElement(t) && t!=SPC_HEAT&&t!=SPC_COOL&&t!=SPC_AIR&&t!=SPC_VACUUM&&t!=SPC_PGRV&&t!=SPC_NGRV))
+	if (x<0 || y<0 || x>=XRES || y>=YRES || (!globalSim->IsValidElement(t) && !(toolId>=0 && toolId<UI_TOOLCOUNT)))
 		return -1;
-	if(t==SPC_PROP) {
+	if(toolId==SPC_PROP || toolId==WL_SIGN || toolId==SPC_WIND) {
 		return -1;	//Prop tool works on a mouse click basic, make sure it doesn't do anything here
 	}
 
-	if (t==SPC_HEAT||t==SPC_COOL)
+	if (toolId==SPC_HEAT||toolId==SPC_COOL)
 	{
 		if (!globalSim->pmap[y][x].count)
 			return -1;
 		FOR_PMAP_POSITION(globalSim, x, y, rcount, ri, rnext)
 		{
-			if (t==SPC_HEAT&&parts[ri].temp<MAX_TEMP)
+			if (toolId==SPC_HEAT&&parts[ri].temp<MAX_TEMP)
 			{
 				float heatchange;
 				int fast = ((sdl_mod & (KMOD_SHIFT)) && (sdl_mod & (KMOD_CTRL)));
@@ -268,7 +246,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 				
 				globalSim->part_add_temp(parts[ri], heatchange);
 			}
-			if (t==SPC_COOL&&parts[ri].temp>MIN_TEMP)
+			if (toolId==SPC_COOL&&parts[ri].temp>MIN_TEMP)
 			{
 				float heatchange;
 				int fast = ((sdl_mod & (KMOD_SHIFT)) && (sdl_mod & (KMOD_CTRL)));
@@ -282,22 +260,22 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 		}
 		return ri;
 	}
-	if (t==SPC_AIR)
+	if (toolId==SPC_AIR)
 	{
 		globalSim->air.pv.add(SimCoordI(x,y), 0.10f);
 		return -1;
 	}
-	if (t==SPC_VACUUM)
+	if (toolId==SPC_VACUUM)
 	{
 		globalSim->air.pv.add(SimCoordI(x,y), -0.10f);
 		return -1;
 	}
-	if (t==SPC_PGRV)
+	if (toolId==SPC_PGRV)
 	{
 		gravmap[(y/CELL)*(XRES/CELL)+(x/CELL)] = 5;
 		return -1;
 	}
-	if (t==SPC_NGRV)
+	if (toolId==SPC_NGRV)
 	{
 		gravmap[(y/CELL)*(XRES/CELL)+(x/CELL)] = -5;
 		return -1;
@@ -420,73 +398,6 @@ void delete_part(int x, int y, int flags)//calls part_kill with the particle loc
 	}
 }
 
-TPT_INLINE int is_wire(int x, int y)
-{
-	return bmap[y][x]==WL_DETECT || bmap[y][x]==WL_EWALL || bmap[y][x]==WL_ALLOWLIQUID || bmap[y][x]==WL_WALLELEC || bmap[y][x]==WL_ALLOWALLELEC || bmap[y][x]==WL_EHOLE;
-}
-
-TPT_INLINE int is_wire_off(int x, int y)
-{
-	return (bmap[y][x]==WL_DETECT || bmap[y][x]==WL_EWALL || bmap[y][x]==WL_ALLOWLIQUID || bmap[y][x]==WL_WALLELEC || bmap[y][x]==WL_ALLOWALLELEC || bmap[y][x]==WL_EHOLE) && emap[y][x]<8;
-}
-
-void set_emap(int x, int y)
-{
-	int x1, x2;
-
-	if (!is_wire_off(x, y))
-		return;
-
-	// go left as far as possible
-	x1 = x2 = x;
-	while (x1>0)
-	{
-		if (!is_wire_off(x1-1, y))
-			break;
-		x1--;
-	}
-	while (x2<XRES/CELL-1)
-	{
-		if (!is_wire_off(x2+1, y))
-			break;
-		x2++;
-	}
-
-	// fill span
-	for (x=x1; x<=x2; x++)
-		emap[y][x] = 16;
-
-	// fill children
-
-	if (y>1 && x1==x2 &&
-	        is_wire(x1-1, y-1) && is_wire(x1, y-1) && is_wire(x1+1, y-1) &&
-	        !is_wire(x1-1, y-2) && is_wire(x1, y-2) && !is_wire(x1+1, y-2))
-		set_emap(x1, y-2);
-	else if (y>0)
-		for (x=x1; x<=x2; x++)
-			if (is_wire_off(x, y-1))
-			{
-				if (x==x1 || x==x2 || y>=YRES/CELL-1 ||
-				        is_wire(x-1, y-1) || is_wire(x+1, y-1) ||
-				        is_wire(x-1, y+1) || !is_wire(x, y+1) || is_wire(x+1, y+1))
-					set_emap(x, y-1);
-			}
-
-	if (y<YRES/CELL-2 && x1==x2 &&
-	        is_wire(x1-1, y+1) && is_wire(x1, y+1) && is_wire(x1+1, y+1) &&
-	        !is_wire(x1-1, y+2) && is_wire(x1, y+2) && !is_wire(x1+1, y+2))
-		set_emap(x1, y+2);
-	else if (y<YRES/CELL-1)
-		for (x=x1; x<=x2; x++)
-			if (is_wire_off(x, y+1))
-			{
-				if (x==x1 || x==x2 || y<0 ||
-				        is_wire(x-1, y+1) || is_wire(x+1, y+1) ||
-				        is_wire(x-1, y-1) || !is_wire(x, y-1) || is_wire(x+1, y-1))
-					set_emap(x, y+1);
-			}
-}
-
 int nearest_part(int ci, int t, int max_d)
 {
 	int distance = (max_d!=-1)?max_d:MAX_DISTANCE;
@@ -544,15 +455,6 @@ void create_arc(int sx, int sy, int dx, int dy, int midpoints, int variance, int
 	free(ymid);
 }
 
-void update_wallmaps()
-{
-	if (!sys_pause||framerender)
-	{
-		CellsData_subtract_sat(emap, emap, 1);
-		globalSim->air.initBlockingData();
-	}
-}
-
 void clear_area(int area_x, int area_y, int area_w, int area_h)
 {
 	int cx = 0;
@@ -562,7 +464,7 @@ void clear_area(int area_x, int area_y, int area_w, int area_h)
 	{
 		for (cx=0; cx<area_w; cx++)
 		{
-			bmap[(cy+area_y)/CELL][(cx+area_x)/CELL] = 0;
+			globalSim->walls.type(SimCoordI(cx+area_x,cy+area_y), WL_NONE);
 			globalSim->delete_position(cx+area_x, cy+area_y);
 		}
 	}
@@ -608,7 +510,7 @@ int flood_prop(int x, int y, int parttype, size_t propoffset, void * propvalue, 
 	memset(bitmap, 0, XRES*YRES);
 	try
 	{
-		CoordStack cs;
+		CoordStack<short> cs;
 		cs.push(x, y);
 		do
 		{
@@ -687,9 +589,9 @@ int flood_parts(int x, int y, int fullc, int cm, int bm, int flags)
 	}
 	if (bm==-1)
 	{
-		if (c-UI_WALLSTART+UI_ACTUALSTART==WL_ERASE)
+		if (c-UI_WALLOFFSET==WL_ERASE)
 		{
-			bm = bmap[y/CELL][x/CELL];
+			bm = globalSim->walls.type(SimCoordI(x,y));
 			if (!bm)
 				return 0;
 			if (bm==WL_WALL)
@@ -699,12 +601,12 @@ int flood_parts(int x, int y, int fullc, int cm, int bm, int flags)
 			bm = 0;
 	}
 
-	if (((cm>0 && sim->pmap_find_one(x, y, cm)<0) || bmap[y/CELL][x/CELL]!=bm )||( (flags&BRUSH_SPECIFIC_DELETE) && cm!=SLALT))
+	if (((cm>0 && sim->pmap_find_one(x, y, cm)<0) || globalSim->walls.type(SimCoordI(x,y))!=bm )||( (flags&BRUSH_SPECIFIC_DELETE) && cm!=SLALT))
 		return 1;
 
 	try
 	{
-		CoordStack cs;
+		CoordStack<short> cs;
 		cs.push(x, y);
 
 		do
@@ -714,14 +616,14 @@ int flood_parts(int x, int y, int fullc, int cm, int bm, int flags)
 			// go left as far as possible
 			while (x1>=CELL)
 			{
-				if ((cm==0 ? sim->pmap[y][x1-1].count>0 : sim->pmap_find_one(x1-1, y, cm)<0) || bmap[y/CELL][(x1-1)/CELL]!=bm)
+				if ((cm==0 ? sim->pmap[y][x1-1].count>0 : sim->pmap_find_one(x1-1, y, cm)<0) || globalSim->walls.type(SimCoordI(x1-1,y))!=bm)
 					break;
 				x1--;
 			}
 			// go right as far as possible
 			while (x2<XRES-CELL)
 			{
-				if ((cm==0 ? sim->pmap[y][x2+1].count>0 : sim->pmap_find_one(x2+1, y, cm)<0) || bmap[y/CELL][(x2+1)/CELL]!=bm)
+				if ((cm==0 ? sim->pmap[y][x2+1].count>0 : sim->pmap_find_one(x2+1, y, cm)<0) || globalSim->walls.type(SimCoordI(x2+1,y))!=bm)
 					break;
 				x2++;
 			}
@@ -735,13 +637,13 @@ int flood_parts(int x, int y, int fullc, int cm, int bm, int flags)
 			// add vertically adjacent pixels to stack
 			if (y>=CELL+dy)
 				for (x=x1; x<=x2; x++)
-					if ((cm==0 ? sim->pmap[y-dy][x].count==0 : sim->pmap_find_one(x, y-dy, cm)>=0) && bmap[(y-dy)/CELL][x/CELL]==bm)
+					if ((cm==0 ? sim->pmap[y-dy][x].count==0 : sim->pmap_find_one(x, y-dy, cm)>=0) && globalSim->walls.type(SimCoordI(x,y-dy))==bm)
 					{
 						cs.push(x, y-dy);
 					}
 			if (y<YRES-CELL-dy)
 				for (x=x1; x<=x2; x++)
-					if ((cm==0 ? sim->pmap[y+dy][x].count==0 : sim->pmap_find_one(x, y+dy, cm)>=0) && bmap[(y+dy)/CELL][x/CELL]==bm)
+					if ((cm==0 ? sim->pmap[y+dy][x].count==0 : sim->pmap_find_one(x, y+dy, cm)>=0) && globalSim->walls.type(SimCoordI(x,y+dy))==bm)
 					{
 						cs.push(x, y+dy);
 					}
@@ -762,7 +664,7 @@ int flood_water(int x, int y, int i, int originaly, int check)
 
 	try
 	{
-		CoordStack cs;
+		CoordStack<short> cs;
 		cs.push(x, y);
 
 		do
@@ -900,39 +802,22 @@ int create_part_add_props(int p, int x, int y, int tv, int rx, int ry)
 //this creates particles from a brush, don't use if you want to create one particle
 int create_parts(int x, int y, int rx, int ry, int c, int flags, int fill)
 {
-	int i, j, r, f = 0, u, v, oy, ox, b = 0, dw = 0, p, fn;
-
-	int wall = c - 100;
-	if (c==SPC_WIND || c==PT_FIGH)
+	int j, f = 0, u, v, oy, ox, p, fn;
+	bool createWall = false;
+	int wallId = c - UI_WALLOFFSET;
+	int toolId = c - UI_TOOLOFFSET;
+	if (toolId==SPC_WIND || c==PT_FIGH)
 		return 0;
 
-	if(c==SPC_PROP){
+	if(toolId==SPC_PROP){
 		prop_edit_ui(vid_buf, x, y);
 		return 0;
 	}
-	if (c == SPC_AIR || c == SPC_HEAT || c == SPC_COOL || c == SPC_VACUUM || c == SPC_PGRV || c == SPC_NGRV)
+	if (toolId>=0 && toolId<UI_TOOLCOUNT)
 		fill = 1;
-	for (r=UI_ACTUALSTART; r<=UI_ACTUALSTART+UI_WALLCOUNT; r++)
+	if (wallId>=0 && wallId<WL_NUM)
 	{
-		if (wall==r)
-		{
-			if (c == SPC_AIR || c == SPC_HEAT || c == SPC_COOL || c == SPC_VACUUM || c == SPC_PGRV || c == SPC_NGRV || wall == WL_SIGN)
-				break;
-			if (wall == WL_ERASE)
-				b = 0;
-			else
-				b = wall;
-			dw = 1;
-		}
-	}
-	if (c == WL_FANHELPER)
-	{
-		b = WL_FANHELPER;
-		dw = 1;
-	}
-	if (wall == WL_GRAV)
-	{
-		gravwl_timeout = 60;
+		createWall = true;
 	}
 	if (c==PT_LIGH)
 	{
@@ -953,12 +838,25 @@ int create_parts(int x, int y, int rx, int ry, int c, int flags, int fill)
 	if (c == PT_STKM || c == PT_STKM2 || c == PT_FIGH)
 		rx = ry = 0;
 	
-	if (dw==1)
+	if (createWall)
 	{
-		ry = ry/CELL;
-		rx = rx/CELL;
 		x = x/CELL;
 		y = y/CELL;
+		if (wallId==WL_STREAM)
+		{
+			for (v=-1; v<2; v++)
+				for (u=-1; u<2; u++)
+				{
+					SimCellCoord c(x+u,y+v);
+					if (globalSim->coord_isValid(c) && globalSim->walls.type(c) == WL_STREAM)
+						return 1;
+				}
+			globalSim->walls.type(SimCellCoord(x,y), WL_STREAM);
+			return 1;
+		}
+
+		ry = ry/CELL;
+		rx = rx/CELL;
 		x -= rx/2;
 		y -= ry/2;
 		for (ox=x; ox<=x+rx; ox++)
@@ -967,45 +865,20 @@ int create_parts(int x, int y, int rx, int ry, int c, int flags, int fill)
 			{
 				if (ox>=0&&ox<XRES/CELL&&oy>=0&&oy<YRES/CELL)
 				{
-					i = ox;
-					j = oy;
-					if ((flags&BRUSH_SPECIFIC_DELETE) && b!=WL_FANHELPER)
+					if (flags&BRUSH_SPECIFIC_DELETE)
 					{
-						if (bmap[j][i]==SLALT-100)
-						{
-							b = 0;
-							if (SLALT==WL_GRAV) gravwl_timeout = 60;
-						}
-						else
-							continue;
-					}
-					if (b==WL_FAN)
-					{
-						fvx[j][i] = 0.0f;
-						fvy[j][i] = 0.0f;
-					}
-					if (b==WL_STREAM)
-					{
-						i = x + rx/2;
-						j = y + ry/2;
-						for (v=-1; v<2; v++)
-							for (u=-1; u<2; u++)
-								if (i+u>=0 && i+u<XRES/CELL &&
-								        j+v>=0 && j+v<YRES/CELL &&
-								        bmap[j+v][i+u] == WL_STREAM)
-									return 1;
-						bmap[j][i] = WL_STREAM;
+						if (globalSim->walls.type(SimCellCoord(ox,oy))==SLALT-UI_WALLOFFSET)
+							globalSim->walls.type(SimCellCoord(ox,oy), WL_NONE);
 						continue;
 					}
-					if (b==0 && bmap[j][i]==WL_GRAV) gravwl_timeout = 60;
-					bmap[j][i] = b;
+					globalSim->walls.type(SimCellCoord(ox,oy), wallId);
 				}
 			}
 		}
 		return 1;
 	}
 
-	if (c == SPC_AIR || c == SPC_HEAT || c == SPC_COOL || c == SPC_VACUUM || c == SPC_PGRV || c == SPC_NGRV)
+	if (toolId>=0 && toolId<UI_TOOLCOUNT)
 		fn = 3;
 	else if (c == 0 && !(flags&BRUSH_REPLACEMODE))								// delete
 		fn = 0;
@@ -1132,7 +1005,7 @@ void create_line(int x1, int y1, int x2, int y2, int rx, int ry, int c, int flag
 {
 	int cp=abs(y2-y1)>abs(x2-x1), x, y, dx, dy, sy, fill = 1;
 	float e, de;
-	if (c==SPC_PROP)
+	if (c-UI_TOOLOFFSET==SPC_PROP)
 		return;
 	if (cp)
 	{
@@ -1172,7 +1045,7 @@ void create_line(int x1, int y1, int x2, int y2, int rx, int ry, int c, int flag
 		if (e >= 0.5f)
 		{
 			y += sy;
-			if ((c==WL_EHOLE+100 || c==WL_ALLOWGAS+100 || c==WL_ALLOWENERGY+100 || c==WL_ALLOWALLELEC+100 || c==WL_ALLOWSOLID+100 || c==WL_ALLOWAIR+100 || c==WL_WALL+100 || c==WL_DESTROYALL+100 || c==WL_ALLOWLIQUID+100 || c==WL_FAN+100 || c==WL_STREAM+100 || c==WL_DETECT+100 || c==WL_EWALL+100 || c==WL_WALLELEC+100 || !(rx+ry))
+			if (((c>=UI_WALLOFFSET && c<UI_WALLOFFSET+WL_NUM) || !(rx+ry))
 			   && ((y1<y2) ? (y<=y2) : (y>=y2)))
 			{
 				if (cp)

@@ -755,6 +755,7 @@ int luacon_mouseevent(int mx, int my, int mb, int event, int mouse_wheel){
 }
 int luacon_step(int mx, int my, int selectl, int selectr, int bsx, int bsy){
 	int tempret = 0, tempb, i, callret;
+	// TODO: might need some conversion of selectedl/r/a to legacy numbers
 	lua_pushinteger(l, bsy);
 	lua_pushinteger(l, bsx);
 	lua_pushinteger(l, SLALT);
@@ -1203,15 +1204,18 @@ int luatpt_set_wallmap(lua_State* l)
 {
 	int nx, ny, acount;
 	int x1, y1, width, height;
-	float value;
+	int value;
 	acount = lua_gettop(l);
 	
 	x1 = abs(luaL_optint(l, 1, 0));
 	y1 = abs(luaL_optint(l, 2, 0));
 	width = abs(luaL_optint(l, 3, XRES/CELL));
 	height = abs(luaL_optint(l, 4, YRES/CELL));
-	value = (float)luaL_optint(l, acount, 0);
-	
+	value = luaL_optint(l, acount, 0);
+
+	if (value<0 || value>=WL_NUM)
+		return luaL_error(l, "Invalid wall type (%d)", value);
+
 	if(acount==5)	//Draw rect
 	{
 		if(x1 > (XRES/CELL))
@@ -1225,7 +1229,7 @@ int luatpt_set_wallmap(lua_State* l)
 		for (nx = x1; nx<x1+width; nx++)
 			for (ny = y1; ny<y1+height; ny++)
 			{
-				bmap[ny][nx] = value;
+				globalSim->walls.type(SimCellCoord(nx,ny), value);
 			}
 	}
 	else	//Set point
@@ -1234,7 +1238,7 @@ int luatpt_set_wallmap(lua_State* l)
 			x1 = (XRES/CELL);
 		if(y1 > (YRES/CELL))
 			y1 = (YRES/CELL);
-		bmap[y1][x1] = value;
+		globalSim->walls.type(SimCellCoord(x1,y1), value);
 	}
 	return 0;
 }
@@ -1252,7 +1256,7 @@ int luatpt_get_wallmap(lua_State* l)
 	if(x1 > (XRES/CELL) || y1 > (YRES/CELL))
 		return luaL_error(l, "Out of range");
 
-	lua_pushinteger(l, bmap[y1][x1]);
+	lua_pushinteger(l, globalSim->walls.type(SimCellCoord(x1,y1)));
 	return 1;
 }
 
@@ -1260,14 +1264,14 @@ int luatpt_set_elecmap(lua_State* l)
 {
 	int nx, ny, acount;
 	int x1, y1, width, height;
-	float value;
+	int value;
 	acount = lua_gettop(l);
 	
 	x1 = abs(luaL_optint(l, 1, 0));
 	y1 = abs(luaL_optint(l, 2, 0));
 	width = abs(luaL_optint(l, 3, XRES/CELL));
 	height = abs(luaL_optint(l, 4, YRES/CELL));
-	value = (float)luaL_optint(l, acount, 0);
+	value = luaL_optint(l, acount, 0);
 	
 	if(acount==5)	//Draw rect
 	{
@@ -1282,7 +1286,7 @@ int luatpt_set_elecmap(lua_State* l)
 		for (nx = x1; nx<x1+width; nx++)
 			for (ny = y1; ny<y1+height; ny++)
 			{
-				emap[ny][nx] = value;
+				globalSim->walls.electricity(SimCellCoord(nx,ny), value);
 			}
 	}
 	else	//Set point
@@ -1291,7 +1295,7 @@ int luatpt_set_elecmap(lua_State* l)
 			x1 = (XRES/CELL);
 		if(y1 > (YRES/CELL))
 			y1 = (YRES/CELL);
-		emap[y1][x1] = value;
+		globalSim->walls.electricity(SimCellCoord(x1,y1), value);
 	}
 	return 0;
 }
@@ -1309,7 +1313,7 @@ int luatpt_get_elecmap(lua_State* l)
 	if(x1 > (XRES/CELL) || y1 > (YRES/CELL))
 		return luaL_error(l, "Out of range");
 
-	lua_pushinteger(l, emap[y1][x1]);
+	lua_pushinteger(l, globalSim->walls.electricity(SimCellCoord(x1,y1)));
 	return 1;
 }
 

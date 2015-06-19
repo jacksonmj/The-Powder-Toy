@@ -121,10 +121,10 @@ void AirSimulator_v0::update_air(AirDataP inputData, AirDataP outputData, AirSim
 	CellsFloatRP ovx = outputData.vx;
 	CellsFloatRP ovy = outputData.vy;
 	CellsFloatRP opv = outputData.pv;
-	const_CellsFloatRP fvx = params.fvx;
-	const_CellsFloatRP fvy = params.fvy;
+	const_CellsFloatRP fvx = params.wallsData.fanVX;
+	const_CellsFloatRP fvy = params.wallsData.fanVY;
 	const_CellsUCharRP bmap_blockair = params.blockair;
-	const_CellsUCharRP bmap = params.bmap;
+	const_CellsUCharRP bmap = params.wallsData.wallType;
 
 	int x, y, i, j;
 	float dp, dx, dy, f, tx, ty;

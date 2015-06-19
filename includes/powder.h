@@ -40,39 +40,22 @@
 #define BRUSH_REPLACEMODE 0x1
 #define BRUSH_SPECIFIC_DELETE 0x2
 
-#define UI_WALLSTART 222
-#define UI_ACTUALSTART 122
-#define UI_WALLCOUNT 26
+// Ugly way of identifying things until brushes/tools are rewritten
+#define UI_WALLOFFSET 1000
+#define UI_TOOLOFFSET 2000
 
-#define WL_WALLELEC	122
-#define WL_EWALL	123
-#define WL_DETECT	124
-#define WL_STREAM	125
-#define WL_SIGN	126
-#define WL_FAN	127
-#define WL_FANHELPER 255
-#define WL_ALLOWLIQUID	128
-#define WL_DESTROYALL	129
-#define WL_ERASE	130
-#define WL_WALL	131
-#define WL_ALLOWAIR	132
-#define WL_ALLOWSOLID	133
-#define WL_ALLOWALLELEC	134
-#define WL_EHOLE	135
+#include "simulation/WallNumbers.hpp"
 
-#define SPC_AIR 236
-#define SPC_HEAT 237
-#define SPC_COOL 238
-#define SPC_VACUUM 239
-#define SPC_WIND 241
-#define SPC_PGRV 243
-#define SPC_NGRV 244
-#define SPC_PROP 246
-
-#define WL_ALLOWGAS	140
-#define WL_GRAV		142
-#define WL_ALLOWENERGY 145
-#define WL_BLOCKAIR 147
+#define WL_SIGN	0
+#define SPC_AIR 1
+#define SPC_HEAT 2
+#define SPC_COOL 3
+#define SPC_VACUUM 4
+#define SPC_WIND 5
+#define SPC_PGRV 6
+#define SPC_NGRV 7
+#define SPC_PROP 8
+#define UI_TOOLCOUNT 9
 
 
 #define OLD_PT_WIND 147
@@ -170,12 +153,6 @@ extern int ppip_changed;
 extern particle *parts;
 extern particle *cb_parts;
 
-extern unsigned char bmap[YRES/CELL][XRES/CELL];
-extern unsigned char emap[YRES/CELL][XRES/CELL];
-
-extern unsigned char cb_bmap[YRES/CELL][XRES/CELL];
-extern unsigned char cb_emap[YRES/CELL][XRES/CELL];
-
 extern int lighting_recreate;
 
 int get_normal_interp(int pt, float x0, float y0, float dx, float dy, float *nx, float *ny);
@@ -190,17 +167,9 @@ int create_part(int p, int x, int y, int t);
 
 void delete_part(int x, int y, int flags);
 
-int is_wire(int x, int y);
-
-int is_wire_off(int x, int y);
-
-void set_emap(int x, int y);
-
 void create_arc(int sx, int sy, int dx, int dy, int midpoints, int variance, int type, int flags);
 
 int nearest_part(int ci, int t, int max_d);
-
-void update_wallmaps();
 
 void rotate_area(int area_x, int area_y, int area_w, int area_h, int invert);
 

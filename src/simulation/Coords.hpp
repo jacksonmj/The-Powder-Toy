@@ -29,6 +29,7 @@ class SimCoordFT
 {
 public:
 	float x, y;
+	SimCoordFT() {}
 	// hopefully force truncation of floats in x87 registers by storing and reloading from memory, so that rounding issues don't cause particles to appear in the wrong pmap list. If using -mfpmath=sse or an ARM CPU, this may be unnecessary.
 	SimCoordFT(float x_, float y_) {
 		volatile float tmpx = x_, tmpy = y_;
@@ -40,6 +41,7 @@ class SimCoordF
 {
 public:
 	float x, y;
+	SimCoordF () {}
 	constexpr SimCoordF(float x_, float y_) : x(x_), y(y_) {}
 	SimCoordF(SimCoordFT c) : x(c.x), y(c.y) {}
 	constexpr SimCoordF(SimCoordI c);
@@ -50,6 +52,7 @@ class SimCoordI
 {
 public:
 	int x, y;
+	SimCoordI() {}
 	constexpr SimCoordI(int x_, int y_) : x(x_), y(y_) {}
 	SimCoordI(SimCoordFT c) : x(int(c.x+0.5f)), y(int(c.y+0.5f)) {}
 	constexpr SimCoordI(SimCoordF c) : x(int(c.x+0.5f)), y(int(c.y+0.5f)) {}
@@ -60,12 +63,14 @@ class SimCellCoord
 {
 public:
 	int x, y;
+	SimCellCoord() {}
 	constexpr SimCellCoord(int x_, int y_) : x(x_), y(y_) {}
 	SimCellCoord(SimCoordFT c) : SimCellCoord(SimCoordI(c)) {}
 	constexpr SimCellCoord(SimCoordF c) : SimCellCoord(SimCoordI(c)) {}
 	constexpr SimCellCoord(SimCoordI c) : x(c.x/CELL), y(c.y/CELL) {}
 
 	constexpr SimCoordI topLeft() const { return SimCoordI(x*CELL, y*CELL); }
+	constexpr SimCoordI middle() const { return SimCoordI(x*CELL+CELL/2, y*CELL+CELL/2); }
 	constexpr SimCoordI bottomRight() const { return SimCoordI(x*CELL+CELL-1, y*CELL+CELL-1); }
 };
 

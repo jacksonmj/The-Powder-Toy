@@ -56,7 +56,9 @@
 
 #include "common/tptmath.h"
 #include "simulation/Simulation.h"
+#include "simulation/SimulationSharedData.h"
 #include "simulation/elements/FIGH.h"
+#include "simulation/walls/WallTypes.hpp"
 #include "graphics/ARGBColour.h"
 
 #ifdef HIGH_QUALITY_RESAMPLE
@@ -814,7 +816,6 @@ void drawblob(pixel *vid, int x, int y, unsigned char cr, unsigned char cg, unsi
 int draw_tool_xy(pixel *vid_buf, int x, int y, int b, unsigned pc)
 {
 	int i, j, c;
-	pixel gc;
 	if (x > XRES-26 || x < 0)
 		return 26;
 	if ((b&0xFF) == PT_LIFE)
@@ -837,98 +838,134 @@ int draw_tool_xy(pixel *vid_buf, int x, int y, int b, unsigned pc)
 		}
 		drawtext(vid_buf, x+14-textwidth((char *)gmenu[(b>>8)&0xFF].name)/2, y+4, (char *)gmenu[(b>>8)&0xFF].name, c, c, c, 255);
 	}
-	else if (b>=UI_WALLSTART)
+	else if (b-UI_WALLOFFSET>=0 && b-UI_WALLOFFSET<WL_NUM)
 	{
-		int ds = 0;
-		if (b-UI_WALLSTART>=0 && b-UI_WALLSTART<UI_WALLCOUNT)
-		{
-			ds = wtypes[b-UI_WALLSTART].drawstyle;
-			gc = wtypes[b-UI_WALLSTART].eglow;
-		}
-		//x = (2+32*((b-22)/1));
-		//y = YRES+2+40;
-		if (ds==1)
+		int wallId = b-UI_WALLOFFSET;
+		WallType &wt = globalSim->simSD->wallTypes[wallId];
+		pc = ARGBColour_TO_PIXEL(wt.Colour);
+
+		if (wt.DrawStyle==WallType_DrawStyle::DOTS_OFFSET)
 		{
 			for (j=1; j<15; j+=2)
 				for (i=1+(1&(j>>1)); i<27; i+=2)
 					vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = pc;
 		}
-		else if (ds==2)
+		else if (wt.DrawStyle==WallType_DrawStyle::DOTS_ALIGNED)
 		{
 			for (j=1; j<15; j+=2)
 				for (i=1; i<27; i+=2)
 					vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = pc;
 		}
-		else if (ds==3)
+		else if (wt.DrawStyle==WallType_DrawStyle::SOLID)
 		{
 			for (j=1; j<15; j++)
 				for (i=1; i<27; i++)
 					vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = pc;
 		}
-		else if (ds==4)
+		else if (wt.DrawStyle==WallType_DrawStyle::STRIPES)
 		{
+			pixel pc2 = ARGBColour_TO_PIXEL(wt.Colour2);
 			for (j=1; j<15; j++)
 				for (i=1; i<27; i++)
 					if(i%CELL == j%CELL)
 						vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = pc;
 					else if  (i%CELL == (j%CELL)+1 || (i%CELL == 0 && j%CELL == CELL-1))
-						vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = gc;
+						vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = pc2;
 					else 
 						vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = PIXPACK(0x202020);
 		}
 		else
-		switch (b)
 		{
-		case WL_WALLELEC+100:
-			for (j=1; j<15; j++)
+			switch (wallId)
 			{
-				for (i=1; i<27; i++)
+			case WL_WALLELEC:
+				for (j=1; j<15; j++)
 				{
-					if (!(i%2) && !(j%2))
+					for (i=1; i<27; i++)
+					{
+						if (!(i%2) && !(j%2))
+						{
+							vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = pc;
+						}
+						else
+						{
+							vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = PIXPACK(0x808080);
+						}
+					}
+				}
+				break;
+			case WL_EWALL:
+				for (j=1; j<15; j++)
+				{
+					for (i=1; i<6+j; i++)
+					{
+						if (!(i&j&1))
+						{
+							vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = pc;
+						}
+					}
+					for (; i<27; i++)
+					{
+						if (i&j&1)
+						{
+							vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = pc;
+						}
+					}
+				}
+				break;
+			case WL_STREAM:
+				for (j=1; j<15; j++)
+				{
+					for (i=1; i<27; i++)
+					{
+						vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = i==1||i==26||j==1||j==14 ? PIXPACK(0xA0A0A0) : PIXPACK(0x000000);
+						drawtext(vid_buf, x+4, y+3, "\x8D", 255, 255, 255, 255);
+					}
+				}
+				for (i=9; i<27; i++)
+				{
+					drawpixel(vid_buf, x+i, y+8+(int)(3.9f*cos(i*0.3f)), 255, 255, 255, 255);
+				}
+				break;
+			case WL_ERASE:
+				for (j=1; j<15; j+=2)
+				{
+					for (i=1+(1&(j>>1)); i<13; i+=2)
 					{
 						vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = pc;
 					}
-					else
-					{
-						vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = PIXPACK(0x808080);
-					}
 				}
-			}
-			break;
-		case WL_EWALL+100:
-			for (j=1; j<15; j++)
-			{
-				for (i=1; i<6+j; i++)
+				for (j=1; j<15; j++)
 				{
-					if (!(i&j&1))
+					for (i=14; i<27; i++)
 					{
 						vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = pc;
 					}
 				}
-				for (; i<27; i++)
+				break;
+			}
+			if (wallId==WL_ERASE)
+			{
+				for (j=4; j<12; j++)
 				{
-					if (i&j&1)
-					{
-						vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = pc;
-					}
+					vid_buf[(XRES+BARSIZE)*(y+j)+(x+j+6)] = PIXPACK(0xFF0000);
+					vid_buf[(XRES+BARSIZE)*(y+j)+(x+j+7)] = PIXPACK(0xFF0000);
+					vid_buf[(XRES+BARSIZE)*(y+j)+(x-j+21)] = PIXPACK(0xFF0000);
+					vid_buf[(XRES+BARSIZE)*(y+j)+(x-j+22)] = PIXPACK(0xFF0000);
 				}
 			}
-			break;
-		case WL_STREAM+100:
-			for (j=1; j<15; j++)
-			{
-				for (i=1; i<27; i++)
-				{
-					vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = i==1||i==26||j==1||j==14 ? PIXPACK(0xA0A0A0) : PIXPACK(0x000000);
-					drawtext(vid_buf, x+4, y+3, "\x8D", 255, 255, 255, 255);
-				}
-			}
-			for (i=9; i<27; i++)
-			{
-				drawpixel(vid_buf, x+i, y+8+(int)(3.9f*cos(i*0.3f)), 255, 255, 255, 255);
-			}
-			break;
-		case WL_SIGN+100:
+		}
+	}
+	else if (b>=UI_TOOLOFFSET)
+	{
+		int toolId = b-UI_TOOLOFFSET;
+		if (toolId>=0 && toolId<UI_TOOLCOUNT)
+		{
+			pc = wtypes[toolId].colour;
+		}
+		switch(toolId)
+		{
+		case WL_SIGN:
 			for (j=1; j<15; j++)
 			{
 				for (i=1; i<27; i++)
@@ -939,22 +976,7 @@ int draw_tool_xy(pixel *vid_buf, int x, int y, int b, unsigned pc)
 			drawtext(vid_buf, x+9, y+3, "\xA1", 32, 64, 128, 255);
 			drawtext(vid_buf, x+9, y+3, "\xA0", 255, 255, 255, 255);
 			break;
-		case WL_ERASE+100:
-			for (j=1; j<15; j+=2)
-			{
-				for (i=1+(1&(j>>1)); i<13; i+=2)
-				{
-					vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = pc;
-				}
-			}
-			for (j=1; j<15; j++)
-			{
-				for (i=14; i<27; i++)
-				{
-					vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = pc;
-				}
-			}
-			break;
+		
 		case SPC_AIR:
 		case SPC_HEAT:
 		case SPC_COOL:
@@ -975,37 +997,27 @@ int draw_tool_xy(pixel *vid_buf, int x, int y, int b, unsigned pc)
 			{
 				c = 0;
 			}
-			if (b==SPC_AIR)
+			if (toolId==SPC_AIR)
 				drawtext(vid_buf, x+14-textwidth("AIR")/2, y+4, "AIR", c, c, c, 255);
-			else if (b==SPC_HEAT)
+			else if (toolId==SPC_HEAT)
 				drawtext(vid_buf, x+14-textwidth("HEAT")/2, y+4, "HEAT", c, c, c, 255);
-			else if (b==SPC_COOL)
+			else if (toolId==SPC_COOL)
 				drawtext(vid_buf, x+14-textwidth("COOL")/2, y+4, "COOL", c, c, c, 255);
-			else if (b==SPC_VACUUM)
+			else if (toolId==SPC_VACUUM)
 				drawtext(vid_buf, x+14-textwidth("VAC")/2, y+4, "VAC", c, c, c, 255);
-			else if (b==SPC_WIND)
+			else if (toolId==SPC_WIND)
 				drawtext(vid_buf, x+14-textwidth("WIND")/2, y+4, "WIND", c, c, c, 255);
-			else if (b==SPC_PGRV)
+			else if (toolId==SPC_PGRV)
 				drawtext(vid_buf, x+14-textwidth("PGRV")/2, y+4, "PGRV", c, c, c, 255);
-			else if (b==SPC_NGRV)
+			else if (toolId==SPC_NGRV)
 				drawtext(vid_buf, x+14-textwidth("NGRV")/2, y+4, "NGRV", c, c, c, 255);
-			else if (b==SPC_PROP)
+			else if (toolId==SPC_PROP)
 				drawtext(vid_buf, x+14-textwidth("PROP")/2, y+4, "PROP", c, c, c, 255);
 			break;
 		default:
 			for (j=1; j<15; j++)
 				for (i=1; i<27; i++)
 					vid_buf[(XRES+BARSIZE)*(y+j)+(x+i)] = pc;
-		}
-		if (b==WL_ERASE+100)
-		{
-			for (j=4; j<12; j++)
-			{
-				vid_buf[(XRES+BARSIZE)*(y+j)+(x+j+6)] = PIXPACK(0xFF0000);
-				vid_buf[(XRES+BARSIZE)*(y+j)+(x+j+7)] = PIXPACK(0xFF0000);
-				vid_buf[(XRES+BARSIZE)*(y+j)+(x-j+21)] = PIXPACK(0xFF0000);
-				vid_buf[(XRES+BARSIZE)*(y+j)+(x-j+22)] = PIXPACK(0xFF0000);
-			}
 		}
 	}
 	else
@@ -3261,55 +3273,56 @@ void render_after(pixel *part_vbuf, pixel *vid_buf)
 void draw_walls(pixel *vid)
 {
 	int x, y, i, j, cr, cg, cb, nx, ny, t;
-	unsigned char wt;
+	uint8_t wallId, electricity;
 	float lx, ly;
 	pixel pc;
-	pixel gc;
 	for (y=0; y<YRES/CELL; y++)
 		for (x=0; x<XRES/CELL; x++)
-			if (bmap[y][x])
+			if (globalSim->walls.type(SimCellCoord(x,y)))
 			{
-				wt = bmap[y][x]-UI_ACTUALSTART;
-				if (wt<0 || wt>=UI_WALLCOUNT)
+				wallId = globalSim->walls.type(SimCellCoord(x,y));
+				electricity = globalSim->walls.electricity(SimCellCoord(x,y));
+				if (wallId<0 || wallId>=WL_NUM)
 					continue;
-				pc = wtypes[wt].colour;
-				gc = wtypes[wt].eglow;
+				WallType &wt = globalSim->simSD->wallTypes[wallId];
+				pc = ARGBColour_TO_PIXEL(wt.Colour);
 
 				// standard wall patterns
-				if (wtypes[wt].drawstyle==1)
+				if (wt.DrawStyle==WallType_DrawStyle::DOTS_OFFSET)
 				{
 					for (j=0; j<CELL; j+=2)
 						for (i=(j>>1)&1; i<CELL; i+=2)
 							vid[(y*CELL+j)*(XRES+BARSIZE)+(x*CELL+i)] = pc;
 				}
-				else if (wtypes[wt].drawstyle==2)
+				else if (wt.DrawStyle==WallType_DrawStyle::DOTS_ALIGNED)
 				{
 					for (j=0; j<CELL; j+=2)
 						for (i=0; i<CELL; i+=2)
 							vid[(y*CELL+j)*(XRES+BARSIZE)+(x*CELL+i)] = pc;
 				}
-				else if (wtypes[wt].drawstyle==3)
+				else if (wt.DrawStyle==WallType_DrawStyle::SOLID)
 				{
 					for (j=0; j<CELL; j++)
 						for (i=0; i<CELL; i++)
 							vid[(y*CELL+j)*(XRES+BARSIZE)+(x*CELL+i)] = pc;
 				}
-				else if (wtypes[wt].drawstyle==4)
+				else if (wt.DrawStyle==WallType_DrawStyle::STRIPES)
 				{
+					pixel pc2 = ARGBColour_TO_PIXEL(wt.Colour2);
 					for (j=0; j<CELL; j++)
 						for (i=0; i<CELL; i++)
 							if(i == j)
 								vid[(y*CELL+j)*(XRES+BARSIZE)+(x*CELL+i)] = pc;
 							else if  (i == j+1 || (i == 0 && j == CELL-1))
-								vid[(y*CELL+j)*(XRES+BARSIZE)+(x*CELL+i)] = gc;
+								vid[(y*CELL+j)*(XRES+BARSIZE)+(x*CELL+i)] = pc2;
 							else 
 								vid[(y*CELL+j)*(XRES+BARSIZE)+(x*CELL+i)] = PIXPACK(0x202020);
 				}
 
 				// special rendering for some walls
-				if (bmap[y][x]==WL_EWALL)
+				if (wallId==WL_EWALL)
 				{
-					if (emap[y][x])
+					if (electricity)
 					{
 						for (j=0; j<CELL; j++)
 							for (i=0; i<CELL; i++)
@@ -3324,7 +3337,7 @@ void draw_walls(pixel *vid)
 									vid[(y*CELL+j)*(XRES+BARSIZE)+(x*CELL+i)] = pc;
 					}
 				}
-				else if (bmap[y][x]==WL_WALLELEC)
+				else if (wallId==WL_WALLELEC)
 				{
 					for (j=0; j<CELL; j++)
 						for (i=0; i<CELL; i++)
@@ -3335,13 +3348,13 @@ void draw_walls(pixel *vid)
 								vid[(y*CELL+j)*(XRES+BARSIZE)+(x*CELL+i)] = PIXPACK(0x808080);
 						}
 				}
-				else if (bmap[y][x]==WL_EHOLE)
+				else if (wallId==WL_EHOLE)
 				{
-					if (emap[y][x])
+					if (electricity)
 					{
 						for (j=0; j<CELL; j++)
 							for (i=0; i<CELL; i++)
-								vid[(y*CELL+j)*(XRES+BARSIZE)+(x*CELL+i)] = PIXPACK(0x242424);
+								vid[(y*CELL+j)*(XRES+BARSIZE)+(x*CELL+i)] = PIXPACK(pc);
 						for (j=0; j<CELL; j+=2)
 							for (i=0; i<CELL; i+=2)
 								vid[(y*CELL+j)*(XRES+BARSIZE)+(x*CELL+i)] = PIXPACK(0x000000);
@@ -3350,59 +3363,60 @@ void draw_walls(pixel *vid)
 					{
 						for (j=0; j<CELL; j+=2)
 							for (i=0; i<CELL; i+=2)
-								vid[(y*CELL+j)*(XRES+BARSIZE)+(x*CELL+i)] = PIXPACK(0x242424);
+								vid[(y*CELL+j)*(XRES+BARSIZE)+(x*CELL+i)] = PIXPACK(pc);
 					}
 				}
 				if (render_mode & PMODE_BLOB)
 				{
 					// when in blob view, draw some blobs...
-					if (wtypes[wt].drawstyle==1)
+					if (wt.DrawStyle==WallType_DrawStyle::DOTS_OFFSET)
 					{
 						for (j=0; j<CELL; j+=2)
 							for (i=(j>>1)&1; i<CELL; i+=2)
 								drawblob(vid, (x*CELL+i), (y*CELL+j), PIXR(pc), PIXG(pc), PIXB(pc));
 					}
-					else if (wtypes[wt].drawstyle==2)
+					else if (wt.DrawStyle==WallType_DrawStyle::DOTS_ALIGNED)
 					{
 						for (j=0; j<CELL; j+=2)
 							for (i=0; i<CELL; i+=2)
 								drawblob(vid, (x*CELL+i), (y*CELL+j), PIXR(pc), PIXG(pc), PIXB(pc));
 					}
-					else if (wtypes[wt].drawstyle==3)
+					else if (wt.DrawStyle==WallType_DrawStyle::SOLID)
 					{
 						for (j=0; j<CELL; j++)
 							for (i=0; i<CELL; i++)
 								drawblob(vid, (x*CELL+i), (y*CELL+j), PIXR(pc), PIXG(pc), PIXB(pc));
 					}
-					else if (wtypes[wt].drawstyle==4)
+					else if (wt.DrawStyle==WallType_DrawStyle::STRIPES)
 					{
+						pixel pc2 = ARGBColour_TO_PIXEL(wt.Colour2);
 						for (j=0; j<CELL; j++)
 							for (i=0; i<CELL; i++)
 								if(i == j)
 									drawblob(vid, (x*CELL+i), (y*CELL+j), PIXR(pc), PIXG(pc), PIXB(pc));
 								else if  (i == j+1 || (i == 0 && j == CELL-1))
-									drawblob(vid, (x*CELL+i), (y*CELL+j), PIXR(gc), PIXG(gc), PIXB(gc));
+									drawblob(vid, (x*CELL+i), (y*CELL+j), PIXR(pc2), PIXG(pc2), PIXB(pc2));
 								else 
 									drawblob(vid, (x*CELL+i), (y*CELL+j), 0x20, 0x20, 0x20);
 					}
-					if (bmap[y][x]==WL_EWALL)
+					if (wallId==WL_EWALL)
 					{
-						if (emap[y][x])
+						if (electricity)
 						{
 							for (j=0; j<CELL; j++)
 								for (i=0; i<CELL; i++)
 									if (i&j&1)
-										drawblob(vid, (x*CELL+i), (y*CELL+j), 0x80, 0x80, 0x80);
+										drawblob(vid, (x*CELL+i), (y*CELL+j), PIXR(pc), PIXG(pc), PIXB(pc));
 						}
 						else
 						{
 							for (j=0; j<CELL; j++)
 								for (i=0; i<CELL; i++)
 									if (!(i&j&1))
-										drawblob(vid, (x*CELL+i), (y*CELL+j), 0x80, 0x80, 0x80);
+										drawblob(vid, (x*CELL+i), (y*CELL+j), PIXR(pc), PIXG(pc), PIXB(pc));
 						}
 					}
-					else if (bmap[y][x]==WL_WALLELEC)
+					else if (wallId==WL_WALLELEC)
 					{
 						for (j=0; j<CELL; j++)
 							for (i=0; i<CELL; i++)
@@ -3413,13 +3427,13 @@ void draw_walls(pixel *vid)
 									drawblob(vid, (x*CELL+i), (y*CELL+j), 0x80, 0x80, 0x80);
 							}
 					}
-					else if (bmap[y][x]==WL_EHOLE)
+					else if (wallId==WL_EHOLE)
 					{
-						if (emap[y][x])
+						if (electricity)
 						{
 							for (j=0; j<CELL; j++)
 								for (i=0; i<CELL; i++)
-									drawblob(vid, (x*CELL+i), (y*CELL+j), 0x24, 0x24, 0x24);
+									drawblob(vid, (x*CELL+i), (y*CELL+j), PIXR(pc), PIXG(pc), PIXB(pc));
 							for (j=0; j<CELL; j+=2)
 								for (i=0; i<CELL; i+=2)
 									vid[(y*CELL+j)*(XRES+BARSIZE)+(x*CELL+i)] = PIXPACK(0x000000);
@@ -3428,21 +3442,21 @@ void draw_walls(pixel *vid)
 						{
 							for (j=0; j<CELL; j+=2)
 								for (i=0; i<CELL; i+=2)
-									drawblob(vid, (x*CELL+i), (y*CELL+j), 0x24, 0x24, 0x24);
+									drawblob(vid, (x*CELL+i), (y*CELL+j), PIXR(pc), PIXG(pc), PIXB(pc));
 						}
 					}
 				}
-				if (wtypes[wt].eglow && emap[y][x])
+				if (wt.Colour_ElecGlow && electricity)
 				{
 					// glow if electrified
-					pc = wtypes[wt].eglow;
-					cr = fire_r[y][x] + PIXR(pc);
+					ARGBColour col = wt.Colour_ElecGlow;
+					cr = fire_r[y][x] + COLR(col);
 					if (cr > 255) cr = 255;
 					fire_r[y][x] = cr;
-					cg = fire_g[y][x] + PIXG(pc);
+					cg = fire_g[y][x] + COLG(col);
 					if (cg > 255) cg = 255;
 					fire_g[y][x] = cg;
-					cb = fire_b[y][x] + PIXB(pc);
+					cb = fire_b[y][x] + COLB(col);
 					if (cb > 255) cb = 255;
 					fire_b[y][x] = cb;
 					
@@ -3454,7 +3468,7 @@ void draw_walls(pixel *vid)
 	const_CellsFloatRP vy = globalSim->air.vy.getDataPtr();
 	for (y=0; y<YRES/CELL; y++)
 		for (x=0; x<XRES/CELL; x++)
-			if (bmap[y][x]==WL_STREAM)
+			if (globalSim->walls.type(SimCellCoord(x,y))==WL_STREAM)
 			{
 				lx = x*CELL + CELL*0.5f;
 				ly = y*CELL + CELL*0.5f;
@@ -3469,7 +3483,7 @@ void draw_walls(pixel *vid)
 					j = ny/CELL;
 					lx += vx[j][i]*0.125f;
 					ly += vy[j][i]*0.125f;
-					if (bmap[j][i]==WL_STREAM && i!=x && j!=y)
+					if (globalSim->walls.type(SimCellCoord(i,j))==WL_STREAM && i!=x && j!=y)
 						break;
 				}
 				drawtext(vid, x*CELL, y*CELL-2, "\x8D", 255, 255, 255, 128);
@@ -4310,7 +4324,7 @@ void render_cursor(pixel *vid, int x, int y, int t, int rx, int ry)
 {
 #ifdef OGLR
 	int i;
-	if (t<PT_NUM||(t&0xFF)==PT_LIFE||t==SPC_AIR||t==SPC_HEAT||t==SPC_COOL||t==SPC_VACUUM||t==SPC_WIND||t==SPC_PGRV||t==SPC_NGRV||t==SPC_PROP)
+	if (t<PT_NUM||(t&0xFF)==PT_LIFE|| (t>=UI_TOOLOFFSET && t<UI_TOOLOFFSET+UI_TOOLCOUNT))
 	{
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, partsFbo);
 		glEnable(GL_COLOR_LOGIC_OP);
@@ -4350,7 +4364,7 @@ void render_cursor(pixel *vid, int x, int y, int t, int rx, int ry)
 	}
 #else
 	int i,j,c;
-	if (t<PT_NUM||(t&0xFF)==PT_LIFE||t==SPC_AIR||t==SPC_HEAT||t==SPC_COOL||t==SPC_VACUUM||t==SPC_WIND||t==SPC_PGRV||t==SPC_NGRV||t==SPC_PROP)
+	if (t<PT_NUM||(t&0xFF)==PT_LIFE|| (t>=UI_TOOLOFFSET && t<UI_TOOLOFFSET+UI_TOOLCOUNT))
 	{
 		if (rx<=0)
 			for (j = y - ry; j <= y + ry; j++)

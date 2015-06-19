@@ -26,7 +26,7 @@ public:
 	static int update_pyro_neighbour(UPDATE_FUNC_ARGS, int rx, int ry, int rt, int ri)
 	{
 		// Additional interactions for 'hot' things (FIRE, LAVA, etc) which only occur when heat sim is off
-		if (bmap[(y+ry)/CELL][(x+rx)/CELL] && bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_STREAM)
+		if (sim->walls.isProperWall(SimCoordI(x+rx,y+ry)))
 			return 0;
 		int t = parts[i].type;
 		float lpv = (int)sim->air.pv.get(SimCoordI(x+rx,y+ry));

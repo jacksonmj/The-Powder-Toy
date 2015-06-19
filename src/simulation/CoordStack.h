@@ -16,8 +16,10 @@
 #ifndef Simulation_CoordStack_h
 #define Simulation_CoordStack_h
 
-#include "defines.h" // for XRES and YRES
+#include "simulation/Config.hpp"
+#include <cstdlib>
 #include <exception>
+#include <type_traits>
 
 class CoordStackOverflowException: public std::exception
 {
@@ -27,10 +29,60 @@ public:
 	{
 		return "Maximum number of entries in the coordinate stack was exceeded";
 	}
-	~CoordStackOverflowException() throw() {};
+	~CoordStackOverflowException() throw() {}
 };
 
+template<class CoordType=void, size_t defaultStackLimit = (std::is_same<CoordType, SimCellCoord>::value ? XRES/CELL*YRES/CELL : XRES*YRES)>
 class CoordStack
+{
+private:
+	CoordType *stack;
+	size_t stackSize;
+	size_t stackLimit;
+public:
+	CoordStack(size_t stackLimit_ = defaultStackLimit) :
+		stack(nullptr),
+		stackSize(0),
+		stackLimit(stackLimit_)
+	{
+		stack = new CoordType[stackLimit];
+	}
+	~CoordStack()
+	{
+		delete[] stack;
+	}
+	/*{
+		// Memory does not need to be initialised, so use malloc instead of new
+		stack = reinterpret_cast<CoordType*>(malloc(sizeof(CoordType)*stackLimit));
+	}
+	~CoordStack()
+	{
+		free(stack);
+	}*/
+	void push(CoordType c)
+	{
+		if (stackSize>=stackLimit)
+			throw CoordStackOverflowException();
+		stack[stackSize] = c;
+		stackSize++;
+	}
+	CoordType pop()
+	{
+		stackSize--;
+		return stack[stackSize];
+	}
+	size_t size() const
+	{
+		return stackSize;
+	}
+	void clear()
+	{
+		stackSize = 0;
+	}
+};
+
+template<>
+class CoordStack<short>
 {
 private:
 	unsigned short (*stack)[2];

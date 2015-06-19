@@ -19,16 +19,17 @@
 #include <algorithm>
 
 // Declare the element initialisation functions
-#define ElementNumbers_Include_Decl
+#define ElementNumbers_DeclInit
 #define DEFINE_ELEMENT(name, id) void name ## _init_element(ELEMENT_INIT_FUNC_ARGS);
 #include "simulation/ElementNumbers.h"
-
 
 SimulationSharedData::SimulationSharedData()
 {
 	std::fill_n(elemDataShared_, PT_NUM, nullptr);
 	if (pthread_rwlock_init(&data_rwlock, NULL))
 		throw std::runtime_error("Initialising SimulationSharedData.data_rwlock failed");
+
+	wallTypes.init(this);
 	InitElements();
 }
 
@@ -44,6 +45,7 @@ SimulationSharedData::~SimulationSharedData()
 void SimulationSharedData::InitElements()
 {
 	#define DEFINE_ELEMENT(name, id) if (id>=0 && id<PT_NUM) { name ## _init_element(this, &elements[id], id); };
-	#define ElementNumbers_Include_Call
+	#define ElementNumbers_CallInit
 	#include "simulation/ElementNumbers.h"
 }
+

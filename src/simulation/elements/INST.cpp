@@ -41,7 +41,7 @@ int Element_INST::flood_spark(Simulation *sim, int x, int y)
 
 	try
 	{
-		CoordStack cs;
+		CoordStack<short> cs;
 		cs.push(x, y);
 
 		do

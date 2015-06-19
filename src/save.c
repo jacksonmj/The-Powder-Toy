@@ -28,116 +28,10 @@
 #include "simulation/Simulation.h"
 #include "simulation/elements/FIGH.h"
 #include "simulation/elements/STKM.h"
+#include "simulation/SimulationSharedData.h"
+#include "simulation/walls/WallTypes.hpp"
 
 unsigned pmap_save[YRES][XRES];// TODO: remove
-
-// Convert wall number from the one used by TPT++ to the current (legacy) number
-int change_wall_pp_current(int wt)
-{
-	if (wt == 1)
-		return WL_WALLELEC;
-	else if (wt == 2)
-		return WL_EWALL;
-	else if (wt == 3)
-		return WL_DETECT;
-	else if (wt == 4)
-		return WL_STREAM;
-	else if (wt == 5)
-		return WL_FAN;
-	else if (wt == 6)
-		return WL_ALLOWLIQUID;
-	else if (wt == 7)
-		return WL_DESTROYALL;
-	else if (wt == 8)
-		return WL_WALL;
-	else if (wt == 9)
-		return WL_ALLOWAIR;
-	else if (wt == 10)
-		return WL_ALLOWSOLID;
-	else if (wt == 11)
-		return WL_ALLOWALLELEC;
-	else if (wt == 12)
-		return WL_EHOLE;
-	else if (wt == 13)
-		return WL_ALLOWGAS;
-	else if (wt == 14)
-		return WL_GRAV;
-	else if (wt == 15)
-		return WL_ALLOWENERGY;
-	else if (wt == 16)
-		return WL_BLOCKAIR;
-	return wt;
-}
-
-// Convert wall number from the current (legacy) number to the one used by TPT++
-int change_wall_current_pp(int wt)
-{
-	if (wt == WL_WALLELEC)
-		return 1;
-	else if (wt == WL_EWALL)
-		return 2;
-	else if (wt == WL_DETECT)
-		return 3;
-	else if (wt == WL_STREAM)
-		return 4;
-	else if (wt == WL_FAN)
-		return 5;
-	else if (wt == WL_ALLOWLIQUID)
-		return 6;
-	else if (wt == WL_DESTROYALL)
-		return 7;
-	else if (wt == WL_WALL)
-		return 8;
-	else if (wt == WL_ALLOWAIR)
-		return 9;
-	else if (wt == WL_ALLOWSOLID)
-		return 10;
-	else if (wt == WL_ALLOWALLELEC)
-		return 11;
-	else if (wt == WL_EHOLE)
-		return 12;
-	else if (wt == WL_ALLOWGAS)
-		return 13;
-	else if (wt == WL_GRAV)
-		return 14;
-	else if (wt == WL_ALLOWENERGY)
-		return 15;
-	else if (wt == WL_BLOCKAIR)
-		return 16;
-	return wt;
-}
-
-// Convert wall number from the one used by saves from v44 or earlier to the current (legacy) number
-int change_wall_44_current(int wt)
-{
-	if (wt == 1)
-		return WL_WALL;
-	else if (wt == 2)
-		return WL_DESTROYALL;
-	else if (wt == 3)
-		return WL_ALLOWLIQUID;
-	else if (wt == 4)
-		return WL_FAN;
-	else if (wt == 5)
-		return WL_STREAM;
-	else if (wt == 6)
-		return WL_DETECT;
-	else if (wt == 7)
-		return WL_EWALL;
-	else if (wt == 8)
-		return WL_WALLELEC;
-	else if (wt == 9)
-		return WL_ALLOWAIR;
-	else if (wt == 10)
-		return WL_ALLOWSOLID;
-	else if (wt == 11)
-		return WL_ALLOWALLELEC;
-	else if (wt == 12)
-		return WL_EHOLE;
-	else if (wt == 13)
-		return WL_ALLOWGAS;
-	return wt;
-}
 
 //Pop
 pixel *prerender_save(void *save, int size, int *width, int *height)
@@ -158,12 +52,12 @@ pixel *prerender_save(void *save, int size, int *width, int *height)
 	return NULL;
 }
 
-void *build_save(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h, unsigned char bmap[YRES/CELL][XRES/CELL], float fvx[YRES/CELL][XRES/CELL], float fvy[YRES/CELL][XRES/CELL], sign signs[MAXSIGNS], void* partsptr)
+void *build_save(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h, const_WallsDataP wallsData, sign signs[MAXSIGNS], void* partsptr)
 {
-	return build_save_OPS(size, orig_x0, orig_y0, orig_w, orig_h, bmap, fvx, fvy, signs, partsptr);
+	return build_save_OPS(size, orig_x0, orig_y0, orig_w, orig_h, wallsData, signs, partsptr);
 }
 
-int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char bmap[YRES/CELL][XRES/CELL], float fvx[YRES/CELL][XRES/CELL], float fvy[YRES/CELL][XRES/CELL], sign signs[MAXSIGNS], void* partsptr, unsigned pmap[YRES][XRES])
+int parse_save(void *save, int size, int replace, int x0, int y0, WallsDataP wallsData, sign signs[MAXSIGNS], void* partsptr, unsigned pmap[YRES][XRES])
 {
 	unsigned char * saveData = (unsigned char*)save;
 	if (!pmap)
@@ -177,11 +71,11 @@ int parse_save(void *save, int size, int replace, int x0, int y0, unsigned char 
 	ppip_changed = 1;
 	if(saveData[0] == 'O' && saveData[1] == 'P' && saveData[2] == 'S')
 	{
-		result = parse_save_OPS(save, size, replace, x0, y0, bmap, fvx, fvy, signs, partsptr, pmap);
+		result = parse_save_OPS(save, size, replace, x0, y0, wallsData, signs, partsptr, pmap);
 	}
 	else if((saveData[0]==0x66 && saveData[1]==0x75 && saveData[2]==0x43) || (saveData[0]==0x50 && saveData[1]==0x53 && saveData[2]==0x76))
 	{
-		result = parse_save_PSv(save, size, replace, x0, y0, bmap, fvx, fvy, signs, partsptr, pmap);
+		result = parse_save_PSv(save, size, replace, x0, y0, wallsData, signs, partsptr, pmap);
 	}
 	globalSim->pmap_reset();
 	globalSim->RecalcElementCounts();
@@ -192,7 +86,7 @@ pixel *prerender_save_OPS(void *save, int size, int *width, int *height)
 {
 	unsigned char * inputData = (unsigned char*)save, *bsonData = NULL, *partsData = NULL, *partsPosData = NULL, *wallData = NULL;
 	int inputDataLen = size, bsonDataLen = 0, partsDataLen, partsPosDataLen, wallDataLen;
-	int i, x, y, j, wt, pc, gc;
+	int i, x, y, j;
 	int blockX, blockY, blockW, blockH, fullX, fullY, fullW, fullH;
 	int bsonInitialised = 0;
 	pixel * vidBuf = NULL;
@@ -313,64 +207,10 @@ pixel *prerender_save_OPS(void *save, int size, int *width, int *height)
 			{
 				if(wallData[y*blockW+x])
 				{
-					wt = change_wall_pp_current(wallData[y*blockW+x]);
-					pc = wtypes[wt-UI_ACTUALSTART].colour;
-					gc = wtypes[wt-UI_ACTUALSTART].eglow;
-					if (wtypes[wt-UI_ACTUALSTART].drawstyle==1)
-					{
-						for (i=0; i<CELL; i+=2)
-							for (j=(i>>1)&1; j<CELL; j+=2)
-								vidBuf[(fullY+i+(y*CELL))*fullW+(fullX+j+(x*CELL))] = pc;
-					}
-					else if (wtypes[wt-UI_ACTUALSTART].drawstyle==2)
-					{
-						for (i=0; i<CELL; i+=2)
-							for (j=0; j<CELL; j+=2)
-								vidBuf[(fullY+i+(y*CELL))*fullW+(fullX+j+(x*CELL))] = pc;
-					}
-					else if (wtypes[wt-UI_ACTUALSTART].drawstyle==3)
-					{
-						for (i=0; i<CELL; i++)
-							for (j=0; j<CELL; j++)
-								vidBuf[(fullY+i+(y*CELL))*fullW+(fullX+j+(x*CELL))] = pc;
-					}
-					else if (wtypes[wt-UI_ACTUALSTART].drawstyle==4)
-					{
-						for (i=0; i<CELL; i++)
-							for (j=0; j<CELL; j++)
-								if(i == j)
-									vidBuf[(fullY+i+(y*CELL))*fullW+(fullX+j+(x*CELL))] = pc;
-								else if  (j == i+1 || (j == 0 && i == CELL-1))
-									vidBuf[(fullY+i+(y*CELL))*fullW+(fullX+j+(x*CELL))] = gc;
-								else 
-									vidBuf[(fullY+i+(y*CELL))*fullW+(fullX+j+(x*CELL))] = PIXPACK(0x202020);
-					}
-
-					// special rendering for some walls
-					if (wt==WL_EWALL)
-					{
-						for (i=0; i<CELL; i++)
-							for (j=0; j<CELL; j++)
-								if (!(i&j&1))
-									vidBuf[(fullY+i+(y*CELL))*fullW+(fullX+j+(x*CELL))] = pc;
-					}
-					else if (wt==WL_WALLELEC)
-					{
-						for (i=0; i<CELL; i++)
-							for (j=0; j<CELL; j++)
-							{
-								if (!((y*CELL+j)%2) && !((x*CELL+i)%2))
-									vidBuf[(fullY+i+(y*CELL))*fullW+(fullX+j+(x*CELL))] = pc;
-								else
-									vidBuf[(fullY+i+(y*CELL))*fullW+(fullX+j+(x*CELL))] = PIXPACK(0x808080);
-							}
-					}
-					else if (wt==WL_EHOLE)
-					{
-						for (i=0; i<CELL; i+=2)
-							for (j=0; j<CELL; j+=2)
-								vidBuf[(fullY+i+(y*CELL))*fullW+(fullX+j+(x*CELL))] = PIXPACK(0x242424);
-					}
+					// Not bothering to draw walls accurately because prerender_save will be removed at some point during the rewrite
+					for (i=0; i<CELL; i++)
+						for (j=0; j<CELL; j++)
+							vidBuf[(fullY+i+(y*CELL))*fullW+(fullX+j+(x*CELL))] = PIXPACK(0x808080);
 				}
 			}
 		}
@@ -558,7 +398,7 @@ fin:
 	return vidBuf;
 }
 
-void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h, unsigned char bmap[YRES/CELL][XRES/CELL], float fvx[YRES/CELL][XRES/CELL], float fvy[YRES/CELL][XRES/CELL], sign signs[MAXSIGNS], void* o_partsptr)
+void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h, const_WallsDataP wallsData, sign signs[MAXSIGNS], void* o_partsptr)
 {
 	particle *partsptr = (particle*)o_partsptr;
 	unsigned char *partsData = NULL, *partsPosData = NULL, *fanData = NULL, *wallData = NULL, *finalData = NULL, *outputData = NULL, *soapLinkData = NULL;
@@ -600,16 +440,16 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 	{
 		for(y = blockY; y < blockY+blockH; y++)
 		{
-			wallData[(y-blockY)*blockW+(x-blockX)] = change_wall_current_pp(bmap[y][x]);
-			if(bmap[y][x] && !wallDataFound)
+			wallData[(y-blockY)*blockW+(x-blockX)] = wallsData.wallType[y][x];
+			if(wallsData.wallType[y][x] && !wallDataFound)
 				wallDataFound = 1;
-			if(bmap[y][x]==WL_FAN)
+			if(wallsData.wallType[y][x]==WL_FAN)
 			{
-				i = (int)(fvx[y][x]*64.0f+127.5f);
+				i = (int)(wallsData.fanVX[y][x]*64.0f+127.5f);
 				if (i<0) i=0;
 				if (i>255) i=255;
 				fanData[fanDataLen++] = i;
-				i = (int)(fvy[y][x]*64.0f+127.5f);
+				i = (int)(wallsData.fanVY[y][x]*64.0f+127.5f);
 				if (i<0) i=0;
 				if (i>255) i=255;
 				fanData[fanDataLen++] = i;
@@ -1028,7 +868,7 @@ fin:
 	return outputData;
 }
 
-int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned char bmap[YRES/CELL][XRES/CELL], float fvx[YRES/CELL][XRES/CELL], float fvy[YRES/CELL][XRES/CELL], sign signs[MAXSIGNS], void* o_partsptr, unsigned pmap[YRES][XRES])
+int parse_save_OPS(void *save, int size, int replace, int x0, int y0, WallsDataP wallsData, sign signs[MAXSIGNS], void* o_partsptr, unsigned pmap[YRES][XRES])
 {
 	particle *partsptr = (particle*)o_partsptr;
 	unsigned char * inputData = (unsigned char*)save, *bsonData = NULL, *partsData = NULL, *partsPosData = NULL, *fanData = NULL, *wallData = NULL, *soapLinkData = NULL;
@@ -1368,15 +1208,15 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, unsigned c
 			for(y = 0; y < blockH; y++)
 			{
 				if (wallData[y*blockW+x])
-					bmap[blockY+y][blockX+x] = change_wall_pp_current(wallData[y*blockW+x]);
-				if (wallData[y*blockW+x] == WL_FAN && fanData)
+					wallsData.wallType[blockY+y][blockX+x] = globalSim->simSD->wallTypes.convertLegacyId(wallData[y*blockW+x]);
+				if (wallsData.wallType[blockY+y][blockX+x] == WL_FAN && fanData)
 				{
 					if(j+1 >= fanDataLen)
 					{
 						fprintf(stderr, "Not enough fan data\n");
 					}
-					fvx[blockY+y][blockX+x] = (fanData[j++]-127.0f)/64.0f;
-					fvy[blockY+y][blockX+x] = (fanData[j++]-127.0f)/64.0f;
+					wallsData.fanVX[blockY+y][blockX+x] = (fanData[j++]-127.0f)/64.0f;
+					wallsData.fanVY[blockY+y][blockX+x] = (fanData[j++]-127.0f)/64.0f;
 				}
 			}
 		}
@@ -1722,7 +1562,7 @@ fin:
 pixel *prerender_save_PSv(void *save, int size, int *width, int *height)
 {
 	unsigned char *d,*c=(unsigned char*)save;
-	int i,j,k,x,y,rx,ry,p=0, pc, gc;
+	int i,j,k,x,y,rx,ry,p=0, pc;
 	int bw,bh,w,h,new_format = 0;
 	pixel *fb;
 
@@ -1769,67 +1609,18 @@ pixel *prerender_save_PSv(void *save, int size, int *width, int *height)
 	for (y=0; y<bh; y++)
 		for (x=0; x<bw; x++)
 		{
-			int wt = change_wall_44_current(d[p]);
+			int wt = globalSim->simSD->wallTypes.convertV44Id(d[p]);
 			rx = x*CELL;
 			ry = y*CELL;
-			pc = wtypes[wt-UI_ACTUALSTART].colour;
-			gc = wtypes[wt-UI_ACTUALSTART].eglow;
-			if (wtypes[wt-UI_ACTUALSTART].drawstyle==1)
+			if (wt)
 			{
-				for (i=0; i<CELL; i+=2)
-					for (j=(i>>1)&1; j<CELL; j+=2)
-						fb[(i+ry)*w+(j+rx)] = pc;
-			}
-			else if (wtypes[wt-UI_ACTUALSTART].drawstyle==2)
-			{
-				for (i=0; i<CELL; i+=2)
-					for (j=0; j<CELL; j+=2)
-						fb[(i+ry)*w+(j+rx)] = pc;
-			}
-			else if (wtypes[wt-UI_ACTUALSTART].drawstyle==3)
-			{
+				// Not bothering to draw walls accurately because prerender_save will be removed at some point during the rewrite
 				for (i=0; i<CELL; i++)
 					for (j=0; j<CELL; j++)
 						fb[(i+ry)*w+(j+rx)] = pc;
-			}
-			else if (wtypes[wt-UI_ACTUALSTART].drawstyle==4)
-			{
-				for (i=0; i<CELL; i++)
-					for (j=0; j<CELL; j++)
-						if(i == j)
-							fb[(i+ry)*w+(j+rx)] = pc;
-						else if  (j == i+1 || (j == 0 && i == CELL-1))
-							fb[(i+ry)*w+(j+rx)] = gc;
-						else 
-							fb[(i+ry)*w+(j+rx)] = PIXPACK(0x202020);
 			}
 
-			// special rendering for some walls
-			if (wt==WL_EWALL)
-			{
-				for (i=0; i<CELL; i++)
-					for (j=0; j<CELL; j++)
-						if (!(i&j&1))
-							fb[(i+ry)*w+(j+rx)] = pc;
-			}
-			else if (wt==WL_WALLELEC)
-			{
-				for (i=0; i<CELL; i++)
-					for (j=0; j<CELL; j++)
-					{
-						if (!((y*CELL+j)%2) && !((x*CELL+i)%2))
-							fb[(i+ry)*w+(j+rx)] = pc;
-						else
-							fb[(i+ry)*w+(j+rx)] = PIXPACK(0x808080);
-					}
-			}
-			else if (wt==WL_EHOLE)
-			{
-				for (i=0; i<CELL; i+=2)
-					for (j=0; j<CELL; j+=2)
-						fb[(i+ry)*w+(j+rx)] = PIXPACK(0x242424);
-			}
-			else if (wt==WL_FAN)
+			if (wt==WL_FAN)
 				k++;
 			p++;
 		}
@@ -1895,7 +1686,7 @@ corrupt:
 	return NULL;
 }
 
-int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned char bmap[YRES/CELL][XRES/CELL], float fvx[YRES/CELL][XRES/CELL], float fvy[YRES/CELL][XRES/CELL], sign signs[MAXSIGNS], void* partsptr, unsigned pmap[YRES][XRES])
+int parse_save_PSv(void *save, int size, int replace, int x0, int y0, WallsDataP wallsData, sign signs[MAXSIGNS], void* partsptr, unsigned pmap[YRES][XRES])
 {
 	unsigned char *d=NULL,*c=(unsigned char*)save;
 	int q,i,j,k,x,y,p=0,*m=NULL, ver, pty, ty, legacy_beta=0, tempGrav = 0;
@@ -2026,15 +1817,16 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned c
 					/* The numbers used to save walls were changed, starting in v44.
 					 * The new numbers are ignored for older versions due to some corruption of bmap in saves from older versions. 
 					 */
-					// TODO: once wall numbers are changed to match TPT++, add conversion code here
+					wallsData.wallType[y][x] = globalSim->simSD->wallTypes.convertLegacyId(d[p]);
 				}
 				else
 				{
-					bmap[y][x] = change_wall_44_current(d[p]);
+					wallsData.wallType[y][x] = globalSim->simSD->wallTypes.convertV44Id(d[p]);
+					if (wallsData.wallType[y][x] > 13) // 13 = max wall ID from v44 numbering system
+						wallsData.wallType[y][x] = 0;
 				}
-				// TODO: uncomment once wall numbers are changed to match TPT++
-				/*if (bmap[y][x] < 0 || blockMap[y][x] >= UI_WALLCOUNT)
-					bmap[y][x] = 0;*/
+				if (wallsData.wallType[y][x] >= WL_NUM)
+					wallsData.wallType[y][x] = 0;
 			}
 
 			p++;
@@ -2045,7 +1837,7 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned c
 			{
 				if (p >= size)
 					goto corrupt;
-				fvx[y][x] = (d[p++]-127.0f)/64.0f;
+				wallsData.fanVX[y][x] = (d[p++]-127.0f)/64.0f;
 			}
 	for (y=by0; y<by0+bh; y++)
 		for (x=bx0; x<bx0+bw; x++)
@@ -2053,7 +1845,7 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, unsigned c
 			{
 				if (p >= size)
 					goto corrupt;
-				fvy[y][x] = (d[p++]-127.0f)/64.0f;
+				wallsData.fanVY[y][x] = (d[p++]-127.0f)/64.0f;
 			}
 
 	// load the particle map
@@ -2546,7 +2338,7 @@ void *build_thumb(int *size, int bzip2)
 		}
 	for (y=0; y<YRES/CELL; y++)
 		for (x=0; x<XRES/CELL; x++)
-			if (bmap[y][x])
+			if (globalSim->walls.type(SimCellCoord(x,y)))
 				for (j=0; j<CELL; j++)
 					for (i=0; i<CELL; i++)
 						d[x*CELL+i+(y*CELL+j)*XRES] = 0xFF;
@@ -2586,31 +2378,20 @@ void *build_thumb(int *size, int bzip2)
 void *transform_save(void *odata, int *size, matrix2d transform, vector2d translate)
 {
 	void *ndata;
-	unsigned char (*bmapo)[XRES/CELL] = (unsigned char(*)[XRES/CELL])calloc((YRES/CELL)*(XRES/CELL), sizeof(unsigned char));
-	unsigned char (*bmapn)[XRES/CELL] = (unsigned char(*)[XRES/CELL])calloc((YRES/CELL)*(XRES/CELL), sizeof(unsigned char));
+	WallsData wallso, wallsn;
 	particle *partst = (particle*)calloc(sizeof(particle), NPART);
 	sign *signst = (sign*)calloc(MAXSIGNS, sizeof(sign));
 	unsigned (*pmapt)[XRES] = (unsigned(*)[XRES])calloc(YRES*XRES, sizeof(unsigned));
-	float (*fvxo)[XRES/CELL] = (float(*)[XRES/CELL])calloc((YRES/CELL)*(XRES/CELL), sizeof(float));
-	float (*fvyo)[XRES/CELL] = (float(*)[XRES/CELL])calloc((YRES/CELL)*(XRES/CELL), sizeof(float));
-	float (*fvxn)[XRES/CELL] = (float(*)[XRES/CELL])calloc((YRES/CELL)*(XRES/CELL), sizeof(float));
-	float (*fvyn)[XRES/CELL] = (float(*)[XRES/CELL])calloc((YRES/CELL)*(XRES/CELL), sizeof(float));
 	int i, nx, ny, w, h, nw, nh;
 	vector2d pos, tmp, ctl, cbr;
 	vector2d vel;
 	vector2d cornerso[4];
 	unsigned char *odatac = (unsigned char*)odata;
-	if (parse_save(odata, *size, 0, 0, 0, bmapo, fvxo, fvyo, signst, partst, pmapt))
+	if (parse_save(odata, *size, 0, 0, 0, wallso, signst, partst, pmapt))
 	{
-		free(bmapo);
-		free(bmapn);
 		free(partst);
 		free(signst);
 		free(pmapt);
-		free(fvxo);
-		free(fvyo);
-		free(fvxn);
-		free(fvyn);
 		return odata;
 	}
 	w = odatac[6]*CELL;
@@ -2671,8 +2452,8 @@ void *transform_save(void *odata, int *size, matrix2d transform, vector2d transl
 		partst[i].vx = vel.x;
 		partst[i].vy = vel.y;
 	}
-	/*for (y=0; y<YRES/CELL; y++)
-		for (x=0; x<XRES/CELL; x++)
+	for (int y=0; y<YRES/CELL; y++)
+		for (int x=0; x<XRES/CELL; x++)
 		{
 			pos = v2d_new(x*CELL+CELL*0.4f, y*CELL+CELL*0.4f);
 			pos = v2d_add(m2d_multiply_v2d(transform,pos),translate);
@@ -2680,32 +2461,28 @@ void *transform_save(void *odata, int *size, matrix2d transform, vector2d transl
 			ny = pos.y/CELL;
 			if (nx<0 || nx>=nw/CELL || ny<0 || ny>=nh/CELL)
 				continue;
-			if (bmapo[y][x])
+			if (wallso.wallType[y][x])
 			{
-				bmapn[ny][nx] = bmapo[y][x];
-				if (bmapo[y][x]==WL_FAN)
+				wallsn.wallType[ny][nx] = wallso.wallType[y][x];
+				if (wallso.wallType[y][x]==WL_FAN)
 				{
-					vel = v2d_new(fvxo[y][x], fvyo[y][x]);
+					vel = v2d_new(wallso.fanVX[y][x], wallso.fanVY[y][x]);
 					vel = m2d_multiply_v2d(transform, vel);
-					fvxn[ny][nx] = vel.x;
-					fvyn[ny][nx] = vel.y;
+					wallsn.fanVX[ny][nx] = vel.x;
+					wallsn.fanVY[ny][nx] = vel.y;
 				}
 			}
+			/* TODO:
 			vel = v2d_new(vxo[y][x], vyo[y][x]);
 			vel = m2d_multiply_v2d(transform, vel);
 			vxn[ny][nx] = vel.x;
 			vyn[ny][nx] = vel.y;
 			pvn[ny][nx] = pvo[y][x];
-		}*/
-	ndata = build_save(size,0,0,nw,nh,bmapn,fvxn,fvyn,signst,partst);
-	free(bmapo);
-	free(bmapn);
+			*/
+		}
+	ndata = build_save(size,0,0,nw,nh,wallso,signst,partst);
 	free(partst);
 	free(signst);
 	free(pmapt);
-	free(fvxo);
-	free(fvyo);
-	free(fvxn);
-	free(fvyn);
 	return ndata;
 }

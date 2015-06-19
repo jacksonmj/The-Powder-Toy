@@ -33,14 +33,15 @@ typedef const DataType (* const_##BaseName##P)[XRES/CELL];\
 typedef const DataType (* TPT_RESTRICT const_##BaseName##RP)[XRES/CELL];
 
 CELLSDATA_TYPEDEFS(float, CellsFloat)
-CELLSDATA_TYPEDEFS(unsigned char, CellsUChar)
+CELLSDATA_TYPEDEFS(uint8_t, CellsUChar)
+CELLSDATA_TYPEDEFS(uint8_t, CellsUint8)
 
 
 void CellsData_limit(CellsFloatP data, float minVal, float maxVal);
 void CellsData_limit(const_CellsFloatRP src, CellsFloatRP dest, float minVal, float maxVal);
-size_t CellsData_count_and8(const unsigned char (*src)[XRES/CELL]);// Count the number of cells where (x&8)
-size_t CellsData_count_1(const unsigned char (*src)[XRES/CELL]);// Count the number of cells where x==1, x can only be 0 or 1.
-void CellsData_subtract_sat(const unsigned char (*src)[XRES/CELL], unsigned char (*dest)[XRES/CELL], unsigned char value);// Saturating subtraction (if result is less than 0, result is set to 0) of a value from all bytes
+size_t CellsData_count_and8(const uint8_t (*src)[XRES/CELL]);// Count the number of cells where (x&8)
+size_t CellsData_count_1(const uint8_t (*src)[XRES/CELL]);// Count the number of cells where x==1, x can only be 0 or 1.
+void CellsData_subtract_sat(const uint8_t (*src)[XRES/CELL], uint8_t (*dest)[XRES/CELL], uint8_t value);// Saturating subtraction (if result is less than 0, result is set to 0) of a value from all bytes
 
 template<typename DataType>
 void CellsData_fill(DataType (*dest)[XRES/CELL], DataType value);
@@ -112,6 +113,6 @@ void swap(CellsData<DataType> &a, CellsData<DataType> &b) {
 }
 
 typedef CellsData<float> CellsFloat;
-typedef CellsData<unsigned char> CellsUChar;
+typedef CellsData<uint8_t> CellsUChar;
 
 #endif

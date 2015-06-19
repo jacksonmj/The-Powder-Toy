@@ -129,7 +129,7 @@ int SOAP_update(UPDATE_FUNC_ARGS)
 					for (ry=-2; ry<3; ry++)
 						if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 						{
-							if (parts[i].temp>SOAP_freezetemp && bmap[(y+ry)/CELL][(x+rx)/CELL])
+							if (parts[i].temp>SOAP_freezetemp && sim->walls.type(SimCoordI(x+rx,y+ry)))
 							{
 								SOAP_detach(sim, i);
 								continue;

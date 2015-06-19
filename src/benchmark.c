@@ -63,14 +63,14 @@ void benchmark_run()
 		file_data = (char*)file_load(benchmark_file, &size);
 		if (file_data)
 		{
-			if(!parse_save(file_data, size, 1, 0, 0, bmap, fvx, fvy, signs, parts))
+			if(!parse_save(file_data, size, 1, 0, 0, globalSim->walls.getDataPtr(), signs, parts))
 			{
 				printf("Save speed test:\n");
 
 				printf("Update particles+air: ");
 				BENCHMARK_INIT(benchmark_repeat_count, 200)
 				{
-					parse_save(file_data, size, 1, 0, 0, bmap, fvx, fvy, signs, parts);
+					parse_save(file_data, size, 1, 0, 0, globalSim->walls.getDataPtr(), signs, parts);
 					sys_pause = framerender = 0;
 					BENCHMARK_RUN()
 					{
@@ -85,7 +85,7 @@ void benchmark_run()
 				{
 					BENCHMARK_RUN()
 					{
-						parse_save(file_data, size, 1, 0, 0, bmap, fvx, fvy, signs, parts);
+						parse_save(file_data, size, 1, 0, 0, globalSim->walls.getDataPtr(), signs, parts);
 					}
 				}
 				BENCHMARK_END()
@@ -93,7 +93,7 @@ void benchmark_run()
 				printf("Update particles - paused: ");
 				BENCHMARK_INIT(benchmark_repeat_count, 1000)
 				{
-					parse_save(file_data, size, 1, 0, 0, bmap, fvx, fvy, signs, parts);
+					parse_save(file_data, size, 1, 0, 0, globalSim->walls.getDataPtr(), signs, parts);
 					sys_pause = 1;
 					framerender = 0;
 					BENCHMARK_RUN()
@@ -106,7 +106,7 @@ void benchmark_run()
 				printf("Update particles - unpaused: ");
 				BENCHMARK_INIT(benchmark_repeat_count, 200)
 				{
-					parse_save(file_data, size, 1, 0, 0, bmap, fvx, fvy, signs, parts);
+					parse_save(file_data, size, 1, 0, 0, globalSim->walls.getDataPtr(), signs, parts);
 					sys_pause = framerender = 0;
 					BENCHMARK_RUN()
 					{
@@ -118,7 +118,7 @@ void benchmark_run()
 				printf("Render particles: ");
 				BENCHMARK_INIT(benchmark_repeat_count, 1500)
 				{
-					parse_save(file_data, size, 1, 0, 0, bmap, fvx, fvy, signs, parts);
+					parse_save(file_data, size, 1, 0, 0, globalSim->walls.getDataPtr(), signs, parts);
 					sys_pause = framerender = 0;
 					display_mode = 0;
 					render_mode = RENDER_BASC;
@@ -134,7 +134,7 @@ void benchmark_run()
 				printf("Render particles+fire: ");
 				BENCHMARK_INIT(benchmark_repeat_count, 1200)
 				{
-					parse_save(file_data, size, 1, 0, 0, bmap, fvx, fvy, signs, parts);
+					parse_save(file_data, size, 1, 0, 0, globalSim->walls.getDataPtr(), signs, parts);
 					sys_pause = framerender = 0;
 					display_mode = 0;
 					render_mode = RENDER_FIRE;
@@ -184,7 +184,8 @@ void benchmark_run()
 		printf("update_wallmaps: ");
 		BENCHMARK_START(benchmark_repeat_count, 10000)
 		{
-			update_wallmaps();
+			globalSim->walls.simBeforeUpdate();
+			globalSim->air.initBlockingData();
 		}
 		BENCHMARK_END()
 
@@ -200,9 +201,7 @@ void benchmark_run()
 			auto as1 = AirSimulator_sync::create(1);
 			AirData od, nd;
 			AirSimulator_params_roInput params;
-			CellsUChar bmap;
-			CellsData_fill<unsigned char>(bmap, 0);
-			params.bmap = bmap;
+			params.wallsData = globalSim->walls.getDataPtr();
 			params.prevData = od;
 			params.inputData = od;
 			params.outputData = nd;

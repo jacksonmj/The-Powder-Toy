@@ -20,6 +20,7 @@
 #include "simulation/air/AirManipulator.hpp"
 #include "simulation/air/AirSimulator.hpp"
 #include "simulation/air/AirData.hpp"
+#include "simulation/walls/WallsData.hpp"
 
 class Simulation;
 
@@ -34,6 +35,8 @@ protected:
 	AirData currentData;
 	// Destination for AirSimulator output
 	AirData simOutput1, simOutput2;
+
+	WallsData wallsData_copy;
 
 	Simulation *sim;
 	std::unique_ptr<AirSimulator_async> airSimulator;

@@ -25,6 +25,7 @@ public:
 	CellsFloatP vx,vy;
 	CellsFloatP pv;
 	CellsFloatP hv;
+	AirDataP() : vx(nullptr), vy(nullptr), pv(nullptr), hv(nullptr) {}
 };
 
 // pointers to constant air data

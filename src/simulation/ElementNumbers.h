@@ -15,27 +15,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if (!defined(ElementNumbers_H_Numbers) || (defined(ElementNumbers_Include_Decl) && !defined(ElementNumbers_H_Decl)) || (defined(ElementNumbers_Include_Call) && !defined(ElementNumbers_H_Call)))
+#if (!defined(ElementNumbers_Done_Numbers) || (defined(ElementNumbers_DeclInit) && !defined(ElementNumbers_Done_DeclInit)) || defined(ElementNumbers_CallInit) || defined(ElementNumbers_CustomAction))
 
 class Simulation;
 class SimulationSharedData;
 class Element;
 
+// If ElementNumbers_DeclInit is defined: declaring AAAA_init_element functions (set DEFINE_ELEMENT to something appropriate first)
+// If ElementNumbers_CallInit is defined: calling AAAA_init_element functions (set DEFINE_ELEMENT to something appropriate first)
+// otherwise default: define element numbers (PT_AAAA=123)
+
 #undef ELEMENT_INIT_FUNC_ARGS
 #define ELEMENT_INIT_FUNC_ARGS SimulationSharedData *simSD, Element *elem, int t
-#undef ElementNumbers_Include_Numbers
+#undef ElementNumbers_Numbers
 
-#if (defined(ElementNumbers_Include_Decl) && !defined(ElementNumbers_H_Decl))
-	#define ElementNumbers_H_Decl
-#elif (defined(ElementNumbers_Include_Call) && !defined(ElementNumbers_H_Call))
-	#define ElementNumbers_H_Call
+#if (defined(ElementNumbers_DeclInit) && !defined(ElementNumbers_Done_DeclInit))
+	#define ElementNumbers_Done_DeclInit
+#elif defined(ElementNumbers_CallInit) || defined(ElementNumbers_CustomAction)
+
 #else
-	#define ElementNumbers_H_Numbers
-	#define ElementNumbers_Include_Numbers
+	#define ElementNumbers_Done_Numbers
+	#define ElementNumbers_Numbers
 	#define DEFINE_ELEMENT(name, id) PT_ ## name = id,
 #endif
 
-#ifdef ElementNumbers_Include_Numbers
+#ifdef ElementNumbers_Numbers
 enum element_ids
 {
 #endif
@@ -246,9 +250,10 @@ DEFINE_ELEMENT(DRAY, 178)
 // New elements go above this line
 
 
-#ifdef ElementNumbers_Include_Numbers
+#ifdef ElementNumbers_Numbers
 };
-
 #endif
+
 #undef DEFINE_ELEMENT
+#undef ElementNumbers_Numbers
 #endif

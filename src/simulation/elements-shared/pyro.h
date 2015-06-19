@@ -26,7 +26,7 @@ public:
 
 	static int update_neighbour(UPDATE_FUNC_ARGS, int rx, int ry, int rt, int ri)
 	{
-		if (bmap[(y+ry)/CELL][(x+rx)/CELL] && bmap[(y+ry)/CELL][(x+rx)/CELL]!=WL_STREAM)
+		if (sim->walls.isProperWall(SimCoordI(x+rx,y+ry)))
 			return 0;
 		int t = parts[i].type;
 

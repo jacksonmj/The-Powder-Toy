@@ -66,6 +66,7 @@ Simulation::Simulation(std::shared_ptr<SimulationSharedData> sd) :
 	rng(&rngBase),
 	pfree(-1),
 	air(this),
+	walls(this),
 	heat_mode(1),
 	edgeMode(0),
 	airMode(0),
@@ -104,6 +105,7 @@ void Simulation::Clear()
 	option_edgeMode(0);
 	airMode = 0;
 	air.clear();
+	walls.clear();
 
 	hook_cleared.Trigger();
 	memset(elementCount, 0, sizeof(elementCount));
@@ -441,7 +443,7 @@ int Simulation::part_create(int p, float xf, float yf, int t)
 		// If there is a particle, only allow creation if the new particle can occupy the same space as the existing particle
 		// If there isn't a particle but there is a wall, check whether the new particle is allowed to be in it
 		// If there's no particle and no wall, assume creation is allowed
-		if (pmap[y][x].count || bmap[y/CELL][x/CELL])
+		if (pmap[y][x].count || walls.isProperWall(SimCoordI(x,y)))
 		{
 			MoveResult::Code moveResult = part_canMove(t, x, y);
 			if (moveResult!=MoveResult::ALLOW && moveResult!=MoveResult::ALLOW_BUT_SLOW)
@@ -726,26 +728,78 @@ int Simulation::spark_position(int x, int y)
 	return lastSparkedIndex;
 }
 
-// Returns true if the element is blocked from moving to (or being created at) x,y by a wall 
-bool Simulation::IsWallBlocking(int x, int y, int type)
+// Returns true if the element is blocked from moving to (or being created at) a position by a wall 
+bool Simulation::isWallBlocking(SimCellCoord c, int type)
 {
-	if (bmap[y/CELL][x/CELL])
+	if (!walls.type(c))
+		return false;
+
+	switch (walls.type(c))
 	{
-		int wall = bmap[y/CELL][x/CELL];
-		if (wall == WL_ALLOWGAS && !(elements[type].Properties&TYPE_GAS))
-			return true;
-		else if (wall == WL_ALLOWENERGY && !(elements[type].Properties&TYPE_ENERGY))
-			return true;
-		else if (wall == WL_ALLOWLIQUID && elements[type].Falldown!=2)
-			return true;
-		else if (wall == WL_ALLOWSOLID && elements[type].Falldown!=1)
-			return true;
-		else if (wall == WL_ALLOWAIR || wall == WL_WALL || wall == WL_WALLELEC)
-			return true;
-		else if (wall == WL_EWALL && !emap[y/CELL][x/CELL])
-			return true;
+	case WL_ALLOWGAS:
+		return !(elements[type].Properties&TYPE_GAS);
+	case WL_ALLOWENERGY:
+		return !(elements[type].Properties&TYPE_ENERGY);
+	case WL_ALLOWLIQUID:
+		return elements[type].Falldown!=2;
+	case WL_ALLOWSOLID:
+		return elements[type].Falldown!=1;
+	case WL_ALLOWAIR:
+	case WL_WALL:
+	case WL_WALLELEC:
+		return true;
+	case WL_EWALL:
+		return !walls.electricity(c);
+	default:
+		return false;
 	}
-	return false;
+}
+
+// Returns true if the element is destroyed by a wall when at a specified position
+bool Simulation::isWallDeadly(SimCellCoord c, int type)
+{
+	if (!walls.type(c))
+		return false;
+
+	bool isDeadly;
+	switch (walls.type(c))
+	{
+	case WL_DESTROYALL:
+		isDeadly = true;
+		break;
+	case WL_DETECT:
+		isDeadly = (type==PT_METL || type==PT_SPRK);
+		break;
+
+	// Copy of isWallBlocking (copied to encourage the compiler to produce a single jump table)
+	case WL_ALLOWGAS:
+		isDeadly = !(elements[type].Properties&TYPE_GAS);
+		break;
+	case WL_ALLOWENERGY:
+		isDeadly = !(elements[type].Properties&TYPE_ENERGY);
+		break;
+	case WL_ALLOWLIQUID:
+		isDeadly = elements[type].Falldown!=2;
+		break;
+	case WL_ALLOWSOLID:
+		isDeadly = elements[type].Falldown!=1;
+		break;
+	case WL_ALLOWAIR:
+	case WL_WALL:
+	case WL_WALLELEC:
+		isDeadly = true;
+		break;
+	case WL_EWALL:
+		isDeadly = !walls.electricity(c);
+		break;
+	// End isWallBlocking copy
+
+	default:
+		isDeadly = false;
+		break;
+	}
+
+	return isDeadly && (type!=PT_STKM && type!=PT_STKM2 && type!=PT_FIGH);
 }
 
 
@@ -959,21 +1013,13 @@ MoveResult::Code Simulation::part_canMove(int pt, int nx, int ny, bool coordChec
 		}
 	}
 
-	if (bmap[ny/CELL][nx/CELL])
+	SimCellCoord cellCoord = SimCoordI(nx,ny);
+	if (walls.type(cellCoord))
 	{
-		if (bmap[ny/CELL][nx/CELL]==WL_ALLOWGAS && !(elements[pt].Properties&TYPE_GAS))
+		uint8_t wall = walls.type(cellCoord);
+		if (wall && isWallBlocking(cellCoord, pt))
 			return MoveResult::BLOCK;
-		if (bmap[ny/CELL][nx/CELL]==WL_ALLOWENERGY && !(elements[pt].Properties&TYPE_ENERGY))
-			return MoveResult::BLOCK;
-		if (bmap[ny/CELL][nx/CELL]==WL_ALLOWLIQUID && elements[pt].Falldown!=2)
-			return MoveResult::BLOCK;
-		if (bmap[ny/CELL][nx/CELL]==WL_ALLOWSOLID && elements[pt].Falldown!=1)
-			return MoveResult::BLOCK;
-		if (bmap[ny/CELL][nx/CELL]==WL_ALLOWAIR || bmap[ny/CELL][nx/CELL]==WL_WALL || bmap[ny/CELL][nx/CELL]==WL_WALLELEC)
-			return MoveResult::BLOCK;
-		if (bmap[ny/CELL][nx/CELL]==WL_EWALL && !emap[ny/CELL][nx/CELL])
-			return MoveResult::BLOCK;
-		if (bmap[ny/CELL][nx/CELL]==WL_EHOLE && !emap[ny/CELL][nx/CELL] && !(elements[pt].Properties&TYPE_SOLID))
+		if (wall==WL_EHOLE && !walls.electricity(cellCoord) && !(elements[pt].Properties&TYPE_SOLID))
 		{
 			bool foundSolid = false;
 			FOR_PMAP_POSITION_NOENERGY(this, nx, ny, rcount, ri, rnext)
@@ -987,7 +1033,7 @@ MoveResult::Code Simulation::part_canMove(int pt, int nx, int ny, bool coordChec
 			if (!foundSolid)
 				return MoveResult::ALLOW;
 		}
-		if (bmap[ny/CELL][nx/CELL]==WL_DESTROYALL && result==MoveResult::ALLOW)
+		if (wall==WL_DESTROYALL && result==MoveResult::ALLOW)
 			return MoveResult::ALLOW_BUT_SLOW;
 	}
 	return result;
@@ -1026,7 +1072,7 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 	         pmap_find_one(x,y,PT_BMTL)>=0))
 		moveCode = MoveResult::ALLOW_BUT_SLOW;
 	// block moving out of unpowered ehole
-	if ((bmap[y/CELL][x/CELL]==WL_EHOLE && !emap[y/CELL][x/CELL]) && !(bmap[ny/CELL][nx/CELL]==WL_EHOLE && !emap[ny/CELL][nx/CELL]))
+	if (walls.isClosedEHole(SimCoordI(x,y)) && !walls.isClosedEHole(SimCoordI(nx,ny)))
 		return MoveResult::BLOCK;
 	// exploding GBMB does not move
 	if(t==PT_GBMB&&parts[i].life>0)
@@ -1307,7 +1353,11 @@ void Simulation::UpdateParticles()
 	bool transitionOccurred;
 
 	RecalcFreeParticles();
-	update_wallmaps();
+	if (!sys_pause||framerender)
+	{
+		walls.simBeforeUpdate();
+		air.initBlockingData();
+	}
 
 	if (sys_pause && lighting_recreate>0 && elementCount[PT_LIGH])
     {
@@ -1561,24 +1611,12 @@ void Simulation::UpdateParticles()
 			SimCellCoord cellCoord = SimCoordI(x,y);
 
 			//this kills any particle out of the screen, or in a wall where it isn't supposed to go
-			if (x<CELL || y<CELL || x>=XRES-CELL || y>=YRES-CELL ||
-			        (bmap[y/CELL][x/CELL] &&
-			         (bmap[y/CELL][x/CELL]==WL_WALL ||
-			          bmap[y/CELL][x/CELL]==WL_WALLELEC ||
-			          bmap[y/CELL][x/CELL]==WL_ALLOWAIR ||
-			          (bmap[y/CELL][x/CELL]==WL_DESTROYALL) ||
-			          (bmap[y/CELL][x/CELL]==WL_ALLOWLIQUID && elements[t].Falldown!=2) ||
-			          (bmap[y/CELL][x/CELL]==WL_ALLOWSOLID && elements[t].Falldown!=1) ||
-					  (bmap[y/CELL][x/CELL]==WL_ALLOWGAS && !(elements[t].Properties&TYPE_GAS)) ||
-			          (bmap[y/CELL][x/CELL]==WL_ALLOWENERGY && !(elements[t].Properties&TYPE_ENERGY)) ||
-					  (bmap[y/CELL][x/CELL]==WL_DETECT && (t==PT_METL || t==PT_SPRK)) ||
-			          (bmap[y/CELL][x/CELL]==WL_EWALL && !emap[y/CELL][x/CELL])) && (t!=PT_STKM) && (t!=PT_STKM2) && (t!=PT_FIGH)))
+			if (coord_isInMargin(cellCoord) || (walls.type(cellCoord) && isWallDeadly(cellCoord,t)))
 			{
 				part_kill(i);
 				continue;
 			}
-			if (bmap[y/CELL][x/CELL]==WL_DETECT && emap[y/CELL][x/CELL]<8)
-				set_emap(x/CELL, y/CELL);
+			walls.detect(cellCoord);
 
 			//adding to velocity from the particle's velocity
 			air.vx.multiply(cellCoord, elements[t].AirLoss);
@@ -1948,18 +1986,19 @@ void Simulation::UpdateParticles()
 					ny = y/CELL + 1;
 				else
 					ny = y/CELL;
-				if (nx>=0 && ny>=0 && nx<XRES/CELL && ny<YRES/CELL)
+				SimCellCoord c(nx, ny);
+				if (coord_isValid(c))
 				{
 					if (t!=PT_SPRK)
 					{
-						if (emap[ny][nx]==12 && !parts[i].life)
+						if (walls.electricity(c)==12 && !parts[i].life)
 						{
 							if (spark_particle_conductiveOnly(i, x, y))
 								t = PT_SPRK;
 						}
 					}
-					else if (bmap[ny][nx]==WL_DETECT || bmap[ny][nx]==WL_EWALL || bmap[ny][nx]==WL_ALLOWLIQUID || bmap[ny][nx]==WL_WALLELEC || bmap[ny][nx]==WL_ALLOWALLELEC || bmap[ny][nx]==WL_EHOLE)
-						set_emap(nx, ny);
+					else if (walls.isConductive(c))
+						walls.makeSpark(c);
 				}
 			}
 
@@ -2130,8 +2169,7 @@ killed:
 						clear_y = (int)(clear_yf+0.5f);
 						break;
 					}
-					if (bmap[fin_y/CELL][fin_x/CELL]==WL_DETECT && emap[fin_y/CELL][fin_x/CELL]<8)
-						set_emap(fin_x/CELL, fin_y/CELL);
+					walls.detect(SimCoordI(fin_x, fin_y));
 				}
 			}
 
@@ -2372,7 +2410,7 @@ killed:
 
 							for (j=clear_x+r; j>=0 && j>=clear_x-rt && j<clear_x+rt && j<XRES; j+=r)
 							{
-								if (pmap_find_one(j, fin_y, t)<0 || bmap[fin_y/CELL][j/CELL])
+								if (pmap_find_one(j, fin_y, t)<0 || walls.type(SimCoordI(j,fin_y)))
 								{
 									moveResult = part_move(i, x, y, (float)j, fin_yf);
 									if (MoveResult::Succeeded_MaybeKilled(moveResult))
@@ -2385,7 +2423,7 @@ killed:
 										break;
 									}
 								}
-								if (fin_y!=clear_y && (pmap_find_one(j, clear_y, t)<0 || bmap[clear_y/CELL][j/CELL]))
+								if (fin_y!=clear_y && (pmap_find_one(j, clear_y, t)<0 || walls.type(SimCoordI(j,clear_y))))
 								{
 									moveResult = part_move(i, x, y, (float)j, clear_yf);
 									if (MoveResult::Succeeded_MaybeKilled(moveResult))
@@ -2398,7 +2436,7 @@ killed:
 										break;
 									}
 								}
-								if (pmap_find_one(j, clear_y, t)<0 || (bmap[clear_y/CELL][j/CELL] && bmap[clear_y/CELL][j/CELL]!=WL_STREAM))
+								if (pmap_find_one(j, clear_y, t)<0 || walls.isProperWall(SimCoordI(j,clear_y)))
 									break;
 							}
 							if (MoveResult::WasKilled(moveResult))
@@ -2414,9 +2452,9 @@ killed:
 								for (j=ny+r; j>=0 && j<YRES && j>=ny-rt && j<ny+rt; j+=r)
 								{
 									bool tmp = (pmap_find_one(nx, j, t)<0);// true if no particles of the same type are at nx,j
-									if ((tmp || bmap[j/CELL][nx/CELL]) && MoveResult::Succeeded_MaybeKilled(part_move(i, nx, ny, (float)nx, (float)j)))
+									if ((tmp || walls.type(SimCoordI(nx,j))) && MoveResult::Succeeded_MaybeKilled(part_move(i, nx, ny, (float)nx, (float)j)))
 										break;
-									if (tmp || (bmap[j/CELL][nx/CELL] && bmap[j/CELL][nx/CELL]!=WL_STREAM))
+									if (tmp || walls.isProperWall(SimCoordI(nx,j)))
 										break;
 								}
 							}
@@ -2479,7 +2517,7 @@ killed:
 								// Check whether movement is allowed
 								if (!InBounds(nx,ny))
 									break;
-								if (pmap_find_one(nx,ny,t)<0 || bmap[ny/CELL][nx/CELL])
+								if (pmap_find_one(nx,ny,t)<0 || walls.type(SimCoordI(nx,ny)))
 								{
 									moveResult = part_move(i, x, y, nxf, nyf);
 									if (MoveResult::Succeeded_MaybeKilled(moveResult))
@@ -2492,7 +2530,7 @@ killed:
 										break;
 									}
 									// A particle of a different type, or a wall, was found. Stop trying to move any further horizontally unless the wall should be completely invisible to particles.
-									if (bmap[ny/CELL][nx/CELL]!=WL_STREAM)
+									if (walls.isProperWall(SimCoordI(nx,ny)))
 										break;
 								}
 							}
@@ -2524,10 +2562,10 @@ killed:
 									if (nx<0 || ny<0 || nx>=XRES || ny>=YRES)
 										break;
 									// If the space is anything except the same element (so is a wall, empty space, or occupied by a particle of a different element), try to move into it
-									if (pmap_find_one(nx,ny,t)<0 || bmap[ny/CELL][nx/CELL])
+									if (pmap_find_one(nx,ny,t)<0 || walls.type(SimCoordI(nx,ny)))
 									{
 										moveResult = part_move(i, clear_x, clear_y, nxf, nyf);
-										if (MoveResult::Succeeded(moveResult) || bmap[ny/CELL][nx/CELL]!=WL_STREAM)
+										if (MoveResult::Succeeded(moveResult) || walls.isProperWall(SimCoordI(nx,ny)))
 											break;// found the edge of the liquid and movement into it succeeded, so stop moving down
 									}
 								}
@@ -2562,41 +2600,23 @@ void Simulation::option_edgeMode(short newMode)
 	{
 	case 0:
 	case 2:
-		for(int i = 0; i<(XRES/CELL); i++)
-		{
-			bmap[0][i] = 0;
-			bmap[YRES/CELL-1][i] = 0;
-		}
-		for(int i = 1; i<((YRES/CELL)-1); i++)
-		{
-			bmap[i][0] = 0;
-			bmap[i][XRES/CELL-1] = 0;
-		}
+		walls.setBorder(WL_NONE);
 		break;
 	case 1:
-		int i;
-		for(i=0; i<(XRES/CELL); i++)
-		{
-			bmap[0][i] = WL_WALL;
-			bmap[YRES/CELL-1][i] = WL_WALL;
-		}
-		for(i=1; i<((YRES/CELL)-1); i++)
-		{
-			bmap[i][0] = WL_WALL;
-			bmap[i][XRES/CELL-1] = WL_WALL;
-		}
+		walls.setBorder(WL_WALL);
 		break;
 	default:
 		option_edgeMode(0);
+		break;
 	}
 }
 
 
 #include "simulation/Element_UI.h"
 
-// TODO: remove this
-CellsFloat fvx, fvy;
+// TODO: remove these
 AirData undo_airData;
+WallsData undo_wallsData;
 
 void Simulation_Compat_CopyData(Simulation* sim)
 {

@@ -18,6 +18,7 @@
 
 #include "simulation/CellsData.hpp"
 #include "simulation/air/AirData.hpp"
+#include "simulation/walls/WallsData.hpp"
 
 #include <future>
 #include <vector>
@@ -33,8 +34,7 @@ public:
 	bool ambientHeatEnabled;
 	float ambientTemp;
 
-	const_CellsFloatP fvx, fvy;
-	const_CellsUCharP bmap;
+	const_WallsDataP wallsData;
 	const_CellsUCharP blockair;
 	const_CellsUCharP blockairh;
 

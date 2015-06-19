@@ -23,6 +23,7 @@
 #include "simulation/Element.h"
 #include "simulation/ElementNumbers.h"
 #include "simulation/ElemDataShared.h"
+#include "simulation/walls/WallTypes.hpp"
 
 class SimulationSharedData
 {
@@ -30,8 +31,10 @@ public:
 	ElemDataShared *elemDataShared_[PT_NUM];
 	pthread_rwlock_t data_rwlock;
 	Element elements[PT_NUM];
+	WallTypes wallTypes;
 
 	void InitElements();
+	void InitWalls();
 	SimulationSharedData();
 	virtual ~SimulationSharedData();
 

@@ -501,7 +501,7 @@ void AirSimulator_v1::velocityAdvection(const_AirDataP blurredSrc, const_AirData
 		advSrc.vx, advSrc.vy,
 		dest.vx, dest.vy,
 		params.blockair,
-		params.bmap, params.fvx, params.fvy
+		params.wallsData.wallType, params.wallsData.fanVX, params.wallsData.fanVY
 	);
 }
 

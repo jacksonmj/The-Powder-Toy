@@ -90,9 +90,8 @@ void SimAir::startSimIfNeeded()
 	params.ambientTemp = sim->ambientTemp;
 	params.blockair = data_blockair;
 	params.blockairh = data_blockairh;
-	params.bmap = bmap;
-	params.fvx = fvx;
-	params.fvy = fvy;
+	WallsData_copy(sim->walls.getDataPtr(), wallsData_copy);
+	params.wallsData = wallsData_copy;
 	params.gravityMode = gravityMode;
 	params.prevData = prevData;
 	params.inputData = currentData;
@@ -126,7 +125,7 @@ class Kernel_initBlockingData : public tptalgo::Kernel_base
 public:
 	TPTALGO_KERN_I_COMMON(Kernel_initBlockingData)
 
-	const unsigned char * const bmap, * const emap;
+	const uint8_t * const bmap, * const emap;
 	unsigned char * const blockair, * const blockairh;
 
 	bool isAligned(size_t alignAmount, size_t i=0) const
@@ -147,9 +146,9 @@ public:
 		);
 	}
 
-	Kernel_initBlockingData(const_CellsUCharRP bmap_, const_CellsUCharRP emap_, CellsUCharRP blockair_, CellsUCharRP blockairh_) :
-		bmap(reinterpret_cast<const unsigned char *>(bmap_)),
-		emap(reinterpret_cast<const unsigned char *>(emap_)),
+	Kernel_initBlockingData(const_WallsDataP wallsData, CellsUCharRP blockair_, CellsUCharRP blockairh_) :
+		bmap(reinterpret_cast<const unsigned char *>(wallsData.wallType)),
+		emap(reinterpret_cast<const unsigned char *>(wallsData.electricity)),
 		blockair(reinterpret_cast<unsigned char *>(blockair_)),
 		blockairh(reinterpret_cast<unsigned char *>(blockairh_))
 	{}
@@ -260,7 +259,7 @@ public:
 
 void SimAir::initBlockingData()
 {
-	Kernel_initBlockingData kernel(bmap, emap, data_blockair, data_blockairh);
+	Kernel_initBlockingData kernel(sim->walls.getDataPtr(), data_blockair, data_blockairh);
 	tptalgo::for_each_i(kernel, (XRES/CELL)*(YRES/CELL));
 }
 

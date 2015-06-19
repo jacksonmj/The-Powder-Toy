@@ -39,7 +39,7 @@ int PSTN_CanMoveStack(Simulation * sim, int stackX, int stackY, int directionX, 
 		if (!(posX < XRES && posY < YRES && posX >= 0 && posY >= 0)) {
 			break;
 		}
-		if (sim->IsWallBlocking(posX, posY, 0) || (block && sim->pmap_find_one(posX, posY, block)>=0))
+		if ((sim->walls.type(SimCoordI(posX, posY)) && sim->isWallBlocking(SimCoordI(posX, posY), 0)) || (block && sim->pmap_find_one(posX, posY, block)>=0))
 		{
 			if (spacesRet)
 				*spacesRet = spaces;

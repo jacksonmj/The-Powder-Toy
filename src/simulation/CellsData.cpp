@@ -122,7 +122,7 @@ public:
 #endif
 };
 
-size_t CellsData_count_1(const unsigned char (*src)[XRES/CELL])
+size_t CellsData_count_1(const uint8_t (*src)[XRES/CELL])
 {
 	return tptalgo::count_if(Kernel_count_uint8_1(), reinterpret_cast<const unsigned char*>(src), (XRES/CELL)*(YRES/CELL));
 }
@@ -162,7 +162,7 @@ public:
 #endif
 };
 
-size_t CellsData_count_and8(const unsigned char (*src)[XRES/CELL])
+size_t CellsData_count_and8(const uint8_t (*src)[XRES/CELL])
 {
 	return tptalgo::count_if(Kernel_count_uint8_and8(), reinterpret_cast<const unsigned char*>(src), (XRES/CELL)*(YRES/CELL));
 }
@@ -202,7 +202,7 @@ public:
 #endif
 };
 
-void CellsData_subtract_sat(const unsigned char (*src)[XRES/CELL], unsigned char (*dest)[XRES/CELL], unsigned char value)
+void CellsData_subtract_sat(const uint8_t (*src)[XRES/CELL], uint8_t (*dest)[XRES/CELL], uint8_t value)
 {
 	Kernel_subtract_sat kernel(value);
 	tptalgo::transform(kernel, reinterpret_cast<const unsigned char*>(src), reinterpret_cast<unsigned char*>(dest), (XRES/CELL)*(YRES/CELL));

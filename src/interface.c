@@ -53,6 +53,8 @@
 #include "common/tptmath.h"
 #include "simulation/Simulation.h"
 #include "simulation/elements/STKM.h"
+#include "simulation/SimulationSharedData.h"
+#include "simulation/walls/WallTypes.hpp"
 
 #include <algorithm>
 
@@ -185,7 +187,7 @@ void menu_count(void)//puts the number of elements in each section into .itemcou
 		msections[i].itemcount = 0;
 	}
 	msections[SC_LIFE].itemcount = NGOLALT;
-	msections[SC_WALL].itemcount = UI_WALLCOUNT-4;
+	msections[SC_WALL].itemcount = WL_NUM;
 	for (i=0; i<PT_NUM; i++)
 	{
 		if (globalSim->elements[i].ui->MenuSection<SC_TOTAL && globalSim->elements[i].ui->MenuVisible)
@@ -2378,75 +2380,59 @@ void menu_ui_v3(pixel *vid_buf, int i, int *sl, int *sr, int *su, int *dae, int 
 	sy = y;
 	if (i==SC_WALL)//wall menu
 	{
-		for (n = UI_WALLSTART; n<UI_WALLSTART+UI_WALLCOUNT; n++)
+		for (n = UI_WALLOFFSET; n<UI_WALLOFFSET+WL_NUM; n++)
 		{
-			if (n!=SPC_AIR&&n!=SPC_HEAT&&n!=SPC_COOL&&n!=SPC_VACUUM&&n!=SPC_WIND&&n!=SPC_PGRV&&n!=SPC_NGRV&&n!=SPC_PROP)
+			x -= draw_tool_xy(vid_buf, x, y, n, 0)+5;
+			if (!bq && mx>=x+32 && mx<x+58 && my>=y && my< y+15)
 			{
-				/*if (x-18<=2)
-				{
-					x = XRES-BARSIZE-18;
-					y += 19;
-				}*/
-				x -= draw_tool_xy(vid_buf, x, y, n, wtypes[n-UI_WALLSTART].colour)+5;
-				if (!bq && mx>=x+32 && mx<x+58 && my>=y && my< y+15)
-				{
-					drawrect(vid_buf, x+30, y-1, 29, 17, 255, 55, 55, 255);
-					h = n;
-				}
-				if (!bq && mx>=x+32 && mx<x+58 && my>=y && my< y+15&&(sdl_mod & (KMOD_LALT) && sdl_mod & (KMOD_CTRL)))
-				{
-					drawrect(vid_buf, x+30, y-1, 29, 17, 0, 255, 255, 255);
-					h = n;
-				}
-				else if (n==SLALT)
-				{
-					drawrect(vid_buf, x+30, y-1, 29, 17, 0, 255, 255, 255);
-				}
-				else if (n==*sl)
-				{
-					drawrect(vid_buf, x+30, y-1, 29, 17, 255, 55, 55, 255);
-				}
-				else if (n==*sr)
-				{
-					drawrect(vid_buf, x+30, y-1, 29, 17, 55, 55, 255, 255);
-				}
+				drawrect(vid_buf, x+30, y-1, 29, 17, 255, 55, 55, 255);
+				h = n;
+			}
+			if (!bq && mx>=x+32 && mx<x+58 && my>=y && my< y+15&&(sdl_mod & (KMOD_LALT) && sdl_mod & (KMOD_CTRL)))
+			{
+				drawrect(vid_buf, x+30, y-1, 29, 17, 0, 255, 255, 255);
+				h = n;
+			}
+			else if (n==SLALT)
+			{
+				drawrect(vid_buf, x+30, y-1, 29, 17, 0, 255, 255, 255);
+			}
+			else if (n==*sl)
+			{
+				drawrect(vid_buf, x+30, y-1, 29, 17, 255, 55, 55, 255);
+			}
+			else if (n==*sr)
+			{
+				drawrect(vid_buf, x+30, y-1, 29, 17, 55, 55, 255, 255);
 			}
 		}
 	}
 	else if (i==SC_TOOL)//tools menu
 	{
-		for (n = UI_WALLSTART; n<UI_WALLSTART+UI_WALLCOUNT; n++)
+		for (n = UI_TOOLOFFSET; n<UI_TOOLOFFSET+UI_TOOLCOUNT; n++)
 		{
-			if (n==SPC_AIR||n==SPC_HEAT||n==SPC_COOL||n==SPC_VACUUM||n==SPC_WIND||n==SPC_PGRV||n==SPC_NGRV||n==SPC_PROP)
+			x -= draw_tool_xy(vid_buf, x-xoff, y, n, wtypes[n-UI_TOOLOFFSET].colour)+5;
+			if (!bq && mx>=x+32-xoff && mx<x+58-xoff && my>=y && my< y+15)
 			{
-				/*if (x-18<=0)
-				{
-					x = XRES-BARSIZE-18;
-					y += 19;
-				}*/
-				x -= draw_tool_xy(vid_buf, x-xoff, y, n, wtypes[n-UI_WALLSTART].colour)+5;
-				if (!bq && mx>=x+32-xoff && mx<x+58-xoff && my>=y && my< y+15)
-				{
-					drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 255, 55, 55, 255);
-					h = n;
-				}
-				if (!bq && mx>=x+32-xoff && mx<x+58-xoff && my>=y && my< y+15&&(sdl_mod & (KMOD_LALT) && sdl_mod & (KMOD_CTRL)))
-				{
-					drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 0, 255, 255, 255);
-					h = n;
-				}
-				else if (n==SLALT)
-				{
-					drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 0, 255, 255, 255);
-				}
-				else if (n==*sl)
-				{
-					drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 255, 55, 55, 255);
-				}
-				else if (n==*sr)
-				{
-					drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 55, 55, 255, 255);
-				}
+				drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 255, 55, 55, 255);
+				h = n;
+			}
+			if (!bq && mx>=x+32-xoff && mx<x+58-xoff && my>=y && my< y+15&&(sdl_mod & (KMOD_LALT) && sdl_mod & (KMOD_CTRL)))
+			{
+				drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 0, 255, 255, 255);
+				h = n;
+			}
+			else if (n==SLALT)
+			{
+				drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 0, 255, 255, 255);
+			}
+			else if (n==*sl)
+			{
+				drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 255, 55, 55, 255);
+			}
+			else if (n==*sr)
+			{
+				drawrect(vid_buf, x+30-xoff, y-1, 29, 17, 55, 55, 255, 255);
 			}
 		}
 	}
@@ -2571,9 +2557,15 @@ void menu_ui_v3(pixel *vid_buf, int i, int *sl, int *sr, int *su, int *dae, int 
 	{
 		drawtext(vid_buf, XRES-textwidth((char *)msections[i].name)-BARSIZE, sy-10, (char *)msections[i].name, 255, 255, 255, 255);
 	}
-	else if (i==SC_WALL||i==SC_TOOL)
+	else if (i==SC_WALL && h>=UI_WALLOFFSET && h<UI_WALLOFFSET+WL_NUM)
 	{
-		drawtext(vid_buf, XRES-textwidth((char *)wtypes[h-UI_WALLSTART].descs)-BARSIZE, sy-10, (char *)wtypes[h-UI_WALLSTART].descs, 255, 255, 255, 255);
+		const char *desc = globalSim->simSD->wallTypes[h-UI_WALLOFFSET].Description.c_str();
+		drawtext(vid_buf, XRES-textwidth(desc)-BARSIZE, sy-10, desc, 255, 255, 255, 255);
+	}
+	else if (i==SC_TOOL)
+	{
+		const char *desc = wtypes[h-UI_TOOLOFFSET].descs;
+		drawtext(vid_buf, XRES-textwidth(desc)-BARSIZE, sy-10, desc, 255, 255, 255, 255);
 	}
 	else if (i==SC_LIFE)
 	{
@@ -4419,7 +4411,7 @@ int open_ui(pixel *vid_buf, char *save_id, char *save_date)
 		if (queue_open) {
 			if (info_ready && data_ready) {
 				// Do Open!
-				status = parse_save(data, data_size, 1, 0, 0, bmap, fvx, fvy, signs, parts);
+				status = parse_save(data, data_size, 1, 0, 0, globalSim->walls.getDataPtr(), signs, parts);
 				if (!status) {
 					if(svf_last)
 						free(svf_last);
@@ -4984,7 +4976,7 @@ void execute_save(pixel *vid_buf)
 	plens[0] = strlen(svf_name);
 	uploadparts[1] = svf_description;
 	plens[1] = strlen(svf_description);
-	uploadparts[2] = (char*)build_save(plens+2, 0, 0, XRES, YRES, bmap, fvx, fvy, signs, parts);
+	uploadparts[2] = (char*)build_save(plens+2, 0, 0, XRES, YRES, globalSim->walls.getDataPtr(), signs, parts);
 	if (!uploadparts[2])
 	{
 		error_ui(vid_buf, 0, "Error creating save");
@@ -6133,7 +6125,7 @@ int save_filename_ui(pixel *vid_buf)
 	pixel *save = NULL;//calloc((XRES/3)*(YRES/3), PIXELSIZE);
 	ui_edit ed;
 
-	save_data = build_save(&save_size, 0, 0, XRES, YRES, bmap, fvx, fvy, signs, parts);
+	save_data = build_save(&save_size, 0, 0, XRES, YRES, globalSim->walls.getDataPtr(), signs, parts);
 	save_data_image = prerender_save(save_data, save_size, &imgw, &imgh);
 	if(save_data_image!=NULL)
 	{
@@ -6407,7 +6399,7 @@ void catalogue_ui(pixel * vid_buf)
 						void *data;
 						data = file_load(csave->filename, &size);
 						if(data){
-							status = parse_save(data, size, 1, 0, 0, bmap, fvx, fvy, signs, parts);
+							status = parse_save(data, size, 1, 0, 0, globalSim->walls.getDataPtr(), signs, parts);
 							if(!status)
 							{
 								//svf_filename[0] = 0;

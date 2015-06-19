@@ -21,6 +21,7 @@
 #include "simulation/ElemDataShared.h"
 #include "simulation/ElemDataSim.h"
 #include "simulation/air/SimAir.hpp"
+#include "simulation/walls/SimWalls.hpp"
 #include <cmath>
 #include "powder.h"
 #include "gravity.h"
@@ -205,6 +206,7 @@ public:
 	int pfree;
 
 	SimAir air;
+	SimWalls walls;
 
 	particle parts[NPART];
 #ifdef DEBUG_PARTSALLOC
@@ -294,7 +296,8 @@ public:
 	int spark_position(int x, int y);
 	int spark_position_conductiveOnly(int x, int y);
 
-	bool IsWallBlocking(int x, int y, int type);
+	bool isWallBlocking(SimCellCoord c, int type);
+	bool isWallDeadly(SimCellCoord c, int type);
 	MoveResult::Code part_move(int i, int x,int y, float nxf,float nyf);
 	MoveResult::Code part_canMove(int pt, int nx,int ny, bool coordCheckDone=false);
 	MoveResult::Code part_canMove_dynamic(int pt, int nx,int ny, int ri, MoveResult::Code result);
@@ -314,13 +317,21 @@ public:
 	{
 		return (x>=0 && y>=0 && x<XRES && y<YRES);
 	}
-	bool InBounds(SimCoordI c) const
+	bool coord_isValid(SimCoordI c) const
 	{
 		return (c.x>=0 && c.y>=0 && c.x<XRES && c.y<YRES);
 	}
-	bool InBounds(SimCellCoord c) const
+	bool coord_isValid(SimCellCoord c) const
 	{
 		return (c.x>=0 && c.y>=0 && c.x<XRES/CELL && c.y<YRES/CELL);
+	}
+	bool coord_isInMargin(SimCoordI c) const
+	{
+		return (c.x<CELL || c.y<CELL || c.x>=XRES-CELL || c.y>=YRES-CELL);
+	}
+	bool coord_isInMargin(SimCellCoord c) const
+	{
+		return (c.x<1 || c.y<1 || c.x>=XRES/CELL-1 || c.y>=YRES/CELL-1);
 	}
 	// Copy particle properties, except for position and pmap list links
 	static void part_copy_properties(const particle& src, particle& dest)
@@ -660,7 +671,7 @@ void Simulation_Compat_CopyData(Simulation *sim);
 
 // TODO: remove these
 extern Simulation *globalSim;
-extern CellsFloat fvx, fvy;
 extern AirData undo_airData;
+extern WallsData undo_wallsData;
 
 #endif

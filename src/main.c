@@ -326,12 +326,8 @@ void dump_frame(pixel *src, int w, int h, int pitch)
 void clear_sim(void)
 {
 	globalSim->Clear();
-	memset(bmap, 0, sizeof(bmap));
-	memset(emap, 0, sizeof(emap));
 	memset(signs, 0, sizeof(signs));
 	MSIGN = -1;
-	CellsData_fill<float>(fvx, 0);
-	CellsData_fill<float>(fvy, 0);
 	memset(gol2, 0, sizeof(gol2));
 	emp_decor = 0;
 	memset(pers_bg, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
@@ -439,7 +435,7 @@ void stamp_save(int x, int y, int w, int h)
 	FILE *f;
 	int n;
 	char fn[64], sn[16];
-	void *s=build_save(&n, x, y, w, h, bmap, fvx, fvy, signs, parts);
+	void *s=build_save(&n, x, y, w, h, globalSim->walls.getDataPtr(), signs, parts);
 	if (!s)
 		return;
 
@@ -680,7 +676,7 @@ int main(int argc, char *argv[])
 	if(load_data && load_size){
 		int parsestate = 0;
 		//parsestate = parse_save(load_data, load_size, 1, 0, 0);
-		parsestate = parse_save(load_data, load_size, 1, 0, 0, bmap, vx, vy, pv, fvx, fvy, signs, parts);
+		parsestate = parse_save(load_data, load_size, 1, 0, 0, globalSim->walls.getDataPtr(), signs, parts);
 		
 		decorations_enable = 0;
 		for(i=0; i<30; i++){
@@ -1004,11 +1000,9 @@ int main(int argc, char *argv[])
 			globalSim->air.simulate_sync();
 		}
 
-		if(gravwl_timeout)
+		if(globalSim->walls.gravwl_timeout==1)
 		{
-			if(gravwl_timeout==1)
-				gravity_mask();
-			gravwl_timeout--;
+			gravity_mask();
 		}
 
 		//Can't be too sure (Limit the cursor size)
@@ -1067,7 +1061,7 @@ int main(int argc, char *argv[])
 		}
 		
 		render_after(part_vbuf, vid_buf);
-		if(su == WL_GRAV+100)
+		if(su == WL_GRAV+UI_WALLOFFSET)
 			draw_grav_zones(part_vbuf);
 		
 		if(debug_flags & (DEBUG_PERFORMANCE_CALC|DEBUG_PERFORMANCE_FRAME))
@@ -1150,7 +1144,7 @@ int main(int argc, char *argv[])
 			
 			svf_last = saveDataOpen;
 			svf_lsize = saveDataOpenSize;
-			if(parse_save(saveDataOpen, saveDataOpenSize, 1, 0, 0, bmap, fvx, fvy, signs, parts))
+			if(parse_save(saveDataOpen, saveDataOpenSize, 1, 0, 0, globalSim->walls.getDataPtr(), signs, parts))
 			{
 				saveOpenError = 1;
 				svf_last = NULL;
@@ -1735,12 +1729,7 @@ int main(int argc, char *argv[])
 					globalSim->parts_lastActiveIndex = NPART-1;
 
 					globalSim->air.setData(undo_airData);
-					for (cby = 0; cby<(YRES/CELL); cby++)
-						for (cbx = 0; cbx<(XRES/CELL); cbx++)
-						{
-							bmap[cby][cbx] = cb_bmap[cby][cbx];
-							emap[cby][cbx] = cb_emap[cby][cbx];
-						}
+					globalSim->walls.setData(undo_wallsData);
 
 					globalSim->pmap_reset();
 					globalSim->RecalcElementCounts();
@@ -2129,7 +2118,7 @@ int main(int argc, char *argv[])
 			if (load_y<0) load_y=0;
 			if (bq==1 && !b)
 			{
-				parse_save(load_data, load_size, 0, load_x, load_y, bmap, fvx, fvy, signs, parts);
+				parse_save(load_data, load_size, 0, load_x, load_y, globalSim->walls.getDataPtr(), signs, parts);
 				free(load_data);
 				free(load_img);
 				load_mode = 0;
@@ -2185,13 +2174,13 @@ int main(int argc, char *argv[])
 				{
 					if (copy_mode==1)//CTRL-C, copy
 					{
-						clipboard_data=build_save(&clipboard_length, save_x, save_y, save_w, save_h, bmap, fvx, fvy, signs, parts);
+						clipboard_data=build_save(&clipboard_length, save_x, save_y, save_w, save_h, globalSim->walls.getDataPtr(), signs, parts);
 						if (clipboard_data)
 							clipboard_ready = 1;
 					}
 					else if (copy_mode==2)//CTRL-X, cut
 					{
-						clipboard_data=build_save(&clipboard_length, save_x, save_y, save_w, save_h, bmap, fvx, fvy, signs, parts);
+						clipboard_data=build_save(&clipboard_length, save_x, save_y, save_w, save_h, globalSim->walls.getDataPtr(), signs, parts);
 						if (clipboard_data)
 						{
 							clipboard_ready = 1;
@@ -2328,7 +2317,7 @@ int main(int argc, char *argv[])
 					if (x>=19 && x<=35 && svf_last && !bq) {
 						//int tpval = sys_pause;
 						if (b == 1 || !strncmp(svf_id,"",8))
-							parse_save(svf_last, svf_lsize, 1, 0, 0, bmap, fvx, fvy, signs, parts);
+							parse_save(svf_last, svf_lsize, 1, 0, 0, globalSim->walls.getDataPtr(), signs, parts);
 						else
 							open_ui(vid_buf, svf_id, NULL);
 						//sys_pause = tpval;
@@ -2349,7 +2338,7 @@ int main(int argc, char *argv[])
 				c = (b&1) ? sl : sr; //c is element to be spawned
 				su = c;
 
-				if (c!=WL_SIGN+100 && c!=PT_FIGH)
+				if (c!=WL_SIGN+UI_TOOLOFFSET && c!=PT_FIGH)
 				{
 					if (!bq)
 						for (signi=MAXSIGNS-1; signi>=0; signi--)
@@ -2391,7 +2380,7 @@ int main(int argc, char *argv[])
 							}
 				}
 
-				if (c==WL_SIGN+100 || MSIGN!=-1) // if sign tool is selected or a sign is being moved
+				if (c==WL_SIGN+UI_TOOLOFFSET || MSIGN!=-1) // if sign tool is selected or a sign is being moved
 				{
 					if (!bq)
 						add_sign_ui(vid_buf, x, y);
@@ -2419,21 +2408,13 @@ int main(int argc, char *argv[])
 							line_y = y;
 						}
 						xor_line(lx, ly, line_x, line_y, vid_buf);
-						if (c==WL_FAN+100 && lx>=0 && ly>=0 && lx<XRES && ly<YRES && bmap[ly/CELL][lx/CELL]==WL_FAN)
+						if (c==WL_FAN+UI_WALLOFFSET && lx>=0 && ly>=0 && lx<XRES && ly<YRES && globalSim->walls.type(SimCoordI(lx,ly))==WL_FAN)
 						{
 							nfvx = (line_x-lx)*0.005f;
 							nfvy = (line_y-ly)*0.005f;
-							flood_parts(lx, ly, WL_FANHELPER, -1, WL_FAN, 0);
-							for (j=0; j<YRES/CELL; j++)
-								for (i=0; i<XRES/CELL; i++)
-									if (bmap[j][i] == WL_FANHELPER)
-									{
-										fvx[j][i] = nfvx;
-										fvy[j][i] = nfvy;
-										bmap[j][i] = WL_FAN;
-									}
+							globalSim->walls.fanVel_flood(SimCoordI(lx,ly), nfvx, nfvy);
 						}
-						if (c == SPC_WIND)
+						if (c == SPC_WIND+UI_TOOLOFFSET)
 						{
 							for (j=-bsy; j<=bsy; j++)
 								for (i=-bsx; i<=bsx; i++)
@@ -2454,7 +2435,7 @@ int main(int argc, char *argv[])
 					}
 					else//while mouse is held down, it draws lines between previous and current positions
 					{
-						if (c == SPC_WIND)
+						if (c == SPC_WIND+UI_TOOLOFFSET)
 						{
 							for (j=-bsy; j<=bsy; j++)
 								for (i=-bsx; i<=bsx; i++)
@@ -2496,9 +2477,10 @@ int main(int argc, char *argv[])
 					{
 						if (sdl_mod & (KMOD_CAPS))
 							c = 0;
-						if (c!=WL_STREAM+100&&c!=SPC_AIR&&c!=SPC_HEAT&&c!=SPC_COOL&&c!=SPC_VACUUM&&!REPLACE_MODE&&c!=SPC_WIND&&c!=SPC_PGRV&&c!=SPC_NGRV)
+						uint8_t toolId = c-UI_TOOLOFFSET;
+						if (c!=WL_STREAM+UI_WALLOFFSET && toolId!=SPC_AIR && toolId!=SPC_HEAT && toolId!=SPC_COOL && toolId!=SPC_VACUUM && !REPLACE_MODE && toolId!=SPC_WIND && toolId!=SPC_PGRV && toolId!=SPC_NGRV)
 							flood_parts(x, y, c, -1, -1, get_brush_flags());
-						if (c==SPC_HEAT || c==SPC_COOL)
+						if (toolId==SPC_HEAT || toolId==SPC_COOL)
 							create_parts(x, y, bsx, bsy, c, get_brush_flags(), 1);
 						lx = x;
 						ly = y;
@@ -2529,19 +2511,15 @@ int main(int argc, char *argv[])
 					}
 					else //normal click, spawn element
 					{
-						//Copy state before drawing any particles (for undo)7
+						//Copy state before drawing any particles (for undo)
 						int cbx, cby, cbi;
 
 						for (cbi=0; cbi<NPART; cbi++)
 							cb_parts[cbi] = parts[cbi];
 
 						globalSim->air.getData(undo_airData);
-						for (cby = 0; cby<(YRES/CELL); cby++)
-							for (cbx = 0; cbx<(XRES/CELL); cbx++)
-							{
-								cb_bmap[cby][cbx] = bmap[cby][cbx];
-								cb_emap[cby][cbx] = emap[cby][cbx];
-							}
+						globalSim->walls.getData(undo_wallsData);
+
 						create_parts(x, y, bsx, bsy, c, get_brush_flags(), 1);
 						lx = x;
 						ly = y;
@@ -2559,7 +2537,7 @@ int main(int argc, char *argv[])
 				su = c;
 				if (lm == 1)//line
 				{
-					if (c!=WL_FAN+100 || lx<0 || ly<0 || lx>=XRES || ly>=YRES || bmap[ly/CELL][lx/CELL]!=WL_FAN)
+					if (c!=WL_FAN+UI_WALLOFFSET || lx<0 || ly<0 || lx>=XRES || ly>=YRES || globalSim->walls.type(SimCoordI(lx,ly))!=WL_FAN)
 						create_line(lx, ly, line_x, line_y, bsx, bsy, c, get_brush_flags());
 				}
 				else//box

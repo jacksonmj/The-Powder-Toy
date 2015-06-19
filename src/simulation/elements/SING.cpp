@@ -26,7 +26,7 @@ int SING_update(UPDATE_FUNC_ARGS) {
 		for (rx=-1; rx<2; rx++)
 		{
 			SimCellCoord c(x/CELL+rx,y/CELL+ry);
-			if (sim->InBounds(c))
+			if (sim->coord_isValid(c))
 				sim->air.pv.blend_legacy(c, singularity, 0.1f);
 		}
 	}

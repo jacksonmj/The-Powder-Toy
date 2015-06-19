@@ -394,21 +394,20 @@ int run_stickman(Stickman_data* playerp, UPDATE_FUNC_ARGS)
  	}
 
 	//Charge detector wall if foot inside
-	if (bmap[(int)(playerp->legs[5]+0.5)/CELL][(int)(playerp->legs[4]+0.5)/CELL]==WL_DETECT)
-		set_emap((int)playerp->legs[4]/CELL, (int)playerp->legs[5]/CELL);
-	if (bmap[(int)(playerp->legs[13]+0.5)/CELL][(int)(playerp->legs[12]+0.5)/CELL]==WL_DETECT)
-		set_emap((int)(playerp->legs[12]+0.5)/CELL, (int)(playerp->legs[13]+0.5)/CELL);
+	sim->walls.detect(SimCoordF(playerp->legs[4], playerp->legs[5]));
+	sim->walls.detect(SimCoordF(playerp->legs[12], playerp->legs[13]));
 
 	//Searching for particles near head
 	for (rx=-2; rx<3; rx++)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				if (bmap[(ry+y)/CELL][(rx+x)/CELL]==WL_FAN)
+				uint8_t wallId = sim->walls.type(SimCoordI(x+rx,y+ry));
+				if (wallId==WL_FAN)
 					playerp->elem = SPC_AIR;
-				else if (bmap[(ry+y)/CELL][(rx+x)/CELL]==WL_EHOLE)
+				else if (wallId==WL_EHOLE)
 					playerp->rocketBoots = false;
-				else if (bmap[(ry+y)/CELL][(rx+x)/CELL]==WL_GRAV)
+				else if (wallId==WL_GRAV)
 					playerp->rocketBoots = true;
 				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
