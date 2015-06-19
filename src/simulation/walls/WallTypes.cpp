@@ -68,6 +68,7 @@ WallType::WallType() :
 
 void WL_ERASE_init(WALL_INIT_FUNC_ARGS)
 {
+	wall->Identifier = "DEFAULT_WL_ERASE";
 	wall->Name = "ERASE";
 	wall->Description = "Erases walls.";
 	wall->Colour = COLPACK(0x808080);
@@ -76,6 +77,7 @@ void WL_ERASE_init(WALL_INIT_FUNC_ARGS)
 
 void WL_WALLELEC_init(WALL_INIT_FUNC_ARGS)
 {
+	wall->Identifier = "DEFAULT_WL_CNDTW";
 	wall->Name = "CONDUCTIVE WALL";
 	wall->Description = "Blocks everything. Conductive.";
 	wall->Colour = COLPACK(0xC0C0C0);
@@ -87,6 +89,7 @@ void WL_WALLELEC_init(WALL_INIT_FUNC_ARGS)
 
 void WL_EWALL_init(WALL_INIT_FUNC_ARGS)
 {
+	wall->Identifier = "DEFAULT_WL_EWALL";
 	wall->Name = "EWALL";
 	wall->Description = "E-Wall. Becomes transparent when electricity is connected.";
 	wall->Colour = COLPACK(0x808080);
@@ -98,6 +101,7 @@ void WL_EWALL_init(WALL_INIT_FUNC_ARGS)
 
 void WL_DETECT_init(WALL_INIT_FUNC_ARGS)
 {
+	wall->Identifier = "DEFAULT_WL_DTECT";
 	wall->Name = "DETECTOR";
 	wall->Description = "Detector. Generates electricity when a particle is inside.";
 	wall->Colour = COLPACK(0xFF8080);
@@ -109,6 +113,7 @@ void WL_DETECT_init(WALL_INIT_FUNC_ARGS)
 
 void WL_STREAM_init(WALL_INIT_FUNC_ARGS)
 {
+	wall->Identifier = "DEFAULT_WL_STRM";
 	wall->Name = "STREAMLINE";
 	wall->Description = "Streamline. Set start point of a streamline.";
 	wall->Colour = COLPACK(0x808080);
@@ -119,6 +124,7 @@ void WL_STREAM_init(WALL_INIT_FUNC_ARGS)
 
 void WL_FAN_init(WALL_INIT_FUNC_ARGS)
 {
+	wall->Identifier = "DEFAULT_WL_FAN";
 	wall->Name = "FAN";
 	wall->Description = "Fan. Accelerates air. Use the line tool to set direction and strength.";
 	wall->Colour = COLPACK(0x8080FF);
@@ -129,6 +135,7 @@ void WL_FAN_init(WALL_INIT_FUNC_ARGS)
 
 void WL_ALLOWLIQUID_init(WALL_INIT_FUNC_ARGS)
 {
+	wall->Identifier = "DEFAULT_WL_LIQD";
 	wall->Name = "LIQUID WALL";
 	wall->Description = "Allows liquids, blocks all other particles. Conductive.";
 	wall->Colour = COLPACK(0xC0C0C0);
@@ -140,6 +147,7 @@ void WL_ALLOWLIQUID_init(WALL_INIT_FUNC_ARGS)
 
 void WL_DESTROYALL_init(WALL_INIT_FUNC_ARGS)
 {
+	wall->Identifier = "DEFAULT_WL_ABSRB";
 	wall->Name = "ABSORB WALL";
 	wall->Description = "Absorbs particles but lets air currents through.";
 	wall->Colour = COLPACK(0x808080);
@@ -150,6 +158,7 @@ void WL_DESTROYALL_init(WALL_INIT_FUNC_ARGS)
 
 void WL_WALL_init(WALL_INIT_FUNC_ARGS)
 {
+	wall->Identifier = "DEFAULT_WL_WALL";
 	wall->Name = "WALL";
 	wall->Description = "Basic wall, blocks everything.";
 	wall->Colour = COLPACK(0x808080);
@@ -160,6 +169,7 @@ void WL_WALL_init(WALL_INIT_FUNC_ARGS)
 
 void WL_ALLOWAIR_init(WALL_INIT_FUNC_ARGS)
 {
+	wall->Identifier = "DEFAULT_WL_AIR";
 	wall->Name = "AIRONLY WALL";
 	wall->Description = "Allows air, but blocks all particles.";
 	wall->Colour = COLPACK(0x3C3C3C);
@@ -170,6 +180,7 @@ void WL_ALLOWAIR_init(WALL_INIT_FUNC_ARGS)
 
 void WL_ALLOWSOLID_init(WALL_INIT_FUNC_ARGS)
 {
+	wall->Identifier = "DEFAULT_WL_POWDR";
 	wall->Name = "POWDER WALL";
 	wall->Description = "Allows powders, blocks all other particles.";
 	wall->Colour = COLPACK(0x575757);
@@ -180,6 +191,7 @@ void WL_ALLOWSOLID_init(WALL_INIT_FUNC_ARGS)
 
 void WL_ALLOWALLELEC_init(WALL_INIT_FUNC_ARGS)
 {
+	wall->Identifier = "DEFAULT_WL_CNDTR";
 	wall->Name = "CONDUCTOR";
 	wall->Description = "Conductor. Allows all particles to pass through and conducts electricity.";
 	wall->Colour = COLPACK(0xFFFF22);
@@ -191,6 +203,7 @@ void WL_ALLOWALLELEC_init(WALL_INIT_FUNC_ARGS)
 
 void WL_EHOLE_init(WALL_INIT_FUNC_ARGS)
 {
+	wall->Identifier = "DEFAULT_WL_EHOLE";
 	wall->Name = "EHOLE";
 	wall->Description = "E-Hole. absorbs particles, releases them when powered.";
 	wall->Colour = COLPACK(0x242424);
@@ -202,6 +215,7 @@ void WL_EHOLE_init(WALL_INIT_FUNC_ARGS)
 
 void WL_ALLOWGAS_init(WALL_INIT_FUNC_ARGS)
 {
+	wall->Identifier = "DEFAULT_WL_GAS";
 	wall->Name = "GAS WALL";
 	wall->Description = "Allows gases, blocks all other particles.";
 	wall->Colour = COLPACK(0x579777);
@@ -212,6 +226,7 @@ void WL_ALLOWGAS_init(WALL_INIT_FUNC_ARGS)
 
 void WL_GRAV_init(WALL_INIT_FUNC_ARGS)
 {
+	wall->Identifier = "DEFAULT_WL_GRVTY";
 	wall->Name = "GRAVITY WALL";
 	wall->Description = "Gravity wall. Newtonian Gravity has no effect inside a box drawn with this.";
 	wall->Colour = COLPACK(0xFFEE00);
@@ -222,6 +237,7 @@ void WL_GRAV_init(WALL_INIT_FUNC_ARGS)
 
 void WL_ALLOWENERGY_init(WALL_INIT_FUNC_ARGS)
 {
+	wall->Identifier = "DEFAULT_WL_ENRGY";
 	wall->Name = "ENERGY WALL";
 	wall->Description = "Allows energy particles, blocks all other particles.";
 	wall->Colour = COLPACK(0xFFAA00);
@@ -232,6 +248,7 @@ void WL_ALLOWENERGY_init(WALL_INIT_FUNC_ARGS)
 
 void WL_BLOCKAIR_init(WALL_INIT_FUNC_ARGS)
 {
+	wall->Identifier = "DEFAULT_WL_NOAIR";
 	wall->Name = "AIRBLOCK WALL";
 	wall->Description = "Allows all particles, but blocks air.";
 	wall->Colour = COLPACK(0xDCDCDC);

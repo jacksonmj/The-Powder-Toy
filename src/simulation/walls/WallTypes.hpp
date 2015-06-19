@@ -42,6 +42,7 @@ public:
 	int V44Id;	
 	std::string Name;
 	std::string Description;
+	std::string Identifier;
 	WallType();
 };
 
