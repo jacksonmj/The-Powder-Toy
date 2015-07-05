@@ -194,7 +194,7 @@ public:
 	
 	// simdpp::uint*<n> impl::op(DataType x) - should return the number of matches in x. simdpp::uint*<n> = CountT
 	template<class DataType, class Kernel, class opInputT>
-	static size_t simdpp(const Kernel &kernel, const DataType *data, size_t data_length)
+	static typename std::enable_if<simdpp::is_vector<opInputT>::value, size_t>::type simdpp(const Kernel &kernel, const DataType *data, size_t data_length)
 	{
 		using KernelImpl = typename Kernel::template impl<opInputT>;
 		using opOutputT = decltype(std::declval<KernelImpl>().op(std::declval<Kernel>(),std::declval<opInputT>()));
@@ -277,11 +277,13 @@ size_t count_if(const Kernel &kernel, const DataType *data, size_t data_length)
 {
 	using opInputT = typename detail::select_impl<DataType, Kernel>::type;
 	static_assert(!std::is_same<void,opInputT>::value, "No valid implementation could be found in the supplied kernel");
-	if (HAVE_LIBSIMDPP)
+#if HAVE_LIBSIMDPP
+	if (simdpp::is_vector<opInputT>::value)
 	{
 		return detail::count_if::simdpp<DataType, Kernel, opInputT>(kernel, data, data_length);
 	}
 	else
+#endif
 	{
 		return detail::count_if::single<DataType, Kernel>(kernel, data, data_length);
 	}
