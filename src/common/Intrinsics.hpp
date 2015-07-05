@@ -49,6 +49,9 @@
 #if defined(__AVX2__)
 #define SIMDPP_ARCH_X86_AVX2 1
 #endif
+#if defined(__ARM_NEON__)
+#define SIMDPP_ARCH_ARM_NEON_FLT_SP 1
+#endif
 
 #if HAVE_LIBSIMDPP
 #include "simdpp/setup_arch.h"
