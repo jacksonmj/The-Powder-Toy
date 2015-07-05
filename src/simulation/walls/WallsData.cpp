@@ -13,7 +13,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "simulation/walls/WallsData.hpp"
 #include <algorithm>
 #include <utility>
@@ -31,26 +30,6 @@ WallsData& WallsData::operator=(const_WallsDataP src)
 {
 	WallsData_copy(src, *this);
 	return *this;
-}
-
-WallsData::operator WallsDataP()
-{
-	WallsDataP tmp;
-	tmp.wallType = wallType;
-	tmp.electricity = electricity;
-	tmp.fanVX = fanVX;
-	tmp.fanVY = fanVY;
-	return tmp;
-}
-
-WallsData::operator const_WallsDataP() const
-{
-	const_WallsDataP tmp;
-	tmp.wallType = wallType;
-	tmp.electricity = electricity;
-	tmp.fanVX = fanVX;
-	tmp.fanVY = fanVY;
-	return tmp;
 }
 
 void swap(WallsData& a, WallsData& b)

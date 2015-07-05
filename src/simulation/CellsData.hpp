@@ -39,9 +39,9 @@ CELLSDATA_TYPEDEFS(uint8_t, CellsUint8)
 
 void CellsData_limit(CellsFloatP data, float minVal, float maxVal);
 void CellsData_limit(const_CellsFloatRP src, CellsFloatRP dest, float minVal, float maxVal);
-size_t CellsData_count_and8(const uint8_t (*src)[XRES/CELL]);// Count the number of cells where (x&8)
-size_t CellsData_count_1(const uint8_t (*src)[XRES/CELL]);// Count the number of cells where x==1, x can only be 0 or 1.
-void CellsData_subtract_sat(const uint8_t (*src)[XRES/CELL], uint8_t (*dest)[XRES/CELL], uint8_t value);// Saturating subtraction (if result is less than 0, result is set to 0) of a value from all bytes
+size_t CellsData_count_and8(const_CellsUint8P src);// Count the number of cells where (x&8)
+size_t CellsData_count_1(const_CellsUint8P src);// Count the number of cells where x==1, x can only be 0 or 1.
+void CellsData_subtract_sat(const_CellsUint8P src, CellsUint8P dest, uint8_t value);// Saturating subtraction (if result is less than 0, result is set to 0) of a value from all bytes
 
 template<typename DataType>
 void CellsData_fill(DataType (*dest)[XRES/CELL], DataType value);
@@ -68,8 +68,8 @@ class CellsData
 protected:
 	DataType (*data)[XRES/CELL];
 public:
-	typedef DataType (* DataType_2d)[XRES/CELL];
-	typedef const DataType (* const_DataType_2d)[XRES/CELL];
+	using DataType_2d = DataType (*)[XRES/CELL];
+	using const_DataType_2d = const DataType (*)[XRES/CELL];
 
 	CellsData() {
 		data = reinterpret_cast<DataType_2d>(tpt_aligned_alloc(16, sizeof(DataType)*(YRES/CELL)*(XRES/CELL)));
@@ -112,7 +112,8 @@ void swap(CellsData<DataType> &a, CellsData<DataType> &b) {
 	swap(a.data, b.data);
 }
 
-typedef CellsData<float> CellsFloat;
-typedef CellsData<uint8_t> CellsUChar;
+using CellsFloat = CellsData<float>;
+using CellsUChar = CellsData<uint8_t>;
+using CellsUint8 = CellsData<uint8_t>;
 
 #endif

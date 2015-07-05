@@ -13,17 +13,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "simulation/air/AirData.hpp"
-#include "common/tptmath.h"
-#include <cmath>
 #include <algorithm>
 #include <utility>
-
-#include "common/Threading.hpp"
-
-#define WL_FAN 123
-//include "powder.h"
 
 using std::swap;
 
@@ -38,26 +30,6 @@ AirData& AirData::operator=(const_AirDataP src)
 {
 	AirData_copy(src, *this);
 	return *this;
-}
-
-AirData::operator AirDataP()
-{
-	AirDataP tmp;
-	tmp.vx = vx;
-	tmp.vy = vy;
-	tmp.pv = pv;
-	tmp.hv = hv;
-	return tmp;
-}
-
-AirData::operator const_AirDataP() const
-{
-	const_AirDataP tmp;
-	tmp.vx = vx;
-	tmp.vy = vy;
-	tmp.pv = pv;
-	tmp.hv = hv;
-	return tmp;
 }
 
 void swap(AirData& a, AirData& b)

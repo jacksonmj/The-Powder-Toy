@@ -18,42 +18,50 @@
 
 #include "simulation/CellsData.hpp"
 
-// pointers to wall data
-class WallsDataP
+template<class TI, class TF>
+class WallsData_items
 {
 public:
-	CellsUCharP wallType;
-	CellsUCharP electricity;
-	CellsFloatP fanVX, fanVY;
-	WallsDataP() : wallType(nullptr), electricity(nullptr), fanVX(nullptr), fanVY(nullptr) {}
+	TI wallType;
+	TI electricity;
+	TF fanVX, fanVY;
+protected:
+	void setNull(...) {}
+	template <class TI2 = TI, class TF2 = TF> typename std::enable_if<std::is_pointer<TI2>::value && std::is_pointer<TF2>::value, void>::type setNull()
+	{
+		wallType = electricity = nullptr;
+		fanVX = fanVY = nullptr;
+	}
+public:
+	WallsData_items()
+	{
+		if (std::is_pointer<TI>::value && std::is_pointer<TF>::value)
+			setNull();
+	}
+	template <class SrcT>
+	WallsData_items(SrcT&& src)
+	{
+		wallType = src.wallType;
+		electricity = src.electricity;
+		fanVX = src.fanVX;
+		fanVY = src.fanVY;
+	}
 };
 
-// pointers to constant walls data
-class const_WallsDataP
-{
-public:
-	const_CellsUCharP wallType;
-	const_CellsUCharP electricity;
-	const_CellsFloatP fanVX, fanVY;
-	const_WallsDataP() : wallType(nullptr), electricity(nullptr), fanVX(nullptr), fanVY(nullptr) {}
-	const_WallsDataP(const WallsDataP &p) : wallType(p.wallType), electricity(p.electricity), fanVX(p.fanVX), fanVY(p.fanVY) {}
-};
+// pointers / const pointers to wall data
+using WallsDataP = WallsData_items<CellsUint8P, CellsFloatP>;
+using const_WallsDataP = WallsData_items<const_CellsUint8P, const_CellsFloatP>;
 
-// walls data (memory to store the data is allocated by this class)
-class WallsData
+// wall data (allocates memory to store the data)
+class WallsData : public WallsData_items<CellsUint8, CellsFloat>
 {
 public:
-	CellsUChar wallType;
-	CellsUChar electricity;
-	CellsFloat fanVX, fanVY;
 	WallsData();
 	WallsData(const_WallsDataP src);
 	WallsData& operator=(const_WallsDataP src);
-	operator WallsDataP();
-	operator const_WallsDataP() const;
 };
-void swap(WallsData& a, WallsData& b);
 
 void WallsData_copy(const_WallsDataP src, WallsDataP dest);
+void swap(WallsData& a, WallsData& b);
 
 #endif

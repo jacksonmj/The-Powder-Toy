@@ -13,48 +13,55 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef Simulation_Air_AirData_h
-#define Simulation_Air_AirData_h
+#ifndef simulation_air_AirData_h
+#define simulation_air_AirData_h
 
 #include "simulation/CellsData.hpp"
+#include <type_traits>
 
-// pointers to air data
-class AirDataP
+template<class T>
+class AirData_items
 {
 public:
-	CellsFloatP vx,vy;
-	CellsFloatP pv;
-	CellsFloatP hv;
-	AirDataP() : vx(nullptr), vy(nullptr), pv(nullptr), hv(nullptr) {}
+	T vx,vy;
+	T pv;
+	T hv;
+protected:
+	void setNull(...) {}
+	template <class T2 = T> typename std::enable_if<std::is_pointer<T2>::value, void>::type setNull()
+	{
+		vx = vy = pv = hv = nullptr;
+	}
+public:
+	AirData_items()
+	{
+		if (std::is_pointer<T>::value)
+			setNull();
+	}
+	template <class SrcT>
+	AirData_items(SrcT&& src)
+	{
+		vx = src.vx;
+		vy = src.vy;
+		pv = src.pv;
+		hv = src.hv;
+	}
 };
 
-// pointers to constant air data
-class const_AirDataP
-{
-public:
-	const_CellsFloatP vx,vy;
-	const_CellsFloatP pv;
-	const_CellsFloatP hv;
-	const_AirDataP() : vx(nullptr), vy(nullptr), pv(nullptr), hv(nullptr) {}
-	const_AirDataP(const AirDataP &p) : vx(p.vx), vy(p.vy), pv(p.pv), hv(p.hv) {}
-};
+// pointers / const pointers to air data
+using AirDataP = AirData_items<CellsFloatP>;
+using const_AirDataP = AirData_items<const_CellsFloatP>;
 
-// air data (memory to store the data is allocated by this class)
-class AirData
+// air data (allocates memory to store the data)
+class AirData : public AirData_items<CellsFloat>
 {
 public:
-	CellsFloat vx,vy;
-	CellsFloat pv;
-	CellsFloat hv;
 	AirData();
 	AirData(const_AirDataP src);
 	AirData& operator=(const_AirDataP src);
-	operator AirDataP();
-	operator const_AirDataP() const;
 };
-void swap(AirData& a, AirData& b);
 
-// copy air data
 void AirData_copy(const_AirDataP src, AirDataP dest);
+void swap(AirData& a, AirData& b);
 
 #endif
