@@ -17,7 +17,7 @@
 
 int URAN_update(UPDATE_FUNC_ARGS)
 {
-	if (!legacy_enable && sim->air.pv.get(SimCoordI(x,y))>0.0f)
+	if (!legacy_enable && sim->air.pv.get(SimPosI(x,y))>0.0f)
 	{
 		if (parts[i].temp-MIN_TEMP < 0.01f)
 		{
@@ -25,7 +25,7 @@ int URAN_update(UPDATE_FUNC_ARGS)
 		}
 		else
 		{
-			float tempScaleFactor = 1+sim->air.pv.get(SimCoordI(x,y))/2000;
+			float tempScaleFactor = 1+sim->air.pv.get(SimPosI(x,y))/2000;
 			sim->part_set_temp(parts[i], (parts[i].temp-MIN_TEMP)*tempScaleFactor + MIN_TEMP);
 		}
 	}

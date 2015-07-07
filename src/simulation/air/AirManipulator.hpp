@@ -27,9 +27,9 @@ Example:
 CellFloats pvdata;
 AirManipulator_immediate pv(pvdata);
 
-pv.add(SimCoordI(x,y), 10.0f); // adds 10 pressure to cell (x/CELL,y/CELL)
-pv.add(SimCoordF(x,y), 10.0f); // adds 10 pressure to cell (x/CELL,y/CELL), x and y are floats
-pv.add(SimCellCoord(x,y), 10.0f); // adds 10 pressure to cell (x,y)
+pv.add(SimPosI(x,y), 10.0f); // adds 10 pressure to cell (x/CELL,y/CELL)
+pv.add(SimPosF(x,y), 10.0f); // adds 10 pressure to cell (x/CELL,y/CELL), x and y are floats
+pv.add(SimPosCell(x,y), 10.0f); // adds 10 pressure to cell (x,y)
 
 */
 
@@ -66,27 +66,27 @@ public:
 	AirManipulator_immediate(const_CellsFloatP origData=nullptr);
 	virtual ~AirManipulator_immediate();
 
-	float get(SimCellCoord c) const {
+	float get(SimPosCell c) const {
 		return newData[c.y][c.x];
 	}
-	float operator() (SimCellCoord c) const {
+	float operator() (SimPosCell c) const {
 		return newData[c.y][c.x];
 	}
 
-	void add(SimCellCoord c, float amount) {
+	void add(SimPosCell c, float amount) {
 		newData[c.y][c.x] += amount;
 	}
 
-	void multiply(SimCellCoord c, float multiplier) {
+	void multiply(SimPosCell c, float multiplier) {
 		newData[c.y][c.x] *= multiplier;
 	}
 
-	void blend(SimCellCoord c, float value, float weight) {
+	void blend(SimPosCell c, float value, float weight) {
 		// weight = 0.0f: no change in value
 		// weight -> infinity: equivalent to setting value
 		newData[c.y][c.x] = (newData[c.y][c.x] + weight*value)/(1.0f + weight);
 	}
-	void blend_legacy(SimCellCoord c, float value, float weight) {
+	void blend_legacy(SimPosCell c, float value, float weight) {
 		// "legacy" because in AirManipulator_buffered it requires additional calculation
 		// weight = 0.0f: no change in value
 		// weight = 1.0f: equivalent to setting value
@@ -95,7 +95,7 @@ public:
 		newData[c.y][c.x] += weight*(value-newData[c.y][c.x]);
 	}
 
-	void set(SimCellCoord c, float value) {
+	void set(SimPosCell c, float value) {
 		newData[c.y][c.x] = value;
 	}
 };
@@ -127,27 +127,27 @@ public:
 	}
 	virtual ~AirManipulator_buffered() {}
 
-	float get(SimCellCoord c) const {
+	float get(SimPosCell c) const {
 		return origData[c.y][c.x];
 	}
-	float operator() (SimCellCoord c) const {
+	float operator() (SimPosCell c) const {
 		return origData[c.y][c.x];
 	}
-	void add(SimCellCoord c, float amount) {
+	void add(SimPosCell c, float amount) {
 		buf_add[c.y][c.x] += amount;
 	}
-	void multiply(SimCellCoord c, float multiplier) {
+	void multiply(SimPosCell c, float multiplier) {
 		buf_multiply[c.y][c.x] *= multiplier;
 	}
-	void blend(SimCellCoord c, float value, float weight) {
+	void blend(SimPosCell c, float value, float weight) {
 		buf_blendWeight[c.y][c.x] += weight;
 		buf_blendValue[c.y][c.x] += weight*value;
 	}
-	void blend_legacy(SimCellCoord c, float value, float weight) {
+	void blend_legacy(SimPosCell c, float value, float weight) {
 		float newWeight = (std::abs(1.0f-weight)<1e-3) ? 1e5 : weight/(1-weight);
 		blend(c, value, newWeight);
 	}
-	void set(SimCellCoord c, float value) {
+	void set(SimPosCell c, float value) {
 		blend(c, value, 1e5);
 	}
 };

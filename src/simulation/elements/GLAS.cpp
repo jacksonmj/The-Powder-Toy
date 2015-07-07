@@ -18,7 +18,7 @@
 int GLAS_update(UPDATE_FUNC_ARGS)
 {
 	parts[i].pavg[0] = parts[i].pavg[1];
-	parts[i].pavg[1] = sim->air.pv.get(SimCoordI(x,y));
+	parts[i].pavg[1] = sim->air.pv.get(SimPosI(x,y));
 	if (parts[i].pavg[1]-parts[i].pavg[0] > 0.25f || parts[i].pavg[1]-parts[i].pavg[0] < -0.25f)
 	{
 		sim->part_change_type(i,x,y,PT_BGLA);
@@ -28,7 +28,7 @@ int GLAS_update(UPDATE_FUNC_ARGS)
 
 void GLAS_create(ELEMENT_CREATE_FUNC_ARGS)
 {
-	sim->parts[i].pavg[1] = sim->air.pv.get(SimCoordI(x,y));
+	sim->parts[i].pavg[1] = sim->air.pv.get(SimPosI(x,y));
 }
 
 void GLAS_init_element(ELEMENT_INIT_FUNC_ARGS)

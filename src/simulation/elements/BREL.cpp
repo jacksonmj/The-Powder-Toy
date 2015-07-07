@@ -17,14 +17,14 @@
 
 int BREL_update(UPDATE_FUNC_ARGS)
 {
-	if (parts[i].life>0 && sim->air.pv.get(SimCoordI(x,y)) > 10.0f)
+	if (parts[i].life>0 && sim->air.pv.get(SimPosI(x,y)) > 10.0f)
 	{
-		if (sim->air.pv.get(SimCoordI(x,y)) > 30.0f && parts[i].temp>9000 && sim->rng.chance<1,200>())
+		if (sim->air.pv.get(SimPosI(x,y)) > 30.0f && parts[i].temp>9000 && sim->rng.chance<1,200>())
 		{
 			sim->part_change_type(i, x ,y ,PT_EXOT);
 			parts[i].life = 1000;
 		}
-		parts[i].temp = parts[i].temp + sim->air.pv.get(SimCoordI(x,y))/8;
+		parts[i].temp = parts[i].temp + sim->air.pv.get(SimPosI(x,y))/8;
 	}
 	return 0;
 }

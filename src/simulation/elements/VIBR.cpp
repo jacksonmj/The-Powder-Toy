@@ -34,15 +34,15 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 			parts[i].temp += 3;
 		}
 		//Pressure absorption code
-		if (sim->air.pv.get(SimCoordI(x,y)) > 2.5)
+		if (sim->air.pv.get(SimPosI(x,y)) > 2.5)
 		{
 			parts[i].tmp += 7;
-			sim->air.pv.add(SimCoordI(x,y), -1.0f);
+			sim->air.pv.add(SimPosI(x,y), -1.0f);
 		}
-		else if (sim->air.pv.get(SimCoordI(x,y)) < -2.5)
+		else if (sim->air.pv.get(SimPosI(x,y)) < -2.5)
 		{
 			parts[i].tmp -= 2;
-			sim->air.pv.add(SimCoordI(x,y), 1.0f);
+			sim->air.pv.add(SimPosI(x,y), 1.0f);
 		}
 		//initiate explosion counter
 		if (parts[i].tmp > 1000)
@@ -102,7 +102,7 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 				if (index != -1)
 					sim->part_set_temp(parts[index], 7000);
 				sim->part_set_temp(parts[i], 9000);
-				sim->air.pv.add(SimCoordI(x,y), 50.0f);
+				sim->air.pv.add(SimPosI(x,y), 50.0f);
 
 				return 1;
 			}
@@ -166,7 +166,7 @@ int VIBR_update(UPDATE_FUNC_ARGS)
 					if (rt == PT_ANAR && parts[i].type != PT_BVBR)
 					{
 						sim->part_change_type(i,x,y,PT_BVBR);
-						sim->air.pv.add(SimCoordI(x,y), -1.0f);
+						sim->air.pv.add(SimPosI(x,y), -1.0f);
 					}
 				}
 			}

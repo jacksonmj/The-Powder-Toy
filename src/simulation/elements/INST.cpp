@@ -14,7 +14,7 @@
  */
 
 #include "simulation/ElementsCommon.h"
-#include "simulation/CoordStack.h"
+#include "simulation/PositionStack.hpp"
 #include "simulation/elements/INST.h"
 
 bool pmap_contains_sparkable_INST(Simulation *sim, int x, int y)
@@ -41,7 +41,7 @@ int Element_INST::flood_spark(Simulation *sim, int x, int y)
 
 	try
 	{
-		CoordStack<short> cs;
+		PositionStack<short> cs;
 		cs.push(x, y);
 
 		do

@@ -34,28 +34,28 @@ public:
 	WallsManipulator();
 	virtual ~WallsManipulator();
 
-	float fanVelX(SimCellCoord c) const {
+	float fanVelX(SimPosCell c) const {
 		return data.fanVX[c.y][c.x];
 	}
-	float fanVelY(SimCellCoord c) const {
+	float fanVelY(SimPosCell c) const {
 		return data.fanVY[c.y][c.x];
 	}
-	void fanVelX(SimCellCoord c, float newValue) {
+	void fanVelX(SimPosCell c, float newValue) {
 		data.fanVX[c.y][c.x] = newValue;
 	}
-	void fanVelY(SimCellCoord c, float newValue) {
+	void fanVelY(SimPosCell c, float newValue) {
 		data.fanVY[c.y][c.x] = newValue;
 	}
-	void fanVel(SimCellCoord c, float newVX, float newVY) {
+	void fanVel(SimPosCell c, float newVX, float newVY) {
 		data.fanVX[c.y][c.x] = newVX;
 		data.fanVY[c.y][c.x] = newVY;
 	}
-	void fanVel_flood(SimCellCoord c, float newVX, float newVY);
+	void fanVel_flood(SimPosCell c, float newVX, float newVY);
 
-	uint8_t type(SimCellCoord c) const {
+	uint8_t type(SimPosCell c) const {
 		return data.wallType[c.y][c.x];
 	}
-	void type(SimCellCoord c, uint8_t newType) {
+	void type(SimPosCell c, uint8_t newType) {
 		if (data.wallType[c.y][c.x]==WL_GRAV && newType!=WL_GRAV)
 			gravwl_timeout = 60;
 		data.wallType[c.y][c.x] = newType;
@@ -64,35 +64,35 @@ public:
 		else if (newType==WL_FAN)
 			fanVel(c, 0.0f, 0.0f);
 	}
-	uint8_t electricity(SimCellCoord c) const {
+	uint8_t electricity(SimPosCell c) const {
 		return data.electricity[c.y][c.x];
 	}
-	void electricity(SimCellCoord c, uint8_t newValue) {
+	void electricity(SimPosCell c, uint8_t newValue) {
 		data.electricity[c.y][c.x] = newValue;
 	}
 
-	bool isProperWall(SimCellCoord c) const // is a wall, and is not WL_STREAM
+	bool isProperWall(SimPosCell c) const // is a wall, and is not WL_STREAM
 	{
 		return (type(c) && type(c)!=WL_STREAM);
 	}
-	bool isClosedEHole(SimCellCoord c) const
+	bool isClosedEHole(SimPosCell c) const
 	{
 		return (type(c)==WL_EHOLE && !electricity(c));
 	}
-	bool isConductive(SimCellCoord c) const
+	bool isConductive(SimPosCell c) const
 	{
 		return (type(c)==WL_DETECT || type(c)==WL_EWALL || type(c)==WL_ALLOWLIQUID || type(c)==WL_WALLELEC || type(c)==WL_ALLOWALLELEC || type(c)==WL_EHOLE);
 	}
-	bool canSpark(SimCellCoord c) const
+	bool canSpark(SimPosCell c) const
 	{
 		return isConductive(c) && electricity(c)<8;
 	}
-	void detect(SimCellCoord c) // trigger WL_DETECT, if present at this location
+	void detect(SimPosCell c) // trigger WL_DETECT, if present at this location
 	{
 		if (type(c)==WL_DETECT && electricity(c)<8)
 			makeSpark(c);
 	}
-	void makeSpark(SimCellCoord c);
+	void makeSpark(SimPosCell c);
 	void setBorder(uint8_t wallType);
 };
 

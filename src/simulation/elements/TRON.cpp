@@ -51,7 +51,7 @@ bool canmovetron(Simulation * sim, int x, int y, int len)
 	int rcount, ri, rnext;
 	
 	//TODO: maybe TRON should be able to cross some walls? E.g. detector wall
-	if (sim->walls.type(SimCoordI(x,y)))
+	if (sim->walls.type(SimPosI(x,y)))
 		return false;
 
 	FOR_PMAP_POSITION_NOENERGY(sim, x, y, rcount, ri, rnext)

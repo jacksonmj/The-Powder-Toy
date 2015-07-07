@@ -186,7 +186,7 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 	powderful = parts[i].temp*(1+parts[i].life/40)*LIGHTING_POWER;
 	if (sim->ambientHeatEnabled)
 	{
-		sim->air.hv.add(SimCoordI(x,y), powderful/50);
+		sim->air.hv.add(SimPosI(x,y), powderful/50);
 	}
 
 	for (rx=-2; rx<3; rx++)
@@ -212,14 +212,14 @@ int LIGH_update(UPDATE_FUNC_ARGS)
 						{
 							sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
 						}
-						sim->air.pv.add(SimCoordI(x,y), powderful/400);
+						sim->air.pv.add(SimPosI(x,y), powderful/400);
 						if (sim->elements[rt].HeatConduct)
 							sim->part_add_temp(parts[ri], powderful/1.3f);
 					}
 					if (rt==PT_DEUT || rt==PT_PLUT) // start nuclear reactions
 					{
 						sim->part_add_temp(parts[ri], powderful);
-						sim->air.pv.add(SimCoordI(x,y), powderful/35);
+						sim->air.pv.add(SimPosI(x,y), powderful/35);
 						if (sim->rng.chance<1,3>())
 						{
 							sim->part_change_type(ri,x+rx,y+ry,PT_NEUT);

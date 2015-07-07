@@ -38,7 +38,7 @@ int AMTR_update(UPDATE_FUNC_ARGS)
 							sim->part_create(ri, x+rx, y+ry, PT_PHOT);
 						else
 							sim->part_kill(ri);
-						sim->air.pv.add(SimCoordI(x,y), -2.0f);
+						sim->air.pv.add(SimPosI(x,y), -2.0f);
 					}
 				}
 			}

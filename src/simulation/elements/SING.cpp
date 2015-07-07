@@ -25,8 +25,8 @@ int SING_update(UPDATE_FUNC_ARGS) {
 	{
 		for (rx=-1; rx<2; rx++)
 		{
-			SimCellCoord c(x/CELL+rx,y/CELL+ry);
-			if (sim->coord_isValid(c))
+			SimPosCell c(x/CELL+rx,y/CELL+ry);
+			if (sim->pos_isValid(c))
 				sim->air.pv.blend_legacy(c, singularity, 0.1f);
 		}
 	}
@@ -37,7 +37,7 @@ int SING_update(UPDATE_FUNC_ARGS) {
 			for (ry=-1; ry<2; ry++) {
 				cry = (y/CELL)+ry;
 				if (cry >= 0 && crx >= 0 && crx < (XRES/CELL) && cry < (YRES/CELL)) {
-					sim->air.pv.add(SimCoordI(crx,cry), (float)parts[i].tmp);
+					sim->air.pv.add(SimPosI(crx,cry), (float)parts[i].tmp);
 				}
 			}
 		}

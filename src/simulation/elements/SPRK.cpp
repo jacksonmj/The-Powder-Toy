@@ -74,7 +74,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 			if (parts[i].temp > 5273.15)
 				parts[i].tmp |= 0x4;
 			sim->part_set_temp(parts[i], 3500);
-			sim->air.pv.add(SimCoordI(x,y), 1);
+			sim->air.pv.add(SimPosI(x,y), 1);
 		}
 		break;
 	case PT_TESC:
@@ -97,14 +97,14 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 							parts[p].tmp2=1;
 							parts[p].tmp=atan2(-ry, rx)/M_PI*360;
 							parts[i].temp-=parts[i].tmp*2+parts[i].temp/5; // slight self-cooling
-							if (fabs(sim->air.pv.get(SimCoordI(x,y)))!=0.0f)
+							if (fabs(sim->air.pv.get(SimPosI(x,y)))!=0.0f)
 							{
-								float pressure = sim->air.pv.get(SimCoordI(x,y));
+								float pressure = sim->air.pv.get(SimPosI(x,y));
 								// TODO: this probably won't work well with buffered air
 								if (fabs(pressure)<=0.5f)
-									sim->air.pv.set(SimCoordI(x,y), 0.0f);
+									sim->air.pv.set(SimPosI(x,y), 0.0f);
 								else
-									sim->air.pv.add(SimCoordI(x,y), (pressure>0)?-0.5:0.5);
+									sim->air.pv.add(SimPosI(x,y), (pressure>0)?-0.5:0.5);
 							}
 						}
 					}
@@ -266,7 +266,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 					switch (receiver)
 					{
 					case PT_QRTZ:
-						if ((sender==PT_NSCN||sender==PT_METL||sender==PT_PSCN||sender==PT_QRTZ) && (parts[ri].temp<173.15||sim->air.pv.get(SimCoordI(x+rx,y+ry))>8))
+						if ((sender==PT_NSCN||sender==PT_METL||sender==PT_PSCN||sender==PT_QRTZ) && (parts[ri].temp<173.15||sim->air.pv.get(SimPosI(x+rx,y+ry))>8))
 							goto conduct;
 						continue;
 					case PT_NTCT:

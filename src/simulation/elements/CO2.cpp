@@ -49,7 +49,7 @@ int CO2_update(UPDATE_FUNC_ARGS)
 					}
 				}
 			}
-	if (parts[i].temp > 9773.15 && sim->air.pv.get(SimCoordI(x,y)) > 200.0f)
+	if (parts[i].temp > 9773.15 && sim->air.pv.get(SimPosI(x,y)) > 200.0f)
 	{
 		if (sim->rng.chance<1,5>())
 		{
@@ -68,7 +68,7 @@ int CO2_update(UPDATE_FUNC_ARGS)
 			}
 
 			sim->part_set_temp(parts[i], MAX_TEMP);
-			sim->air.pv.add(SimCoordI(x,y), 100);
+			sim->air.pv.add(SimPosI(x,y), 100);
 		}
 	}
 	return 0;

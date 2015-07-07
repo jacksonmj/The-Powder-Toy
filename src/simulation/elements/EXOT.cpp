@@ -88,8 +88,8 @@ int EXOT_update(UPDATE_FUNC_ARGS)
 		}
 	}
 	else if (parts[i].life<1001)
-		sim->air.pv.add(SimCoordI(x,y), (parts[i].tmp2*CFDS)/160000);
-	if (sim->air.pv.get(SimCoordI(x,y))>200 && parts[i].temp>9000 && parts[i].tmp2>200)
+		sim->air.pv.add(SimPosI(x,y), (parts[i].tmp2*CFDS)/160000);
+	if (sim->air.pv.get(SimPosI(x,y))>200 && parts[i].temp>9000 && parts[i].tmp2>200)
 	{
 		parts[i].tmp2 = 6000;
 		sim->part_change_type(i, x, y, PT_WARP);
@@ -138,7 +138,7 @@ int EXOT_update(UPDATE_FUNC_ARGS)
 	{
 		parts[i].vx = 0;
 		parts[i].vy = 0;
-		sim->air.pv.add(SimCoordI(x,y), -0.01f);
+		sim->air.pv.add(SimPosI(x,y), -0.01f);
 		parts[i].tmp--;
 	}
 	return 0;

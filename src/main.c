@@ -1884,21 +1884,21 @@ int main(int argc, char *argv[])
 
 				if (DEBUG_MODE)
 				{
-					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d, Tmp:%d", nametext, globalSim->air.pv.get(SimCoordI(x,y)), parts[cri].temp-273.15f, parts[cri].life, parts[cri].tmp);
+					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d, Tmp:%d", nametext, globalSim->air.pv.get(SimPosI(x,y)), parts[cri].temp-273.15f, parts[cri].life, parts[cri].tmp);
 					sprintf(coordtext, "#%d, X:%d Y:%d", cri, x, y);
 				}
 				else
 				{
 #ifdef BETA
-					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d, Tmp:%d", nametext, globalSim->air.pv.get(SimCoordI(x,y)), parts[cri].temp-273.15f, parts[cri].life, parts[cri].tmp);
+					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C, Life: %d, Tmp:%d", nametext, globalSim->air.pv.get(SimPosI(x,y)), parts[cri].temp-273.15f, parts[cri].life, parts[cri].tmp);
 #else
-					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C", nametext, globalSim->air.pv.get(SimCoordI(x,y)), parts[cri].temp-273.15f);
+					sprintf(heattext, "%s, Pressure: %3.2f, Temp: %4.2f C", nametext, globalSim->air.pv.get(SimPosI(x,y)), parts[cri].temp-273.15f);
 #endif
 				}
 			}
 			else
 			{
-				sprintf(heattext, "Empty, Pressure: %3.2f", globalSim->air.pv.get(SimCoordI(x,y)));
+				sprintf(heattext, "Empty, Pressure: %3.2f", globalSim->air.pv.get(SimPosI(x,y)));
 				if (DEBUG_MODE)
 				{
 					if (ngrav_enable)
@@ -2408,11 +2408,11 @@ int main(int argc, char *argv[])
 							line_y = y;
 						}
 						xor_line(lx, ly, line_x, line_y, vid_buf);
-						if (c==WL_FAN+UI_WALLOFFSET && lx>=0 && ly>=0 && lx<XRES && ly<YRES && globalSim->walls.type(SimCoordI(lx,ly))==WL_FAN)
+						if (c==WL_FAN+UI_WALLOFFSET && lx>=0 && ly>=0 && lx<XRES && ly<YRES && globalSim->walls.type(SimPosI(lx,ly))==WL_FAN)
 						{
 							nfvx = (line_x-lx)*0.005f;
 							nfvy = (line_y-ly)*0.005f;
-							globalSim->walls.fanVel_flood(SimCoordI(lx,ly), nfvx, nfvy);
+							globalSim->walls.fanVel_flood(SimPosI(lx,ly), nfvx, nfvy);
 						}
 						if (c == SPC_WIND+UI_TOOLOFFSET)
 						{
@@ -2420,7 +2420,7 @@ int main(int argc, char *argv[])
 								for (i=-bsx; i<=bsx; i++)
 									if (globalSim->InBounds(lx+i, ly+j) && InCurrentBrush(i,j,bsx,bsy))
 									{
-										SimCellCoord c = SimCoordI(lx+i, ly+j);
+										SimPosCell c = SimPosI(lx+i, ly+j);
 										globalSim->air.vx.add(c, (line_x-lx)*0.002f);
 										globalSim->air.vy.add(c, (line_y-ly)*0.002f);
 									}
@@ -2441,7 +2441,7 @@ int main(int argc, char *argv[])
 								for (i=-bsx; i<=bsx; i++)
 									if (globalSim->InBounds(x+i, y+j) && InCurrentBrush(i,j,bsx,bsy))
 									{
-										SimCellCoord c = SimCoordI(x+i, y+j);
+										SimPosCell c = SimPosI(x+i, y+j);
 										globalSim->air.vx.add(c, (x-lx)*0.01f);
 										globalSim->air.vy.add(c, (y-ly)*0.01f);
 									}
@@ -2537,7 +2537,7 @@ int main(int argc, char *argv[])
 				su = c;
 				if (lm == 1)//line
 				{
-					if (c!=WL_FAN+UI_WALLOFFSET || lx<0 || ly<0 || lx>=XRES || ly>=YRES || globalSim->walls.type(SimCoordI(lx,ly))!=WL_FAN)
+					if (c!=WL_FAN+UI_WALLOFFSET || lx<0 || ly<0 || lx>=XRES || ly>=YRES || globalSim->walls.type(SimPosI(lx,ly))!=WL_FAN)
 						create_line(lx, ly, line_x, line_y, bsx, bsy, c, get_brush_flags());
 				}
 				else//box

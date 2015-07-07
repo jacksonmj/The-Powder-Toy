@@ -21,7 +21,7 @@ int PSNS_update(UPDATE_FUNC_ARGS)
 {
 	int rx, ry, rt;
 	int rcount, ri, rnext;
-	if (sim->air.pv.get(SimCoordI(x,y)) > parts[i].temp-273.15f)
+	if (sim->air.pv.get(SimPosI(x,y)) > parts[i].temp-273.15f)
 	{
 		parts[i].life = 0;
 		for (rx=-2; rx<3; rx++)

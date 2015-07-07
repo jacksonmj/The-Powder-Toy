@@ -23,8 +23,8 @@ int BOYL_update(UPDATE_FUNC_ARGS)
 	{
 		for (rx=-1; rx<2; rx++)
 		{
-			SimCellCoord c(x/CELL+rx,y/CELL+ry);
-			if (sim->coord_isValid(c))
+			SimPosCell c(x/CELL+rx,y/CELL+ry);
+			if (sim->pos_isValid(c))
 				sim->air.pv.blend_legacy(c, (parts[i].temp/100), 0.001f);
 		}
 	}
@@ -44,7 +44,7 @@ int BOYL_update(UPDATE_FUNC_ARGS)
 					{
 						sim->part_kill(ri);
 						sim->part_change_type(i,x,y,PT_WATR);
-						sim->air.pv.add(SimCoordI(x,y), 4.0f);
+						sim->air.pv.add(SimPosI(x,y), 4.0f);
 					}
 				}
 			}

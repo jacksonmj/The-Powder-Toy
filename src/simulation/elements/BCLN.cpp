@@ -17,13 +17,13 @@
 
 int BCLN_update(UPDATE_FUNC_ARGS)
 {
-	if (!parts[i].life && sim->air.pv.get(SimCoordI(x,y))>4.0f)
+	if (!parts[i].life && sim->air.pv.get(SimPosI(x,y))>4.0f)
 		parts[i].life = sim->rng.randInt<80,80+39>();
 	if (parts[i].life)
 	{
 		float advection = 0.1f;
-		parts[i].vx += advection*sim->air.vx.get(SimCoordI(x,y));
-		parts[i].vy += advection*sim->air.vy.get(SimCoordI(x,y));
+		parts[i].vx += advection*sim->air.vx.get(SimPosI(x,y));
+		parts[i].vy += advection*sim->air.vy.get(SimPosI(x,y));
 	}
 	if (parts[i].ctype<=0 || !sim->IsValidElement(parts[i].ctype) || (parts[i].ctype==PT_LIFE && (parts[i].tmp<0 || parts[i].tmp>=NGOLALT)))
 	{

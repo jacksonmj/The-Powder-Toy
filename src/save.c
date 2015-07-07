@@ -2338,7 +2338,7 @@ void *build_thumb(int *size, int bzip2)
 		}
 	for (y=0; y<YRES/CELL; y++)
 		for (x=0; x<XRES/CELL; x++)
-			if (globalSim->walls.type(SimCellCoord(x,y)))
+			if (globalSim->walls.type(SimPosCell(x,y)))
 				for (j=0; j<CELL; j++)
 					for (i=0; i<CELL; i++)
 						d[x*CELL+i+(y*CELL+j)*XRES] = 0xFF;

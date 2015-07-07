@@ -50,19 +50,19 @@ public:
 	void markAsDirty();
 	void applyChanges();
 	void simulate_sync();
-	unsigned char block(SimCellCoord c) const {
+	unsigned char block(SimPosCell c) const {
 		return data_blockair[c.y][c.x];
 	}
-	void block(SimCellCoord c, bool newState) {
+	void block(SimPosCell c, bool newState) {
 		data_blockair[c.y][c.x] = newState;
 	}
-	unsigned char blockh(SimCellCoord c) const {
+	unsigned char blockh(SimPosCell c) const {
 		return data_blockairh[c.y][c.x];
 	}
-	void blockh(SimCellCoord c, bool newState) {
+	void blockh(SimPosCell c, bool newState) {
 		data_blockairh[c.y][c.x] = (newState?8:0);
 	}
-	void blockh_inc(SimCellCoord c) {
+	void blockh_inc(SimPosCell c) {
 		if (data_blockairh[c.y][c.x]<8)
 			data_blockairh[c.y][c.x]++;
 	}

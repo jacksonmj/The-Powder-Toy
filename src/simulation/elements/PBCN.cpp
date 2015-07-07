@@ -19,13 +19,13 @@ int PBCN_update(UPDATE_FUNC_ARGS)
 {
 	int rx, ry, rt;
 	int rcount, ri, rnext;
-	if (!parts[i].tmp2 && sim->air.pv.get(SimCoordI(x,y))>4.0f)
+	if (!parts[i].tmp2 && sim->air.pv.get(SimPosI(x,y))>4.0f)
 		parts[i].tmp2 = sim->rng.randInt<80,80+39>();
 	if (parts[i].tmp2)
 	{
 		float advection = 0.1f;
-		parts[i].vx += advection*sim->air.vx.get(SimCoordI(x,y));
-		parts[i].vy += advection*sim->air.vy.get(SimCoordI(x,y));
+		parts[i].vx += advection*sim->air.vx.get(SimPosI(x,y));
+		parts[i].vy += advection*sim->air.vy.get(SimPosI(x,y));
 		parts[i].tmp2--;
 		if(!parts[i].tmp2){
 			sim->part_kill(i);

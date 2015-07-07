@@ -131,7 +131,7 @@ int PHOT_update(UPDATE_FUNC_ARGS)
 							rr = sim->rng.randInt<128,128+227>()/127.0f;
 						parts[ri].vx = rr*cosf(rrr);
 						parts[ri].vy = rr*sinf(rrr);
-						sim->air.pv.add(SimCoordI(x,y), -15.0f * CFDS);
+						sim->air.pv.add(SimPosI(x,y), -15.0f * CFDS);
 					}
 					else if (rt==PT_QRTZ && !rx && !ry)
 						isQuartz = true;

@@ -17,7 +17,7 @@
 
 int INVS_graphics(GRAPHICS_FUNC_ARGS)
 {
-	if(sim->air.pv.get(SimCoordI(nx,ny))>4.0f || sim->air.pv.get(SimCoordI(nx,ny))<-4.0f)
+	if(sim->air.pv.get(SimPosI(nx,ny))>4.0f || sim->air.pv.get(SimPosI(nx,ny))<-4.0f)
 	{
 		*cola = 100;
 		*colr = 15;

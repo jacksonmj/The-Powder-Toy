@@ -441,13 +441,13 @@ void grav_mask_r(int x, int y, char checkmap[YRES/CELL][XRES/CELL], char shape[Y
 		*shapeout = 1;
 	checkmap[y][x] = 1;
 	shape[y][x] = 1;
-	if(x-1 >= 0 && !checkmap[y][x-1] && globalSim->walls.type(SimCellCoord(x-1,y))!=WL_GRAV)
+	if(x-1 >= 0 && !checkmap[y][x-1] && globalSim->walls.type(SimPosCell(x-1,y))!=WL_GRAV)
 		grav_mask_r(x-1, y, checkmap, shape, shapeout);
-	if(y-1 >= 0 && !checkmap[y-1][x] && globalSim->walls.type(SimCellCoord(x,y-1))!=WL_GRAV)
+	if(y-1 >= 0 && !checkmap[y-1][x] && globalSim->walls.type(SimPosCell(x,y-1))!=WL_GRAV)
 		grav_mask_r(x, y-1, checkmap, shape, shapeout);
-	if(x+1 < XRES/CELL && !checkmap[y][x+1] && globalSim->walls.type(SimCellCoord(x+1,y))!=WL_GRAV)
+	if(x+1 < XRES/CELL && !checkmap[y][x+1] && globalSim->walls.type(SimPosCell(x+1,y))!=WL_GRAV)
 		grav_mask_r(x+1, y, checkmap, shape, shapeout);
-	if(y+1 < YRES/CELL && !checkmap[y+1][x] && globalSim->walls.type(SimCellCoord(x,y+1))!=WL_GRAV)
+	if(y+1 < YRES/CELL && !checkmap[y+1][x] && globalSim->walls.type(SimPosCell(x,y+1))!=WL_GRAV)
 		grav_mask_r(x, y+1, checkmap, shape, shapeout);
 	return;
 }
@@ -480,7 +480,7 @@ void gravity_mask()
 	{
 		for(y = 0; y < YRES/CELL; y++)
 		{
-			if(globalSim->walls.type(SimCellCoord(x,y))!=WL_GRAV && checkmap[y][x] == 0)
+			if(globalSim->walls.type(SimPosCell(x,y))!=WL_GRAV && checkmap[y][x] == 0)
 			{
 				//Create a new shape
 				if(t_mask_el==NULL){

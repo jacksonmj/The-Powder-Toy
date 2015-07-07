@@ -26,7 +26,7 @@ public:
 
 	static int update_neighbour(UPDATE_FUNC_ARGS, int rx, int ry, int rt, int ri)
 	{
-		if (sim->walls.isProperWall(SimCoordI(x+rx,y+ry)))
+		if (sim->walls.isProperWall(SimPosI(x+rx,y+ry)))
 			return 0;
 		int t = parts[i].type;
 
@@ -37,7 +37,7 @@ public:
 				sim->part_change_type(ri,x+rx,y+ry,PT_LAVA);
 				parts[ri].ctype = PT_BMTL;
 				parts[ri].temp = 3500.0f;
-				sim->air.pv.add(SimCoordI(x+rx,y+ry), 50.0f);
+				sim->air.pv.add(SimPosI(x+rx,y+ry), 50.0f);
 			} else {
 				sim->part_change_type(ri,x+rx,y+ry,PT_LAVA);
 				parts[ri].life = 400;
@@ -67,7 +67,7 @@ public:
 		}
 
 		if ((surround_space || sim->elements[rt].Explosive) &&
-			sim->elements[rt].Flammable && sim->rng.chance(sim->elements[rt].Flammable + (int)(sim->air.pv.get(SimCoordI(x+rx,y+ry)) * 10.0f), 1000) &&
+			sim->elements[rt].Flammable && sim->rng.chance(sim->elements[rt].Flammable + (int)(sim->air.pv.get(SimPosI(x+rx,y+ry)) * 10.0f), 1000) &&
 			//exceptions, t is the thing causing the spark and rt is what's burning
 			(t!=PT_SPRK || (rt!=PT_RBDM && rt!=PT_LRBD && rt!=PT_INSL)) &&
 			(t!=PT_PHOT || rt!=PT_INSL) &&
@@ -80,7 +80,7 @@ public:
 			parts[ri].life = sim->rng.randInt<180,180+79>();
 			parts[ri].tmp = parts[ri].ctype = 0;
 			if (sim->elements[rt].Explosive)
-				sim->air.pv.add(SimCoordI(x,y), 0.25f * CFDS);
+				sim->air.pv.add(SimPosI(x,y), 0.25f * CFDS);
 		}
 
 		if (legacy_enable && t!=PT_SPRK)

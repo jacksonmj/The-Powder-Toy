@@ -296,8 +296,8 @@ public:
 	int spark_position(int x, int y);
 	int spark_position_conductiveOnly(int x, int y);
 
-	bool isWallBlocking(SimCellCoord c, int type);
-	bool isWallDeadly(SimCellCoord c, int type);
+	bool isWallBlocking(SimPosCell c, int type);
+	bool isWallDeadly(SimPosCell c, int type);
 	MoveResult::Code part_move(int i, int x,int y, float nxf,float nyf);
 	MoveResult::Code part_canMove(int pt, int nx,int ny, bool coordCheckDone=false);
 	MoveResult::Code part_canMove_dynamic(int pt, int nx,int ny, int ri, MoveResult::Code result);
@@ -317,19 +317,19 @@ public:
 	{
 		return (x>=0 && y>=0 && x<XRES && y<YRES);
 	}
-	bool coord_isValid(SimCoordI c) const
+	bool pos_isValid(SimPosI c) const
 	{
 		return (c.x>=0 && c.y>=0 && c.x<XRES && c.y<YRES);
 	}
-	bool coord_isValid(SimCellCoord c) const
+	bool pos_isValid(SimPosCell c) const
 	{
 		return (c.x>=0 && c.y>=0 && c.x<XRES/CELL && c.y<YRES/CELL);
 	}
-	bool coord_isInMargin(SimCoordI c) const
+	bool pos_isInMargin(SimPosI c) const
 	{
 		return (c.x<CELL || c.y<CELL || c.x>=XRES-CELL || c.y>=YRES-CELL);
 	}
-	bool coord_isInMargin(SimCellCoord c) const
+	bool pos_isInMargin(SimPosCell c) const
 	{
 		return (c.x<1 || c.y<1 || c.x>=XRES/CELL-1 || c.y>=YRES/CELL-1);
 	}

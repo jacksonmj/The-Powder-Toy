@@ -19,7 +19,7 @@
 // Note: if adding a new data type array, lines will probably need adding here ("CELLSDATA_TYPEDEFS" and at the bottom "typedef CellsData<...> Cells...;") and in CellsData.cpp (at the bottom, "CELLSDATA_INSTANTIATE")
 
 #include "common/Compat.hpp"
-#include "simulation/Coords.hpp"
+#include "simulation/Position.hpp"
 #include "common/AlignedAlloc.hpp"
 #include "common/tpt-stdint.h"
 #include <utility>
@@ -90,8 +90,8 @@ public:
 
 	DataType& operator ()(int x, int y) { return data[y][x]; }
 	const DataType& operator ()(int x, int y) const { return data[y][x]; }
-	DataType& operator ()(SimCellCoord c) { return data[c.y][c.x]; }
-	const DataType& operator ()(SimCellCoord c) const { return data[c.y][c.x]; }\
+	DataType& operator ()(SimPosCell c) { return data[c.y][c.x]; }
+	const DataType& operator ()(SimPosCell c) const { return data[c.y][c.x]; }\
 	DataType* operator [](int y) { return data[y]; }
 	const DataType* operator [](int y) const { return data[y]; }
 

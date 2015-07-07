@@ -53,7 +53,7 @@ int BANG_update(UPDATE_FUNC_ARGS)
 	{
 		float otemp = parts[i].temp-273.13f;
 		//Explode!!
-		sim->air.pv.add(SimCoordI(x,y), 0.5f);
+		sim->air.pv.add(SimPosI(x,y), 0.5f);
 		parts[i].tmp = 0;
 		if(sim->rng.chance<1,3>())
 		{

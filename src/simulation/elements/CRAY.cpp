@@ -84,7 +84,7 @@ int CRAY_update(UPDATE_FUNC_ARGS)
 								if (!(x+nxi+nxx<XRES && y+nyi+nyy<YRES && x+nxi+nxx >= 0 && y+nyi+nyy >= 0)) {
 									break;
 								}
-								if (!(sim->walls.type(SimCoordI(x+nxi+nxx, y+nyi+nyy)) && sim->isWallBlocking(SimCoordI(x+nxi+nxx, y+nyi+nyy), parts[i].ctype)) && (!sim->pmap[y+nyi+nyy][x+nxi+nxx].count_notEnergy || createSpark)) { // create, also set color if it has passed through FILT
+								if (!(sim->walls.type(SimPosI(x+nxi+nxx, y+nyi+nyy)) && sim->isWallBlocking(SimPosI(x+nxi+nxx, y+nyi+nyy), parts[i].ctype)) && (!sim->pmap[y+nyi+nyy][x+nxi+nxx].count_notEnergy || createSpark)) { // create, also set color if it has passed through FILT
 									int nr;
 									if (parts[i].ctype == PT_LIFE)
 										nr = create_part(-1, x+nxi+nxx, y+nyi+nyy, parts[i].ctype|(parts[i].tmp2<<8));

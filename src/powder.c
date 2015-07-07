@@ -27,7 +27,7 @@
 
 #include "common/tptmath.h"
 #include "simulation/Simulation.h"
-#include "simulation/CoordStack.h"
+#include "simulation/PositionStack.hpp"
 #include "simulation/ElemDataSim.h"
 #include "simulation/elements/PHOT.h"
 
@@ -262,12 +262,12 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 	}
 	if (toolId==SPC_AIR)
 	{
-		globalSim->air.pv.add(SimCoordI(x,y), 0.10f);
+		globalSim->air.pv.add(SimPosI(x,y), 0.10f);
 		return -1;
 	}
 	if (toolId==SPC_VACUUM)
 	{
-		globalSim->air.pv.add(SimCoordI(x,y), -0.10f);
+		globalSim->air.pv.add(SimPosI(x,y), -0.10f);
 		return -1;
 	}
 	if (toolId==SPC_PGRV)
@@ -464,7 +464,7 @@ void clear_area(int area_x, int area_y, int area_w, int area_h)
 	{
 		for (cx=0; cx<area_w; cx++)
 		{
-			globalSim->walls.type(SimCoordI(cx+area_x,cy+area_y), WL_NONE);
+			globalSim->walls.type(SimPosI(cx+area_x,cy+area_y), WL_NONE);
 			globalSim->delete_position(cx+area_x, cy+area_y);
 		}
 	}
@@ -510,7 +510,7 @@ int flood_prop(int x, int y, int parttype, size_t propoffset, void * propvalue, 
 	memset(bitmap, 0, XRES*YRES);
 	try
 	{
-		CoordStack<short> cs;
+		PositionStack<short> cs;
 		cs.push(x, y);
 		do
 		{
@@ -591,7 +591,7 @@ int flood_parts(int x, int y, int fullc, int cm, int bm, int flags)
 	{
 		if (c-UI_WALLOFFSET==WL_ERASE)
 		{
-			bm = globalSim->walls.type(SimCoordI(x,y));
+			bm = globalSim->walls.type(SimPosI(x,y));
 			if (!bm)
 				return 0;
 			if (bm==WL_WALL)
@@ -601,12 +601,12 @@ int flood_parts(int x, int y, int fullc, int cm, int bm, int flags)
 			bm = 0;
 	}
 
-	if (((cm>0 && sim->pmap_find_one(x, y, cm)<0) || globalSim->walls.type(SimCoordI(x,y))!=bm )||( (flags&BRUSH_SPECIFIC_DELETE) && cm!=SLALT))
+	if (((cm>0 && sim->pmap_find_one(x, y, cm)<0) || globalSim->walls.type(SimPosI(x,y))!=bm )||( (flags&BRUSH_SPECIFIC_DELETE) && cm!=SLALT))
 		return 1;
 
 	try
 	{
-		CoordStack<short> cs;
+		PositionStack<short> cs;
 		cs.push(x, y);
 
 		do
@@ -616,14 +616,14 @@ int flood_parts(int x, int y, int fullc, int cm, int bm, int flags)
 			// go left as far as possible
 			while (x1>=CELL)
 			{
-				if ((cm==0 ? sim->pmap[y][x1-1].count>0 : sim->pmap_find_one(x1-1, y, cm)<0) || globalSim->walls.type(SimCoordI(x1-1,y))!=bm)
+				if ((cm==0 ? sim->pmap[y][x1-1].count>0 : sim->pmap_find_one(x1-1, y, cm)<0) || globalSim->walls.type(SimPosI(x1-1,y))!=bm)
 					break;
 				x1--;
 			}
 			// go right as far as possible
 			while (x2<XRES-CELL)
 			{
-				if ((cm==0 ? sim->pmap[y][x2+1].count>0 : sim->pmap_find_one(x2+1, y, cm)<0) || globalSim->walls.type(SimCoordI(x2+1,y))!=bm)
+				if ((cm==0 ? sim->pmap[y][x2+1].count>0 : sim->pmap_find_one(x2+1, y, cm)<0) || globalSim->walls.type(SimPosI(x2+1,y))!=bm)
 					break;
 				x2++;
 			}
@@ -637,13 +637,13 @@ int flood_parts(int x, int y, int fullc, int cm, int bm, int flags)
 			// add vertically adjacent pixels to stack
 			if (y>=CELL+dy)
 				for (x=x1; x<=x2; x++)
-					if ((cm==0 ? sim->pmap[y-dy][x].count==0 : sim->pmap_find_one(x, y-dy, cm)>=0) && globalSim->walls.type(SimCoordI(x,y-dy))==bm)
+					if ((cm==0 ? sim->pmap[y-dy][x].count==0 : sim->pmap_find_one(x, y-dy, cm)>=0) && globalSim->walls.type(SimPosI(x,y-dy))==bm)
 					{
 						cs.push(x, y-dy);
 					}
 			if (y<YRES-CELL-dy)
 				for (x=x1; x<=x2; x++)
-					if ((cm==0 ? sim->pmap[y+dy][x].count==0 : sim->pmap_find_one(x, y+dy, cm)>=0) && globalSim->walls.type(SimCoordI(x,y+dy))==bm)
+					if ((cm==0 ? sim->pmap[y+dy][x].count==0 : sim->pmap_find_one(x, y+dy, cm)>=0) && globalSim->walls.type(SimPosI(x,y+dy))==bm)
 					{
 						cs.push(x, y+dy);
 					}
@@ -664,7 +664,7 @@ int flood_water(int x, int y, int i, int originaly, int check)
 
 	try
 	{
-		CoordStack<short> cs;
+		PositionStack<short> cs;
 		cs.push(x, y);
 
 		do
@@ -847,11 +847,11 @@ int create_parts(int x, int y, int rx, int ry, int c, int flags, int fill)
 			for (v=-1; v<2; v++)
 				for (u=-1; u<2; u++)
 				{
-					SimCellCoord c(x+u,y+v);
-					if (globalSim->coord_isValid(c) && globalSim->walls.type(c) == WL_STREAM)
+					SimPosCell c(x+u,y+v);
+					if (globalSim->pos_isValid(c) && globalSim->walls.type(c) == WL_STREAM)
 						return 1;
 				}
-			globalSim->walls.type(SimCellCoord(x,y), WL_STREAM);
+			globalSim->walls.type(SimPosCell(x,y), WL_STREAM);
 			return 1;
 		}
 
@@ -867,11 +867,11 @@ int create_parts(int x, int y, int rx, int ry, int c, int flags, int fill)
 				{
 					if (flags&BRUSH_SPECIFIC_DELETE)
 					{
-						if (globalSim->walls.type(SimCellCoord(ox,oy))==SLALT-UI_WALLOFFSET)
-							globalSim->walls.type(SimCellCoord(ox,oy), WL_NONE);
+						if (globalSim->walls.type(SimPosCell(ox,oy))==SLALT-UI_WALLOFFSET)
+							globalSim->walls.type(SimPosCell(ox,oy), WL_NONE);
 						continue;
 					}
-					globalSim->walls.type(SimCellCoord(ox,oy), wallId);
+					globalSim->walls.type(SimPosCell(ox,oy), wallId);
 				}
 			}
 		}

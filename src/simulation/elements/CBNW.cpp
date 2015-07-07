@@ -19,13 +19,13 @@ int CBNW_update(UPDATE_FUNC_ARGS)
 {
 	int rx, ry;
 	int rcount, ri, rnext;
-	if (sim->air.pv.get(SimCoordI(x,y))<=3)
+	if (sim->air.pv.get(SimPosI(x,y))<=3)
     {
-		if(sim->air.pv.get(SimCoordI(x,y))<=-0.5 || sim->rng.chance<1,4000>())
+		if(sim->air.pv.get(SimPosI(x,y))<=-0.5 || sim->rng.chance<1,4000>())
     	{
 			sim->part_change_type(i,x,y,PT_CO2);
 			parts[i].ctype = 5;
-			sim->air.pv.add(SimCoordI(x,y), 0.5f);
+			sim->air.pv.add(SimPosI(x,y), 0.5f);
 		}
 	}
 	if(parts[i].tmp2!=20)
@@ -43,7 +43,7 @@ int CBNW_update(UPDATE_FUNC_ARGS)
 		{
 			sim->part_change_type(i,x,y,PT_CO2);
 			parts[i].ctype = 5;
-			sim->air.pv.add(SimCoordI(x,y), 0.2f);
+			sim->air.pv.add(SimPosI(x,y), 0.2f);
 		}
 		parts[i].tmp--;
 	}
@@ -59,11 +59,11 @@ int CBNW_update(UPDATE_FUNC_ARGS)
 						//Start explode
 						parts[i].tmp = sim->rng.randInt<0,24>();
 					}
-					else if ((sim->elements[rt].Properties&TYPE_SOLID) && rt!=PT_DMND && rt!=PT_GLAS && parts[i].tmp == 0 && sim->rng.chance(2-sim->air.pv.get(SimCoordI(x,y)), 8000))
+					else if ((sim->elements[rt].Properties&TYPE_SOLID) && rt!=PT_DMND && rt!=PT_GLAS && parts[i].tmp == 0 && sim->rng.chance(2-sim->air.pv.get(SimPosI(x,y)), 8000))
 					{
 						sim->part_change_type(i,x,y,PT_CO2);
 						parts[i].ctype = 5;
-						sim->air.pv.add(SimCoordI(x,y), 0.2f);
+						sim->air.pv.add(SimPosI(x,y), 0.2f);
 					}
 					if (rt==PT_CBNW)
 					{

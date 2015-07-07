@@ -14,7 +14,7 @@
  */
 
 #include "simulation/walls/WallsManipulator.hpp"
-#include "simulation/CoordStack.h"
+#include "simulation/PositionStack.hpp"
 
 WallsManipulator::WallsManipulator() :
 	gravwl_timeout(0)
@@ -27,10 +27,10 @@ void WallsManipulator::setManipData(WallsDataP data_)
 	data = data_;
 }
 
-void WallsManipulator::makeSpark(SimCellCoord c)
+void WallsManipulator::makeSpark(SimPosCell c)
 {
-	using CC = SimCellCoord;
-	CoordStack<CC> cs;
+	using CC = SimPosCell;
+	PositionStack<CC> cs;
 	cs.push(c);
 
 	do
@@ -94,17 +94,16 @@ void WallsManipulator::makeSpark(SimCellCoord c)
 	} while (cs.size()>0);
 }
 
-void WallsManipulator::fanVel_flood(SimCellCoord c, float newVX, float newVY)
+void WallsManipulator::fanVel_flood(SimPosCell c, float newVX, float newVY)
 {
-	using CC = SimCellCoord;
 	try
 	{
-		CoordStack<CC> cs;
+		PositionStack<SimPosCell> cs;
 		cs.push(c);
 
 		do
 		{
-			CC c = cs.pop();
+			SimPosCell c = cs.pop();
 			int x1, x2;
 
 			if (type(c)!=WL_FAN)
@@ -114,13 +113,13 @@ void WallsManipulator::fanVel_flood(SimCellCoord c, float newVX, float newVY)
 			x1 = x2 = c.x;
 			while (x1>0)
 			{
-				if (type(CC(x1-1, c.y))!=WL_FAN)
+				if (type(SimPosCell(x1-1, c.y))!=WL_FAN)
 					break;
 				x1--;
 			}
 			while (x2<XRES/CELL-1)
 			{
-				if (type(CC(x2+1, c.y))!=WL_FAN)
+				if (type(SimPosCell(x2+1, c.y))!=WL_FAN)
 					break;
 				x2++;
 			}
@@ -134,16 +133,16 @@ void WallsManipulator::fanVel_flood(SimCellCoord c, float newVX, float newVY)
 			{
 				for (int x=x1; x<=x2; x++)
 				{
-					if (type(CC(x, c.y-1))==WL_FAN)
-						cs.push(CC(x, c.y-1));
+					if (type(SimPosCell(x, c.y-1))==WL_FAN)
+						cs.push(SimPosCell(x, c.y-1));
 				}
 			}
 			if (c.y<YRES/CELL-1)
 			{
 				for (int x=x1; x<=x2; x++)
 				{
-					if (type(CC(x, c.y+1))==WL_FAN)
-						cs.push(CC(x, c.y+1));
+					if (type(SimPosCell(x, c.y+1))==WL_FAN)
+						cs.push(SimPosCell(x, c.y+1));
 				}
 			}
 		} while (cs.size()>0);
@@ -155,7 +154,7 @@ void WallsManipulator::fanVel_flood(SimCellCoord c, float newVX, float newVY)
 				if (data.wallType[y][x]==WL_FLOODHELPER)
 				{
 					data.wallType[y][x] = WL_FAN;
-					fanVel(CC(x,y), newVX, newVY);
+					fanVel(SimPosCell(x,y), newVX, newVY);
 				}
 			}
 		}
@@ -178,13 +177,13 @@ void WallsManipulator::setBorder(uint8_t wallType)
 {
 	for(int i = 0; i<(XRES/CELL); i++)
 	{
-		type(SimCellCoord(i,0), wallType);
-		type(SimCellCoord(i,YRES/CELL-1), wallType);
+		type(SimPosCell(i,0), wallType);
+		type(SimPosCell(i,YRES/CELL-1), wallType);
 	}
 	for(int i = 1; i<((YRES/CELL)-1); i++)
 	{
-		type(SimCellCoord(0,i), wallType);
-		type(SimCellCoord(XRES/CELL-1,i), wallType);
+		type(SimPosCell(0,i), wallType);
+		type(SimPosCell(XRES/CELL-1,i), wallType);
 	}
 }
 

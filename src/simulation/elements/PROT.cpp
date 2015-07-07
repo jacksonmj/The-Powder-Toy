@@ -32,12 +32,12 @@ void PROT_DeutImplosion(Simulation * sim, int n, int x, int y, float temp, int t
 		else if (sim->pfree < 0)
 			break;
 	}
-	sim->air.pv.add(SimCoordI(x,y), -(6.0f * CFDS)*n);
+	sim->air.pv.add(SimPosI(x,y), -(6.0f * CFDS)*n);
 }
 
 int PROT_update(UPDATE_FUNC_ARGS)
 {
-	sim->air.pv.add(SimCoordI(x,y), -0.003f);
+	sim->air.pv.add(SimPosI(x,y), -0.003f);
 	int rcount, ri, rnext, rt;
 	//slowly kill it if it's not inside an element
 	if (!sim->pmap[y][x].count_notEnergy && parts[i].life)
@@ -85,7 +85,7 @@ int PROT_update(UPDATE_FUNC_ARGS)
 		{
 			sim->part_create(ri, x, y, PT_FIRE);
 			sim->part_add_temp(parts[ri], sim->elements[rt].Flammable*5);
-			sim->air.pv.add(SimCoordI(x,y), 1.0f);
+			sim->air.pv.add(SimPosI(x,y), 1.0f);
 		}
 		//remove active sparks
 		else if (rt == PT_SPRK)
@@ -99,7 +99,7 @@ int PROT_update(UPDATE_FUNC_ARGS)
 		}
 		else if (rt == PT_DEUT)
 		{
-			if (sim->rng.chance(-((int)sim->air.pv.get(SimCoordI(x,y))-4)+(parts[ri].life/100), 200))
+			if (sim->rng.chance(-((int)sim->air.pv.get(SimPosI(x,y))-4)+(parts[ri].life/100), 200))
 			{
 				PROT_DeutImplosion(sim, parts[ri].life, x, y, tptmath::clamp_flt(parts[ri].temp + parts[ri].life*500, MIN_TEMP, MAX_TEMP), PT_PROT);
 				sim->part_kill(ri);

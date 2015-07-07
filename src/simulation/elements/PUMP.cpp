@@ -35,7 +35,7 @@ int PUMP_update(UPDATE_FUNC_ARGS)
 			for (ry=-1; ry<2; ry++)
 				if ((x+rx)-CELL>=0 && (y+ry)-CELL>0 && (x+rx)+CELL<XRES && (y+ry)+CELL<YRES && !(rx && ry))
 				{
-					sim->air.pv.blend_legacy(SimCellCoord(x/CELL+rx,y/CELL+ry), parts[i].temp-273.15f, 0.1f);
+					sim->air.pv.blend_legacy(SimPosCell(x/CELL+rx,y/CELL+ry), parts[i].temp-273.15f, 0.1f);
 				}
 		
 		for (rx=-2; rx<3; rx++)

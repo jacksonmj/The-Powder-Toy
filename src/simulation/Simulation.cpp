@@ -443,7 +443,7 @@ int Simulation::part_create(int p, float xf, float yf, int t)
 		// If there is a particle, only allow creation if the new particle can occupy the same space as the existing particle
 		// If there isn't a particle but there is a wall, check whether the new particle is allowed to be in it
 		// If there's no particle and no wall, assume creation is allowed
-		if (pmap[y][x].count || walls.isProperWall(SimCoordI(x,y)))
+		if (pmap[y][x].count || walls.isProperWall(SimPosI(x,y)))
 		{
 			MoveResult::Code moveResult = part_canMove(t, x, y);
 			if (moveResult!=MoveResult::ALLOW && moveResult!=MoveResult::ALLOW_BUT_SLOW)
@@ -729,7 +729,7 @@ int Simulation::spark_position(int x, int y)
 }
 
 // Returns true if the element is blocked from moving to (or being created at) a position by a wall 
-bool Simulation::isWallBlocking(SimCellCoord c, int type)
+bool Simulation::isWallBlocking(SimPosCell c, int type)
 {
 	if (!walls.type(c))
 		return false;
@@ -756,7 +756,7 @@ bool Simulation::isWallBlocking(SimCellCoord c, int type)
 }
 
 // Returns true if the element is destroyed by a wall when at a specified position
-bool Simulation::isWallDeadly(SimCellCoord c, int type)
+bool Simulation::isWallDeadly(SimPosCell c, int type)
 {
 	if (!walls.type(c))
 		return false;
@@ -947,7 +947,7 @@ MoveResult::Code Simulation::part_canMove_dynamic(int pt, int nx, int ny, int ri
 	}
 	else if (rt==PT_INVIS)
 	{
-		float pressure = air.pv.get(SimCoordI(nx,ny));
+		float pressure = air.pv.get(SimPosI(nx,ny));
 		if (pressure>4.0f || pressure<-4.0f) result = MoveResult::ALLOW;
 		else result = MoveResult::BLOCK;
 	}
@@ -1013,13 +1013,13 @@ MoveResult::Code Simulation::part_canMove(int pt, int nx, int ny, bool coordChec
 		}
 	}
 
-	SimCellCoord cellCoord = SimCoordI(nx,ny);
-	if (walls.type(cellCoord))
+	SimPosCell cellPos = SimPosI(nx,ny);
+	if (walls.type(cellPos))
 	{
-		uint8_t wall = walls.type(cellCoord);
-		if (wall && isWallBlocking(cellCoord, pt))
+		uint8_t wall = walls.type(cellPos);
+		if (wall && isWallBlocking(cellPos, pt))
 			return MoveResult::BLOCK;
-		if (wall==WL_EHOLE && !walls.electricity(cellCoord) && !(elements[pt].Properties&TYPE_SOLID))
+		if (wall==WL_EHOLE && !walls.electricity(cellPos) && !(elements[pt].Properties&TYPE_SOLID))
 		{
 			bool foundSolid = false;
 			FOR_PMAP_POSITION_NOENERGY(this, nx, ny, rcount, ri, rnext)
@@ -1072,7 +1072,7 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 	         pmap_find_one(x,y,PT_BMTL)>=0))
 		moveCode = MoveResult::ALLOW_BUT_SLOW;
 	// block moving out of unpowered ehole
-	if (walls.isClosedEHole(SimCoordI(x,y)) && !walls.isClosedEHole(SimCoordI(nx,ny)))
+	if (walls.isClosedEHole(SimPosI(x,y)) && !walls.isClosedEHole(SimPosI(nx,ny)))
 		return MoveResult::BLOCK;
 	// exploding GBMB does not move
 	if(t==PT_GBMB&&parts[i].life>0)
@@ -1128,7 +1128,7 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 				}
 				else if (rt==PT_INVIS)
 				{
-					float pressure = air.pv.get(SimCoordI(nx,ny));
+					float pressure = air.pv.get(SimPosI(nx,ny));
 					if (pressure<=4.0f && pressure>=-4.0f)
 					{
 						part_change_type(i,x,y,PT_NEUT);
@@ -1608,42 +1608,42 @@ void Simulation::UpdateParticles()
 			x = (int)(parts[i].x+0.5f);
 			y = (int)(parts[i].y+0.5f);
 
-			SimCellCoord cellCoord = SimCoordI(x,y);
+			SimPosCell cellPos = SimPosI(x,y);
 
 			//this kills any particle out of the screen, or in a wall where it isn't supposed to go
-			if (coord_isInMargin(cellCoord) || (walls.type(cellCoord) && isWallDeadly(cellCoord,t)))
+			if (pos_isInMargin(cellPos) || (walls.type(cellPos) && isWallDeadly(cellPos,t)))
 			{
 				part_kill(i);
 				continue;
 			}
-			walls.detect(cellCoord);
+			walls.detect(cellPos);
 
 			//adding to velocity from the particle's velocity
-			air.vx.multiply(cellCoord, elements[t].AirLoss);
-			air.vy.multiply(cellCoord, elements[t].AirLoss);
-			air.vx.add(cellCoord, elements[t].AirDrag*parts[i].vx);
-			air.vy.add(cellCoord, elements[t].AirDrag*parts[i].vy);
+			air.vx.multiply(cellPos, elements[t].AirLoss);
+			air.vy.multiply(cellPos, elements[t].AirLoss);
+			air.vx.add(cellPos, elements[t].AirDrag*parts[i].vx);
+			air.vy.add(cellPos, elements[t].AirDrag*parts[i].vy);
 
 			if (elements[t].PressureAdd_NoAmbHeat)
 			{
 				if (t==PT_GAS||t==PT_NBLE)
 				{
-					if (air.pv.get(cellCoord)<3.5f)
-						air.pv.blend_legacy(cellCoord, 3.5f, elements[t].PressureAdd_NoAmbHeat);
+					if (air.pv.get(cellPos)<3.5f)
+						air.pv.blend_legacy(cellPos, 3.5f, elements[t].PressureAdd_NoAmbHeat);
 					if (y+CELL<YRES)
 					{
-						SimCellCoord c = SimCellCoord(cellCoord.x,cellCoord.y+1);
+						SimPosCell c = SimPosCell(cellPos.x,cellPos.y+1);
 						if (air.pv.get(c)<3.5f)
 							air.pv.blend_legacy(c, 3.5f, elements[t].PressureAdd_NoAmbHeat);
 					}
 					if (x+CELL<XRES)
 					{
-						SimCellCoord c = SimCellCoord(cellCoord.x+1,cellCoord.y);
+						SimPosCell c = SimPosCell(cellPos.x+1,cellPos.y);
 						if (air.pv.get(c)<3.5f)
 							air.pv.blend_legacy(c, 3.5f, elements[t].PressureAdd_NoAmbHeat);
 						if (y+CELL<YRES)
 						{
-							SimCellCoord c = SimCellCoord(cellCoord.x+1,cellCoord.y+1);
+							SimPosCell c = SimPosCell(cellPos.x+1,cellPos.y+1);
 							if (air.pv.get(c)<3.5f)
 								air.pv.blend_legacy(c, 3.5f, elements[t].PressureAdd_NoAmbHeat);
 						}
@@ -1651,14 +1651,14 @@ void Simulation::UpdateParticles()
 				}
 				else//add the hotair variable to the pressure map, like black hole, or white hole.
 				{
-					air.pv.add(cellCoord, elements[t].PressureAdd_NoAmbHeat);
+					air.pv.add(cellPos, elements[t].PressureAdd_NoAmbHeat);
 					if (y+CELL<YRES)
-						air.pv.add(SimCellCoord(cellCoord.x,cellCoord.y+1), elements[t].PressureAdd_NoAmbHeat);
+						air.pv.add(SimPosCell(cellPos.x,cellPos.y+1), elements[t].PressureAdd_NoAmbHeat);
 					if (x+CELL<XRES)
 					{
-						air.pv.add(SimCellCoord(cellCoord.x+1,cellCoord.y), elements[t].PressureAdd_NoAmbHeat);
+						air.pv.add(SimPosCell(cellPos.x+1,cellPos.y), elements[t].PressureAdd_NoAmbHeat);
 						if (y+CELL<YRES)
-							air.pv.add(SimCellCoord(cellCoord.x+1,cellCoord.y+1), elements[t].PressureAdd_NoAmbHeat);
+							air.pv.add(SimPosCell(cellPos.x+1,cellPos.y+1), elements[t].PressureAdd_NoAmbHeat);
 					}
 				}
 			}
@@ -1703,8 +1703,8 @@ void Simulation::UpdateParticles()
 				parts[i].vy *= elements[t].Loss;
 			}
 			//particle gets velocity from the vx and vy maps
-			parts[i].vx += elements[t].Advection*air.vx.get(cellCoord) + pGravX;
-			parts[i].vy += elements[t].Advection*air.vy.get(cellCoord) + pGravY;
+			parts[i].vx += elements[t].Advection*air.vx.get(cellPos) + pGravX;
+			parts[i].vy += elements[t].Advection*air.vy.get(cellPos) + pGravY;
 
 
 			if (elements[t].Diffusion)//the random diffusion that gases have
@@ -1759,10 +1759,10 @@ void Simulation::UpdateParticles()
 				{
 					if (ambientHeatEnabled && !(elements[t].Properties&PROP_NOAMBHEAT))
 					{
-						c_heat = (air.hv.get(cellCoord)-parts[i].temp)*0.04;
+						c_heat = (air.hv.get(cellPos)-parts[i].temp)*0.04;
 						c_heat = tptmath::clamp_flt(c_heat, -TEMP_RANGE, TEMP_RANGE);
 						part_add_temp(parts[i], c_heat);
-						air.hv.add(cellCoord, -c_heat);
+						air.hv.add(cellPos, -c_heat);
 					}
 
 					h_count = 0;
@@ -1814,11 +1814,11 @@ void Simulation::UpdateParticles()
 					if ((elements[t].State==ST_LIQUID && elements[t].HighTemperatureTransitionElement>-1 && elements[t].HighTemperatureTransitionElement<PT_NUM
 							&& elements[elements[t].HighTemperatureTransitionElement].State==ST_GAS)
 					        || t==PT_LNTG || t==PT_SLTW)
-						ctemph -= 2.0f*air.pv.get(cellCoord);
+						ctemph -= 2.0f*air.pv.get(cellPos);
 					else if ((elements[t].State==ST_GAS && elements[t].LowTemperatureTransitionElement>-1 && elements[t].LowTemperatureTransitionElement<PT_NUM
 							 && elements[elements[t].LowTemperatureTransitionElement].State==ST_LIQUID)
 					         || t==PT_WTRV)
-						ctempl -= 2.0f*air.pv.get(cellCoord);
+						ctempl -= 2.0f*air.pv.get(cellPos);
 					s = 1;
 
 					//A fix for ice with ctype = 0
@@ -1918,7 +1918,7 @@ void Simulation::UpdateParticles()
 							parts[i].ctype = parts[i].type;
 						if (!(t==PT_ICEI&&parts[i].ctype==PT_FRZW)) parts[i].life = 0;
 						if (elements[t].State==ST_GAS&&elements[parts[i].type].State!=ST_GAS)
-							air.pv.add(cellCoord, 0.50f);
+							air.pv.add(cellPos, 0.50f);
 						if (t==PT_NONE)
 						{
 							part_kill(i);
@@ -1960,7 +1960,7 @@ void Simulation::UpdateParticles()
 				}
 				else
 				{
-					air.blockh_inc(cellCoord);
+					air.blockh_inc(cellPos);
 					parts[i].temp = tptmath::clamp_flt(parts[i].temp, MIN_TEMP, MAX_TEMP);
 				}
 			}
@@ -1986,8 +1986,8 @@ void Simulation::UpdateParticles()
 					ny = y/CELL + 1;
 				else
 					ny = y/CELL;
-				SimCellCoord c(nx, ny);
-				if (coord_isValid(c))
+				SimPosCell c(nx, ny);
+				if (pos_isValid(c))
 				{
 					if (t!=PT_SPRK)
 					{
@@ -2003,32 +2003,32 @@ void Simulation::UpdateParticles()
 			}
 
 			//the basic explosion, from the .explosive variable
-			if ((elements[t].Explosive&2) && air.pv.get(cellCoord)>2.5f)
+			if ((elements[t].Explosive&2) && air.pv.get(cellPos)>2.5f)
 			{
 				parts[i].life = rng.randInt<180,180+79>();
 				// TODO: add to existing temp instead of setting temp? Might break compatibility.
 				part_set_temp(parts[i], elements[PT_FIRE].DefaultProperties.temp + (elements[t].Flammable/2));
 				t = PT_FIRE;
 				part_change_type(i,x,y,t);
-				air.pv.add(cellCoord, 0.25f * CFDS);
+				air.pv.add(cellPos, 0.25f * CFDS);
 			}
 
 
 			s = 1;
 			gravtot = fabs(gravy[(y/CELL)*(XRES/CELL)+(x/CELL)])+fabs(gravx[(y/CELL)*(XRES/CELL)+(x/CELL)]);
-			if (air.pv.get(cellCoord)>elements[t].HighPressureTransitionThreshold && elements[t].HighPressureTransitionElement>-1) {
+			if (air.pv.get(cellPos)>elements[t].HighPressureTransitionThreshold && elements[t].HighPressureTransitionElement>-1) {
 				// particle type change due to high pressure
 				if (elements[t].HighPressureTransitionElement!=PT_NUM)
 					t = elements[t].HighPressureTransitionElement;
 				else if (t==PT_BMTL) {
-					if (air.pv.get(cellCoord)>2.5f)
+					if (air.pv.get(cellPos)>2.5f)
 						t = PT_BRMT;
-					else if (air.pv.get(cellCoord)>1.0f && parts[i].tmp==1)
+					else if (air.pv.get(cellPos)>1.0f && parts[i].tmp==1)
 						t = PT_BRMT;
 					else s = 0;
 				}
 				else s = 0;
-			} else if (air.pv.get(cellCoord)<elements[t].LowPressureTransitionThreshold && elements[t].LowPressureTransitionElement>-1) {
+			} else if (air.pv.get(cellPos)<elements[t].LowPressureTransitionThreshold && elements[t].LowPressureTransitionElement>-1) {
 				// particle type change due to low pressure
 				if (elements[t].LowPressureTransitionElement!=PT_NUM)
 					t = elements[t].LowPressureTransitionElement;
@@ -2169,7 +2169,7 @@ killed:
 						clear_y = (int)(clear_yf+0.5f);
 						break;
 					}
-					walls.detect(SimCoordI(fin_x, fin_y));
+					walls.detect(SimPosI(fin_x, fin_y));
 				}
 			}
 
@@ -2410,7 +2410,7 @@ killed:
 
 							for (j=clear_x+r; j>=0 && j>=clear_x-rt && j<clear_x+rt && j<XRES; j+=r)
 							{
-								if (pmap_find_one(j, fin_y, t)<0 || walls.type(SimCoordI(j,fin_y)))
+								if (pmap_find_one(j, fin_y, t)<0 || walls.type(SimPosI(j,fin_y)))
 								{
 									moveResult = part_move(i, x, y, (float)j, fin_yf);
 									if (MoveResult::Succeeded_MaybeKilled(moveResult))
@@ -2423,7 +2423,7 @@ killed:
 										break;
 									}
 								}
-								if (fin_y!=clear_y && (pmap_find_one(j, clear_y, t)<0 || walls.type(SimCoordI(j,clear_y))))
+								if (fin_y!=clear_y && (pmap_find_one(j, clear_y, t)<0 || walls.type(SimPosI(j,clear_y))))
 								{
 									moveResult = part_move(i, x, y, (float)j, clear_yf);
 									if (MoveResult::Succeeded_MaybeKilled(moveResult))
@@ -2436,7 +2436,7 @@ killed:
 										break;
 									}
 								}
-								if (pmap_find_one(j, clear_y, t)<0 || walls.isProperWall(SimCoordI(j,clear_y)))
+								if (pmap_find_one(j, clear_y, t)<0 || walls.isProperWall(SimPosI(j,clear_y)))
 									break;
 							}
 							if (MoveResult::WasKilled(moveResult))
@@ -2452,9 +2452,9 @@ killed:
 								for (j=ny+r; j>=0 && j<YRES && j>=ny-rt && j<ny+rt; j+=r)
 								{
 									bool tmp = (pmap_find_one(nx, j, t)<0);// true if no particles of the same type are at nx,j
-									if ((tmp || walls.type(SimCoordI(nx,j))) && MoveResult::Succeeded_MaybeKilled(part_move(i, nx, ny, (float)nx, (float)j)))
+									if ((tmp || walls.type(SimPosI(nx,j))) && MoveResult::Succeeded_MaybeKilled(part_move(i, nx, ny, (float)nx, (float)j)))
 										break;
-									if (tmp || walls.isProperWall(SimCoordI(nx,j)))
+									if (tmp || walls.isProperWall(SimPosI(nx,j)))
 										break;
 								}
 							}
@@ -2517,7 +2517,7 @@ killed:
 								// Check whether movement is allowed
 								if (!InBounds(nx,ny))
 									break;
-								if (pmap_find_one(nx,ny,t)<0 || walls.type(SimCoordI(nx,ny)))
+								if (pmap_find_one(nx,ny,t)<0 || walls.type(SimPosI(nx,ny)))
 								{
 									moveResult = part_move(i, x, y, nxf, nyf);
 									if (MoveResult::Succeeded_MaybeKilled(moveResult))
@@ -2530,7 +2530,7 @@ killed:
 										break;
 									}
 									// A particle of a different type, or a wall, was found. Stop trying to move any further horizontally unless the wall should be completely invisible to particles.
-									if (walls.isProperWall(SimCoordI(nx,ny)))
+									if (walls.isProperWall(SimPosI(nx,ny)))
 										break;
 								}
 							}
@@ -2562,10 +2562,10 @@ killed:
 									if (nx<0 || ny<0 || nx>=XRES || ny>=YRES)
 										break;
 									// If the space is anything except the same element (so is a wall, empty space, or occupied by a particle of a different element), try to move into it
-									if (pmap_find_one(nx,ny,t)<0 || walls.type(SimCoordI(nx,ny)))
+									if (pmap_find_one(nx,ny,t)<0 || walls.type(SimPosI(nx,ny)))
 									{
 										moveResult = part_move(i, clear_x, clear_y, nxf, nyf);
-										if (MoveResult::Succeeded(moveResult) || walls.isProperWall(SimCoordI(nx,ny)))
+										if (MoveResult::Succeeded(moveResult) || walls.isProperWall(SimPosI(nx,ny)))
 											break;// found the edge of the liquid and movement into it succeeded, so stop moving down
 									}
 								}

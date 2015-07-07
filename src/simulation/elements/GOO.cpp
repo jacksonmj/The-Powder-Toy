@@ -17,13 +17,13 @@
 
 int GOO_update(UPDATE_FUNC_ARGS)
 {
-	if (!parts[i].life && sim->air.pv.get(SimCoordI(x,y))>1.0f)
+	if (!parts[i].life && sim->air.pv.get(SimPosI(x,y))>1.0f)
 		parts[i].life = sim->rng.randInt<300,379>();
 	if (parts[i].life)
 	{
 		float advection = 0.1f;
-		parts[i].vx += advection*sim->air.vx.get(SimCoordI(x,y));
-		parts[i].vy += advection*sim->air.vy.get(SimCoordI(x,y));
+		parts[i].vx += advection*sim->air.vx.get(SimPosI(x,y));
+		parts[i].vy += advection*sim->air.vy.get(SimPosI(x,y));
 	}
 	return 0;
 }

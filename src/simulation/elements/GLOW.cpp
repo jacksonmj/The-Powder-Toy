@@ -39,8 +39,8 @@ int GLOW_update(UPDATE_FUNC_ARGS)
 		return 1;
 	}
 
-	parts[i].ctype = sim->air.pv.get(SimCoordI(x,y))*16;
-	parts[i].tmp = abs((int)((sim->air.vx.get(SimCoordI(x,y))+sim->air.vy.get(SimCoordI(x,y)))*16.0f)) + abs((int)((parts[i].vx+parts[i].vy)*64.0f));
+	parts[i].ctype = sim->air.pv.get(SimPosI(x,y))*16;
+	parts[i].tmp = abs((int)((sim->air.vx.get(SimPosI(x,y))+sim->air.vy.get(SimPosI(x,y)))*16.0f)) + abs((int)((parts[i].vx+parts[i].vy)*64.0f));
 	return 0;
 }
 

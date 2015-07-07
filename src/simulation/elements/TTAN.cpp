@@ -33,8 +33,8 @@ int TTAN_update(UPDATE_FUNC_ARGS)
 		}
 		
 	if(ttan>=2) {
-		sim->air.block(SimCoordI(x,y), true);
-		sim->air.blockh(SimCoordI(x,y), true);
+		sim->air.block(SimPosI(x,y), true);
+		sim->air.blockh(SimPosI(x,y), true);
 	}
 	return 0;
 }

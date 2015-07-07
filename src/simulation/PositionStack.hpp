@@ -13,41 +13,41 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef Simulation_CoordStack_h
-#define Simulation_CoordStack_h
+#ifndef simulation_PositionStack_h
+#define simulation_PositionStack_h
 
 #include "simulation/Config.hpp"
 #include <cstdlib>
 #include <exception>
 #include <type_traits>
 
-class CoordStackOverflowException: public std::exception
+class PositionStackOverflowException: public std::exception
 {
 public:
-	CoordStackOverflowException() { }
+	PositionStackOverflowException() { }
 	virtual const char* what() const throw()
 	{
 		return "Maximum number of entries in the coordinate stack was exceeded";
 	}
-	~CoordStackOverflowException() throw() {}
+	~PositionStackOverflowException() throw() {}
 };
 
-template<class CoordType=void, size_t defaultStackLimit = (std::is_same<CoordType, SimCellCoord>::value ? XRES/CELL*YRES/CELL : XRES*YRES)>
-class CoordStack
+template<class CoordType=void, size_t defaultStackLimit = (std::is_same<CoordType, SimPosCell>::value ? XRES/CELL*YRES/CELL : XRES*YRES)>
+class PositionStack
 {
 private:
 	CoordType *stack;
 	size_t stackSize;
 	size_t stackLimit;
 public:
-	CoordStack(size_t stackLimit_ = defaultStackLimit) :
+	PositionStack(size_t stackLimit_ = defaultStackLimit) :
 		stack(nullptr),
 		stackSize(0),
 		stackLimit(stackLimit_)
 	{
 		stack = new CoordType[stackLimit];
 	}
-	~CoordStack()
+	~PositionStack()
 	{
 		delete[] stack;
 	}
@@ -55,14 +55,14 @@ public:
 		// Memory does not need to be initialised, so use malloc instead of new
 		stack = reinterpret_cast<CoordType*>(malloc(sizeof(CoordType)*stackLimit));
 	}
-	~CoordStack()
+	~PositionStack()
 	{
 		free(stack);
 	}*/
 	void push(CoordType c)
 	{
 		if (stackSize>=stackLimit)
-			throw CoordStackOverflowException();
+			throw PositionStackOverflowException();
 		stack[stackSize] = c;
 		stackSize++;
 	}
@@ -82,27 +82,27 @@ public:
 };
 
 template<>
-class CoordStack<short>
+class PositionStack<short>
 {
 private:
 	unsigned short (*stack)[2];
 	int stack_size;
 	const static int stack_limit = XRES*YRES;
 public:
-	CoordStack() :
+	PositionStack() :
 		stack(NULL),
 		stack_size(0)
 	{
 		stack = (unsigned short(*)[2])(new unsigned short[2*stack_limit]);
 	}
-	~CoordStack()
+	~PositionStack()
 	{
 		if (stack) delete[] stack;
 	}
 	void push(int x, int y)
 	{
 		if (stack_size>=stack_limit)
-			throw CoordStackOverflowException();
+			throw PositionStackOverflowException();
 		stack[stack_size][0] = x;
 		stack[stack_size][1] = y;
 		stack_size++;

@@ -1094,7 +1094,7 @@ int luatpt_set_pressure(lua_State* l)
 	for (nx = x1; nx<x1+width; nx++)
 		for (ny = y1; ny<y1+height; ny++)
 		{
-			globalSim->air.pv.set(SimCellCoord(nx,ny), value);
+			globalSim->air.pv.set(SimPosCell(nx,ny), value);
 		}
 	return 0;
 }
@@ -1175,8 +1175,8 @@ int luatpt_reset_velocity(lua_State* l)
 	for (nx = x1; nx<x1+width; nx++)
 		for (ny = y1; ny<y1+height; ny++)
 		{
-			globalSim->air.vx.set(SimCellCoord(nx,ny), 0);
-			globalSim->air.vy.set(SimCellCoord(nx,ny), 0);
+			globalSim->air.vx.set(SimPosCell(nx,ny), 0);
+			globalSim->air.vy.set(SimPosCell(nx,ny), 0);
 		}
 	return 0;
 }
@@ -1229,7 +1229,7 @@ int luatpt_set_wallmap(lua_State* l)
 		for (nx = x1; nx<x1+width; nx++)
 			for (ny = y1; ny<y1+height; ny++)
 			{
-				globalSim->walls.type(SimCellCoord(nx,ny), value);
+				globalSim->walls.type(SimPosCell(nx,ny), value);
 			}
 	}
 	else	//Set point
@@ -1238,7 +1238,7 @@ int luatpt_set_wallmap(lua_State* l)
 			x1 = (XRES/CELL);
 		if(y1 > (YRES/CELL))
 			y1 = (YRES/CELL);
-		globalSim->walls.type(SimCellCoord(x1,y1), value);
+		globalSim->walls.type(SimPosCell(x1,y1), value);
 	}
 	return 0;
 }
@@ -1256,7 +1256,7 @@ int luatpt_get_wallmap(lua_State* l)
 	if(x1 > (XRES/CELL) || y1 > (YRES/CELL))
 		return luaL_error(l, "Out of range");
 
-	lua_pushinteger(l, globalSim->walls.type(SimCellCoord(x1,y1)));
+	lua_pushinteger(l, globalSim->walls.type(SimPosCell(x1,y1)));
 	return 1;
 }
 
@@ -1286,7 +1286,7 @@ int luatpt_set_elecmap(lua_State* l)
 		for (nx = x1; nx<x1+width; nx++)
 			for (ny = y1; ny<y1+height; ny++)
 			{
-				globalSim->walls.electricity(SimCellCoord(nx,ny), value);
+				globalSim->walls.electricity(SimPosCell(nx,ny), value);
 			}
 	}
 	else	//Set point
@@ -1295,7 +1295,7 @@ int luatpt_set_elecmap(lua_State* l)
 			x1 = (XRES/CELL);
 		if(y1 > (YRES/CELL))
 			y1 = (YRES/CELL);
-		globalSim->walls.electricity(SimCellCoord(x1,y1), value);
+		globalSim->walls.electricity(SimPosCell(x1,y1), value);
 	}
 	return 0;
 }
@@ -1313,7 +1313,7 @@ int luatpt_get_elecmap(lua_State* l)
 	if(x1 > (XRES/CELL) || y1 > (YRES/CELL))
 		return luaL_error(l, "Out of range");
 
-	lua_pushinteger(l, globalSim->walls.electricity(SimCellCoord(x1,y1)));
+	lua_pushinteger(l, globalSim->walls.electricity(SimPosCell(x1,y1)));
 	return 1;
 }
 

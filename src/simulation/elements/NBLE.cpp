@@ -17,7 +17,7 @@
 
 int NBLE_update(UPDATE_FUNC_ARGS)
 {
-	if (parts[i].temp > 5273.15 && sim->air.pv.get(SimCoordI(x,y)) > 100.0f)
+	if (parts[i].temp > 5273.15 && sim->air.pv.get(SimPosI(x,y)) > 100.0f)
 	{
 		parts[i].tmp |= 0x1;
 		if (sim->rng.chance<1,5>())
@@ -55,7 +55,7 @@ int NBLE_update(UPDATE_FUNC_ARGS)
 			}
 
 			sim->part_set_temp(parts[i], temp+sim->rng.randInt<1750,1750+499>());
-			sim->air.pv.add(SimCoordI(x,y), 50);
+			sim->air.pv.add(SimPosI(x,y), 50);
 		}
 	}
 	return 0;

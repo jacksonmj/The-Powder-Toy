@@ -32,7 +32,7 @@ int ANAR_update(UPDATE_FUNC_ARGS)
 						sim->part_change_type(i,x,y,PT_HFLM);
 						parts[i].life = sim->rng.randInt<50,50+149>();
 						parts[ri].temp = parts[i].temp = 0;
-						sim->air.pv.add(SimCoordI(x,y), -0.5f);
+						sim->air.pv.add(SimPosI(x,y), -0.5f);
 					}
 				}
 			}

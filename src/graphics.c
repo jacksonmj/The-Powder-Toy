@@ -3279,10 +3279,10 @@ void draw_walls(pixel *vid)
 	pixel pc;
 	for (y=0; y<YRES/CELL; y++)
 		for (x=0; x<XRES/CELL; x++)
-			if (globalSim->walls.type(SimCellCoord(x,y)))
+			if (globalSim->walls.type(SimPosCell(x,y)))
 			{
-				wallId = globalSim->walls.type(SimCellCoord(x,y));
-				electricity = globalSim->walls.electricity(SimCellCoord(x,y));
+				wallId = globalSim->walls.type(SimPosCell(x,y));
+				electricity = globalSim->walls.electricity(SimPosCell(x,y));
 				if (wallId<0 || wallId>=WL_NUM)
 					continue;
 				WallType &wt = globalSim->simSD->wallTypes[wallId];
@@ -3469,7 +3469,7 @@ void draw_walls(pixel *vid)
 	const_CellsFloatRP vy = globalSim->air.vy.getDataPtr();
 	for (y=0; y<YRES/CELL; y++)
 		for (x=0; x<XRES/CELL; x++)
-			if (globalSim->walls.type(SimCellCoord(x,y))==WL_STREAM)
+			if (globalSim->walls.type(SimPosCell(x,y))==WL_STREAM)
 			{
 				lx = x*CELL + CELL*0.5f;
 				ly = y*CELL + CELL*0.5f;
@@ -3484,7 +3484,7 @@ void draw_walls(pixel *vid)
 					j = ny/CELL;
 					lx += vx[j][i]*0.125f;
 					ly += vy[j][i]*0.125f;
-					if (globalSim->walls.type(SimCellCoord(i,j))==WL_STREAM && i!=x && j!=y)
+					if (globalSim->walls.type(SimPosCell(i,j))==WL_STREAM && i!=x && j!=y)
 						break;
 				}
 				drawtext(vid, x*CELL, y*CELL-2, "\x8D", 255, 255, 255, 128);
@@ -3708,7 +3708,7 @@ void render_signs(pixel *vid_buf)
 			{
 				float pressure = 0.0f;
 				if (globalSim->InBounds(signs[i].x, signs[i].y))
-					pressure = globalSim->air.pv.get(SimCoordI(signs[i].x,signs[i].y));
+					pressure = globalSim->air.pv.get(SimPosI(signs[i].x,signs[i].y));
 				sprintf(buff, "Pressure: %3.2f", pressure);  //...pressure
 				drawtext(vid_buf, x+3, y+3, buff, 255, 255, 255, 255);
 			}
