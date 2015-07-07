@@ -59,6 +59,7 @@
 #include "simulation/SimulationSharedData.h"
 #include "simulation/elements/FIGH.h"
 #include "simulation/walls/WallTypes.hpp"
+#include "simulation/CellsData_fastloop.hpp"
 #include "graphics/ARGBColour.h"
 
 #ifdef HIGH_QUALITY_RESAMPLE
