@@ -23,20 +23,20 @@
 #define TPT_RESTRICT __restrict
 #define TPT_NOINLINE __attribute__ ((noinline))
 #define TPT_INLINE inline
-#define TPT_FORCEINLINE __attribute__((always_inline))
+#define TPT_FORCEINLINE __attribute__((always_inline)) inline
 
 #elif defined(_MSC_VER)
 // Visual Studio
 #define TPT_RESTRICT
 #define TPT_NOINLINE
 #define TPT_INLINE inline
-#define TPT_FORCEINLINE __forceinline
+#define TPT_FORCEINLINE __forceinline inline
 
 #else
 #define TPT_RESTRICT
 #define TPT_NOINLINE
-#define TPT_INLINE
-#define TPT_FORCEINLINE
+#define TPT_INLINE inline
+#define TPT_FORCEINLINE inline
 
 #endif
 

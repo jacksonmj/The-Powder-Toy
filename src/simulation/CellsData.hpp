@@ -85,15 +85,13 @@ public:
 
 	DataType* ptr1d() { return reinterpret_cast<DataType*>(data); }
 	const DataType* ptr1d() const { return reinterpret_cast<const DataType*>(data); }
-	operator DataType*() { return ptr1d(); }
-	operator const DataType*() const { return ptr1d(); }
+	explicit operator DataType*() { return ptr1d(); }
+	explicit operator const DataType*() const { return ptr1d(); }
 
 	DataType& operator ()(int x, int y) { return data[y][x]; }
 	const DataType& operator ()(int x, int y) const { return data[y][x]; }
 	DataType& operator ()(SimPosCell c) { return data[c.y][c.x]; }
-	const DataType& operator ()(SimPosCell c) const { return data[c.y][c.x]; }\
-	DataType* operator [](int y) { return data[y]; }
-	const DataType* operator [](int y) const { return data[y]; }
+	const DataType& operator ()(SimPosCell c) const { return data[c.y][c.x]; }
 
 	void copyTo(DataType_2d dest) const
 	{
