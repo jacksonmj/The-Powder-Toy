@@ -325,7 +325,7 @@ void dump_frame(pixel *src, int w, int h, int pitch)
 
 void clear_sim(void)
 {
-	globalSim->Clear();
+	globalSim->clear();
 	memset(signs, 0, sizeof(signs));
 	MSIGN = -1;
 	memset(gol2, 0, sizeof(gol2));
@@ -982,7 +982,7 @@ int main(int argc, char *argv[])
 	luacon_eval("dofile(\"autorun.lua\")"); //Autorun lua script
 #endif
 	// TODO: change console so that this isn't needed
-	globalSim->pmap_reset();
+	globalSim->recalc_pmap();
 
 	if (benchmark_enable)
 	{
@@ -1731,8 +1731,9 @@ int main(int argc, char *argv[])
 					globalSim->air.setData(undo_airData);
 					globalSim->walls.setData(undo_wallsData);
 
-					globalSim->pmap_reset();
-					globalSim->RecalcElementCounts();
+					globalSim->recalc_pmap();
+					globalSim->recalc_elementCount();
+					globalSim->recalc_freeParticles();
 					force_stacking_check = 1;//check for excessive stacking of particles next time update_particles is run
 				}
 				else
@@ -1868,12 +1869,13 @@ int main(int argc, char *argv[])
 		{
 			int cri, crt; //cr is particle under mouse, for drawing HUD information
 			char nametext[50];
-			if (globalSim->pmap[y][x].count)
+			SimPosI pos(x,y);
+			if (globalSim->pmap(pos).count())
 			{
-				if (globalSim->pmap[y][x].count > globalSim->pmap[y][x].count_notEnergy)
-					cri = globalSim->pmap[y][x].first_energy;
+				if (globalSim->pmap(pos).count(PMapCategory::Energy))
+					cri = globalSim->pmap(pos).first(PMapCategory::Energy);
 				else
-					cri = globalSim->pmap[y][x].first;
+					cri = globalSim->pmap(pos).first();
 				crt = parts[cri].type;
 
 				if ((crt==PT_PHOT || crt==PT_BIZR || crt==PT_BIZRG || crt==PT_BIZRS || crt==PT_BRAY || crt==PT_FILT) && (parts[cri].ctype&0x3FFFFFFF))
@@ -2492,9 +2494,14 @@ int main(int argc, char *argv[])
 					{
 						if (y>=0 && y<YRES && x>=0 && x<XRES)
 						{
-							if (globalSim->pmap[y][x].count)
+							SimPosI pos(x,y);
+							if (globalSim->pmap(pos).count())
 							{
-								int cri = globalSim->pmap[y][x].first;
+								int cri;
+								if (globalSim->pmap(pos).count(PMapCategory::Energy))
+									cri = globalSim->pmap(pos).first(PMapCategory::Energy);
+								else
+									cri = globalSim->pmap(pos).first();
 								c = sl = parts[cri].type;
 								if (c==PT_LIFE)
 									c = sl = (parts[cri].ctype << 8) | c;
@@ -2718,10 +2725,10 @@ int main(int argc, char *argv[])
 		if (hud_enable)
 		{
 #ifdef BETA
-			sprintf(uitext, "Beta Build %d FPS:%d Parts:%d Gravity:%d Air:%d", BUILD_NUM, FPSB, NUM_PARTS, gravityMode, globalSim->airMode);
+			sprintf(uitext, "Beta Build %d FPS:%d Parts:%d Gravity:%d Air:%d", BUILD_NUM, FPSB, globalSim->parts_count, gravityMode, globalSim->airMode);
 #else
 			if (DEBUG_MODE)
-				sprintf(uitext, "Build %d FPS:%d Parts:%d Gravity:%d Air:%d", BUILD_NUM, FPSB, NUM_PARTS, gravityMode, globalSim->airMode);
+				sprintf(uitext, "Build %d FPS:%d Parts:%d Gravity:%d Air:%d", BUILD_NUM, FPSB, globalSim->parts_count, gravityMode, globalSim->airMode);
 			else
 				sprintf(uitext, "FPS:%d", FPSB);
 #endif
@@ -2818,7 +2825,7 @@ int main(int argc, char *argv[])
 			free(console);
 #endif
 			// TODO: change console so that this isn't needed
-			globalSim->pmap_reset();
+			globalSim->recalc_pmap();
 		}
 
 		sdl_blit(0, 0, XRES+BARSIZE, YRES+MENUSIZE, vid_buf, XRES+BARSIZE);

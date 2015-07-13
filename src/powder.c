@@ -42,8 +42,6 @@ const particle emptyparticle = {};
 
 int water_equal_test = 0;
 
-int NUM_PARTS = 0;
-
 int GSPEED = 1;
 int GENERATION = 0;
 int CGOL = 0;
@@ -216,8 +214,8 @@ int get_normal_interp(int pt, float x0, float y0, float dx, float dy, float *nx,
 
 int create_part(int p, int x, int y, int tv)//the function for creating a particle, use p=-1 for creating a new particle, -2 is from a brush, or a particle number to replace a particle.
 {
-	int rcount, ri, rnext;
 	int i;
+	SimPosI pos(x,y);
 
 	int t = tv & 0xFF;
 	int v = (tv >> 8) & 0xFF;
@@ -231,9 +229,10 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 
 	if (toolId==SPC_HEAT||toolId==SPC_COOL)
 	{
-		if (!globalSim->pmap[y][x].count)
+		if (!globalSim->pmap(pos).count())
 			return -1;
-		FOR_PMAP_POSITION(globalSim, x, y, rcount, ri, rnext)
+		int last_i = -1;
+		FOR_SIM_PMAP_POS(globalSim, PMapCategory::All, pos, ri)
 		{
 			if (toolId==SPC_HEAT&&parts[ri].temp<MAX_TEMP)
 			{
@@ -257,8 +256,9 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 				
 				globalSim->part_add_temp(parts[ri], -heatchange);
 			}
+			last_i = ri;
 		}
-		return ri;
+		return last_i;
 	}
 	if (toolId==SPC_AIR)
 	{
@@ -284,8 +284,8 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 
 	if (t==PT_SPRK)
 	{
-		int index, type, lastIndex=-1;
-		FOR_PMAP_POSITION_NOENERGY(globalSim, x, y, rcount, index, rnext)
+		int type, lastIndex=-1;
+		FOR_SIM_PMAP_POS(globalSim, PMapCategory::NotEnergy, pos, index)
 		{
 			type = parts[index].type;
 			if (p == -2 || type != PT_INST)
@@ -306,7 +306,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 		bool energyParticleFound = false;
 		bool normalParticleFound = false;
 		bool actionDone = false;
-		FOR_PMAP_POSITION(globalSim, x, y, rcount, ri, rnext)
+		FOR_SIM_PMAP_POS(globalSim, PMapCategory::All, pos, ri)
 		{
 			//If an element has the PROP_DRAWONCTYPE property, and the element being drawn to it does not have PROP_NOCTYPEDRAW (Also some special cases), set the element's ctype
 			int drawOn = parts[ri].type;
@@ -357,7 +357,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 				return -1;
 		}
 	}
-	i = globalSim->part_create(p, x, y, t);
+	i = globalSim->part_create(p, pos, t);
 	if (t==PT_LIFE && i>=0)
 	{
 		if (v<NGOLALT)
@@ -371,28 +371,28 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 
 void delete_part(int x, int y, int flags)//calls part_kill with the particle located at x,y
 {
-	if (x<0 || y<0 || x>=XRES || y>=YRES)
+	SimPosI pos(x,y);
+	if (!globalSim->pos_isValid(pos))
 		return;
 
-	if (!globalSim->pmap[y][x].count)
+	if (!globalSim->pmap(pos).count())
 		return;
 
 	if (!(flags&BRUSH_SPECIFIC_DELETE))
 	{
-		globalSim->part_kill(globalSim->pmap[y][x].first);
+		globalSim->part_kill(globalSim->pmap(pos).first());
 	}
 	else
 	{
-		int count, i, next;
-		FOR_PMAP_POSITION(globalSim, x, y, count, i, next)
+		FOR_SIM_PMAP_POS(globalSim, PMapCategory::All, pos, i)
 		{
 			if (parts[i].type==SLALT || SLALT==0)//specific deletion
 			{
-				globalSim->part_kill(i);
+				globalSim->part_kill(i, pos);
 			}
 			else if (globalSim->elements[parts[i].type].ui->MenuSection==SEC)//specific menu deletion
 			{
-				globalSim->part_kill(i);
+				globalSim->part_kill(i, pos);
 			}
 		}
 	}
@@ -465,7 +465,7 @@ void clear_area(int area_x, int area_y, int area_w, int area_h)
 		for (cx=0; cx<area_w; cx++)
 		{
 			globalSim->walls.type(SimPosI(cx+area_x,cy+area_y), WL_NONE);
-			globalSim->delete_position(cx+area_x, cy+area_y);
+			globalSim->part_killAll(SimPosI(cx+area_x,cy+area_y));
 		}
 	}
 	for (i=0; i<MAXSIGNS; i++)
@@ -565,65 +565,89 @@ int flood_prop(int x, int y, int parttype, size_t propoffset, void * propvalue, 
 	return did_something;
 }
 
-int flood_parts(int x, int y, int fullc, int cm, int bm, int flags)
+int flood_parts(int x, int y, int fullc, int matchElement, int matchWall, int flags)
 {
 	Simulation *sim = globalSim;
+	SimPosI startPos(x,y);
 	int c = fullc&0xFF;
 	int x1, x2, dy = (c<PT_NUM)?1:CELL;
 	int created_something = 0;
 
 	if (c==SPC_PROP)
 		return 0;
-	if (cm==-1)
+	if (matchElement==-1)
 	{
 		if (c==0)
 		{
-			if (sim->pmap[y][x].count==0)
+			if (sim->pmap(startPos).count()==0)
 				return 0;
-			cm = sim->parts[sim->pmap[y][x].first].type;
-			if ((flags&BRUSH_REPLACEMODE) && cm!=SLALT)
+			matchElement = sim->parts[sim->pmap(startPos).first()].type;
+			if ((flags&BRUSH_REPLACEMODE) && matchElement!=SLALT)
 				return 0;
 		}
 		else
-			cm = 0;
+			matchElement = 0;
 	}
-	if (bm==-1)
+	if (matchWall==-1)
 	{
 		if (c-UI_WALLOFFSET==WL_ERASE)
 		{
-			bm = globalSim->walls.type(SimPosI(x,y));
-			if (!bm)
+			matchWall = globalSim->walls.type(SimPosI(x,y));
+			if (!matchWall)
 				return 0;
-			if (bm==WL_WALL)
-				cm = 0xFF;
+			if (matchWall==WL_WALL)
+				matchElement = 0xFF;
 		}
 		else
-			bm = 0;
+			matchWall = 0;
 	}
 
-	if (((cm>0 && sim->pmap_find_one(x, y, cm)<0) || globalSim->walls.type(SimPosI(x,y))!=bm )||( (flags&BRUSH_SPECIFIC_DELETE) && cm!=SLALT))
+	if (((matchElement>0 && sim->pmap_find_one(startPos, matchElement)<0) || globalSim->walls.type(startPos)!=matchWall )||( (flags&BRUSH_SPECIFIC_DELETE) && matchElement!=SLALT))
 		return 1;
+
+	auto shouldFloodPos = [sim, matchElement, matchWall](SimPosI testPos) -> bool
+	{
+		if (sim->walls.type(testPos)!=matchWall)
+			return false;
+
+		if (matchElement==0)
+		{
+			// Flood filling empty space
+			if (sim->pmap(testPos).count()>0)
+				return false;
+		}
+		else
+		{
+			// Overwriting element
+			if (sim->pmap_find_one(testPos, matchElement)<0)
+				return false;
+		}
+		return true;
+	};
+
+
+	// TODO: this function should really be split into separate ones for parts and walls
 
 	try
 	{
-		PositionStack<short> cs;
-		cs.push(x, y);
+		PositionStack<SimPosI> cs;
+		cs.push(startPos);
 
 		do
 		{
-			cs.pop(x, y);
-			x1 = x2 = x;
+			SimPosI pos = cs.pop();
+			x1 = x2 = pos.x;
 			// go left as far as possible
 			while (x1>=CELL)
 			{
-				if ((cm==0 ? sim->pmap[y][x1-1].count>0 : sim->pmap_find_one(x1-1, y, cm)<0) || globalSim->walls.type(SimPosI(x1-1,y))!=bm)
+				if (!shouldFloodPos(SimPosI(x1-1,pos.y)))
 					break;
 				x1--;
 			}
 			// go right as far as possible
 			while (x2<XRES-CELL)
 			{
-				if ((cm==0 ? sim->pmap[y][x2+1].count>0 : sim->pmap_find_one(x2+1, y, cm)<0) || globalSim->walls.type(SimPosI(x2+1,y))!=bm)
+				if (!shouldFloodPos(SimPosI(x2+1,pos.y)))
 					break;
 				x2++;
 			}
@@ -637,17 +661,19 @@ int flood_parts(int x, int y, int fullc, int cm, int bm, int flags)
 			// add vertically adjacent pixels to stack
 			if (y>=CELL+dy)
 				for (x=x1; x<=x2; x++)
-					if ((cm==0 ? sim->pmap[y-dy][x].count==0 : sim->pmap_find_one(x, y-dy, cm)>=0) && globalSim->walls.type(SimPosI(x,y-dy))==bm)
-					{
-						cs.push(x, y-dy);
-					}
+				{
+					SimPosI testPos = SimPosI(x, pos.y-dy);
+					if (shouldFloodPos(testPos))
+						cs.push(testPos);
+				}
 			if (y<YRES-CELL-dy)
 				for (x=x1; x<=x2; x++)
-					if ((cm==0 ? sim->pmap[y+dy][x].count==0 : sim->pmap_find_one(x, y+dy, cm)>=0) && globalSim->walls.type(SimPosI(x,y+dy))==bm)
-					{
-						cs.push(x, y+dy);
-					}
-		} while (cs.getSize()>0);
+				{
+					SimPosI testPos = SimPosI(x, pos.y+dy);
+					if (shouldFloodPos(testPos))
+						cs.push(testPos);
+				}
+		} while (cs.size()>0);
 	}
 	catch (std::exception& e)
 	{
@@ -731,9 +757,10 @@ int flood_water(int x, int y, int i, int originaly, int check)
 					}
 				}
 				//check above, maybe around other sides too?
-				if ( ((y-1) > originaly) && !globalSim->pmap[y-1][x].count_notEnergy && globalSim->part_canMove(parts[i].type, x, y-1))
+				SimPosI pos(x,y-1);
+				if ( ((y-1) > originaly) && !globalSim->pmap(pos).count(PMapCategory::NotEnergy) && globalSim->part_canMove(parts[i].type, pos))
 				{
-					sim->part_set_pos(i, (int)(parts[i].x + 0.5f), (int)(parts[i].y + 0.5f), x, y-1);
+					sim->part_set_pos(i, pos);
 					return 0;
 				}
 			}
@@ -959,7 +986,7 @@ int create_parts2(int f, int x, int y, int c, int rx, int ry, int flags)
 			return 0;
 		if (SLALT!=0 && globalSim->pmap_find_one(x,y,SLALT)<0)
 			return 0;
-		if (globalSim->pmap[y][x].count)
+		if (globalSim->pmap[y][x].count())
 		{
 			delete_part(x, y, 0);
 			if (c!=0)

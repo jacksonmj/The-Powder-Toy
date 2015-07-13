@@ -57,7 +57,7 @@ int QRTZ_update(UPDATE_FUNC_ARGS)
 			sim->randomRelPos_1_noCentre(&srx,&sry);
 			if (x+srx>=0 && y+sry>=0 && x+srx<XRES && y+sry<YRES)
 			{
-				if (!stopgrow && !sim->pmap[y+sry][x+srx].count_notEnergy && parts[i].tmp!=0)
+				if (!stopgrow && !sim->pmap[y+sry][x+srx].count(PMapCategory::NotEnergy) && parts[i].tmp!=0)
 				{
 					np = sim->part_create(-1,x+srx,y+sry,PT_QRTZ);
 					if (np>-1)

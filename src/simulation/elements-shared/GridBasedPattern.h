@@ -115,7 +115,7 @@ public:
 							else
 							{
 								// pattern says there should not be a particle at this coord
-								sim->delete_position(baseX+pattX, baseY+pattY, patternElement);
+								sim->part_killAll(SimPosI(baseX+pattX, baseY+pattY), patternElement);
 							}
 						}
 				}

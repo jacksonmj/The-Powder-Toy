@@ -3715,15 +3715,15 @@ void render_signs(pixel *vid_buf)
 			if (strcmp(signs[i].text, "{t}")==0)
 			{
 				float temp = 0.0f;
-				int rcount, ri, rnext;
-				if (globalSim->InBounds(signs[i].x, signs[i].y) && globalSim->pmap[signs[i].y][signs[i].x].count)
+				SimPosI signPos(signs[i].x, signs[i].y);
+				if (globalSim->pos_isValid(signPos) && globalSim->pmap(signPos).count())
 				{
 					// Find the average temperature of all particles in this location
-					FOR_PMAP_POSITION(globalSim, signs[i].x, signs[i].y, rcount, ri, rnext)
+					FOR_SIM_PMAP_POS(globalSim, PMapCategory::All, signPos, ri)
 					{
 						temp += parts[ri].temp;
 					}
-					temp = temp/globalSim->pmap[signs[i].y][signs[i].x].count;
+					temp = temp/globalSim->pmap(signPos).count();
 					sprintf(buff, "Temp: %4.2f", temp-273.15);  //...temperature
 				}
 				else

@@ -90,9 +90,9 @@ TEST_CASE("simulation/Position conversion", "[simulation][simpos]")
 		{
 			CHECK( SimPosI(SimPosCell(10,20).topLeft()) == SimPosI(10*CELL,20*CELL) );
 		}
-		SECTION("middle")
+		SECTION("centre")
 		{
-			CHECK( SimPosI(SimPosCell(10,20).middle()) == SimPosI(std::lround(10*CELL + 0.5f*CELL), std::lround(20*CELL + 0.5f*CELL)) );
+			CHECK( SimPosI(SimPosCell(10,20).centre()) == SimPosI(std::lround(10*CELL + 0.5f*CELL), std::lround(20*CELL + 0.5f*CELL)) );
 		}
 		SECTION("bottom right")
 		{

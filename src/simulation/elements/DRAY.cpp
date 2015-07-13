@@ -75,7 +75,7 @@ int DRAY_update(UPDATE_FUNC_ARGS)
 							for (int xStep = rx*-1, yStep = ry*-1, xCurrent = x+xStep, yCurrent = y+yStep; sim->InBounds(xCopyTo, yCopyTo) && --partsRemaining; xCurrent+=xStep, yCurrent+=yStep, xCopyTo+=xStep, yCopyTo+=yStep)
 							{
 								if (overwrite)
-									sim->delete_position(xCopyTo, yCopyTo);
+									sim->part_killAll(SimPosI(xCopyTo, yCopyTo));
 								FOR_PMAP_POSITION(sim, xCurrent, yCurrent, rrcount, rri, rrnext)
 								{
 									int type = parts[rri].type, p;

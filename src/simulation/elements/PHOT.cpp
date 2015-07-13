@@ -22,7 +22,7 @@
 void Element_PHOT::create_gain_photon(Simulation *sim, int pp)//photons from PHOT going through GLOW
 {
 	float xx, yy;
-	int i, temp_bin, nx, ny;
+	int i, temp_bin;
 
 	if (sim->rng.chance<1,2>()) {
 		xx = sim->parts[pp].x - 0.3*sim->parts[pp].vy;
@@ -32,18 +32,17 @@ void Element_PHOT::create_gain_photon(Simulation *sim, int pp)//photons from PHO
 		yy = sim->parts[pp].y - 0.3*sim->parts[pp].vx;
 	}
 
-	Simulation::FloatTruncCoords(xx,yy);
-	nx = (int)(xx + 0.5f);
-	ny = (int)(yy + 0.5f);
+	SimPosF newPosF = SimPosFT(xx,yy);
+	SimPosI newPos = newPosF;
 
-	if (!sim->InBounds(nx,ny))
+	if (!sim->pos_isValid(newPos))
 		return;
 
-	int glow_i = sim->pmap_find_one(nx, ny, PT_GLOW);
+	int glow_i = sim->pmap_find_one(newPos, PT_GLOW);
 	if (glow_i<0)
 		return;
 
-	i = sim->part_create(-1, xx, yy, PT_PHOT);
+	i = sim->part_create(-1, newPosF, PT_PHOT);
 	if (i<0)
 		return;
 

@@ -1911,7 +1911,7 @@ int luatpt_message_box(lua_State* l)
 }
 int luatpt_get_numOfParts(lua_State* l)
 {
-    lua_pushinteger(l, NUM_PARTS);
+    lua_pushinteger(l, globalSim->parts_count);
     return 1;
 }
 int luatpt_start_getPartIndex(lua_State* l)

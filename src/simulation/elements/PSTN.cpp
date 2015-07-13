@@ -45,7 +45,7 @@ int PSTN_CanMoveStack(Simulation * sim, int stackX, int stackY, int directionX, 
 				*spacesRet = spaces;
 			return spaces;
 		}
-		if(!sim->pmap[posY][posX].count_notEnergy) {
+		if(!sim->pmap[posY][posX].count(PMapCategory::NotEnergy)) {
 			spaces++;
 			currentPos++;
 			if(spaces >= amount)
@@ -119,19 +119,19 @@ int PSTN_MoveStack(Simulation * sim, int stackX, int stackY, int directionX, int
 		//Remove arm section if retracting with FRME
 		if (retract)
 			for(int j = 1; j <= amount; j++)
-				sim->delete_position_notEnergy(stackX+(directionX*-j), stackY+(directionY*-j), PT_PSTN);
+				sim->part_killAll(SimPosI(stackX+(directionX*-j), stackY+(directionY*-j)), PT_PSTN);
 		return PSTN_MoveStack(sim, stackX, stackY, directionX, directionY, maxSize, amount, retract, block, !sim->parts[sim->pmap_find_one(stackX, stackY, PT_FRME)].tmp, 1);
 	}
 	if(retract){
 		//Remove arm section if retracting without FRME
 		if (!callDepth)
 			for(int j = 1; j <= amount; j++)
-				sim->delete_position_notEnergy(stackX+(directionX*-j), stackY+(directionY*-j), PT_PSTN);
+				sim->part_killAll(SimPosI(stackX+(directionX*-j), stackY+(directionY*-j)), PT_PSTN);
 		for(posX = stackX, posY = stackY; currentPos < maxSize && currentPos < XRES-1; posX += directionX, posY += directionY) {
 			if (!(posX < XRES && posY < YRES && posX >= 0 && posY >= 0)) {
 				break;
 			}
-			if(!sim->pmap[posY][posX].count_notEnergy || (block && sim->pmap_find_one(posX, posY, block)>=0) || (!sticky && sim->pmap_find_one(posX, posY, PT_FRME)<0)) {
+			if(!sim->pmap[posY][posX].count(PMapCategory::NotEnergy) || (block && sim->pmap_find_one(posX, posY, block)>=0) || (!sticky && sim->pmap_find_one(posX, posY, PT_FRME)<0)) {
 				break;
 			}
 			int rcount, ri, rnext;
@@ -156,7 +156,7 @@ int PSTN_MoveStack(Simulation * sim, int stackX, int stackY, int directionX, int
 			{
 				srcPosX = stackX + directionX*srcPos;
 				srcPosY = stackY + directionY*srcPos;
-				if (sim->pmap[srcPosY][srcPosX].count_notEnergy)
+				if (sim->pmap[srcPosY][srcPosX].count(PMapCategory::NotEnergy))
 				{
 					destPosX = stackX + directionX*destPos;
 					destPosY = stackY + directionY*destPos;

@@ -135,8 +135,6 @@ extern int amd;
 
 extern int FPSB;
 
-extern int NUM_PARTS;
-
 extern int legacy_enable;
 extern int sound_enable;
 extern int kiosk_enable;

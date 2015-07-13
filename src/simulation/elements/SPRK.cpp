@@ -142,8 +142,8 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				if (sim->pmap[y+ry][x+rx].count_notEnergy<=0) continue;
-				bool spark_blocked = sim->is_spark_blocked(x,y,x+rx,y+ry); // is spark blocked by insl
+				if (sim->pmap[y+ry][x+rx].count(PMapCategory::NotEnergy)<=0) continue;
+				bool spark_blocked = sim->is_spark_blocked(SimPosI(x,y),SimPosI(x+rx,y+ry)); // is spark blocked by insl
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					int ret = ElementsShared_pyro::update_neighbour(UPDATE_FUNC_SUBCALL_ARGS, rx,ry, parts[ri].type, ri);

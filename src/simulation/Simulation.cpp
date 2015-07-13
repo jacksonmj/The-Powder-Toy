@@ -35,36 +35,36 @@
 #include "simulation/elements/PHOT.h"
 #include "simulation/elements/PRTI.h"
 
-Vec2sc const Simulation::relPos_1[9] =
-{{-1,-1},{ 0,-1},{ 1,-1},  {-1, 0},{ 0, 0},{ 1, 0},  {-1, 1},{ 0, 1},{ 1, 1}};
-Vec2sc const Simulation::relPos_1_noCentre[8] =
-{{-1,-1},{ 0,-1},{ 1,-1},  {-1, 0},        { 1, 0},  {-1, 1},{ 0, 1},{ 1, 1}};
-Vec2sc const Simulation::relPos_1_noDiag_noCentre[4] =
-{{ 0,-1},{-1, 0},{ 1, 0},{ 0, 1}};
-Vec2sc const Simulation::relPos_2[25] =
-{
+
+std::array<SimPosDI,9> const Simulation::posdata_D1 =
+{{{-1,-1},{ 0,-1},{ 1,-1},  {-1, 0},{ 0, 0},{ 1, 0},  {-1, 1},{ 0, 1},{ 1, 1}}};
+std::array<SimPosDI,8> const Simulation::posdata_D1_noCentre =
+{{{-1,-1},{ 0,-1},{ 1,-1},  {-1, 0},        { 1, 0},  {-1, 1},{ 0, 1},{ 1, 1}}};
+std::array<SimPosDI,4> const Simulation::posdata_D1_noDiag_noCentre =
+{{{ 0,-1},{-1, 0},{ 1, 0},{ 0, 1}}};
+std::array<SimPosDI,25> const Simulation::posdata_D2 =
+{{
 	{-2,-2},{-1,-2},{0,-2},{ 1,-2},{ 2,-2},
 	{-2,-1},{-1,-1},{0,-1},{ 1,-1},{ 2,-1},
 	{-2, 0},{-1, 0},{0, 0},{ 1, 0},{ 2, 0},
 	{-2, 1},{-1, 1},{0, 1},{ 1, 1},{ 2, 1},
 	{-2, 2},{-1, 2},{0, 2},{ 1, 2},{ 2, 2}
-};
-Vec2sc const Simulation::relPos_2_noCentre[24] =
-{
+}};
+std::array<SimPosDI,24> const Simulation::posdata_D2_noCentre =
+{{
 	{-2,-2},{-1,-2},{0,-2},{ 1,-2},{ 2,-2},
 	{-2,-1},{-1,-1},{0,-1},{ 1,-1},{ 2,-1},
 	{-2, 0},{-1, 0},       { 1, 0},{ 2, 0},
 	{-2, 1},{-1, 1},{0, 1},{ 1, 1},{ 2, 1},
 	{-2, 2},{-1, 2},{0, 2},{ 1, 2},{ 2, 2}
-};
+}};
 
 Simulation *globalSim = NULL; // TODO: remove this global variable
 
 Simulation::Simulation(std::shared_ptr<SimulationSharedData> sd) :
-	simSD(sd),
+	Sim_BasicData(sd),
 	rngBase(),
 	rng(&rngBase),
-	pfree(-1),
 	air(this),
 	walls(this),
 	heat_mode(1),
@@ -74,9 +74,6 @@ Simulation::Simulation(std::shared_ptr<SimulationSharedData> sd) :
 	ambientTemp(295.15f)
 {
 	int t;
-	elements = simSD->elements;
-	elemDataShared_ = simSD->elemDataShared_;
-	std::fill(elemDataSim_, elemDataSim_+PT_NUM, nullptr);
 
 	for (t=0; t<PT_NUM; t++)
 	{
@@ -84,148 +81,25 @@ Simulation::Simulation(std::shared_ptr<SimulationSharedData> sd) :
 			(*elements[t].Func_SimInit)(this, t);
 	}
 
-	Clear();
+	clear();
 	InitCanMove();
 	Simulation_Compat_CopyData(this);
 }
 
 Simulation::~Simulation()
-{
-	int t;
-	for (t=0; t<PT_NUM; t++)
-	{
-		delete elemDataSim_[t];
-	}
-}
+{}
 
-void Simulation::Clear()
+void Simulation::clear()
 {
-	int i;
-
 	option_edgeMode(0);
 	airMode = 0;
 	air.clear();
 	walls.clear();
 
 	hook_cleared.Trigger();
-	memset(elementCount, 0, sizeof(elementCount));
-
-	pmap_entry *pmap_flat = (pmap_entry*)pmap;
-	for (i=0; i<XRES*YRES; i++)
-	{
-		pmap_flat[i].count = 0;
-		pmap_flat[i].count_notEnergy = 0;
-	}
-
-	memset(parts, 0, sizeof(particle)*NPART);
-	parts_lastActiveIndex = 0;
-#ifdef DEBUG_PARTSALLOC
-	for (i=0; i<NPART; i++)
-		partsFree[i] = true;
-#endif
-	for (i=0; i<NPART-1; i++)
-		parts[i].life = i+1;
-	parts[NPART-1].life = -1;
-	pfree = 0;
+	Sim_BasicData::clear();
 }
 
-
-// Completely recalculates the entire pmap.
-// Avoid this as much as possible.
-void Simulation::pmap_reset()
-{
-	int i;
-	pmap_entry *pmap_flat = (pmap_entry*)pmap;
-	for (i=0; i<XRES*YRES; i++)
-	{
-		pmap_flat[i].count = 0;
-		pmap_flat[i].count_notEnergy = 0;
-	}
-#ifdef DEBUG_PARTSALLOC
-	for (i=0; i<NPART; i++)
-		partsFree[i] = true;
-#endif
-	for (i=0; i<NPART; i++)
-	{
-		if (parts[i].type)
-		{
-			pmap_add(i, (int)(parts[i].x+0.5f), (int)(parts[i].y+0.5f), parts[i].type);
-#ifdef DEBUG_PARTSALLOC
-			partsFree[i] = false;
-#endif
-		}
-	}
-}
-
-/* Recalculates elementCount[] values */
-void Simulation::RecalcElementCounts()
-{
-	for (int t=0; t<PT_NUM; t++)
-		elementCount[t] = 0;
-	for (int i=0; i<NPART; i++)
-	{
-		if (parts[i].type)
-			elementCount[parts[i].type]++;
-	}
-}
-
-/* Recalculates the pfree/parts[].life linked list for particles with ID <= parts_lastActiveIndex.
- * This ensures that future particle allocations are done near the start of the parts array, to keep parts_lastActiveIndex low.
- * parts_lastActiveIndex is also decreased if appropriate.
- * Does not modify or even read any particles beyond parts_lastActiveIndex */
-void Simulation::RecalcFreeParticles()
-{
-	int lastPartUsed = 0;
-	int lastPartUnused = -1;
-
-	NUM_PARTS = 0;
-	for (int i=0; i<=parts_lastActiveIndex; i++)
-	{
-		if (parts[i].type)
-		{
-			// TODO: do stuff with commented out code below
-			// int x, y, t;
-			/*t = parts[i].type;
-			x = (int)(parts[i].x+0.5f);
-			y = (int)(parts[i].y+0.5f);
-			if (x>=0 && y>=0 && x<XRES && y<YRES)
-			{
-				if (elements[t].Properties & TYPE_ENERGY)
-					photons[y][x] = t|(i<<8);
-				else
-				{
-					// Particles are sometimes allowed to go inside INVS and FILT
-					// To make particles collide correctly when inside these elements, these elements must not overwrite an existing pmap entry from particles inside them
-					if (!pmap[y][x] || (t!=PT_INVIS && t!= PT_FILT))
-						pmap[y][x] = t|(i<<8);
-					// Count number of particles at each location, for excess stacking check
-					// (there are a few exceptions, including energy particles - currently no limit on stacking those)
-					if (t!=PT_THDR && t!=PT_EMBR && t!=PT_FIGH && t!=PT_PLSM)
-						pmap_count[y][x]++;
-				}
-			}*/
-			lastPartUsed = i;
-			NUM_PARTS ++;
-		}
-		else
-		{
-			if (lastPartUnused<0) pfree = i;
-			else parts[lastPartUnused].life = i;
-			lastPartUnused = i;
-		}
-	}
-	if (lastPartUnused==-1)
-	{
-		if (parts_lastActiveIndex>=NPART-1) pfree = -1;
-		else pfree = parts_lastActiveIndex+1;
-	}
-	else
-	{
-		if (parts_lastActiveIndex>=NPART-1) parts[lastPartUnused].life = -1;
-		else parts[lastPartUnused].life = parts_lastActiveIndex+1;
-	}
-	parts_lastActiveIndex = lastPartUsed;
-}
 
 // Looks for errors in the simulation data, such as pmap linked lists
 // Only to help with development and fixing bugs, it shouldn't be needed during normal use
@@ -238,14 +112,14 @@ bool Simulation::Check()
 	{
 		for (x=0; x<XRES; x++)
 		{
-			if (!pmap[y][x].count)
+			if (!pmap[y][x].count())
 				continue;
 			int count = 0;
 			int count_notEnergy = 0;
 			bool inEnergyList = false;
 			int lastNotEnergyId = -1;
-			int alleged_energyCount = pmap[y][x].count-pmap[y][x].count_notEnergy;
-			for (i=pmap[y][x].first; i>=0; i=parts[i].pmap_next)
+			int alleged_energyCount = pmap[y][x].count(PMapCategory::Energy);
+			for (i=pmap[y][x].first(); i>=0; i=parts[i].pmap_next)
 			{
 				if (count>NPART)
 				{
@@ -265,10 +139,10 @@ bool Simulation::Check()
 					count_notEnergy++;
 				if (x!=(int)(parts[i].x+0.5f) || y!=(int)(parts[i].y+0.5f))
 				{
-					printf("coordinates do not match: particle %d at %d,%d is in pmap list for %d,%d\n", i, x, y, (int)(parts[i].x+0.5f), (int)(parts[i].y+0.5f));
+					printf("coordinates do not match: particle %d at %d,%d is in pmap list for %d,%d\n", i, (int)(parts[i].x+0.5f), (int)(parts[i].y+0.5f), x, y);
 					isGood = false;
 				}
-				if (i==pmap[y][x].first)
+				if (i==pmap[y][x].first())
 				{
 					if (parts[i].pmap_prev >= 0)
 					{
@@ -284,7 +158,7 @@ bool Simulation::Check()
 						isGood = false;
 					}
 				}
-				if (count > pmap[y][x].count_notEnergy)
+				if (count > pmap[y][x].count(PMapCategory::NotEnergy))
 					inEnergyList = true;
 
 				if (isEnergyPart && !inEnergyList)
@@ -300,17 +174,17 @@ bool Simulation::Check()
 				if (!isEnergyPart)
 					lastNotEnergyId = i;
 			}
-			if (alleged_energyCount==0 && count>0 && pmap[y][x].first_energy!=lastNotEnergyId)
+			if (alleged_energyCount==0 && count>0 && pmap[y][x].first_energy_!=lastNotEnergyId)
 			{
 				printf("pmap list for %d,%d has no energy particles but first_energy != ID of last non-energy particle (%d)\n", x, y, i);
 				isGood = false;
 			}
-			if (count!=pmap[y][x].count)
+			if (count!=pmap[y][x].count())
 			{
 				printf("Stored total length of pmap list for %d,%d does not match the actual length\n", x, y);
 				isGood = false;
 			}
-			if (count_notEnergy!=pmap[y][x].count_notEnergy)
+			if (count_notEnergy!=pmap[y][x].count(PMapCategory::NotEnergy))
 			{
 				printf("Stored non-energy length of pmap list for %d,%d does not match the actual length\n", x, y);
 				isGood = false;
@@ -328,13 +202,12 @@ bool Simulation::Check()
 				isGood = false;
 			}
 			// check whether the particle is in the correct pmap list
-			x = (int)(parts[i].x+0.5f);
-			y = (int)(parts[i].y+0.5f);
+			SimPosI pos = SimPosF(parts[i].x, parts[i].y);
 			int pmap_i, count = 0;
 			bool foundPart = false;
-			if (pmap[y][x].count)
+			if (pmap(pos).count())
 			{
-				for (pmap_i=pmap[y][x].first; pmap_i>=0; pmap_i=parts[pmap_i].pmap_next)
+				for (pmap_i=pmap(pos).first(); pmap_i>=0; pmap_i=parts[pmap_i].pmap_next)
 				{
 					if (count>NPART || pmap_i>=NPART)
 					{
@@ -407,23 +280,23 @@ bool Simulation::Check()
 // p=-1 for normal creation (checks whether the particle is allowed to be in that location first)
 // p=-3 to create without checking whether the particle is allowed to be in that location
 // or p = a particle number, to replace a particle
-int Simulation::part_create(int p, float xf, float yf, int t)
+int Simulation::part_create(int p, SimPosF newPosF, int t)
 {
 	// This function is only for actually creating particles.
 	// Not for tools, or changing things into spark, or special brush things like setting clone ctype.
 
-	FloatTruncCoords(xf,yf);
-	int x = (int)(xf+0.5f), y = (int)(yf+0.5f);
+	newPosF = SimPosFT(newPosF);
+	SimPosI newPos = newPosF;
 
 	int i, oldType = PT_NONE;
-	if (!InBounds(x,y) || t<=0 || t>=PT_NUM || !elements[t].Enabled)
+	if (!pos_isValid(newPos) || !element_isValidThing(t))
 	{
 		return -1;
 	}
 	// If the element has a Func_Create_Override, use that instead of the rest of this function
 	if (elements[t].Func_Create_Override)
 	{
-		int ret = (*(elements[t].Func_Create_Override))(this, p, x, y, t);
+		int ret = (*(elements[t].Func_Create_Override))(this, p, newPos.x, newPos.y, t);
 
 		// returning -4 means continue with part_create as though there was no override function
 		// Useful if creation should be blocked in some conditions, but otherwise no changes to this function (e.g. SPWN)
@@ -433,7 +306,7 @@ int Simulation::part_create(int p, float xf, float yf, int t)
 
 	if (elements[t].Func_Create_Allowed)
 	{
-		if (!(*(elements[t].Func_Create_Allowed))(this, p, x, y, t))
+		if (!(*(elements[t].Func_Create_Allowed))(this, p, newPos.x, newPos.y, t))
 			return -1;
 	}
 
@@ -443,9 +316,9 @@ int Simulation::part_create(int p, float xf, float yf, int t)
 		// If there is a particle, only allow creation if the new particle can occupy the same space as the existing particle
 		// If there isn't a particle but there is a wall, check whether the new particle is allowed to be in it
 		// If there's no particle and no wall, assume creation is allowed
-		if (pmap[y][x].count || walls.isProperWall(SimPosI(x,y)))
+		if (pmap(newPos).count() || walls.isProperWall(newPos))
 		{
-			MoveResult::Code moveResult = part_canMove(t, x, y);
+			MoveResult::Code moveResult = part_canMove(t, newPos);
 			if (moveResult!=MoveResult::ALLOW && moveResult!=MoveResult::ALLOW_BUT_SLOW)
 				return -1;
 		}
@@ -457,15 +330,14 @@ int Simulation::part_create(int p, float xf, float yf, int t)
 	}
 	else if (p>=0) // Replace existing particle
 	{
-		int oldX = (int)(parts[p].x+0.5f);
-		int oldY = (int)(parts[p].y+0.5f);
+		SimPosI oldPos = SimPosF(parts[p].x, parts[p].y);
 		oldType = parts[p].type;
 		if (elements[oldType].Func_ChangeType)
 		{
-			(*(elements[oldType].Func_ChangeType))(this, p, oldX, oldY, oldType, t);
+			(*(elements[oldType].Func_ChangeType))(this, p, oldPos.x, oldPos.y, oldType, t);
 		}
 		if (oldType) elementCount[oldType]--;
-		pmap_remove(p, oldX, oldY, oldType);
+		pmap_remove(p, oldPos, oldType);
 		i = p;
 	}
 	else // Dunno, act like it was p=-3
@@ -480,8 +352,8 @@ int Simulation::part_create(int p, float xf, float yf, int t)
 	// Set some properties
 	parts[i] = elements[t].DefaultProperties;
 	parts[i].type = t;
-	parts[i].x = xf;
-	parts[i].y = yf;
+	parts[i].x = newPosF.x;
+	parts[i].y = newPosF.y;
 #ifdef OGLR
 	parts[i].lastX = xf;
 	parts[i].lastY = yf;
@@ -503,23 +375,23 @@ int Simulation::part_create(int p, float xf, float yf, int t)
 	// Set non-static properties (such as randomly generated ones)
 	if (elements[t].Func_Create)
 	{
-		(*(elements[t].Func_Create))(this, i, x, y, t);
+		(*(elements[t].Func_Create))(this, i, newPos.x, newPos.y, t);
 	}
 
-	pmap_add(i, x, y, t);
+	pmap_add(i, newPos, t);
 
 	if (elements[t].Func_ChangeType)
 	{
-		(*(elements[t].Func_ChangeType))(this, i, x, y, oldType, t);
+		(*(elements[t].Func_ChangeType))(this, i, newPos.x, newPos.y, oldType, t);
 	}
 
 	elementCount[t]++;
 	return i;
 }
 
-bool Simulation::part_change_type(int i, int x, int y, int t)//changes the type of particle number i, to t.  This also changes pmap at the same time.
+bool Simulation::part_change_type(int i, SimPosI pos, int t)//changes the type of particle number i, to t.  This also changes pmap at the same time.
 {
-	if (x<0 || y<0 || x>=XRES || y>=YRES || i>=NPART || t<0 || t>=PT_NUM)
+	if (!pos_isValid(pos) || i>=NPART || t<0 || t>=PT_NUM)
 		return false;
 
 	if (t==parts[i].type)
@@ -536,7 +408,7 @@ bool Simulation::part_change_type(int i, int x, int y, int t)//changes the type 
 
 	if (elements[t].Func_Create_Allowed)
 	{
-		if (!(*(elements[t].Func_Create_Allowed))(this, i, x, y, t))
+		if (!(*(elements[t].Func_Create_Allowed))(this, i, pos.x, pos.y, t))
 			return false;
 	}
 
@@ -549,35 +421,30 @@ bool Simulation::part_change_type(int i, int x, int y, int t)//changes the type 
 	parts[i].type = t;
 	if (t) elementCount[t]++;
 
-	if ((elements[oldType].Properties&TYPE_ENERGY) != (elements[t].Properties&TYPE_ENERGY) || !t)
+	if (pmap_category(oldType) != pmap_category(t) || !t)
 	{
-		pmap_remove(i, x, y, oldType);
+		pmap_remove(i, pos, oldType);
 		if (t)
-			pmap_add(i, x, y, t);
+			pmap_add(i, pos, t);
 	}
 
 	if (elements[oldType].Func_ChangeType)
 	{
-		(*(elements[oldType].Func_ChangeType))(this, i, x, y, oldType, t);
+		(*(elements[oldType].Func_ChangeType))(this, i, pos.x, pos.y, oldType, t);
 	}
 	if (elements[t].Func_ChangeType)
 	{
-		(*(elements[t].Func_ChangeType))(this, i, x, y, oldType, t);
+		(*(elements[t].Func_ChangeType))(this, i, pos.x, pos.y, oldType, t);
 	}
 	return true;
 }
 
-void Simulation::part_kill(int i)//kills particle number i
+void Simulation::part_kill(int i, SimPosI pos)//kills particle number i, with integer coords already known (or to override coords)
 {
-	int x, y;
 	int t = parts[i].type;
-
-	x = (int)(parts[i].x+0.5f);
-	y = (int)(parts[i].y+0.5f);
-
 	if (t && elements[t].Func_ChangeType)
 	{
-		(*(elements[t].Func_ChangeType))(this, i, x, y, t, PT_NONE);
+		(*(elements[t].Func_ChangeType))(this, i, pos.x, pos.y, t, PT_NONE);
 	}
 
 #ifdef DEBUG_PARTSALLOC
@@ -585,37 +452,19 @@ void Simulation::part_kill(int i)//kills particle number i
 		printf("Particle killed twice: %d\n", i);
 #endif
 
-	pmap_remove(i, x, y, t);
+	pmap_remove(i, pos, t);
 	elementCount[t]--;
 	part_free(i);
 }
 
-void Simulation::part_kill(int i, int x, int y)//kills particle number i, with integer coords already known (or to override coords)
+int Simulation::part_killAll(SimPosI pos, int only_type, int except_id)
 {
-	int t = parts[i].type;
-	if (t && elements[t].Func_ChangeType)
-	{
-		(*(elements[t].Func_ChangeType))(this, i, x, y, t, PT_NONE);
-	}
+	PMapCategory c = PMapCategory::All;
+	if (only_type>0)
+		c = pmap_category(only_type);
 
-#ifdef DEBUG_PARTSALLOC
-	if (partsFree[i] || !t)
-		printf("Particle killed twice: %d\n", i);
-#endif
-
-	pmap_remove(i, x, y, t);
-	elementCount[t]--;
-	part_free(i);
-}
-
-int Simulation::delete_position(int x, int y, int only_type, int except_id)
-{
-	if (only_type>0 && !(elements[only_type].Properties&TYPE_ENERGY))
-		return delete_position_notEnergy(x, y, only_type, except_id);
-
-	int rcount, ri, rnext;
 	int deletedCount = 0;
-	FOR_PMAP_POSITION(this, x, y, rcount, ri, rnext)
+	FOR_SIM_PMAP_POS(this, c, pos, ri)
 	{
 		if (ri!=except_id && (!only_type || parts[ri].type==only_type))
 		{
@@ -626,20 +475,6 @@ int Simulation::delete_position(int x, int y, int only_type, int except_id)
 	return deletedCount;
 }
 
-int Simulation::delete_position_notEnergy(int x, int y, int only_type, int except_id)
-{
-	int rcount, ri, rnext;
-	int deletedCount = 0;
-	FOR_PMAP_POSITION_NOENERGY(this, x, y, rcount, ri, rnext)
-	{
-		if (ri!=except_id && (!only_type || parts[ri].type==only_type))
-		{
-			part_kill(ri);
-			deletedCount++;
-		}
-	}
-	return deletedCount;
-}
 
 /* spark_particle turns a particle into SPRK and sets ctype, life, and temperature. It first checks whether the particle can actually be sparked (is conductive or WIRE or INST, and has life of zero) first. Remember to check for INSL though. 
  * 
@@ -650,20 +485,20 @@ int Simulation::delete_position_notEnergy(int x, int y, int only_type, int excep
  * spark_particle_conductiveOnly only sparks PROP_CONDUCTS particles
 */
 
-void Simulation::spark_particle_nocheck(int i, int x, int y)
+void Simulation::spark_particle_nocheck(int i, SimPosI pos)
 {
 	if (parts[i].type==PT_WIRE)
 		parts[i].ctype = PT_DUST;
 	else if (parts[i].type==PT_INST)
-		Element_INST::flood_spark(this, x, y);
+		Element_INST::flood_spark(this, pos.x, pos.y);
 	else
-		spark_particle_nocheck_forceSPRK(i, x, y);
+		spark_particle_nocheck_forceSPRK(i, pos);
 }
-void Simulation::spark_particle_nocheck_forceSPRK(int i, int x, int y)
+void Simulation::spark_particle_nocheck_forceSPRK(int i, SimPosI pos)
 {
 	// (split into a separate function so INST flood fill can use it to create SPRK without triggering another flood fill)
 	int type = parts[i].type;
-	part_change_type(i, x, y, PT_SPRK);
+	part_change_type(i, pos, PT_SPRK);
 	parts[i].ctype = type;
 	if (type==PT_WATR)
 		parts[i].life = 6;
@@ -678,51 +513,49 @@ void Simulation::spark_particle_nocheck_forceSPRK(int i, int x, int y)
 			parts[i].temp = 673.0f;
 	}
 }
-bool Simulation::spark_particle(int i, int x, int y)
+bool Simulation::spark_particle(int i, SimPosI pos)
 {
 	if ((parts[i].type==PT_WIRE && parts[i].ctype<=0) || (parts[i].type==PT_INST && parts[i].life<=0) || (parts[i].type==PT_SWCH && parts[i].life==10) || (!parts[i].life && (elements[parts[i].type].Properties & PROP_CONDUCTS)))
 	{
-		spark_particle_nocheck(i, x, y);
+		spark_particle_nocheck(i, pos);
 		return true;
 	}
 	return false;
 }
-bool Simulation::spark_particle_conductiveOnly(int i, int x, int y)
+bool Simulation::spark_particle_conductiveOnly(int i, SimPosI pos)
 {
 	if (!parts[i].life && (elements[parts[i].type].Properties & PROP_CONDUCTS))
 	{
-		spark_particle_nocheck(i, x, y);
+		spark_particle_nocheck(i, pos);
 		return true;
 	}
 	return false;
 }
 
 // Sparks all PROP_CONDUCTS particles in a particular position
-int Simulation::spark_position_conductiveOnly(int x, int y)
+int Simulation::spark_position_conductiveOnly(SimPosI pos)
 {
 	int lastSparkedIndex = -1;
-	int rcount, index, rnext;
-	FOR_PMAP_POSITION_NOENERGY(this, x, y, rcount, index, rnext)
+	FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, pos, index)
 	{
 		int type = parts[index].type;
 		if (!(elements[type].Properties & PROP_CONDUCTS))
 			continue;
 		if (parts[index].life!=0)
 			continue;
-		spark_particle_nocheck(index, x, y);
+		spark_particle_nocheck(index, pos);
 		lastSparkedIndex = index;
 	}
 	return lastSparkedIndex;
 }
 
 // Sparks all particles in a particular position
-int Simulation::spark_position(int x, int y)
+int Simulation::spark_position(SimPosI pos)
 {
 	int lastSparkedIndex = -1;
-	int rcount, index, rnext;
-	FOR_PMAP_POSITION_NOENERGY(this, x, y, rcount, index, rnext)
+	FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, pos, index)
 	{
-		if (spark_particle(index, x, y))
+		if (spark_particle(index, pos))
 			lastSparkedIndex = index;
 	}
 	return lastSparkedIndex;
@@ -937,7 +770,7 @@ void Simulation::InitCanMove()
 	can_move[PT_TRON][PT_SWCH] = MoveResult::DYNAMIC;
 }
 
-MoveResult::Code Simulation::part_canMove_dynamic(int pt, int nx, int ny, int ri, MoveResult::Code result)
+MoveResult::Code Simulation::part_canMove_dynamic(int pt, SimPosI newPos, int ri, MoveResult::Code result)
 {
 	int rt = parts[ri].type;
 	if (rt==PT_LCRY)
@@ -947,7 +780,7 @@ MoveResult::Code Simulation::part_canMove_dynamic(int pt, int nx, int ny, int ri
 	}
 	else if (rt==PT_INVIS)
 	{
-		float pressure = air.pv.get(SimPosI(nx,ny));
+		float pressure = air.pv.get(newPos);
 		if (pressure>4.0f || pressure<-4.0f) result = MoveResult::ALLOW;
 		else result = MoveResult::BLOCK;
 	}
@@ -986,34 +819,33 @@ MoveResult::Code Simulation::part_canMove_dynamic(int pt, int nx, int ny, int ri
 	return result;
 }
 
-MoveResult::Code Simulation::part_canMove(int pt, int nx, int ny, bool coordCheckDone)
+MoveResult::Code Simulation::part_canMove(int pt, SimPosI newPos, bool coordCheckDone)
 {
 	MoveResult::Code result = MoveResult::ALLOW;
-	int rcount, ri, rnext;
 
 	if (!coordCheckDone)
 	{
-		TranslateCoords(nx, ny);
-		if (nx<0 || nx>=XRES || ny<0 || ny>=YRES)
+		newPos = pos_handleEdges(newPos);
+		if (!pos_isValid(newPos))
 		{
 			return MoveResult::DESTROY;
 		}
 	}
 
-	if (pmap[ny][nx].count_notEnergy)
+	if (pmap(newPos).count(PMapCategory::NotEnergy))
 	{
-		FOR_PMAP_POSITION_NOENERGY(this, nx, ny, rcount, ri, rnext)
+		FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, newPos, ri)
 		{
 			MoveResult::Code tmpResult = can_move[pt][parts[ri].type];
 			if (tmpResult==MoveResult::DYNAMIC)
-				tmpResult = part_canMove_dynamic(pt, nx, ny, ri, tmpResult);
+				tmpResult = part_canMove_dynamic(pt, newPos, ri, tmpResult);
 			// Find the particle which restricts movement the most
 			if (tmpResult<result)
 				result = tmpResult;
 		}
 	}
 
-	SimPosCell cellPos = SimPosI(nx,ny);
+	SimPosCell cellPos = newPos;
 	if (walls.type(cellPos))
 	{
 		uint8_t wall = walls.type(cellPos);
@@ -1022,7 +854,7 @@ MoveResult::Code Simulation::part_canMove(int pt, int nx, int ny, bool coordChec
 		if (wall==WL_EHOLE && !walls.electricity(cellPos) && !(elements[pt].Properties&TYPE_SOLID))
 		{
 			bool foundSolid = false;
-			FOR_PMAP_POSITION_NOENERGY(this, nx, ny, rcount, ri, rnext)
+			FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, newPos, ri)
 			{
 				if (elements[parts[ri].type].Properties&TYPE_SOLID)
 				{
@@ -1039,55 +871,52 @@ MoveResult::Code Simulation::part_canMove(int pt, int nx, int ny, bool coordChec
 	return result;
 }
 
-MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf)
+MoveResult::Code Simulation::part_move(int i, SimPosI srcPos, SimPosF destPosF)
 {
-	int nx, ny;
-	FloatTruncCoords(nxf, nyf);
-	TranslateCoords(nxf, nyf);
-	nx = (int)(nxf+0.5f);
-	ny = (int)(nyf+0.5f);
+	destPosF = pos_handleEdges(SimPosF(SimPosFT(destPosF)));
+	SimPosI destPos = destPosF;
+
 	if (parts[i].type == PT_NONE)
 		return MoveResult::DESTROYED;
 
-	if (nx<CELL || nx>=XRES-CELL || ny<CELL || ny>=YRES-CELL)
+	if (!pos_inMainArea(destPos))
 	{
 		part_kill(i);
 		return MoveResult::DESTROYED;
 	}
-	if (x==nx && y==ny)
+	if (destPos==srcPos)
 	{
-		part_set_pos(i, x,y, nxf,nyf);
+		part_set_pos(i, srcPos, destPosF);
 		return MoveResult::ALLOW;
 	}
 
-	int rcount, ri, rnext, rt;
 	int t = parts[i].type;
-	MoveResult::Code moveCode = part_canMove(t, nx, ny, true);
+	MoveResult::Code moveCode = part_canMove(t, destPos, true);
 
 
 	// Some checks which can't be done in part_canMove because source coords  and properties of the moving particle properties are unknown:
 	// half-silvered mirror
 	if (moveCode==MoveResult::BLOCK && t==PT_PHOT &&
-			((pmap_find_one(nx,ny,PT_BMTL)>=0 && rng.chance<1,2>()) ||
-	         pmap_find_one(x,y,PT_BMTL)>=0))
+			((pmap_find_one(destPos,PT_BMTL)>=0 && rng.chance<1,2>()) ||
+	         pmap_find_one(srcPos,PT_BMTL)>=0))
 		moveCode = MoveResult::ALLOW_BUT_SLOW;
 	// block moving out of unpowered ehole
-	if (walls.isClosedEHole(SimPosI(x,y)) && !walls.isClosedEHole(SimPosI(nx,ny)))
+	if (walls.isClosedEHole(srcPos) && !walls.isClosedEHole(destPos))
 		return MoveResult::BLOCK;
 	// exploding GBMB does not move
 	if(t==PT_GBMB&&parts[i].life>0)
 		return MoveResult::BLOCK;
 	//check below CNCT for another CNCT
-	if (t==PT_CNCT && y<ny && pmap_find_one(x, y+1, PT_CNCT)>=0)
+	if (t==PT_CNCT && srcPos.y<destPos.y && pmap_find_one(srcPos+SimPosDI(0,1), PT_CNCT)>=0)
 		return MoveResult::BLOCK;
 
 	if (moveCode==MoveResult::BLOCK) //if no movement
 	{
 		if (elements[t].Properties & TYPE_ENERGY)
 		{
-			FOR_PMAP_POSITION_NOENERGY(this, nx, ny, rcount, ri, rnext)
+			FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, destPos, ri)
 			{
-				rt = parts[ri].type;
+				int rt = parts[ri].type;
 				if (!legacy_enable && t==PT_PHOT)//PHOT heat conduction
 				{
 					if (rt == PT_COAL || rt == PT_BCOL)
@@ -1108,9 +937,9 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 	}
 	else if (moveCode == MoveResult::ALLOW_BUT_SLOW || moveCode == MoveResult::ALLOW) //if occupy same space
 	{
-		FOR_PMAP_POSITION_NOENERGY(this, nx, ny, rcount, ri, rnext)
+		FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, destPos, ri)
 		{
-			rt = parts[ri].type;
+			int rt = parts[ri].type;
 			if (t==PT_PHOT)
 			{
 				parts[i].ctype &= elements[rt].PhotonReflectWavelengths;
@@ -1128,30 +957,30 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 				}
 				else if (rt==PT_INVIS)
 				{
-					float pressure = air.pv.get(SimPosI(nx,ny));
+					float pressure = air.pv.get(destPos);
 					if (pressure<=4.0f && pressure>=-4.0f)
 					{
-						part_change_type(i,x,y,PT_NEUT);
+						part_change_type(i,srcPos,PT_NEUT);
 						parts[i].ctype = 0;
-						part_set_pos(i, x,y, nxf,nyf);
+						part_set_pos(i, srcPos, destPosF);
 						return MoveResult::CHANGED_TYPE;
 					}
 				}
 				else if (rt==PT_BIZR || rt==PT_BIZRG || rt==PT_BIZRS)
 				{
-					part_change_type(i, x, y, PT_ELEC);
+					part_change_type(i, srcPos, PT_ELEC);
 					parts[i].ctype = 0;
-					part_set_pos(i, x,y, nxf,nyf);
+					part_set_pos(i, srcPos, destPosF);
 					return MoveResult::CHANGED_TYPE;
 				}
 				else if (rt == PT_H2 && !(parts[i].tmp&0x1))
 				{
-					part_change_type(i, x, y, PT_PROT);
+					part_change_type(i, srcPos, PT_PROT);
 					parts[i].ctype = 0;
 					parts[i].tmp2 = 0x1;
 
-					part_create(ri, x, y, PT_ELEC);
-					part_set_pos(i, x,y, nxf,nyf);
+					part_create(ri, srcPos, PT_ELEC);
+					part_set_pos(i, srcPos, destPosF);
 					return MoveResult::CHANGED_TYPE;
 				}
 			}
@@ -1167,8 +996,8 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 			{
 				if (rt == PT_INVIS)
 				{
-					part_change_type(i, x, y, PT_NEUT);
-					part_set_pos(i, x,y, nxf,nyf);
+					part_change_type(i, srcPos, PT_NEUT);
+					part_set_pos(i, srcPos, destPosF);
 					return MoveResult::CHANGED_TYPE;
 				}
 			}
@@ -1183,20 +1012,20 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 			{
 				if (rt==PT_GLOW)
 				{
-					part_change_type(i, x, y, PT_PHOT);
+					part_change_type(i, srcPos, PT_PHOT);
 					parts[i].ctype = 0x3FFFFFFF;
 				}
 			}
 		}
-		part_set_pos(i, x,y, nxf,nyf);
+		part_set_pos(i, srcPos, destPosF);
 		return moveCode;
 	}
 	else if (moveCode == MoveResult::DESTROY)
 	{
 		// moving particle gets destroyed
-		FOR_PMAP_POSITION_NOENERGY(this, nx, ny, rcount, ri, rnext)
+		FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, destPos, ri)
 		{
-			rt = parts[ri].type;
+			int rt = parts[ri].type;
 			if (rt==PT_BHOL || rt==PT_NBHL)
 			{
 				// blackhole heats up when it eats particles
@@ -1247,13 +1076,14 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 	else if (moveCode==MoveResult::STORE)
 	{
 		// moving particle will be stored in a particle at the destination
-		FOR_PMAP_POSITION_NOENERGY(this, nx, ny, rcount, ri, rnext)
+		FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, destPos, ri)
 		{
-			rt = parts[ri].type;
+			int rt = parts[ri].type;
 			if (rt==PT_PRTI)
 			{
 				PortalChannel *channel = elemData<PRTI_ElemDataSim>(PT_PRTI)->GetParticleChannel(parts[ri]);
-				int slot = PRTI_ElemDataSim::GetPosIndex(x-nx,y-ny);
+				SimPosDI diff = srcPos-destPos;
+				int slot = PRTI_ElemDataSim::GetPosIndex(diff.x, diff.y);
 				if (channel->StoreParticle(this, i, slot))
 					return MoveResult::STORED;
 			}
@@ -1278,12 +1108,12 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 		//trying to swap the particles
 		if (t!=PT_NEUT)
 		{
-			FOR_PMAP_POSITION_NOENERGY(this, nx, ny, rcount, ri, rnext)
+			FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, destPos, ri)
 			{
-				rt = parts[ri].type;
 				// Move all particles which are displaced by this particle from the destination position
 				// TODO: when breaking compatibility, add "if (part_canMove(rt, x, y)==MoveResult::DISPLACE)" here
-				part_set_pos(ri, nx, ny, x, y);
+				//int rt = parts[ri].type;
+				part_set_pos(ri, destPos, srcPos);
 			}
 		}
 		else // t==PT_NEUT
@@ -1293,7 +1123,7 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 
 			// e=MoveResult::DISPLACE for neutron means that target material is NEUTPENETRATE, meaning it gets moved around when neutron passes
 			// First, look for NEUTPENETRATE or empty space at x,y
-			FOR_PMAP_POSITION_NOENERGY(this, x, y, rcount, ri, rnext)
+			FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, destPos, ri)
 			{
 				if (elements[parts[ri].type].Properties&PROP_NEUTPENETRATE)
 				{
@@ -1309,28 +1139,28 @@ MoveResult::Code Simulation::part_move(int i, int x, int y, float nxf, float nyf
 			// Move NEUTPENETRATE particles at nx,ny to x,y if there's currently a NEUTPENETRATE particle or empty space at x,y
 			if (srcNeutPenetrate>=0 || !srcPartFound)
 			{
-				FOR_PMAP_POSITION_NOENERGY(this, nx, ny, rcount, ri, rnext)
+				FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, destPos, ri)
 				{
-					rt = parts[ri].type;
+					int rt = parts[ri].type;
 					// Move all particles which are displaced by this particle from the destination position
-					if (part_canMove(rt, x, y)==MoveResult::DISPLACE)
+					if (part_canMove(rt, srcPos)==MoveResult::DISPLACE)
 					{
-						part_set_pos(ri, nx, ny, x, y);
+						part_set_pos(ri, destPos, srcPos);
 					}
 				}
 			}
-			if (srcNeutPenetrate>=0 && part_canMove(parts[srcNeutPenetrate].type, nx, ny, true))
+			if (srcNeutPenetrate>=0 && part_canMove(parts[srcNeutPenetrate].type, destPos, true))
 			{
-				part_set_pos(srcNeutPenetrate, x, y, nx, ny);
+				part_set_pos(srcNeutPenetrate, srcPos, destPos);
 			}
 		}
-		part_set_pos(i, x,y, nxf,nyf);
+		part_set_pos(i, srcPos, destPosF);
 		return moveCode;
 	}
 
 	// All MoveResult::Codes should be handled above, except negative codes (which should never be returned by part_canMove)
 	// Print warning if there's one that wasn't handled above
-	printf("try_move: unhandled movement result %d (t=%d from %d,%d to %f,%f)\n", moveCode, t, x,y, nxf,nyf);
+	printf("try_move: unhandled movement result %d (t=%d from %d,%d to %f,%f)\n", moveCode, t, srcPos.x,srcPos.y, destPosF.x,destPosF.y);
 	// Assume the worst and stop further movement if we have no idea what the moveCode means
 	return MoveResult::DESTROYED;
 }
@@ -1352,7 +1182,7 @@ void Simulation::UpdateParticles()
 	int excessive_stacking_found = 0;
 	bool transitionOccurred;
 
-	RecalcFreeParticles();
+	recalc_freeParticles();
 	if (!sys_pause||framerender)
 	{
 		walls.simBeforeUpdate();
@@ -1478,7 +1308,7 @@ void Simulation::UpdateParticles()
 		{//go through every particle and set neighbor map
 			for (nx=CELL; nx<XRES-CELL; nx++)
 			{
-				if (!pmap[ny][nx].count_notEnergy)
+				if (!pmap[ny][nx].count(PMapCategory::NotEnergy))
 				{
 					gol[ny][nx] = 0;
 					continue;
@@ -1499,7 +1329,7 @@ void Simulation::UpdateParticles()
 							{
 								int adx = ((nx+nnx+XRES-3*CELL)%(XRES-2*CELL))+CELL;
 								int ady = ((ny+nny+YRES-3*CELL)%(YRES-2*CELL))+CELL;
-								if (!pmap[ady][adx].count_notEnergy || pmap_find_one(adx, ady, PT_LIFE)>=0)
+								if (!pmap[ady][adx].count(PMapCategory::NotEnergy) || pmap_find_one(adx, ady, PT_LIFE)>=0)
 								{
 									//the total neighbor count is in 0
 									gol2[ady][adx][0] ++;
@@ -1531,13 +1361,13 @@ void Simulation::UpdateParticles()
 			for (nx=CELL; nx<XRES-CELL; nx++)
 			{
 				r = pmap_find_one(nx, ny, PT_LIFE);
-				if (pmap[ny][nx].count_notEnergy && r<0)
+				if (pmap[ny][nx].count(PMapCategory::NotEnergy) && r<0)
 					continue;
 				neighbors = gol2[ny][nx][0];
 				if (neighbors)
 				{
 					golnum = gol[ny][nx];
-					if (!pmap[ny][nx].count_notEnergy)
+					if (!pmap[ny][nx].count(PMapCategory::NotEnergy))
 					{
 						//Find which type we can try and create
 						int creategol = 0xFF;
@@ -1611,7 +1441,7 @@ void Simulation::UpdateParticles()
 			SimPosCell cellPos = SimPosI(x,y);
 
 			//this kills any particle out of the screen, or in a wall where it isn't supposed to go
-			if (pos_isInMargin(cellPos) || (walls.type(cellPos) && isWallDeadly(cellPos,t)))
+			if (!pos_inMainArea(cellPos) || (walls.type(cellPos) && isWallDeadly(cellPos,t)))
 			{
 				part_kill(i);
 				continue;
@@ -1744,7 +1574,7 @@ void Simulation::UpdateParticles()
 			for (nx=-1; nx<2; nx++)
 				for (ny=-1; ny<2; ny++) {
 					if (nx||ny) {
-						if (!pmap[y+ny][x+nx].count_notEnergy)
+						if (!pmap[y+ny][x+nx].count(PMapCategory::NotEnergy))
 							surround_space++;//there is empty space
 						if (pmap_find_one(x+nx,y+ny,t)<0)
 							nt++;//there is nothing or a different particle

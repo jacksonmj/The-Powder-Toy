@@ -47,7 +47,7 @@ int NEUT_DeutExplosion(Simulation *sim, int n, int x, int y, float vx, float vy,
 		parts[i].life = sim->rng.randInt<480,480+479>();
 		parts[i].vx = r*cosf(a);
 		parts[i].vy = r*sinf(a);
-		sim->pmap_add(i, x, y, PT_NEUT);
+		sim->pmap_add(i, SimPosI(x, y), PT_NEUT);
 		sim->elementCount[PT_NEUT]++;
 
 		sim->air.pv.add(SimPosI(x,y), 6.0f * CFDS);

@@ -41,11 +41,11 @@ class SimPosDF;//float
 class SimPosDI;//int
 class SimPosDCell;//cell (int)
 /* Member functions include:
- * length() - length / 2-norm (sqrt(x^2+y^2))
+ * length() - length (2-norm) (sqrt(x^2+y^2))
  * length_sq() - squared length (x^2+y^2)
- * length_1() - Manhattan distance / 1-norm (abs(x)+abs(y))
- * maxComponent() - returns abs value of largest component / inf-norm (max(abs(x),abs(y))
- * unit() - returns	a scaled version with length()=1
+ * length_1() - Manhattan distance (1-norm) (abs(x)+abs(y))
+ * maxComponent() - returns abs value of largest component (inf-norm) (max(abs(x),abs(y))
+ * unit() - returns a scaled version with length()=1
  * unit_1() - returns a scaled version with length_1()=1 (max component = 1)
  */
 
@@ -271,10 +271,11 @@ class SimPosDF :
 public:
 	using T = float;
 	T x, y;
-	SimPosDF () {}
+	constexpr SimPosDF() : x(0), y(0) {}
 	constexpr SimPosDF(float x_, float y_) : x(x_), y(y_) {}
 	constexpr SimPosDF(const SimPosDI d);
 	constexpr SimPosDF(const SimPosDCell d);
+	static constexpr SimPosDF zero() { return SimPosDF(0,0); }
 
 	constexpr T length_sq() const { return x*x+y*y; }
 	T length_1() const { return std::abs(x) + std::abs(y); }
@@ -294,10 +295,11 @@ class SimPosDI :
 public:
 	using T = detail::SimPosDT;
 	T x, y;
-	SimPosDI() {}
+	constexpr SimPosDI() : x(0), y(0) {}
 	constexpr SimPosDI(T x_, T y_) : x(x_), y(y_) {}
 	SimPosDI(const SimPosDF d) : x(std::lround(d.x)), y(std::lround(d.y)) {}
 	constexpr SimPosDI(const SimPosDCell d);
+	static constexpr SimPosDI zero() { return SimPosDI(0,0); }
 
 	constexpr int length_sq() const { return x*x+y*y; }
 	int length_1() const { return std::abs(x) + std::abs(y); }
@@ -316,9 +318,10 @@ class SimPosDCell :
 public:
 	using T = detail::SimPosDT;
 	T x, y;
-	SimPosDCell() {}
+	constexpr SimPosDCell() : x(0), y(0) {}
 	constexpr SimPosDCell(T x_, T y_) : x(x_), y(y_) {}
 	SimPosDCell(const SimPosDF d) : x(std::lround(d.x/CELL)), y(std::lround(d.y/CELL)) {}
+	static constexpr SimPosDCell zero() { return SimPosDCell(0,0); }
 
 	constexpr int length_sq() const { return (x*x+y*y)*CELL*CELL; }
 	int length_1() const { return (std::abs(x) + std::abs(y))*CELL; }
@@ -342,6 +345,7 @@ public:
 		volatile float tmpx = x_, tmpy = y_;
 		x = tmpx, y = tmpy;
 	}
+	SimPosFT(const SimPosF p);
 };
 
 class SimPosF :
@@ -398,15 +402,36 @@ public:
 	constexpr SimPosCell(const SimPosI p) : x(p.x/CELL), y(p.y/CELL) {}
 
 	constexpr SimPosI topLeft() const { return SimPosI(x*CELL, y*CELL); }
-	constexpr SimPosI middle() const { return SimPosI(x*CELL+CELL/2, y*CELL+CELL/2); }
+	constexpr SimPosI centre() const { return SimPosI(x*CELL+CELL/2, y*CELL+CELL/2); }
 	constexpr SimPosI bottomRight() const { return SimPosI(x*CELL+CELL-1, y*CELL+CELL-1); }
 };
 
+TPT_INLINE SimPosFT::SimPosFT(const SimPosF p) : SimPosFT(p.x, p.y) {}
 constexpr SimPosF::SimPosF(const SimPosI p) : x(p.x), y(p.y) {}
+
 TPT_INLINE SimPosCell SimPosI::cell() const { return SimPosCell(*this); }
 TPT_INLINE SimPosCell SimPosI::cell_safe() const { return SimPosCell(std::floor(float(x)/CELL), std::floor(float(y)/CELL)); }
 TPT_INLINE SimPosCell SimPosF::cell() const { return SimPosCell(*this); }
 TPT_INLINE SimPosCell SimPosF::cell_safe() const { return SimPosCell(std::floor(x/CELL), std::floor(y/CELL)); }
 
+
+namespace SimPos
+{
+
+constexpr SimPosF midpoint(SimPosF p1, SimPosF p2) // Return point halfway between the arguments
+{
+	return SimPosF((p1.x+p2.x)/2, (p1.y+p2.y)/2);
+}
+constexpr SimPosF midpoint(SimPosI p1, SimPosI p2) // Return point halfway between the arguments
+{
+	return SimPosF(float(p1.x+p2.x)/2, float(p1.y+p2.y)/2);
+}
+
+constexpr SimPosI midpoint_tl(SimPosI p1, SimPosI p2) // Return point approximately halfway between the arguments, using the SPRK/INSL round-to-top-left behaviour
+{
+	return SimPosF((p1.x+p2.x)/2, (p1.y+p2.y)/2);
+}
+
+}
 
 #endif

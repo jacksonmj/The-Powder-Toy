@@ -77,8 +77,8 @@ int parse_save(void *save, int size, int replace, int x0, int y0, WallsDataP wal
 	{
 		result = parse_save_PSv(save, size, replace, x0, y0, wallsData, signs, partsptr, pmap);
 	}
-	globalSim->pmap_reset();
-	globalSim->RecalcElementCounts();
+	globalSim->recalc_pmap();
+	globalSim->recalc_elementCount();
 	return result;
 }
 
@@ -252,7 +252,7 @@ pixel *prerender_save_OPS(void *save, int size, int *width, int *height)
 						fprintf(stderr, "Out of range [%d]: %d %d, [%d, %d], [%d, %d]\n", i, x, y, (unsigned)partsData[i+1], (unsigned)partsData[i+2], (unsigned)partsData[i+3], (unsigned)partsData[i+4]);
 						goto fail;
 					}
-					if(!globalSim->IsValidElement(partsData[i]))
+					if(!globalSim->element_isValid(partsData[i]))
 						partsData[i] = PT_DMND;	//Replace all invalid elements with diamond
 					
 					//Draw type
@@ -1277,7 +1277,7 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, WallsDataP
 						fprintf(stderr, "Out of range [%d]: %d %d, [%d, %d], [%d, %d]\n", i, x, y, (unsigned)partsData[i+1], (unsigned)partsData[i+2], (unsigned)partsData[i+3], (unsigned)partsData[i+4]);
 						goto fail;
 					}
-					if(!globalSim->IsValidElement(partsData[i]))
+					if(!globalSim->element_isValid(partsData[i]))
 						partsData[i] = PT_DMND;	//Replace all invalid elements with diamond
 					if(pmap[y][x] && posCount==0) // Check posCount to make sure an existing particle is not replaced twice if two particles are saved in that position
 					{
@@ -1444,7 +1444,7 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, WallsDataP
 						//Clear soap links, links will be added back in if soapLinkData is present
 						partsptr[newIndex].ctype &= ~6;
 					}
-					if (!globalSim->IsValidElement(partsptr[newIndex].type))
+					if (!globalSim->element_isValid(partsptr[newIndex].type))
 						partsptr[newIndex].type = PT_NONE;
 					
 					
@@ -2193,7 +2193,7 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, WallsDataP
 					parts[i-1].tmp2 = parts[i-1].life;
 				}
 			}
-			if (!globalSim->IsValidElement(parts[i-1].type))
+			if (!globalSim->element_isValid(parts[i-1].type))
 				parts[i-1].type = PT_NONE;
 			
 			if (ver<81)

@@ -45,20 +45,13 @@ public:
 		stackSize(0),
 		stackLimit(stackLimit_)
 	{
-		stack = new CoordType[stackLimit];
-	}
-	~PositionStack()
-	{
-		delete[] stack;
-	}
-	/*{
 		// Memory does not need to be initialised, so use malloc instead of new
 		stack = reinterpret_cast<CoordType*>(malloc(sizeof(CoordType)*stackLimit));
 	}
 	~PositionStack()
 	{
 		free(stack);
-	}*/
+	}
 	void push(CoordType c)
 	{
 		if (stackSize>=stackLimit)
