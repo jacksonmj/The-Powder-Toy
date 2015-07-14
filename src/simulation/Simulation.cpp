@@ -2360,7 +2360,7 @@ killed:
 										break;
 									}
 									// A particle of a different type, or a wall, was found. Stop trying to move any further horizontally unless the wall should be completely invisible to particles.
-									if (walls.isProperWall(SimPosI(nx,ny)))
+									if (walls.isProperWall(SimPosI(nx,ny)) || pmap_differentElemExists(SimPosI(nx,ny), t, PMapCategory::NotEnergy))
 										break;
 								}
 							}
@@ -2395,7 +2395,7 @@ killed:
 									if (pmap_find_one(nx,ny,t)<0 || walls.type(SimPosI(nx,ny)))
 									{
 										moveResult = part_move(i, clear_x, clear_y, nxf, nyf);
-										if (MoveResult::Succeeded(moveResult) || walls.isProperWall(SimPosI(nx,ny)))
+										if (MoveResult::Succeeded(moveResult) || walls.isProperWall(SimPosI(nx,ny)) || pmap_differentElemExists(SimPosI(nx,ny), t, PMapCategory::NotEnergy))
 											break;// found the edge of the liquid and movement into it succeeded, so stop moving down
 									}
 								}

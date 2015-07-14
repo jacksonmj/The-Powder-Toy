@@ -238,13 +238,24 @@ public:
 		decCount(c);
 	}
 
-	int find_one(particle const *parts, PMapCategory c, int t) const
+	int find_one(particle const *parts, int t, PMapCategory c) const
 	{
 		int n = count(c);
 		int i = first(c);
 		for (; n>0; i=parts[i].pmap_next, n--)
 		{
 			if (parts[i].type==t)
+				return i;
+		}
+		return -1;
+	}
+	int findDifferentOne(particle const *parts, int t, PMapCategory c=PMapCategory::All) const
+	{
+		int n = count(c);
+		int i = first(c);
+		for (; n>0; i=parts[i].pmap_next, n--)
+		{
+			if (parts[i].type!=t)
 				return i;
 		}
 		return -1;

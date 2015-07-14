@@ -155,11 +155,20 @@ public:
 	// Finds a particle of type t at position pos, returns the ID. Returns a negative number if no particle is found.
 	int pmap_find_one(SimPosI pos, int t) const
 	{
-		return pmap(pos).find_one(parts, pmap_category(t), t);
+		return pmap(pos).find_one(parts, t, pmap_category(t));
+	}
+	// Finds a particle with type!=t at position pos, returns the ID. Returns a negative number if not found.
+	int pmap_findDifferentOne(SimPosI pos, int t, PMapCategory c=PMapCategory::All) const
+	{
+		return pmap(pos).findDifferentOne(parts, t, c);
 	}
 	bool pmap_elemExists(SimPosI pos, int t) const
 	{
 		return (pmap_find_one(pos, t)>=0);
+	}
+	bool pmap_differentElemExists(SimPosI pos, int t, PMapCategory c=PMapCategory::All) const
+	{
+		return (pmap_findDifferentOne(pos, t, c)>=0);
 	}
 	// Returns true if a particle of type t exists halfway between i1 and i2
 	bool check_middle_particle_type(int i1, int i2, int t) const
