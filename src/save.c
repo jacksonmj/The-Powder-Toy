@@ -79,6 +79,7 @@ int parse_save(void *save, int size, int replace, int x0, int y0, WallsDataP wal
 	}
 	globalSim->recalc_pmap();
 	globalSim->recalc_elementCount();
+	globalSim->recalc_freeParticles();
 	return result;
 }
 

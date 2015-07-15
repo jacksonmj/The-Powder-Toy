@@ -59,12 +59,14 @@ void Sim_BasicData::clear()
 void Sim_BasicData::recalc_elementCount()
 {
 	elementCount.fill(0);
-	for (int t=0; t<PT_NUM; t++)
-		elementCount[t] = 0;
+	parts_count = 0;
 	for (int i=0; i<NPART; i++)
 	{
 		if (parts[i].type)
+		{
 			elementCount[parts[i].type]++;
+			parts_count++;
+		}
 	}
 }
 
