@@ -77,6 +77,7 @@
 #include "simulation/elements/PRTI.h"
 #include "simulation/elements/STKM.h"
 #include "simulation/elements/WIFI.h"
+#include "simulation/elements-shared/Wavelengths.hpp"
 
 //unsigned cmode = CM_FIRE;
 unsigned int *render_modes;
@@ -3674,20 +3675,8 @@ void draw_wavelengths(pixel *vid, int x, int y, int h, int wl)
 			// Need a spread of wavelengths to get a smooth spectrum, 5 bits seems to work reasonably well
 			if (i>2) tmp = 0x1F << (i-2);
 			else tmp = 0x1F >> (2-i);
-			cg = 0;
-			cb = 0;
-			cr = 0;
-			for (j=0; j<12; j++) {
-				cr += (tmp >> (j+18)) & 1;
-				cb += (tmp >>  j)     & 1;
-			}
-			for (j=0; j<13; j++)
-				cg += (tmp >> (j+9))  & 1;
-			tmp = 624/(cr+cg+cb+1);
-			cr *= tmp;
-			cg *= tmp;
-			cb *= tmp;
-			for (j=0; j<h; j++) blendpixel(vid,x+29-i,y+j,cr>255?255:cr,cg>255?255:cg,cb>255?255:cb,255);
+			ElementsShared::Wavelengths::toRGB(tmp, cr, cg, cb);
+			for (j=0; j<h; j++) blendpixel(vid,x+29-i,y+j,cr,cg,cb,255);
 		}
 	}
 }

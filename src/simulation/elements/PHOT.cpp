@@ -18,6 +18,7 @@
 #include "simulation/elements/PHOT.h"
 #include "simulation/elements-shared/pyro.h"
 #include "simulation/elements-shared/Element_UI_ctypeWavelengths.h"
+#include "simulation/elements-shared/Wavelengths.hpp"
 
 void Element_PHOT::create_gain_photon(Simulation *sim, int pp)//photons from PHOT going through GLOW
 {
@@ -156,18 +157,7 @@ int PHOT_update(UPDATE_FUNC_ARGS)
 
 int PHOT_graphics(GRAPHICS_FUNC_ARGS)
 {
-	int x = 0;
-	*colr = *colg = *colb = 0;
-	for (x=0; x<12; x++) {
-		*colr += (cpart->ctype >> (x+18)) & 1;
-		*colb += (cpart->ctype >>  x)     & 1;
-	}
-	for (x=0; x<12; x++)
-		*colg += (cpart->ctype >> (x+9))  & 1;
-	x = 624/(*colr+*colg+*colb+1);
-	*colr *= x;
-	*colg *= x;
-	*colb *= x;
+	ElementsShared::Wavelengths::toRGB_noLimit(cpart->ctype, *colr, *colg, *colb);
 
 	*firea = 100;
 	*firer = *colr;

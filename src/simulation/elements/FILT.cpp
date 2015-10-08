@@ -16,6 +16,7 @@
 #include "simulation/ElementsCommon.h"
 #include "simulation/elements/FILT.h"
 #include "simulation/elements-shared/Element_UI_ctypeWavelengths.h"
+#include "simulation/elements-shared/Wavelengths.hpp"
 #include <sstream>
 
 class Element_UI_FILT : public Element_UI_ctypeWavelengths
@@ -47,24 +48,13 @@ public:
 
 int FILT_graphics(GRAPHICS_FUNC_ARGS)
 {
-	int x, ctype = Element_FILT::getWavelengths(sim, cpart);
-	*colg = 0;
-	*colb = 0;
-	*colr = 0;
-	for (x=0; x<12; x++) {
-		*colr += (ctype >> (x+18)) & 1;
-		*colb += (ctype >>  x)     & 1;
-	}
-	for (x=0; x<12; x++)
-		*colg += (ctype >> (x+9))  & 1;
-	x = 624/(*colr+*colg+*colb+1);
+	int ctype = Element_FILT::getWavelengths(sim, cpart);
+	if (ctype&0x3FFFFFFF)
+		ElementsShared::Wavelengths::toRGB_noLimit(ctype, *colr, *colg, *colb);
 	if (cpart->life>0 && cpart->life<=4)
 		*cola = 127+cpart->life*30;
 	else
 		*cola = 127;
-	*colr *= x;
-	*colg *= x;
-	*colb *= x;
 	*pixel_mode &= ~PMODE;
 	*pixel_mode |= PMODE_BLEND;
 	return 0;

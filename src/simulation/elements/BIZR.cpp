@@ -15,6 +15,7 @@
 
 #include "simulation/ElementsCommon.h"
 #include "simulation/elements-shared/Element_UI_ctypeWavelengths.h"
+#include "simulation/elements-shared/Wavelengths.hpp"
 
 //Used by ALL 3 BIZR states
 int BIZR_update(UPDATE_FUNC_ARGS)
@@ -61,20 +62,7 @@ int BIZR_graphics(GRAPHICS_FUNC_ARGS) //BIZR, BIZRG, BIZRS
 {
 	if (cpart->ctype&0x3FFFFFFF)
 	{
-		int x = 0;
-		*colg = 0;
-		*colb = 0;
-		*colr = 0;
-		for (x=0; x<12; x++) {
-			*colr += (cpart->ctype >> (x+18)) & 1;
-			*colb += (cpart->ctype >>  x)     & 1;
-		}
-		for (x=0; x<12; x++)
-			*colg += (cpart->ctype >> (x+9))  & 1;
-		x = *colr+*colg+*colb+1;
-		*colr = *colr*624/x;
-		*colg = *colg*624/x;
-		*colb = *colb*624/x;
+		ElementsShared::Wavelengths::toRGB_noLimit(cpart->ctype, *colr, *colg, *colb);
 	}
 	if(fabs(cpart->vx)+fabs(cpart->vy)>0)
 	{

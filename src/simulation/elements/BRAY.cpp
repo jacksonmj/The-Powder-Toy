@@ -15,28 +15,17 @@
 
 #include "simulation/ElementsCommon.h"
 #include "simulation/elements-shared/Element_UI_ctypeWavelengths.h"
+#include "simulation/elements-shared/Wavelengths.hpp"
 
 int BRAY_graphics(GRAPHICS_FUNC_ARGS)
 {
-	int x, trans = 255;
+	int trans = 255;
 	if(cpart->tmp==0)
 	{
 		trans = cpart->life * 7;
 		if (trans>255) trans = 255;
 		if (cpart->ctype&0x3FFFFFFF) {
-			*colg = 0;
-			*colb = 0;
-			*colr = 0;
-			for (x=0; x<12; x++) {
-				*colr += (cpart->ctype >> (x+18)) & 1;
-				*colb += (cpart->ctype >>  x)     & 1;
-			}
-			for (x=0; x<12; x++)
-				*colg += (cpart->ctype >> (x+9))  & 1;
-			x = 624/(*colr+*colg+*colb+1);
-			*colr *= x;
-			*colg *= x;
-			*colb *= x;
+			ElementsShared::Wavelengths::toRGB_noLimit(cpart->ctype, *colr, *colg, *colb);
 		}
 	}
 	else if(cpart->tmp==1)
@@ -44,19 +33,7 @@ int BRAY_graphics(GRAPHICS_FUNC_ARGS)
 		trans = cpart->life/4;
 		if (trans>255) trans = 255;
 		if (cpart->ctype&0x3FFFFFFF) {
-			*colg = 0;
-			*colb = 0;
-			*colr = 0;
-			for (x=0; x<12; x++) {
-				*colr += (cpart->ctype >> (x+18)) & 1;
-				*colb += (cpart->ctype >>  x)     & 1;
-			}
-			for (x=0; x<12; x++)
-				*colg += (cpart->ctype >> (x+9))  & 1;
-			x = 624/(*colr+*colg+*colb+1);
-			*colr *= x;
-			*colg *= x;
-			*colb *= x;
+			ElementsShared::Wavelengths::toRGB_noLimit(cpart->ctype, *colr, *colg, *colb);
 		}
 	}
 	else if(cpart->tmp==2)
