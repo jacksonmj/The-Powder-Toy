@@ -274,10 +274,22 @@ protected:
 public:
 	ParticleMapEntry& operator() (SimPosI pos)
 	{
+#ifdef DEBUG_BOUNDSCHECK
+		if (pos.x<0 || pos.x>=XRES || pos.y<0 || pos.y>=YRES)
+		{
+			throw std::invalid_argument("Out of bounds");
+		}
+#endif
 		return pmap[pos.y][pos.x];
 	}
 	ParticleMapEntry const& operator() (SimPosI pos) const
 	{
+#ifdef DEBUG_BOUNDSCHECK
+		if (pos.x<0 || pos.x>=XRES || pos.y<0 || pos.y>=YRES)
+		{
+			throw std::invalid_argument("Out of bounds");
+		}
+#endif
 		return pmap[pos.y][pos.x];
 	}
 	ParticleMapEntry* operator[] (int y)

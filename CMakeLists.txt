@@ -68,6 +68,11 @@ if (CheckPartsAlloc)
 	add_definitions(-DDEBUG_PARTSALLOC=1)
 endif(CheckPartsAlloc)
 
+option(CheckBounds "Enable extra bounds checking which should, in the absence of bugs, be unnecessary" OFF)
+if (CheckBounds)
+	add_definitions(-DDEBUG_BOUNDSCHECK=1)
+endif(CheckBounds)
+
 option(NoWarnings "Disable compiler warnings" OFF)
 if(NoWarnings)
 	if("${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
