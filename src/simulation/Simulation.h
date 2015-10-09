@@ -294,17 +294,16 @@ public:
 			const int mainWidth = XRES-CELL*2,  mainHeight = YRES-CELL*2;
 			if (p.x >= CELL-mainWidth && p.x < XRES-CELL+mainWidth && p.y >= CELL-mainHeight && p.y < YRES-CELL+mainHeight)
 			{
-				// Not far out of bounds, so wrapping can be done with a single add/subtract
-				SimPosDI diff = SimPosDI::zero();
+				// Not far out of bounds, so wrapping can be done with single add/subtracts
 				if (p.x < CELL)
-					diff.x = XRES-CELL*2;
+					p.x += mainWidth;
 				else if (p.x >= XRES-CELL)
-					diff.x = -(XRES-CELL*2);
+					p.x -= mainWidth;
 				if (p.y < CELL)
-					diff.y = YRES-CELL*2;
+					p.y += mainHeight;
 				else if (p.y >= YRES-CELL)
-					diff.y = -(YRES-CELL*2);
-				return p+diff;
+					p.y -= mainHeight;
+				return p;
 			}
 			else
 			{
@@ -325,7 +324,7 @@ public:
 			{
 				if (changed)
 					*changed = false;
-				return p;
+				return pf;
 			}
 			// Need to wrap
 			if (changed)
@@ -333,17 +332,16 @@ public:
 			const int mainWidth = XRES-CELL*2,  mainHeight = YRES-CELL*2;
 			if (p.x >= CELL-mainWidth && p.x < XRES-CELL+mainWidth && p.y >= CELL-mainHeight && p.y < YRES-CELL+mainHeight)
 			{
-				// Not far out of bounds, so wrapping can be done with a single add/subtract
-				SimPosDF diff = SimPosDF::zero();
+				// Not far out of bounds, so wrapping can be done with single add/subtracts
 				if (p.x < CELL)
-					diff.x = XRES-CELL*2;
+					pf.x += mainWidth;
 				else if (p.x >= XRES-CELL)
-					diff.x = -(XRES-CELL*2);
+					pf.x -= mainWidth;
 				if (p.y < CELL)
-					diff.y = YRES-CELL*2;
+					pf.y += mainHeight;
 				else if (p.y >= YRES-CELL)
-					diff.y = -(YRES-CELL*2);
-				return SimPosFT(pf+diff);
+					pf.y -= mainHeight;
+				return SimPosFT(pf);
 			}
 			else
 			{
