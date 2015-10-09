@@ -88,7 +88,7 @@ void FIRE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Gravity = -0.1f;
 	elem->Diffusion = 0.00f;
 	elem->PressureAdd_NoAmbHeat = 0.001f	* CFDS;
-	elem->Falldown = 1;
+	elem->Falldown = 0;
 
 	elem->Flammable = 0;
 	elem->Explosive = 0;
