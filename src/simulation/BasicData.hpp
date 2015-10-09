@@ -258,7 +258,7 @@ public:
 		if (partsFree[i])
 			printf("Particle moved after free: %d\n", i);
 		if (SimPosI(SimPosF(parts[i].x, parts[i].y)) != currPos)
-			printf("Provided original coords wrong for part_set_pos (particle %d): alleged %d,%d actual %d,%d\n", i, x, y, (int)(parts[i].x+0.5f), (int)(parts[i].y+0.5f));
+			printf("Provided original coords wrong for part_set_pos (particle %d): alleged %d,%d actual %d,%d\n", i, currPos.x, currPos.y, (int)(parts[i].x+0.5f), (int)(parts[i].y+0.5f));
 #endif
 
 		SimPosI newPosI = newPosF;
