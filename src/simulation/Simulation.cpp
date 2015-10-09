@@ -1165,6 +1165,59 @@ MoveResult::Code Simulation::part_move(int i, SimPosI srcPos, SimPosF destPosF)
 	return MoveResult::DESTROYED;
 }
 
+void Simulation::interpolateMove(InterpolateMoveResult &result, bool interact, int t, SimPosF start, SimPosDF delta, bool limitDelta, float stepSize)
+{
+	// interpolate to see if there is anything in the way
+
+	float deltaSize = delta.maxComponent();
+	if (deltaSize < stepSize)
+	{
+		// too small to need interpolation
+		result.clearf = start;
+		result.clear = result.clearf;
+		result.destf = SimPosFT(start+delta);
+		result.dest = result.destf;
+		result.destCode = part_canMove(t, result.dest);
+	}
+	else
+	{
+		if (deltaSize > maxVelocity && limitDelta)
+		{
+			delta *= maxVelocity/deltaSize;
+			deltaSize = maxVelocity;
+			result.limitApplied = true;
+		}
+		SimPosDF step = delta * stepSize/deltaSize;
+		SimPosI dest, destf = start;
+		MoveResult::Code destCode = MoveResult::ALLOW;
+		while (1)
+		{
+			deltaSize -= stepSize;
+			dest = destf = pos_handleEdges(destf+step);
+			if (deltaSize <= 0.0f)
+			{
+				// finished interpolation, nothing found
+				destf = pos_handleEdges(start+delta);
+				break;
+			}
+			destCode = part_canMove(t, dest);
+			if (!MoveResult::AllowInterpolation(destCode))
+			{
+				// found an obstacle
+				break;
+			}
+			if (interact)
+				walls.detect(dest);
+		}
+		result.clearf = SimPosFT(destf-delta);
+		result.clear = result.clearf;
+		result.destf = SimPosFT(destf);
+		result.dest = result.destf;
+		result.destCode = destCode;
+	}
+}
+
+
 //the main function for updating particles
 void Simulation::UpdateParticles()
 {
@@ -1925,83 +1978,22 @@ killed:
 			if (transitionOccurred)
 				continue;
 
-			if (!parts[i].vx&&!parts[i].vy)//if its not moving, skip to next particle, movement code it next
+			if (!parts[i].vx&&!parts[i].vy)//if its not moving, skip to next particle, movement code is next
 				continue;
 
-#if defined(WIN32) && !defined(__GNUC__)
-			mv = max(fabsf(parts[i].vx), fabsf(parts[i].vy));
-#else
-			mv = fmaxf(fabsf(parts[i].vx), fabsf(parts[i].vy));
-#endif
-			if (mv < ISTP)
+			InterpolateMoveResult imove;
+			interpolateMove(imove, true, parts[i]);
+			if (imove.limitApplied)
 			{
-				clear_x = x;
-				clear_y = y;
-				clear_xf = parts[i].x;
-				clear_yf = parts[i].y;
-				fin_xf = clear_xf + parts[i].vx;
-				fin_yf = clear_yf + parts[i].vy;
-				fin_x = (int)(fin_xf+0.5f);
-				fin_y = (int)(fin_yf+0.5f);
+				float deltaSize = std::max(std::abs(parts[i].vx), std::abs(parts[i].vy));
+				parts[i].vx *= maxVelocity/deltaSize;
+				parts[i].vy *= maxVelocity/deltaSize;
 			}
-			else
-			{
-				if (mv > maxVelocity)
-				{
-					parts[i].vx *= maxVelocity/mv;
-					parts[i].vy *= maxVelocity/mv;
-					mv = maxVelocity;
-				}
-				// interpolate to see if there is anything in the way
-				dx = parts[i].vx*ISTP/mv;
-				dy = parts[i].vy*ISTP/mv;
-				fin_xf = parts[i].x;
-				fin_yf = parts[i].y;
-				while (1)
-				{
-					mv -= ISTP;
-					fin_xf += dx;
-					fin_yf += dy;
-					fin_x = (int)(fin_xf+0.5f);
-					fin_y = (int)(fin_yf+0.5f);
-					if (edgeMode == 2)
-					{
-						if (fin_x < CELL)
-							fin_xf += XRES-CELL*2;
-						if (fin_x >= XRES-CELL)
-							fin_xf -= XRES-CELL*2;
-						if (fin_y < CELL)
-							fin_yf += YRES-CELL*2;
-						if (fin_y >= YRES-CELL)
-							fin_yf -= YRES-CELL*2;
-						fin_x = (int)(fin_xf+0.5f);
-						fin_y = (int)(fin_yf+0.5f);
-					}
-					if (mv <= 0.0f)
-					{
-						// finished interpolation, nothing found
-						fin_xf = parts[i].x + parts[i].vx;
-						fin_yf = parts[i].y + parts[i].vy;
-						fin_x = (int)(fin_xf+0.5f);
-						fin_y = (int)(fin_yf+0.5f);
-						clear_xf = fin_xf-dx;
-						clear_yf = fin_yf-dy;
-						clear_x = (int)(clear_xf+0.5f);
-						clear_y = (int)(clear_yf+0.5f);
-						break;
-					}
-					if (!MoveResult::AllowInterpolation(part_canMove(t, fin_x, fin_y)))
-					{
-						// found an obstacle
-						clear_xf = fin_xf-dx;
-						clear_yf = fin_yf-dy;
-						clear_x = (int)(clear_xf+0.5f);
-						clear_y = (int)(clear_yf+0.5f);
-						break;
-					}
-					walls.detect(SimPosI(fin_x, fin_y));
-				}
-			}
+
+			fin_x = imove.dest.x, fin_y = imove.dest.y;
+			clear_x = imove.clear.x, clear_y = imove.clear.y;
+			fin_xf = imove.destf.x, fin_yf = imove.destf.y;
+			clear_xf = imove.clearf.x, clear_yf = imove.clearf.y;
 
 			stagnant = parts[i].flags & FLAG_STAGNANT;
 			parts[i].flags &= ~FLAG_STAGNANT;
@@ -2459,3 +2451,4 @@ void Simulation_Compat_CopyData(Simulation* sim)
 			quickmenu[i].variable = &sim->ambientHeatEnabled;
 	}
 }
+

@@ -153,6 +153,16 @@ public:
 	}
 };
 
+class InterpolateMoveResult
+{
+public:
+	SimPosI dest, clear;
+	SimPosF destf, clearf;
+	MoveResult::Code destCode;
+	bool limitApplied;
+	InterpolateMoveResult() : limitApplied(false) {}
+};
+
 class SimulationSharedData;
 
 class Simulation;
@@ -237,6 +247,12 @@ public:
 	MoveResult::Code part_move(int i, SimPosI srcPos, SimPosF destPosF);
 	MoveResult::Code part_canMove(int pt, SimPosI newPos, bool coordCheckDone=false);
 	MoveResult::Code part_canMove_dynamic(int pt, SimPosI newPos, int ri, MoveResult::Code result);
+	void interpolateMove(InterpolateMoveResult& result, bool interact, int t, SimPosF start, SimPosDF delta, bool limitDelta=true, float stepSize=ISTP);
+	void interpolateMove(InterpolateMoveResult& result, bool interact, const particle& p)
+	{
+		interpolateMove(result, interact, p.type, SimPosF(p.x,p.y), SimPosDF(p.vx,p.vy));
+	}
+
 	void InitCanMove();
 	MoveResult::Code part_move(int i, SimPosF newPosF)
 	{ return part_move(i, SimPosF(parts[i].x, parts[i].y), newPosF); }
@@ -266,20 +282,34 @@ public:
 	{
 		if (edgeMode == 2)
 		{
-			SimPosDI diff = SimPosDI::zero();
-			if (p.x < CELL)
-				diff.x = XRES-CELL*2;
-			if (p.x >= XRES-CELL)
-				diff.x = -(XRES-CELL*2);
-			if (p.y < CELL)
-				diff.y = YRES-CELL*2;
-			if (p.y >= YRES-CELL)
-				diff.y = -(YRES-CELL*2);
-			if (diff != SimPosDI::zero())
+			if (pos_inMainArea(p))
 			{
 				if (changed)
-					*changed = true;
-				return p + diff;
+					*changed = false;
+				return p;
+			}
+			// Need to wrap
+			if (changed)
+				*changed = true;
+			const int mainWidth = XRES-CELL*2,  mainHeight = YRES-CELL*2;
+			if (p.x >= CELL-mainWidth && p.x < XRES-CELL+mainWidth && p.y >= CELL-mainHeight && p.y < YRES-CELL+mainHeight)
+			{
+				// Not far out of bounds, so wrapping can be done with a single add/subtract
+				SimPosDI diff = SimPosDI::zero();
+				if (p.x < CELL)
+					diff.x = XRES-CELL*2;
+				else if (p.x >= XRES-CELL)
+					diff.x = -(XRES-CELL*2);
+				if (p.y < CELL)
+					diff.y = YRES-CELL*2;
+				else if (p.y >= YRES-CELL)
+					diff.y = -(YRES-CELL*2);
+				return p+diff;
+			}
+			else
+			{
+				// Large distance out of bounds, so need to use slower method
+				return pos_wrapMainArea(p);
 			}
 		}
 		if (changed)
@@ -290,21 +320,35 @@ public:
 	{
 		if (edgeMode == 2)
 		{
-			SimPosI p = pf;
-			SimPosDF diff = SimPosDF::zero();
-			if (p.x < CELL)
-				diff.x = XRES-CELL*2;
-			if (p.x >= XRES-CELL)
-				diff.x = -(XRES-CELL*2);
-			if (p.y < CELL)
-				diff.y = YRES-CELL*2;
-			if (p.y >= YRES-CELL)
-				diff.y = -(YRES-CELL*2);
-			if (diff != SimPosDF::zero())
+			SimPosI p(pf);
+			if (pos_inMainArea(p))
 			{
 				if (changed)
-					*changed = true;
+					*changed = false;
+				return p;
+			}
+			// Need to wrap
+			if (changed)
+				*changed = true;
+			const int mainWidth = XRES-CELL*2,  mainHeight = YRES-CELL*2;
+			if (p.x >= CELL-mainWidth && p.x < XRES-CELL+mainWidth && p.y >= CELL-mainHeight && p.y < YRES-CELL+mainHeight)
+			{
+				// Not far out of bounds, so wrapping can be done with a single add/subtract
+				SimPosDF diff = SimPosDF::zero();
+				if (p.x < CELL)
+					diff.x = XRES-CELL*2;
+				else if (p.x >= XRES-CELL)
+					diff.x = -(XRES-CELL*2);
+				if (p.y < CELL)
+					diff.y = YRES-CELL*2;
+				else if (p.y >= YRES-CELL)
+					diff.y = -(YRES-CELL*2);
 				return SimPosFT(pf+diff);
+			}
+			else
+			{
+				// Large distance out of bounds, so need to use slower method
+				return pos_wrapMainArea(pf);
 			}
 		}
 		if (changed)

@@ -131,6 +131,31 @@ public:
 	{
 		return SimPosCell(tptmath::clamp_int(p.x, 1, XRES/CELL-2), tptmath::clamp_int(p.y, 1, YRES/CELL-2));
 	}
+	SimPosI pos_wrapMainArea(SimPosI p) const
+	{
+		bool x_ok = (p.x>=CELL && p.x<XRES-CELL);
+		bool y_ok = (p.y>=CELL && p.y<YRES-CELL);
+		if (x_ok && y_ok)
+			return p;
+		if (!x_ok)
+			p.x = tptmath::remainder_p(p.x-CELL, XRES-CELL*2)+CELL;
+		if (!y_ok)
+			p.y = tptmath::remainder_p(p.y-CELL, YRES-CELL*2)+CELL;
+		return p;
+	}
+	SimPosF pos_wrapMainArea(SimPosF pf) const
+	{
+		SimPosI p(pf);
+		bool x_ok = (p.x>=CELL && p.x<XRES-CELL);
+		bool y_ok = (p.y>=CELL && p.y<YRES-CELL);
+		if (x_ok && y_ok)
+			return pf;
+		if (!x_ok)
+			pf.x = tptmath::remainder_p(pf.x-CELL, float(XRES-CELL*2))+CELL;
+		if (!y_ok)
+			pf.y = tptmath::remainder_p(pf.y-CELL, float(YRES-CELL*2))+CELL;
+		return pf;
+	}
 
 	SimPosI pos_centre() const
 	{

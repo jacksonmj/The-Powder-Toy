@@ -16,6 +16,8 @@
 #ifndef tptmath_h
 #define tptmath_h
 
+#include <cmath>
+
 class tptmath
 {
 public:
@@ -42,6 +44,17 @@ public:
 	static constexpr int clamp_int(int x, int min, int max)
 	{
 		return (x>max) ? max : ((x<min) ? min : x);
+	}
+	// Find the positive remainder of x/y, with y assumed to be positive
+	// (x%y but with more helpful handling of negative x)
+	//  e.g. remainder_p(5,3)=2; remainder_p(-5,3) = 1
+	static constexpr int remainder_p(int x, int y)
+	{
+		return (x % y) + (x>=0 ? 0 : y);
+	}
+	static constexpr float remainder_p(float x, float y)
+	{
+		return std::fmod(x, y) + (x>=0 ? 0 : y);
 	}
 };
 
