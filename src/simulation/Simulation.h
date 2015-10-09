@@ -245,7 +245,7 @@ public:
 	bool isWallBlocking(SimPosCell c, int type);
 	bool isWallDeadly(SimPosCell c, int type);
 	MoveResult::Code part_move(int i, SimPosI srcPos, SimPosF destPosF);
-	MoveResult::Code part_canMove(int pt, SimPosI newPos, bool coordCheckDone=false);
+	MoveResult::Code part_canMove(int pt, SimPosI newPos, bool coordHandleEdgesDone=false);
 	MoveResult::Code part_canMove_dynamic(int pt, SimPosI newPos, int ri, MoveResult::Code result);
 	void interpolateMove(InterpolateMoveResult& result, bool interact, int t, SimPosF start, SimPosDF delta, bool limitDelta=true, float stepSize=ISTP);
 	void interpolateMove(InterpolateMoveResult& result, bool interact, const particle& p)

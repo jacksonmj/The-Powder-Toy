@@ -819,17 +819,17 @@ MoveResult::Code Simulation::part_canMove_dynamic(int pt, SimPosI newPos, int ri
 	return result;
 }
 
-MoveResult::Code Simulation::part_canMove(int pt, SimPosI newPos, bool coordCheckDone)
+MoveResult::Code Simulation::part_canMove(int pt, SimPosI newPos, bool coordHandleEdgesDone)
 {
 	MoveResult::Code result = MoveResult::ALLOW;
 
-	if (!coordCheckDone)
-	{
+	if (!coordHandleEdgesDone)
 		newPos = pos_handleEdges(newPos);
+	if (!pos_inMainArea(newPos))
+	{
 		if (!pos_isValid(newPos))
-		{
 			return MoveResult::DESTROY;
-		}
+		result = MoveResult::ALLOW_BUT_SLOW;
 	}
 
 	if (pmap(newPos).count(PMapCategory::NotEnergy))
@@ -879,7 +879,7 @@ MoveResult::Code Simulation::part_move(int i, SimPosI srcPos, SimPosF destPosF)
 	if (parts[i].type == PT_NONE)
 		return MoveResult::DESTROYED;
 
-	if (!pos_inMainArea(destPos))
+	if (!pos_isValid(destPos))
 	{
 		part_kill(i);
 		return MoveResult::DESTROYED;
@@ -1209,7 +1209,7 @@ void Simulation::interpolateMove(InterpolateMoveResult &result, bool interact, i
 			if (interact)
 				walls.detect(dest);
 		}
-		result.clearf = SimPosFT(destf-delta);
+		result.clearf = SimPosFT(destf-step);
 		result.clear = result.clearf;
 		result.destf = SimPosFT(destf);
 		result.dest = result.destf;
