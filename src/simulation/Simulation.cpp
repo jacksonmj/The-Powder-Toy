@@ -285,7 +285,7 @@ int Simulation::part_create(int p, SimPosF newPosF, int t)
 	// This function is only for actually creating particles.
 	// Not for tools, or changing things into spark, or special brush things like setting clone ctype.
 
-	newPosF = SimPosFT(newPosF);
+	newPosF = pos_handleEdges(SimPosF(SimPosFT(newPosF)));
 	SimPosI newPos = newPosF;
 
 	int i, oldType = PT_NONE;
