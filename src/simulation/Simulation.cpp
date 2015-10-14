@@ -1190,6 +1190,7 @@ void Simulation::interpolateMove(InterpolateMoveResult &result, bool interact, i
 		SimPosDF step = delta * stepSize/deltaSize;
 		SimPosI dest, destf = start;
 		MoveResult::Code destCode = MoveResult::ALLOW;
+		bool closedEholeStart = walls.isClosedEHole(start);
 		while (1)
 		{
 			deltaSize -= stepSize;
@@ -1201,7 +1202,7 @@ void Simulation::interpolateMove(InterpolateMoveResult &result, bool interact, i
 				break;
 			}
 			destCode = part_canMove(t, dest);
-			if (!MoveResult::AllowInterpolation(destCode))
+			if (!MoveResult::AllowInterpolation(destCode) || walls.isClosedEHole(dest)!=closedEholeStart)
 			{
 				// found an obstacle
 				break;
