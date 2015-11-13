@@ -29,8 +29,8 @@ protected:
 	// Count the number of 1-bits in x (valid for x length of 14 bits)
 	static unsigned int popcount(unsigned int x)
 	{
-#if defined(__POPCNT__)
-		return _popcnt32(x);
+#if defined(__POPCNT__) && !defined(_MSC_VER)
+		return _mm_popcnt_u32(x);
 #elif uint_fast32_t == uint_64_t
 		// From http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSet64
 		// Valid for 14 bit numbers.

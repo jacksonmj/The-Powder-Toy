@@ -29,8 +29,8 @@ TEST_CASE("Wavelengths popcount", "")
 	{
 		unsigned int correctPopcount(unsigned int x)
 		{
-		#if defined(__POPCNT__)
-			return _popcnt32(x); //builtin assumed to be correct...
+		#if defined(__POPCNT__) && !defined(_MSC_VER)
+			return _mm_popcnt_u32(x); //builtin assumed to be correct...
 		#else
 			int count = 0;
 			for (int i=0; i<bitCount; i++) {
