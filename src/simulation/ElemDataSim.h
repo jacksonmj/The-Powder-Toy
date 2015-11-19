@@ -25,7 +25,8 @@ protected:
 	int elementId;
 public:
 	ElemDataSim(Simulation *s, int t_) : sim(s), elementId(t_) {}
-	virtual ~ElemDataSim() {}
+	virtual bool Check();
+	virtual ~ElemDataSim();
 };
 
 #endif

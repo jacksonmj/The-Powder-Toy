@@ -74,6 +74,7 @@ public:
 	particle * StoreParticle(Simulation *sim, int store_i, int slot);
 	particle * AllocParticle(int slot);
 	void ClearContents();
+	bool Check();
 };
 
 class PRTI_ElemDataSim : public ElemDataSim_channels
@@ -86,6 +87,7 @@ public:
 	int channelCount;
 	PRTI_ElemDataSim(Simulation *s, int t, float chanStep=100, int chanCount=-1);
 	~PRTI_ElemDataSim();
+	bool Check();
 	void ClearPortalContents();
 	int GetChannelId(particle &p)
 	{

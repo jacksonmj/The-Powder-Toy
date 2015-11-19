@@ -36,6 +36,14 @@
 #include "simulation/elements/PRTI.h"
 
 
+ElemDataSim::~ElemDataSim()
+{}
+
+bool ElemDataSim::Check()
+{
+	return true;
+}
+
 std::array<SimPosDI,9> const Simulation::posdata_D1 =
 {{{-1,-1},{ 0,-1},{ 1,-1},  {-1, 0},{ 0, 0},{ 1, 0},  {-1, 1},{ 0, 1},{ 1, 1}}};
 std::array<SimPosDI,8> const Simulation::posdata_D1_noCentre =
@@ -107,6 +115,12 @@ bool Simulation::Check()
 {
 	bool isGood = true;
 	int i, x, y;
+
+	for (i=0; i<PT_NUM; i++)
+	{
+		if (elemData(i))
+			isGood = elemData(i)->Check() && isGood;
+	}
 
 	for (y=0; y<YRES; y++)
 	{
@@ -191,7 +205,7 @@ bool Simulation::Check()
 			}
 		}
 	}
-	return isGood;
+
 	for (i=0; i<NPART; i++)
 	{
 		if (parts[i].type)

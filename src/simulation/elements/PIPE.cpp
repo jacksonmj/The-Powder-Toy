@@ -222,8 +222,8 @@ void pushParticle(Simulation *sim, int i, int count, int original)
 						PIPE_transfer_pipe_to_pipe(sim, parts+i, parts+ri);
 						if (ri > original)
 							parts[ri].flags |= PFLAG_NORMALSPEED;//skip particle push, normalizes speed
-						count++;
-						pushParticle(sim, ri, count,original);
+						pushParticle(sim, ri, count+1, original);
+						break;
 					}
 					else if (rt == PT_PRTI) //Pass particles into PRTI for a pipe speed increase
 					{
@@ -233,11 +233,12 @@ void pushParticle(Simulation *sim, int i, int count, int original)
 						if (storePart)
 						{
 							PIPE_transfer_pipe_to_part(sim, parts+i, storePart);
-							count++;
 							break;
 						}
 					}
 				}
+				if (!(parts[i].tmp&0xFF))
+					break;
 			}
 		}
 	}
@@ -253,8 +254,7 @@ void pushParticle(Simulation *sim, int i, int count, int original)
 				PIPE_transfer_pipe_to_pipe(sim, parts+i, parts+ri);
 				if (ri > original)
 					parts[ri].flags |= PFLAG_NORMALSPEED;//skip particle push, normalizes speed
-				count++;
-				pushParticle(sim,ri,count,original);
+				pushParticle(sim,ri,count+1,original);
 				foundSomething = true;
 			}
 			else if (rt == PT_PRTI) //Pass particles into PRTI for a pipe speed increase
@@ -265,7 +265,6 @@ void pushParticle(Simulation *sim, int i, int count, int original)
 				if (storePart)
 				{
 					PIPE_transfer_pipe_to_part(sim, parts+i, storePart);
-					count++;
 					break;
 				}
 				foundSomething = true;

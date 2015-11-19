@@ -18,6 +18,8 @@
 #include "simulation/elements/SOAP.h"
 #include "simulation/elements/STKM.h"
 
+#include <iostream>
+
 /*these are the count values of where the particle gets stored, depending on where it came from
    0 1 2
    7 . 3
@@ -54,6 +56,20 @@ void PRTI_ElemDataSim::ClearPortalContents()
 		channels[i].ClearContents();
 }
 
+bool PRTI_ElemDataSim::Check()
+{
+	bool ok = true;
+	for (int i=0; i<channelCount; i++)
+	{
+		if (!channels[i].Check())
+		{
+			std::cout << "Check failed for portal channel " << i << std::endl;
+			ok = false;
+		}
+	}
+	return ok;
+}
+
 void PortalChannel::ClearContents()
 {
 	memset(portalp, 0, sizeof(portalp));
@@ -64,7 +80,7 @@ particle * PortalChannel::AllocParticle(int slot)
 {
 	if (particleCount[slot]>=storageSize)
 		return NULL;
-	for (int nnx=0; nnx<80; nnx++)
+	for (int nnx=0; nnx<storageSize; nnx++)
 		if (!portalp[slot][nnx].type)
 		{
 			particleCount[slot]++;
@@ -87,7 +103,7 @@ particle * PortalChannel::StoreParticle(Simulation *sim, int store_i, int slot)
 		if (stkdata && stkdata->part != &sim->parts[store_i])
 			return NULL;
 	}
-	for (int nnx=0; nnx<80; nnx++)
+	for (int nnx=0; nnx<storageSize; nnx++)
 		if (!portalp[slot][nnx].type)
 		{
 			portalp[slot][nnx] = sim->parts[store_i];
@@ -110,6 +126,28 @@ particle * PortalChannel::StoreParticle(Simulation *sim, int store_i, int slot)
 			return &portalp[slot][nnx];
 		}
 	return NULL;
+}
+
+bool PortalChannel::Check()
+{
+	bool ok = true;
+	for (int slot=0; slot<8; slot++)
+	{
+		int count = 0;
+		for (int i=0; i<storageSize; i++)
+		{
+			if (portalp[slot][i].type)
+			{
+				count++;
+			}
+		}
+		if (count!=particleCount[slot])
+		{
+			std::cout << "Portal particle count incorrect for slot " << slot << " (count " << particleCount[slot] << " actual " << count << ")" << std::endl;
+			ok = false;
+		}
+	}
+	return ok;
 }
 
 int PRTI_update(UPDATE_FUNC_ARGS)
