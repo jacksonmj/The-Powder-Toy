@@ -66,7 +66,7 @@ else()
 endif()
 
 
-option(PreferStatic "Prefer linking to static libraries in most cases" ON)
+option(PreferStatic "Prefer linking to static libraries in most cases" OFF)
 set(CMAKE_FIND_LIBRARY_SUFFIXES_ORIG ${CMAKE_FIND_LIBRARY_SUFFIXES})
 set(CMAKE_FIND_LIBRARY_SUFFIXES_ONLY_STATIC .a;)
 

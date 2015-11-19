@@ -44,12 +44,14 @@ CMake option name              Default
 -----------------------------------------
 GravityFFT                       ON
 LuaConsole                       ON
-PreferStatic                     ON
+PreferStatic                     OFF
 NoWarnings                       OFF
 Optimisations                    ON
 CheckPartsAlloc                  OFF
+CheckBounds                      OFF
 Tests                            maybe (tri-state)
 simdpp                           maybe (tri-state)
+TargetArch                       native
 
 To change an option, add -DOptionName=value to the end of the cmake 
 command. For example, disable optimisations by adding 
@@ -71,6 +73,10 @@ GravityFFT requires the single precision version of the FFTW3 library
 
 libsimdpp can optionally be used to make some functions faster, by using SIMD
 instructions. 
+
+If you get error messages mentioning "-march=native", try setting TargetArch
+to "none". If compiling binaries to distribute to other people, you should
+set TargetArch to something else, such as x86 or x86-legacy, to ensure
 
 Most libraries are linked statically where available, to avoid having 
 to mess around with DLLs for Windows, and to try to avoid issues due to 
