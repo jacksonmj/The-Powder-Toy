@@ -801,7 +801,7 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 		for (const Sign &sign: globalSim->signs)
 		{
 			std::string text = sign.getRawText();
-			if(text[0] && sign.pos.inArea(SimPosI(orig_x0, orig_y0), SimPosDI(orig_w, orig_h)))
+			if(text.length() && sign.pos.inArea(SimPosI(orig_x0, orig_y0), SimPosDI(orig_w, orig_h)))
 			{
 				bson_append_start_object(&b, "sign");
 				bson_append_string(&b, "text", text.c_str());

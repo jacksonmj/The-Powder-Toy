@@ -61,11 +61,20 @@ public:
 	void setTarget(std::string newValue);
 };
 
-class Signs : public std::vector<Sign>
+class Signs : protected std::vector<Sign>
 {
 public:
+	using vec = std::vector<Sign>;
+	using vec::erase;
+	using vec::operator[];
+	using vec::size;
+	using vec::begin;
+	using vec::end;
+	using vec::rbegin;
+	using vec::rend;
+	using vec::clear;
+
 	void erase(Sign& eraseSign);
-	using std::vector<Sign>::erase;
 	void remove_if(std::function<bool(Sign&)> pred);
 	void eraseArea(SimPosI topLeft, SimPosDI size);
 	Sign *add();
