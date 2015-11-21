@@ -70,6 +70,17 @@ public:
 	{ return (lhs.x!=rhs.x || lhs.y!=rhs.y); }
 };
 
+template <class Self, class Delta>
+class SimPos_pos_cmp
+{
+public:
+	bool inArea(const Self offset, const Delta size) const
+	{
+		Self const p(*static_cast<const Self*>(this));
+		return (p.x>=offset.x && p.y>=offset.y && p.x<offset.x+size.x && p.y<offset.y+size.y);
+	}
+};
+
 template <class Self, class DiffType>
 class SimPos_pos_addsub
 {
@@ -350,6 +361,7 @@ public:
 
 class SimPosF :
 	public detail::SimPos_common_cmp<SimPosF>,
+	public detail::SimPos_pos_cmp<SimPosF, SimPosDF>,
 	public detail::SimPos_pos_addsub_promote<SimPosF, SimPosDI, SimPosF, SimPosDF>,
 	public detail::SimPos_pos_addsub_promote<SimPosF, SimPosDCell, SimPosF, SimPosDF>,
 	public detail::SimPos_pos_addsub<SimPosF, SimPosDF>
@@ -368,6 +380,7 @@ public:
 
 class SimPosI :
 	public detail::SimPos_common_cmp<SimPosI>,
+	public detail::SimPos_pos_cmp<SimPosI, SimPosDI>,
 	public detail::SimPos_pos_addsub_promote<SimPosI, SimPosDCell, SimPosI, SimPosDI>,
 	public detail::SimPos_pos_addsub<SimPosI, SimPosDI>,
 	public detail::SimPos_pos_addsub_promote<SimPosI, SimPosDF, SimPosF, SimPosDF>
@@ -386,6 +399,7 @@ public:
 
 class SimPosCell :
 	public detail::SimPos_common_cmp<SimPosCell>,
+	public detail::SimPos_pos_cmp<SimPosCell, SimPosDCell>,
 	public detail::SimPos_pos_addsub<SimPosCell, SimPosDCell>,
 	public detail::SimPos_pos_addsub_promote<SimPosCell, SimPosDI, SimPosI, SimPosDI>,
 	public detail::SimPos_pos_addsub_promote<SimPosCell, SimPosDF, SimPosF, SimPosDF>

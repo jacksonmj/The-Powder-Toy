@@ -103,6 +103,7 @@ void Simulation::clear()
 	airMode = 0;
 	air.clear();
 	walls.clear();
+	signs.clear();
 
 	hook_cleared.Trigger();
 	Sim_BasicData::clear();

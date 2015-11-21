@@ -18,6 +18,7 @@
 #define SAVE_H
 
 #include "simulation/walls/WallsData.hpp"
+#include "simulation/Sign.hpp"
 
 int change_wallpp(int wt);
 
@@ -27,19 +28,19 @@ void *build_thumb(int *size, int bzip2);
 
 pixel *prerender_save(void *save, int size, int *width, int *height);
 
-void *build_save(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h, const_WallsDataP wallsData, sign signs[MAXSIGNS], void* partsptr);
+void *build_save(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h, const_WallsDataP wallsData, Signs &signs, void* partsptr);
 
-int parse_save(void *save, int size, int replace, int x0, int y0, WallsDataP wallsData, sign signs[MAXSIGNS], void* partsptr, unsigned pmap[YRES][XRES]=NULL);
+int parse_save(void *save, int size, int replace, int x0, int y0, WallsDataP wallsData, Signs &signs, void* partsptr, unsigned pmap[YRES][XRES]=NULL);
 
 pixel *prerender_save_OPS(void *save, int size, int *width, int *height);
 
-void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h, const_WallsDataP wallsData, sign signs[MAXSIGNS], void* partsptr);
+void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h, const_WallsDataP wallsData, Signs &signs, void* partsptr);
 
-int parse_save_OPS(void *save, int size, int replace, int x0, int y0, WallsDataP wallsData, sign signs[MAXSIGNS], void* partsptr, unsigned pmap[YRES][XRES]);
+int parse_save_OPS(void *save, int size, int replace, int x0, int y0, WallsDataP wallsData, Signs &signs, void* partsptr, unsigned pmap[YRES][XRES]);
 
 //Old save parsers, readers
 pixel *prerender_save_PSv(void *save, int size, int *width, int *height);
 
-int parse_save_PSv(void *save, int size, int replace, int x0, int y0, WallsDataP wallsData, sign signs[MAXSIGNS], void* partsptr, unsigned pmap[YRES][XRES]);
+int parse_save_PSv(void *save, int size, int replace, int x0, int y0, WallsDataP wallsData, Signs &signs, void* partsptr, unsigned pmap[YRES][XRES]);
 
 #endif

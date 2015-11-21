@@ -468,13 +468,12 @@ void clear_area(int area_x, int area_y, int area_w, int area_h)
 			globalSim->part_killAll(SimPosI(cx+area_x,cy+area_y));
 		}
 	}
-	for (i=0; i<MAXSIGNS; i++)
-	{
-		if (signs[i].x>=area_x && signs[i].x<area_x+area_w && signs[i].y>=area_y && signs[i].y<area_y+area_h)
-		{
-			signs[i].text[0] = 0;
-		}
-	}
+
+	SimPosI offset(area_x, area_y);
+	SimPosDI size(area_w, area_h);
+	globalSim->signs.remove_if([offset, size](Sign &sign) {
+		return sign.pos.inArea(offset, size);
+	});
 }
 
 void create_box(int x1, int y1, int x2, int y2, int c, int flags)

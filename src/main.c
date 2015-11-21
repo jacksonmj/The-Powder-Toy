@@ -246,8 +246,6 @@ long debug_perf_frametime[DEBUG_PERF_FRAMECOUNT];
 long debug_perf_partitime[DEBUG_PERF_FRAMECOUNT];
 long debug_perf_time = 0;
 
-sign signs[MAXSIGNS];
-
 int numCores = 4;
 
 int core_count()
@@ -326,7 +324,6 @@ void dump_frame(pixel *src, int w, int h, int pitch)
 void clear_sim(void)
 {
 	globalSim->clear();
-	memset(signs, 0, sizeof(signs));
 	MSIGN = -1;
 	memset(gol2, 0, sizeof(gol2));
 	emp_decor = 0;
@@ -435,7 +432,7 @@ void stamp_save(int x, int y, int w, int h)
 	FILE *f;
 	int n;
 	char fn[64], sn[16];
-	void *s=build_save(&n, x, y, w, h, globalSim->walls.getDataPtr(), signs, parts);
+	void *s=build_save(&n, x, y, w, h, globalSim->walls.getDataPtr(), globalSim->signs, parts);
 	if (!s)
 		return;
 
@@ -524,14 +521,14 @@ void del_stamp(int d)
 	stamp_init();
 }
 
-void thumb_cache_inval(char *id);
+void thumb_cache_inval(const char *id);
 
 char *thumb_cache_id[THUMB_CACHE_SIZE];
 void *thumb_cache_data[THUMB_CACHE_SIZE];
 int thumb_cache_size[THUMB_CACHE_SIZE];
 int thumb_cache_lru[THUMB_CACHE_SIZE];
 
-void thumb_cache_inval(char *id)
+void thumb_cache_inval(const char *id)
 {
 	int i,j;
 	for (i=0; i<THUMB_CACHE_SIZE; i++)
@@ -546,7 +543,7 @@ void thumb_cache_inval(char *id)
 		if (thumb_cache_lru[j] > thumb_cache_lru[i])
 			thumb_cache_lru[j]--;
 }
-void thumb_cache_add(char *id, void *thumb, int size)
+void thumb_cache_add(const char *id, void *thumb, int size)
 {
 	int i,m=-1,j=-1;
 	thumb_cache_inval(id);
@@ -573,7 +570,7 @@ void thumb_cache_add(char *id, void *thumb, int size)
 	thumb_cache_size[i] = size;
 	thumb_cache_lru[i] = 0;
 }
-int thumb_cache_find(char *id, void **thumb, int *size)
+int thumb_cache_find(const char *id, void **thumb, int *size)
 {
 	int i,j;
 	for (i=0; i<THUMB_CACHE_SIZE; i++)
@@ -1144,7 +1141,7 @@ int main(int argc, char *argv[])
 			
 			svf_last = saveDataOpen;
 			svf_lsize = saveDataOpenSize;
-			if(parse_save(saveDataOpen, saveDataOpenSize, 1, 0, 0, globalSim->walls.getDataPtr(), signs, parts))
+			if(parse_save(saveDataOpen, saveDataOpenSize, 1, 0, 0, globalSim->walls.getDataPtr(), globalSim->signs, parts))
 			{
 				saveOpenError = 1;
 				svf_last = NULL;
@@ -2120,7 +2117,7 @@ int main(int argc, char *argv[])
 			if (load_y<0) load_y=0;
 			if (bq==1 && !b)
 			{
-				parse_save(load_data, load_size, 0, load_x, load_y, globalSim->walls.getDataPtr(), signs, parts);
+				parse_save(load_data, load_size, 0, load_x, load_y, globalSim->walls.getDataPtr(), globalSim->signs, parts);
 				free(load_data);
 				free(load_img);
 				load_mode = 0;
@@ -2176,13 +2173,13 @@ int main(int argc, char *argv[])
 				{
 					if (copy_mode==1)//CTRL-C, copy
 					{
-						clipboard_data=build_save(&clipboard_length, save_x, save_y, save_w, save_h, globalSim->walls.getDataPtr(), signs, parts);
+						clipboard_data=build_save(&clipboard_length, save_x, save_y, save_w, save_h, globalSim->walls.getDataPtr(), globalSim->signs, parts);
 						if (clipboard_data)
 							clipboard_ready = 1;
 					}
 					else if (copy_mode==2)//CTRL-X, cut
 					{
-						clipboard_data=build_save(&clipboard_length, save_x, save_y, save_w, save_h, globalSim->walls.getDataPtr(), signs, parts);
+						clipboard_data=build_save(&clipboard_length, save_x, save_y, save_w, save_h, globalSim->walls.getDataPtr(), globalSim->signs, parts);
 						if (clipboard_data)
 						{
 							clipboard_ready = 1;
@@ -2319,7 +2316,7 @@ int main(int argc, char *argv[])
 					if (x>=19 && x<=35 && svf_last && !bq) {
 						//int tpval = sys_pause;
 						if (b == 1 || !strncmp(svf_id,"",8))
-							parse_save(svf_last, svf_lsize, 1, 0, 0, globalSim->walls.getDataPtr(), signs, parts);
+							parse_save(svf_last, svf_lsize, 1, 0, 0, globalSim->walls.getDataPtr(), globalSim->signs, parts);
 						else
 							open_ui(vid_buf, svf_id, NULL);
 						//sys_pause = tpval;
@@ -2335,54 +2332,56 @@ int main(int argc, char *argv[])
 			}
 			else if (y<YRES && x<XRES)// mouse is in playing field
 			{
-				int signi;
-
 				c = (b&1) ? sl : sr; //c is element to be spawned
 				su = c;
 
+				bool signFound = false;
 				if (c!=WL_SIGN+UI_TOOLOFFSET && c!=PT_FIGH)
 				{
-					if (!bq)
-						for (signi=MAXSIGNS-1; signi>=0; signi--)
-							if (sregexp(signs[signi].text, "^{[ct]:[0-9]*|.*}$")==0 || sregexp(signs[signi].text, "^{b|.*}$")==0)
+					for (auto it=globalSim->signs.rbegin(); it!=globalSim->signs.rend(); ++it)
+					{
+						int signx, signy, signw, signh;
+						get_sign_pos(*it, signx, signy, signw, signh);
+						if (SimPosI(x,y).inArea(SimPosI(signx,signy), SimPosDI(signw,signh)))
+						{
+							if (it->getType()!=Sign::Type::Plain)
 							{
-								int signx, signy, signw, signh;
-								get_sign_pos(signi, &signx, &signy, &signw, &signh);
-								if (x>=signx && x<=signx+signw && y>=signy && y<=signy+signh)
+								signFound = true;
+								if (!bq)
 								{
-									if (signs[signi].text[1] == 'b')
+									switch (it->getType())
 									{
-										globalSim->spark_position(signs[signi].x, signs[signi].y);
+									case Sign::Type::Spark:
+										globalSim->spark_position(it->pos);
+										break;
+									case Sign::Type::Save:
+										open_ui(vid_buf, it->getTarget().c_str(), 0);
+										break;
+									case Sign::Type::ForumThread:
+									{
+										std::string url = "http://powdertoy.co.uk/Discussions/Thread/View.html?Thread="+it->getTarget();
+										open_link(url.c_str());
 										break;
 									}
-
-									char buff[256];
-									int sldr;
-
-									memset(buff, 0, sizeof(buff));
-
-									for (sldr=3; signs[signi].text[sldr] != '|'; sldr++)
-										buff[sldr-3] = signs[signi].text[sldr];
-
-									buff[sldr-3] = '\0';
-									if (signs[signi].text[1] == 'c')
-									{
-										open_ui(vid_buf, buff, 0);
+									case Sign::Type::SaveSearch:
+										strcpy(search_expr, it->getTarget().substr(0,255).c_str());
+										search_ui(vid_buf);
+										break;
+									case Sign::Type::Plain:
+										break;
 									}
-									else if (signs[signi].text[1] == 't')
-									{
-										char url[256];
-										int tmpId = 0;
-										sscanf(buff, "%d", &tmpId);
-										sprintf(url, "http://powdertoy.co.uk/Discussions/Thread/View.html?Thread=%d", tmpId);
-										open_link(url);
-									}
-									break;
 								}
 							}
+							break;
+						}
+					}
 				}
 
-				if (c==WL_SIGN+UI_TOOLOFFSET || MSIGN!=-1) // if sign tool is selected or a sign is being moved
+				if (signFound)
+				{
+					// Click already handled, do nothing
+				}
+				else if (c==WL_SIGN+UI_TOOLOFFSET || MSIGN!=-1) // if sign tool is selected or a sign is being moved
 				{
 					if (!bq)
 						add_sign_ui(vid_buf, x, y);

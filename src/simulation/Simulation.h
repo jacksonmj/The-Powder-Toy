@@ -21,6 +21,7 @@
 #include "simulation/BasicData.hpp"
 #include "simulation/air/SimAir.hpp"
 #include "simulation/walls/SimWalls.hpp"
+#include "simulation/Sign.hpp"
 #include <cmath>
 #include "powder.h"
 #include "gravity.h"
@@ -190,6 +191,8 @@ public:
 	ObserverSubject hook_cleared;
 	ObserverSubject hook_beforeUpdate;
 	ObserverSubject hook_afterUpdate;
+
+	Signs signs;
 
 	short option_edgeMode() { return edgeMode; }
 	void option_edgeMode(short newMode);

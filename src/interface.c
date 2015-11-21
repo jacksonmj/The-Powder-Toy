@@ -198,57 +198,18 @@ void menu_count(void)//puts the number of elements in each section into .itemcou
 
 }
 
-void get_sign_pos(int i, int *x0, int *y0, int *w, int *h)
+void get_sign_pos(const Sign &sign, int &x0, int &y0, int &w, int &h)
 {
-	//Changing width if sign have special content
-	if (strcmp(signs[i].text, "{p}")==0)
-		*w = textwidth("Pressure: -000.00");
-
-	if (strcmp(signs[i].text, "{t}")==0)
-		*w = textwidth("Temp: 0000.00");
-
-	if (sregexp(signs[i].text, "^{[ct]:[0-9]*|.*}$")==0)
-	{
-		int sldr, startm;
-		char buff[256];
-		memset(buff, 0, sizeof(buff));
-		for (sldr=3; signs[i].text[sldr-1] != '|'; sldr++)
-			startm = sldr + 1;
-
-		sldr = startm;
-		while (signs[i].text[sldr] != '}')
-		{
-			buff[sldr - startm] = signs[i].text[sldr];
-			sldr++;
-		}
-		*w = textwidth(buff) + 5;
-	}
-	if (sregexp(signs[i].text, "^{b|.*}$")==0)
-	{
-		int sldr, startm;
-		sldr = startm = 3;
-		char buff[256];
-		memset(buff, 0, sizeof(buff));
-		while (signs[i].text[sldr] != '}')
-		{
-			buff[sldr - startm] = signs[i].text[sldr];
-			sldr++;
-		}
-		*w = textwidth(buff) + 5;
-	}
-
-	//Ususal width
-	if (strcmp(signs[i].text, "{p}") && strcmp(signs[i].text, "{t}") && sregexp(signs[i].text, "^{[ct]:[0-9]*|.*}$") && sregexp(signs[i].text, "^{b|.*}$"))
-		*w = textwidth(signs[i].text) + 5;
-	*h = 14;
-	*x0 = (signs[i].ju == 2) ? signs[i].x - *w :
-	      (signs[i].ju == 1) ? signs[i].x - *w/2 : signs[i].x;
-	*y0 = (signs[i].y > 18) ? signs[i].y - 18 : signs[i].y + 4;
+	std::string text = sign.getDisplayedText(globalSim);
+	w = textwidth(text.c_str()) + 5;// TODO: check that this gives equal padding on both sides
+	h = 14; // TODO: this is 15 in TPT++
+	sign.getOffset(w, h, x0, y0);
 }
 
 void add_sign_ui(pixel *vid_buf, int mx, int my)
 {
-	int i, w, h, x, y, nm=0, ju;
+	Sign *sign;
+	int w, h, x, y, nm=0;
 	int x0=(XRES-218)/2,y0=(YRES-80)/2,b=1,bq;
 	ui_edit ed;
 
@@ -260,28 +221,26 @@ void add_sign_ui(pixel *vid_buf, int mx, int my)
 	}
 
 	// check if it is an existing sign
-	for (i=0; i<MAXSIGNS; i++)
-		if (signs[i].text[0])
+	bool found = false;
+	for (Sign &checkSign: globalSim->signs)
+	{
+		get_sign_pos(checkSign, x, y, w, h);
+		SimPosI offset(x,y);
+		SimPosDI size(w,h);
+		if (SimPosI(mx,my).inArea(offset, size))
 		{
-			get_sign_pos(i, &x, &y, &w, &h);
-			if (mx>=x && mx<=x+w && my>=y && my<=y+h)
-				break;
+			found = true;
+			sign = &checkSign;
+			break;
 		}
-	// else look for empty spot
-	if (i >= MAXSIGNS)
-	{
-		nm = 1;
-		for (i=0; i<MAXSIGNS; i++)
-			if (!signs[i].text[0])
-				break;
 	}
-	if (i >= MAXSIGNS)
-		return;
-	if (nm)
+	// else add new
+	if (!found)
 	{
-		signs[i].x = mx;
-		signs[i].y = my;
-		signs[i].ju = 1;
+		sign = globalSim->signs.add(SimPosI(mx,my));
+		if (!sign)
+			return;
+		nm = 1;
 	}
 
 	while (!sdl_poll())
@@ -298,10 +257,10 @@ void add_sign_ui(pixel *vid_buf, int mx, int my)
 	ed.def = "[message]";
 	ed.focus = 1;
 	ed.hide = 0;
-	ed.cursor = strlen(signs[i].text);
+	ed.cursor = sign->getRawText().length();
 	ed.multiline = 0;
-	strcpy(ed.str, signs[i].text);
-	ju = signs[i].ju;
+	strcpy(ed.str, sign->getRawText().c_str());
+	Sign::Justification ju = sign->justification;
 
 	fillrect(vid_buf, -1, -1, XRES, YRES+MENUSIZE, 0, 0, 0, 192);
 	while (!sdl_poll())
@@ -317,9 +276,9 @@ void add_sign_ui(pixel *vid_buf, int mx, int my)
 		drawrect(vid_buf, x0+8, y0+20, 204, 16, 192, 192, 192, 255);
 		ui_edit_draw(vid_buf, &ed);
 		drawtext(vid_buf, x0+8, y0+46, "Justify:", 255, 255, 255, 255);
-		draw_icon(vid_buf, x0+50, y0+42, 0x9D, ju == 0);
-		draw_icon(vid_buf, x0+68, y0+42, 0x9E, ju == 1);
-		draw_icon(vid_buf, x0+86, y0+42, 0x9F, ju == 2);
+		draw_icon(vid_buf, x0+50, y0+42, 0x9D, ju == Sign::Justification::Left);
+		draw_icon(vid_buf, x0+68, y0+42, 0x9E, ju == Sign::Justification::Middle);
+		draw_icon(vid_buf, x0+86, y0+42, 0x9F, ju == Sign::Justification::Right);
 
 
 
@@ -345,15 +304,15 @@ void add_sign_ui(pixel *vid_buf, int mx, int my)
 		ui_edit_process(mx, my, b, &ed);
 
 		if (b && !bq && mx>=x0+50 && mx<=x0+67 && my>=y0+42 && my<=y0+59)
-			ju = 0;
+			ju = Sign::Justification::Left;
 		if (b && !bq && mx>=x0+68 && mx<=x0+85 && my>=y0+42 && my<=y0+59)
-			ju = 1;
+			ju = Sign::Justification::Middle;
 		if (b && !bq && mx>=x0+86 && mx<=x0+103 && my>=y0+42 && my<=y0+59)
-			ju = 2;
+			ju = Sign::Justification::Right;
 
 		if (!nm && b && !bq && mx>=x0+104 && mx<=x0+130 && my>=y0+42 && my<=y0+59)
 		{
-			MSIGN = i;
+			MSIGN = sign - &globalSim->signs[0];
 			break;
 		}
 		if (b && !bq && mx>=x0+9 && mx<x0+23 && my>=y0+22 && my<y0+36)
@@ -363,7 +322,8 @@ void add_sign_ui(pixel *vid_buf, int mx, int my)
 
 		if (!nm && b && !bq && mx>=x0+134 && my>=y0+42 && mx<=x0+184 && my<=y0+59)
 		{
-			signs[i].text[0] = 0;
+			globalSim->signs.erase(*sign);
+			MSIGN = -1;
 			return;
 		}
 
@@ -377,8 +337,8 @@ void add_sign_ui(pixel *vid_buf, int mx, int my)
 		}
 	}
 
-	strcpy(signs[i].text, ed.str);
-	signs[i].ju = ju;
+	sign->setRawText(ed.str);
+	sign->justification = ju;
 }
 //TODO: Finish text wrapping in text edits
 void ui_edit_draw(pixel *vid_buf, ui_edit *ed)
@@ -3870,7 +3830,7 @@ finish:
 	return 0;
 }
 
-int report_ui(pixel* vid_buf, char *save_id)
+int report_ui(pixel* vid_buf, const char *save_id)
 {
 	int b=1,bq,mx,my;
 	ui_edit ed;
@@ -3934,7 +3894,7 @@ int report_ui(pixel* vid_buf, char *save_id)
 	return 0;
 }
 
-int open_ui(pixel *vid_buf, char *save_id, char *save_date)
+int open_ui(pixel *vid_buf, const char *save_id, const char *save_date)
 {
 	int b=1,bq,mx,my,ca=0,thumb_w,thumb_h,active=0,active_2=0,active_3=0,cc=0,ccy=0,cix=0,hasdrawninfo=0,hasdrawncthumb=0,hasdrawnthumb=0,authoritah=0,myown=0,queue_open=0,data_size=0,full_thumb_data_size=0,retval=0,bc=255,openable=1;
 	int nyd,nyu,ry,lv;
@@ -4411,7 +4371,7 @@ int open_ui(pixel *vid_buf, char *save_id, char *save_date)
 		if (queue_open) {
 			if (info_ready && data_ready) {
 				// Do Open!
-				status = parse_save(data, data_size, 1, 0, 0, globalSim->walls.getDataPtr(), signs, parts);
+				status = parse_save(data, data_size, 1, 0, 0, globalSim->walls.getDataPtr(), globalSim->signs, parts);
 				if (!status) {
 					if(svf_last)
 						free(svf_last);
@@ -4976,7 +4936,7 @@ void execute_save(pixel *vid_buf)
 	plens[0] = strlen(svf_name);
 	uploadparts[1] = svf_description;
 	plens[1] = strlen(svf_description);
-	uploadparts[2] = (char*)build_save(plens+2, 0, 0, XRES, YRES, globalSim->walls.getDataPtr(), signs, parts);
+	uploadparts[2] = (char*)build_save(plens+2, 0, 0, XRES, YRES, globalSim->walls.getDataPtr(), globalSim->signs, parts);
 	if (!uploadparts[2])
 	{
 		error_ui(vid_buf, 0, "Error creating save");
@@ -5043,7 +5003,7 @@ void execute_save(pixel *vid_buf)
 		free(result);
 }
 
-int execute_delete(pixel *vid_buf, char *id)
+int execute_delete(pixel *vid_buf, const char *id)
 {
 	int status;
 	char *result;
@@ -5051,7 +5011,7 @@ int execute_delete(pixel *vid_buf, char *id)
 	char *names[] = {"ID", NULL};
 	char *parts[1];
 
-	parts[0] = id;
+	parts[0] = (char*)id;
 
 	result = http_multipart_post(
 	             "http://" SERVER "/Delete.api",
@@ -5084,7 +5044,7 @@ int execute_delete(pixel *vid_buf, char *id)
 	return 1;
 }
 
-void execute_submit(pixel *vid_buf, char *id, char *message)
+void execute_submit(pixel *vid_buf, const char *id, char *message)
 {
 	int status;
 	char *result;
@@ -5092,7 +5052,7 @@ void execute_submit(pixel *vid_buf, char *id, char *message)
 	char *names[] = {"ID", "Message", NULL};
 	char *parts[2];
 
-	parts[0] = id;
+	parts[0] = (char*)id;
 	parts[1] = message;
 
 	result = http_multipart_post(
@@ -5119,7 +5079,7 @@ void execute_submit(pixel *vid_buf, char *id, char *message)
 		free(result);
 }
 
-int execute_report(pixel *vid_buf, char *id, char *reason)
+int execute_report(pixel *vid_buf, const char *id, char *reason)
 {
 	int status;
 	char *result;
@@ -5127,7 +5087,7 @@ int execute_report(pixel *vid_buf, char *id, char *reason)
 	char *names[] = {"ID", "Reason", NULL};
 	char *parts[2];
 
-	parts[0] = id;
+	parts[0] = (char*)id;
 	parts[1] = reason;
 
 	result = http_multipart_post(
@@ -5155,7 +5115,7 @@ int execute_report(pixel *vid_buf, char *id, char *reason)
 	return 1;
 }
 
-void execute_fav(pixel *vid_buf, char *id)
+void execute_fav(pixel *vid_buf, const char *id)
 {
 	int status;
 	char *result;
@@ -5163,7 +5123,7 @@ void execute_fav(pixel *vid_buf, char *id)
 	char *names[] = {"ID", NULL};
 	char *parts[1];
 
-	parts[0] = id;
+	parts[0] = (char*)id;
 
 	result = http_multipart_post(
 	             "http://" SERVER "/Favourite.api",
@@ -5189,7 +5149,7 @@ void execute_fav(pixel *vid_buf, char *id)
 		free(result);
 }
 
-void execute_unfav(pixel *vid_buf, char *id)
+void execute_unfav(pixel *vid_buf, const char *id)
 {
 	int status;
 	char *result;
@@ -5197,7 +5157,7 @@ void execute_unfav(pixel *vid_buf, char *id)
 	char *names[] = {"ID", NULL};
 	char *parts[1];
 
-	parts[0] = id;
+	parts[0] = (char*)id;
 
 	result = http_multipart_post(
 	             "http://" SERVER "/Favourite.api?Action=Remove",
@@ -5258,7 +5218,7 @@ int execute_vote(pixel *vid_buf, char *id, char *action)
 		free(result);
 	return 1;
 }
-void open_link(char *uri) {
+void open_link(const char *uri) {
 #ifdef WIN32
 	ShellExecute(0, "OPEN", uri, NULL, NULL, 0);
 #elif MACOSX
@@ -6125,7 +6085,7 @@ int save_filename_ui(pixel *vid_buf)
 	pixel *save = NULL;//calloc((XRES/3)*(YRES/3), PIXELSIZE);
 	ui_edit ed;
 
-	save_data = build_save(&save_size, 0, 0, XRES, YRES, globalSim->walls.getDataPtr(), signs, parts);
+	save_data = build_save(&save_size, 0, 0, XRES, YRES, globalSim->walls.getDataPtr(), globalSim->signs, parts);
 	save_data_image = prerender_save(save_data, save_size, &imgw, &imgh);
 	if(save_data_image!=NULL)
 	{
@@ -6399,7 +6359,7 @@ void catalogue_ui(pixel * vid_buf)
 						void *data;
 						data = file_load(csave->filename, &size);
 						if(data){
-							status = parse_save(data, size, 1, 0, 0, globalSim->walls.getDataPtr(), signs, parts);
+							status = parse_save(data, size, 1, 0, 0, globalSim->walls.getDataPtr(), globalSim->signs, parts);
 							if(!status)
 							{
 								//svf_filename[0] = 0;

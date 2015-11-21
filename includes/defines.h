@@ -66,7 +66,6 @@
 
 #define GRAV_DIFF
 
-#define MAXSIGNS 16
 #define TAG_MAX 256
 
 #define ZSIZE_D	16
@@ -164,13 +163,6 @@ extern int framerender;
 
 extern int mousex, mousey;
 
-struct sign
-{
-	int x,y,ju;
-	char text[256];
-};
-typedef struct sign sign;
-
 struct stamp
 {
 	char name[11];
@@ -193,7 +185,6 @@ extern int CURRENT_BRUSH;
 extern int GRID_MODE;
 extern int DEBUG_MODE;
 extern int GENERATION;
-extern sign signs[MAXSIGNS];
 extern stamp stamps[STAMP_MAX];
 extern int stamp_count;
 extern int itc;
@@ -211,9 +202,9 @@ extern unsigned char last_major, last_minor, update_flag, last_build;
 extern char http_proxy_string[256];
 
 //Functions in main.c
-void thumb_cache_inval(char *id);
-void thumb_cache_add(char *id, void *thumb, int size);
-int thumb_cache_find(char *id, void **thumb, int *size);
+void thumb_cache_inval(const char *id);
+void thumb_cache_add(const char *id, void *thumb, int size);
+int thumb_cache_find(const char *id, void **thumb, int *size);
 void clear_sim(void);
 void del_stamp(int d);
 void sdl_seticon(void);

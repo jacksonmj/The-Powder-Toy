@@ -408,14 +408,14 @@ int load_string(FILE *f, char *str, int max)
 	return 0;
 }
 
-void strcaturl(char *dst, char *src)
+void strcaturl(char *dst, const char *src)
 {
 	char *d;
-	unsigned char *s;
+	const char *s;
 
 	for (d=dst; *d; d++) ;
 
-	for (s=(unsigned char *)src; *s; s++)
+	for (s=src; *s; s++)
 	{
 		if ((*s>='0' && *s<='9') ||
 		        (*s>='a' && *s<='z') ||

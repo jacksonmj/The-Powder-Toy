@@ -3683,94 +3683,57 @@ void draw_wavelengths(pixel *vid, int x, int y, int h, int wl)
 
 void render_signs(pixel *vid_buf)
 {
-	int i, j, x, y, w, h, dx, dy,mx,my;
-	for (i=0; i<MAXSIGNS; i++)
-		if (signs[i].text[0])
+	for (int i=0; i<(int)globalSim->signs.size(); i++)
+	{
+		Sign &sign = globalSim->signs[i];
+		if (MSIGN==i)
 		{
-			char buff[256];  //Buffer
-			get_sign_pos(i, &x, &y, &w, &h);
-			clearrect(vid_buf, x, y, w, h);
-			drawrect(vid_buf, x, y, w, h, 192, 192, 192, 255);
+			// TODO: drawing code is not really the correct place for this
+			int mx,my;
+			mouse_get_state(&mx, &my);
+			mouse_coords_window_to_sim(&mx, &my, mx, my);
+			sign.pos.x = mx;
+			sign.pos.y = my;
+		}
 
-			//Displaying special information
-			if (strcmp(signs[i].text, "{p}")==0)
-			{
-				float pressure = 0.0f;
-				if (globalSim->InBounds(signs[i].x, signs[i].y))
-					pressure = globalSim->air.pv.get(SimPosI(signs[i].x,signs[i].y));
-				sprintf(buff, "Pressure: %3.2f", pressure);  //...pressure
-				drawtext(vid_buf, x+3, y+3, buff, 255, 255, 255, 255);
-			}
-			if (strcmp(signs[i].text, "{t}")==0)
-			{
-				float temp = 0.0f;
-				SimPosI signPos(signs[i].x, signs[i].y);
-				if (globalSim->pos_isValid(signPos) && globalSim->pmap(signPos).count())
-				{
-					// Find the average temperature of all particles in this location
-					FOR_SIM_PMAP_POS(globalSim, PMapCategory::All, signPos, ri)
-					{
-						temp += parts[ri].temp;
-					}
-					temp = temp/globalSim->pmap(signPos).count();
-					sprintf(buff, "Temp: %4.2f", temp-273.15);  //...temperature
-				}
-				else
-				{
-					sprintf(buff, "Temp: 0.00");  //...temperature
-				}
-				drawtext(vid_buf, x+3, y+3, buff, 255, 255, 255, 255);
-			}
+		int x0, y0, w, h;
+		get_sign_pos(sign, x0, y0, w, h);
+		std::string text = sign.getDisplayedText(globalSim);
+		clearrect(vid_buf, x0, y0, w, h);
+		drawrect(vid_buf, x0, y0, w, h, 192, 192, 192, 255);
+		switch (sign.getType())
+		{
+		case Sign::Type::Plain:
+			drawtext(vid_buf, x0+3, y0+3, text.c_str(), 255, 255, 255, 255);
+			break;
+		case Sign::Type::Save:
+		case Sign::Type::SaveSearch:
+		case Sign::Type::ForumThread:
+			drawtext(vid_buf, x0+3, y0+3, text.c_str(), 0, 191, 255, 255);
+			break;
+		case Sign::Type::Spark:
+			drawtext(vid_buf, x0+3, y0+3, text.c_str(), 211, 211, 40, 255);
+			break;
+		}
 
-			if (sregexp(signs[i].text, "^{[ct]:[0-9]*|.*}$")==0)
-			{
-				int sldr, startm=0;
-				memset(buff, 0, sizeof(buff));
-				for (sldr=3; signs[i].text[sldr-1] != '|'; sldr++)
-					startm = sldr + 1;
-				sldr = startm;
-				while (signs[i].text[sldr] != '}')
-				{
-					buff[sldr - startm] = signs[i].text[sldr];
-					sldr++;
-				}
-				drawtext(vid_buf, x+3, y+3, buff, 0, 191, 255, 255);
-			}
-			if (sregexp(signs[i].text, "^{b|.*}$")==0)
-			{
-				int sldr, startm;
-				sldr = startm = 3;
-				memset(buff, 0, sizeof(buff));
-				while (signs[i].text[sldr] != '}')
-				{
-					buff[sldr - startm] = signs[i].text[sldr];
-					sldr++;
-				}
-				drawtext(vid_buf, x+3, y+3, buff, 211, 211, 40, 255);
-			}
-
-			//Usual text
-			if (strcmp(signs[i].text, "{p}") && strcmp(signs[i].text, "{t}") && sregexp(signs[i].text, "^{[ct]:[0-9]*|.*}$") && sregexp(signs[i].text, "^{b|.*}$"))
-				drawtext(vid_buf, x+3, y+3, signs[i].text, 255, 255, 255, 255);
-
-			x = signs[i].x;
-			y = signs[i].y;
-			dx = 1 - signs[i].ju;
-			dy = (signs[i].y > 18) ? -1 : 1;
-			for (j=0; j<4; j++)
+		if (sign.justification != Sign::Justification::NoJustify)
+		{
+			int dx = 0;
+			if (sign.justification == Sign::Justification::Left)
+				dx = 1;
+			else if (sign.justification == Sign::Justification::Right)
+				dx = -1;
+			int dy = (sign.pos.y > y0) ? -1 : 1;
+			int x = sign.pos.x;
+			int y = sign.pos.y;
+			for (int j=0; j<4; j++)
 			{
 				drawpixel(vid_buf, x, y, 192, 192, 192, 255);
 				x+=dx;
 				y+=dy;
 			}
-			if (MSIGN==i)
-			{
-				mouse_get_state(&mx, &my);
-				mouse_coords_window_to_sim(&mx, &my, mx, my);
-				signs[i].x = mx;
-				signs[i].y = my;
-			}
 		}
+	}
 }
 
 void render_gravlensing(pixel *src, pixel * dst)

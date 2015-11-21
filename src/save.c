@@ -52,12 +52,12 @@ pixel *prerender_save(void *save, int size, int *width, int *height)
 	return NULL;
 }
 
-void *build_save(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h, const_WallsDataP wallsData, sign signs[MAXSIGNS], void* partsptr)
+void *build_save(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h, const_WallsDataP wallsData, Signs &signs, void* partsptr)
 {
 	return build_save_OPS(size, orig_x0, orig_y0, orig_w, orig_h, wallsData, signs, partsptr);
 }
 
-int parse_save(void *save, int size, int replace, int x0, int y0, WallsDataP wallsData, sign signs[MAXSIGNS], void* partsptr, unsigned pmap[YRES][XRES])
+int parse_save(void *save, int size, int replace, int x0, int y0, WallsDataP wallsData, Signs &signs, void* partsptr, unsigned pmap[YRES][XRES])
 {
 	unsigned char * saveData = (unsigned char*)save;
 	if (!pmap)
@@ -399,7 +399,7 @@ fin:
 	return vidBuf;
 }
 
-void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h, const_WallsDataP wallsData, sign signs[MAXSIGNS], void* o_partsptr)
+void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h, const_WallsDataP wallsData, Signs &signs, void* o_partsptr)
 {
 	particle *partsptr = (particle*)o_partsptr;
 	unsigned char *partsData = NULL, *partsPosData = NULL, *fanData = NULL, *wallData = NULL, *finalData = NULL, *outputData = NULL, *soapLinkData = NULL;
@@ -788,9 +788,9 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 	if(soapLinkData)
 		bson_append_binary(&b, "soapLinks", BSON_BIN_USER, (char*)soapLinkData, soapLinkDataLen);
 	signsCount = 0;
-	for(i = 0; i < MAXSIGNS; i++)
+	for (const Sign &sign: globalSim->signs)
 	{
-		if(signs[i].text[0] && signs[i].x>=orig_x0 && signs[i].x<=orig_x0+orig_w && signs[i].y>=orig_y0 && signs[i].y<=orig_y0+orig_h)
+		if (sign.pos.inArea(SimPosI(orig_x0, orig_y0), SimPosDI(orig_w, orig_h)))
 		{
 			signsCount++;
 		}
@@ -798,15 +798,16 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 	if(signsCount)
 	{
 		bson_append_start_array(&b, "signs");
-		for(i = 0; i < MAXSIGNS; i++)
+		for (const Sign &sign: globalSim->signs)
 		{
-			if(signs[i].text[0] && signs[i].x>=orig_x0 && signs[i].x<=orig_x0+orig_w && signs[i].y>=orig_y0 && signs[i].y<=orig_y0+orig_h)
+			std::string text = sign.getRawText();
+			if(text[0] && sign.pos.inArea(SimPosI(orig_x0, orig_y0), SimPosDI(orig_w, orig_h)))
 			{
 				bson_append_start_object(&b, "sign");
-				bson_append_string(&b, "text", signs[i].text);
-				bson_append_int(&b, "justification", signs[i].ju);
-				bson_append_int(&b, "x", signs[i].x-fullX);
-				bson_append_int(&b, "y", signs[i].y-fullY);
+				bson_append_string(&b, "text", text.c_str());
+				bson_append_int(&b, "justification", static_cast<int>(sign.justification));
+				bson_append_int(&b, "x", sign.pos.x-fullX);
+				bson_append_int(&b, "y", sign.pos.y-fullY);
 				bson_append_finish_object(&b);
 			}
 		}
@@ -869,7 +870,7 @@ fin:
 	return outputData;
 }
 
-int parse_save_OPS(void *save, int size, int replace, int x0, int y0, WallsDataP wallsData, sign signs[MAXSIGNS], void* o_partsptr, unsigned pmap[YRES][XRES])
+int parse_save_OPS(void *save, int size, int replace, int x0, int y0, WallsDataP wallsData, Signs &signs, void* o_partsptr, unsigned pmap[YRES][XRES])
 {
 	particle *partsptr = (particle*)o_partsptr;
 	unsigned char * inputData = (unsigned char*)save, *bsonData = NULL, *partsData = NULL, *partsPosData = NULL, *fanData = NULL, *wallData = NULL, *soapLinkData = NULL;
@@ -967,30 +968,27 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, WallsDataP
 							bson_iterator signiter;
 							bson_iterator_subiterator(&subiter, &signiter);
 							//Find a free sign ID
-							for (i = 0; i < MAXSIGNS; i++)
-								if (!signs[i].text[0])
-									break;
+							Sign *sign = globalSim->signs.add();
 							//Stop reading signs if we have no free spaces
-							if(i >= MAXSIGNS)
+							if (!sign)
 								break;
 							while(bson_iterator_next(&signiter))
 							{
 								if(strcmp(bson_iterator_key(&signiter), "text")==0 && bson_iterator_type(&signiter)==BSON_STRING)
 								{
-									strncpy(signs[i].text, bson_iterator_string(&signiter), 255);
-									clean_text(signs[i].text, -1);
+									sign->setRawText(bson_iterator_string(&signiter));
 								}
 								else if(strcmp(bson_iterator_key(&signiter), "justification")==0 && bson_iterator_type(&signiter)==BSON_INT)
 								{
-									signs[i].ju = bson_iterator_int(&signiter);
+									sign->justification = static_cast<Sign::Justification>(bson_iterator_int(&signiter));
 								}
 								else if(strcmp(bson_iterator_key(&signiter), "x")==0 && bson_iterator_type(&signiter)==BSON_INT)
 								{
-									signs[i].x = bson_iterator_int(&signiter)+fullX;
+									sign->pos.x = bson_iterator_int(&signiter)+fullX;
 								}
 								else if(strcmp(bson_iterator_key(&signiter), "y")==0 && bson_iterator_type(&signiter)==BSON_INT)
 								{
-									signs[i].y = bson_iterator_int(&signiter)+fullY;
+									sign->pos.y = bson_iterator_int(&signiter)+fullY;
 								}
 								else
 								{
@@ -1687,7 +1685,7 @@ corrupt:
 	return NULL;
 }
 
-int parse_save_PSv(void *save, int size, int replace, int x0, int y0, WallsDataP wallsData, sign signs[MAXSIGNS], void* partsptr, unsigned pmap[YRES][XRES])
+int parse_save_PSv(void *save, int size, int replace, int x0, int y0, WallsDataP wallsData, Signs &signs, void* partsptr, unsigned pmap[YRES][XRES])
 {
 	unsigned char *d=NULL,*c=(unsigned char*)save;
 	int q,i,j,k,x,y,p=0,*m=NULL, ver, pty, ty, legacy_beta=0, tempGrav = 0;
@@ -2280,28 +2278,26 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, WallsDataP
 	{
 		if (p+6 > size)
 			goto corrupt;
-		for (k=0; k<MAXSIGNS; k++)
-			if (!signs[k].text[0])
-				break;
+		Sign *sign = globalSim->signs.add();
 		x = d[p++];
 		x |= ((unsigned)d[p++])<<8;
-		if (k<MAXSIGNS)
-			signs[k].x = x+x0;
+		if (sign)
+			sign->pos.x = x+x0;
 		x = d[p++];
 		x |= ((unsigned)d[p++])<<8;
-		if (k<MAXSIGNS)
-			signs[k].y = x+y0;
+		if (sign)
+			sign->pos.y = x+y0;
 		x = d[p++];
-		if (k<MAXSIGNS)
-			signs[k].ju = x;
+		if (sign)
+			sign->justification = static_cast<Sign::Justification>(x);
 		x = d[p++];
 		if (p+x > size)
 			goto corrupt;
-		if (k<MAXSIGNS)
+		if (sign)
 		{
-			memcpy(signs[k].text, d+p, x);
-			signs[k].text[x] = 0;
-			clean_text(signs[k].text, -1);
+			std::string text;
+			text.assign((char*)d+p, x);
+			sign->setRawText(text);
 		}
 		p += x;
 	}
@@ -2381,7 +2377,7 @@ void *transform_save(void *odata, int *size, matrix2d transform, vector2d transl
 	void *ndata;
 	WallsData wallso, wallsn;
 	particle *partst = (particle*)calloc(sizeof(particle), NPART);
-	sign *signst = (sign*)calloc(MAXSIGNS, sizeof(sign));
+	Signs signst;
 	unsigned (*pmapt)[XRES] = (unsigned(*)[XRES])calloc(YRES*XRES, sizeof(unsigned));
 	int i, nx, ny, w, h, nw, nh;
 	vector2d pos, tmp, ctl, cbr;
@@ -2391,7 +2387,6 @@ void *transform_save(void *odata, int *size, matrix2d transform, vector2d transl
 	if (parse_save(odata, *size, 0, 0, 0, wallso, signst, partst, pmapt))
 	{
 		free(partst);
-		free(signst);
 		free(pmapt);
 		return odata;
 	}
@@ -2419,20 +2414,22 @@ void *transform_save(void *odata, int *size, matrix2d transform, vector2d transl
 	if (nw>XRES) nw = XRES;
 	if (nh>YRES) nh = YRES;
 	// rotate and translate signs, parts, walls
-	for (i=0; i<MAXSIGNS; i++)
+	for (auto it=signst.begin(); it!=signst.end(); )
 	{
-		if (!signst[i].text[0]) continue;
-		pos = v2d_new(signst[i].x, signst[i].y);
+		pos = v2d_new(it->pos.x, it->pos.y);
 		pos = v2d_add(m2d_multiply_v2d(transform,pos),translate);
 		nx = floor(pos.x+0.5f);
 		ny = floor(pos.y+0.5f);
+		it->pos.x = nx;
+		it->pos.y = ny;
 		if (nx<0 || nx>=nw || ny<0 || ny>=nh)
 		{
-			signst[i].text[0] = 0;
-			continue;
+			it = signst.erase(it);
 		}
-		signst[i].x = nx;
-		signst[i].y = ny;
+		else
+		{
+			++it;
+		}
 	}
 	for (i=0; i<NPART; i++)
 	{
@@ -2483,7 +2480,6 @@ void *transform_save(void *odata, int *size, matrix2d transform, vector2d transl
 		}
 	ndata = build_save(size,0,0,nw,nh,wallso,signst,partst);
 	free(partst);
-	free(signst);
 	free(pmapt);
 	return ndata;
 }

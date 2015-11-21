@@ -212,7 +212,8 @@ void quickoptions_menu(pixel *vid_buf, int b, int bq, int x, int y);
 
 void prop_edit_ui(pixel *vid_buf, int x, int y);
 
-void get_sign_pos(int i, int *x0, int *y0, int *w, int *h);
+class Sign;
+void get_sign_pos(const Sign &sign, int &x0, int &y0, int &w, int &h);
 
 void add_sign_ui(pixel *vid_buf, int mx, int my);
 
@@ -282,7 +283,7 @@ char *download_ui(pixel *vid_buf, char *uri, int *len);
 
 int search_ui(pixel *vid_buf);
 
-int open_ui(pixel *vid_buf, char *save_id, char *save_date);
+int open_ui(pixel *vid_buf, const char *save_id, const char *save_date);
 
 void catalogue_ui(pixel * vid_buf);
 
@@ -294,21 +295,21 @@ int execute_tagop(pixel *vid_buf, char *op, char *tag);
 
 void execute_save(pixel *vid_buf);
 
-int execute_delete(pixel *vid_buf, char *id);
+int execute_delete(pixel *vid_buf, const char *id);
 
-int execute_report(pixel *vid_buf, char *id, char *reason);
+int execute_report(pixel *vid_buf, const char *id, char *reason);
 
-void execute_submit(pixel *vid_buf, char *id, char *message);
+void execute_submit(pixel *vid_buf, const char *id, char *message);
 
-void execute_fav(pixel *vid_buf, char *id);
+void execute_fav(pixel *vid_buf, const char *id);
 
-void execute_unfav(pixel *vid_buf, char *id);
+void execute_unfav(pixel *vid_buf, const char *id);
 
 int execute_vote(pixel *vid_buf, char *id, char *action);
 
-void open_link(char *uri);
+void open_link(const char *uri);
 
-int report_ui(pixel *vid_buf, char *save_id);
+int report_ui(pixel *vid_buf, const char *save_id);
 
 char *console_ui(pixel *vid_buf, char error[255],char console_more);
 
