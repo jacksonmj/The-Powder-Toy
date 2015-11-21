@@ -74,10 +74,10 @@ template <class Self, class Delta>
 class SimPos_pos_cmp
 {
 public:
-	bool inArea(const Self offset, const Delta size) const
+	bool inArea(const Self topLeft, const Delta size) const
 	{
 		Self const p(*static_cast<const Self*>(this));
-		return (p.x>=offset.x && p.y>=offset.y && p.x<offset.x+size.x && p.y<offset.y+size.y);
+		return (p.x>=topLeft.x && p.y>=topLeft.y && p.x<topLeft.x+size.x && p.y<topLeft.y+size.y);
 	}
 };
 

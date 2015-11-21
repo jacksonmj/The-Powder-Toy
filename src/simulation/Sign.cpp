@@ -240,6 +240,13 @@ void Signs::remove_if(std::function<bool (Sign &)> pred)
 	erase(std::remove_if(begin(), end(), pred), end());
 }
 
+void Signs::eraseArea(SimPosI topLeft, SimPosDI size)
+{
+	remove_if([topLeft, size](Sign &sign) {
+		return sign.pos.inArea(topLeft, size);
+	});
+}
+
 Sign *Signs::add()
 {
 	if (size()>=MAXSIGNS)

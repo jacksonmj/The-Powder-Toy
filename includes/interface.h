@@ -213,7 +213,9 @@ void quickoptions_menu(pixel *vid_buf, int b, int bq, int x, int y);
 void prop_edit_ui(pixel *vid_buf, int x, int y);
 
 class Sign;
+class Signs;
 void get_sign_pos(const Sign &sign, int &x0, int &y0, int &w, int &h);
+Sign *find_sign(Signs &signs, int mx, int my, bool allsigns);
 
 void add_sign_ui(pixel *vid_buf, int mx, int my);
 

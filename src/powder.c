@@ -469,11 +469,7 @@ void clear_area(int area_x, int area_y, int area_w, int area_h)
 		}
 	}
 
-	SimPosI offset(area_x, area_y);
-	SimPosDI size(area_w, area_h);
-	globalSim->signs.remove_if([offset, size](Sign &sign) {
-		return sign.pos.inArea(offset, size);
-	});
+	globalSim->signs.eraseArea(SimPosI(area_x, area_y), SimPosDI(area_w, area_h));
 }
 
 void create_box(int x1, int y1, int x2, int y2, int c, int flags)

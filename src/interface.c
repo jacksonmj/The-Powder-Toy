@@ -207,10 +207,25 @@ void get_sign_pos(const Sign &sign, int &x0, int &y0, int &w, int &h)
 	sign.getOffset(w, h, x0, y0);
 }
 
+
+Sign *find_sign(Signs &signs, int mx, int my, bool allsigns)
+{
+	int x, y, w, h;
+	for (auto it=signs.rbegin(); it!=signs.rend(); ++it)
+	{
+		get_sign_pos(*it, x, y, w, h);
+		if (mx >= x && mx <= x+w && my >= y && my <= y+h)
+		{
+			if (allsigns || it->getType() != Sign::Type::Plain)
+				return &(*it);
+		}
+	}
+	return nullptr;
+}
+
 void add_sign_ui(pixel *vid_buf, int mx, int my)
 {
-	Sign *sign;
-	int w, h, x, y, nm=0;
+	int nm=0;
 	int x0=(XRES-218)/2,y0=(YRES-80)/2,b=1,bq;
 	ui_edit ed;
 
@@ -222,21 +237,9 @@ void add_sign_ui(pixel *vid_buf, int mx, int my)
 	}
 
 	// check if it is an existing sign
-	bool found = false;
-	for (Sign &checkSign: globalSim->signs)
-	{
-		get_sign_pos(checkSign, x, y, w, h);
-		SimPosI offset(x,y);
-		SimPosDI size(w,h);
-		if (SimPosI(mx,my).inArea(offset, size))
-		{
-			found = true;
-			sign = &checkSign;
-			break;
-		}
-	}
+	Sign *sign = find_sign(globalSim->signs, mx, my, true);
 	// else add new
-	if (!found)
+	if (!sign)
 	{
 		sign = globalSim->signs.add(SimPosI(mx,my));
 		if (!sign)

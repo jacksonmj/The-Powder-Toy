@@ -67,6 +67,7 @@ public:
 	void erase(Sign& eraseSign);
 	using std::vector<Sign>::erase;
 	void remove_if(std::function<bool(Sign&)> pred);
+	void eraseArea(SimPosI topLeft, SimPosDI size);
 	Sign *add();
 	Sign *add(SimPosI pos);
 };

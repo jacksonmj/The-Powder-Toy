@@ -2338,41 +2338,33 @@ int main(int argc, char *argv[])
 				bool signFound = false;
 				if (c!=WL_SIGN+UI_TOOLOFFSET && c!=PT_FIGH)
 				{
-					for (auto it=globalSim->signs.rbegin(); it!=globalSim->signs.rend(); ++it)
+					Sign *sign = find_sign(globalSim->signs, x, y, false);
+					if (sign)
 					{
-						int signx, signy, signw, signh;
-						get_sign_pos(*it, signx, signy, signw, signh);
-						if (SimPosI(x,y).inArea(SimPosI(signx,signy), SimPosDI(signw,signh)))
+						signFound = true;
+						if (!bq)
 						{
-							if (it->getType()!=Sign::Type::Plain)
+							switch (sign->getType())
 							{
-								signFound = true;
-								if (!bq)
-								{
-									switch (it->getType())
-									{
-									case Sign::Type::Spark:
-										globalSim->spark_position(it->pos);
-										break;
-									case Sign::Type::Save:
-										open_ui(vid_buf, it->getTarget().c_str(), 0);
-										break;
-									case Sign::Type::ForumThread:
-									{
-										std::string url = "http://powdertoy.co.uk/Discussions/Thread/View.html?Thread="+it->getTarget();
-										open_link(url.c_str());
-										break;
-									}
-									case Sign::Type::SaveSearch:
-										strcpy(search_expr, it->getTarget().substr(0,255).c_str());
-										search_ui(vid_buf);
-										break;
-									case Sign::Type::Plain:
-										break;
-									}
-								}
+							case Sign::Type::Spark:
+								globalSim->spark_position(sign->pos);
+								break;
+							case Sign::Type::Save:
+								open_ui(vid_buf, sign->getTarget().c_str(), 0);
+								break;
+							case Sign::Type::ForumThread:
+							{
+								std::string url = "http://powdertoy.co.uk/Discussions/Thread/View.html?Thread="+sign->getTarget();
+								open_link(url.c_str());
+								break;
 							}
-							break;
+							case Sign::Type::SaveSearch:
+								strcpy(search_expr, sign->getTarget().substr(0,255).c_str());
+								search_ui(vid_buf);
+								break;
+							case Sign::Type::Plain:
+								break;
+							}
 						}
 					}
 				}
