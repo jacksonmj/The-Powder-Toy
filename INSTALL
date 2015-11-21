@@ -76,7 +76,8 @@ instructions.
 
 If you get error messages mentioning "-march=native", try setting TargetArch
 to "none". If compiling binaries to distribute to other people, you should
-set TargetArch to something else, such as x86 or x86-legacy, to ensure
+set TargetArch to something else, such as x86 or x86-legacy, to ensure that
+they work on a wide variety of computers instead of just yours.
 
 Most libraries are linked statically where available, to avoid having 
 to mess around with DLLs for Windows, and to try to avoid issues due to 

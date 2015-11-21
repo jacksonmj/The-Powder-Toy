@@ -18,7 +18,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <regex.h>
 #include <sys/types.h>
 #include <math.h>
 #include "misc.h"
@@ -197,17 +196,6 @@ void save_presets(int do_update)
 	tmp = do_update;
 	fwrite(&tmp, 1, 1, f);
 	fclose(f);*/
-}
-
-int sregexp(const char *str, const char *pattern)
-{
-	int result;
-	regex_t patternc;
-	if (regcomp(&patternc, pattern,  0)!=0)
-		return 1;
-	result = regexec(&patternc, str, 0, NULL, 0);
-	regfree(&patternc);
-	return result;
 }
 
 void load_presets(void)

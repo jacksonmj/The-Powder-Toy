@@ -127,11 +127,6 @@ if(PreferStatic AND (${CMAKE_SYSTEM_NAME} MATCHES "Windows"))
 endif(PreferStatic AND (${CMAKE_SYSTEM_NAME} MATCHES "Windows"))
 
 
-find_package_PreferStatic(GnuRegex GNUREGEX_FOUND GNUREGEX)
-target_include_directories(PowderToy PUBLIC ${GNUREGEX_INCLUDE_DIR})
-target_link_libraries(PowderToy ${GNUREGEX_LIBRARIES})
-
-
 if(PreferStatic)
 	set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_ONLY_STATIC})
 	find_package(SDL)

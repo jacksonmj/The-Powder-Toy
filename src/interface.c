@@ -57,6 +57,7 @@
 #include "simulation/walls/WallTypes.hpp"
 
 #include <algorithm>
+#include <regex>
 
 SDLMod sdl_mod;
 int sdl_key, sdl_rkey, sdl_wheel, sdl_ascii, sdl_zoom_trig=0;
@@ -764,19 +765,14 @@ void ui_richtext_draw(pixel *vid_buf, ui_richtext *ed)
 }
 
 int markup_getregion(char *text, char *action, char *data, char *atext){
-	int datamarker = 0;
-	int terminator = 0;
-	int minit;
-	if (sregexp(text, "^{a:.*|.*}")==0)
+	std::regex reg(R"(^\{a:(.*)\|(.*)\})");
+	std::cmatch match;
+	if (std::regex_search(text, match, reg))
 	{
-		*action = text[1];
-		for (minit=3; text[minit-1] != '|'; minit++)
-			datamarker = minit + 1;
-		for (minit=datamarker; text[minit-1] != '}'; minit++)
-			terminator = minit + 1;
-		strncpy(data, text+3, datamarker-4);
-		strncpy(atext, text+datamarker, terminator-datamarker-1);
-		return terminator;
+		*action = 'a';
+		strcpy(data, match[1].str().c_str());
+		strcpy(atext, match[2].str().c_str());
+		return match[0].length();
 	}
 	else
 	{

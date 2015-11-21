@@ -20,6 +20,7 @@
 #include <powder.h>
 #include <console.h>
 #include <math.h>
+#include <regex>
 
 #ifdef PYCONSOLE
 #include <pythonconsole.h>
@@ -150,7 +151,8 @@ int process_command_old(pixel *vid_buf, char *console, char *console_error)
 						}
 						if ((fileread[i] == ' ' || fileread[i] == '\n') && i-j<400)
 						{
-							if (sregexp(tokens,"^x.\\{0,1\\}[0-9]*,y.\\{0,1\\}[0-9]*")==0)
+							std::regex coordReg(R"(^x.?[0-9]*,y.?[0-9]*)");
+							if (std::regex_search(tokens, coordReg))
 							{
 								int starty = 0;
 								tokensize = strlen(tokens);
