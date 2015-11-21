@@ -48,6 +48,7 @@ public:
 	SimPosI pos;
 	Justification justification;
 	std::string getDisplayedText(Simulation *sim) const;
+	std::string getTooltip() const;
 	void getOffset(const int w, const int h, int &x0, int &y0) const;
 
 	std::string getRawText() const;

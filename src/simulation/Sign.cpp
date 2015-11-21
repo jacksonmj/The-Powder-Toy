@@ -79,6 +79,7 @@ void Sign::parsedToRaw()
 	{
 	case Type::Plain:
 		rawText = message;
+		target = "";
 		break;
 	case Type::Save:
 		rawText = "{c:"+target+"|"+message+"}";
@@ -91,6 +92,7 @@ void Sign::parsedToRaw()
 		break;
 	case Type::Spark:
 		rawText = "{b|"+message+"}";
+		target = "";
 		break;
 	}
 }
@@ -152,6 +154,28 @@ std::string Sign::getDisplayedText(Simulation *sim) const
 		}
 	}
 	return txt;
+}
+
+std::string Sign::getTooltip() const
+{
+	std::stringstream ss;
+	switch (type)
+	{
+	case Type::Plain:
+		return "";
+	case Type::Save:
+		ss << "Go to save ID:" << target;
+		break;
+	case Type::ForumThread:
+		ss << "Open forum thread " << target << " in browser";
+		break;
+	case Type::SaveSearch:
+		ss << "Search for " << target;
+		break;
+	case Type::Spark:
+		return "";
+	}
+	return ss.str();
 }
 
 void Sign::getOffset(const int w, const int h, int &x0, int &y0) const
