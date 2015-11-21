@@ -1512,6 +1512,15 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, WallsDataP
 							partsptr[newIndex].tmp = 1;
 						}
 						break;
+					case PT_DLAY:
+						// correct DLAY temperature in older saves
+						// due to either the +.5f now done in DLAY (higher temps), or rounding errors in the old DLAY code (room temperature temps),
+						// the delay in all DLAY from older versions will always be one greater than it should
+						if (saved_version < 91)
+						{
+							partsptr[newIndex].temp = partsptr[newIndex].temp - 1.0f;
+						}
+						break;
 					}
 				}
 			}
