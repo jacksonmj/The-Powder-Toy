@@ -26,8 +26,6 @@ public:
 
 	static int update_neighbour(UPDATE_FUNC_ARGS, int rx, int ry, int rt, int ri)
 	{
-		if (sim->walls.isProperWall(SimPosI(x+rx,y+ry)))
-			return 0;
 		int t = parts[i].type;
 
 		//THRM burning
