@@ -120,7 +120,7 @@ std::string Sign::getDisplayedText(Simulation *sim) const
 			float pressure = 0.0f;
 			if (sim->pos_isValid(pos))
 				pressure = sim->air.pv(pos);
-			ss << "Pressure: " << std::fixed << std::setw(3) << std::setprecision(2) << pressure;
+			ss << "Pressure: " << std::fixed << std::setprecision(2) << pressure;
 			txt = ss.str();
 		}
 		else if (txt=="{aheat}")
@@ -128,7 +128,7 @@ std::string Sign::getDisplayedText(Simulation *sim) const
 			float aheat = sim->ambientTemp;
 			if (sim->ambientHeatEnabled && sim->pos_isValid(pos))
 				aheat = sim->air.hv(pos);
-			ss << "Ambient temp: " << std::fixed << std::setw(3) << std::setprecision(2) << (aheat-273.15);
+			ss << "Ambient temp: " << std::fixed << std::setprecision(2) << (aheat-273.15);
 			txt = ss.str();
 		}
 		else if (txt=="{t}")
@@ -142,7 +142,7 @@ std::string Sign::getDisplayedText(Simulation *sim) const
 					temp += parts[ri].temp;
 				}
 				temp = temp/sim->pmap(pos).count();
-				ss << "Temp: " << std::fixed << std::setw(4) << std::setprecision(2) << (temp-273.15);
+				ss << "Temp: " << std::fixed << std::setprecision(2) << (temp-273.15);
 				txt = ss.str();
 			}
 			else
