@@ -16,17 +16,18 @@
 #ifndef simulation_elements_LIFE_Rule_H
 #define simulation_elements_LIFE_Rule_H
 
+#include "common/tpt-stdint.h"
 #include <string>
 
 class LIFE_Rule
 {
 protected:
+	uint16_t ruleB, ruleS;
 	// States are kind of how long until it dies, normal ones use two states(living,dead) for others the intermediate states live but do nothing
 	int statesCount;
-	// indexed by number of neighbours, bitmask 1=survive 2=born
-	char rule[9];
 	void addB(std::string b);
-	void addS(std::string s);	
+	void addS(std::string s);
+	void clearRule();
 	void parseRuleStrings(std::string b, std::string s);
 public:
 	int states()
@@ -35,11 +36,11 @@ public:
 	}
 	bool born(int neighbours)
 	{
-		return rule[neighbours]&2;
+		return ruleB & (1<<neighbours);
 	}
 	bool survive(int neighbours)
 	{
-		return rule[neighbours]&1;
+		return ruleS & (1<<neighbours);
 	}
 	std::string getRuleString();
 	LIFE_Rule(std::string b, std::string s, int states_=2);

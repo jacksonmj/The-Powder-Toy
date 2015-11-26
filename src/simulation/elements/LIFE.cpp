@@ -83,7 +83,7 @@ void LIFE_Rule::addB(std::string b)
 	for (char c: b)
 	{
 		if (c>='0' && c<='8')
-			rule[c-'0'] |= 2;
+			ruleB|= 1 << (c-'0');
 	}
 }
 
@@ -93,13 +93,18 @@ void LIFE_Rule::addS(std::string s)
 	for (char c: s)
 	{
 		if (c>='0' && c<='8')
-			rule[c-'0'] |= 1;
+			ruleS |= 1 << (c-'0');
 	}
+}
+
+void LIFE_Rule::clearRule()
+{
+	ruleB = ruleS = 0;
 }
 
 void LIFE_Rule::parseRuleStrings(std::string b, std::string s)
 {
-	std::fill_n(rule, 9, 0);
+	clearRule();
 	addB(b);
 	addS(s);
 }
@@ -130,7 +135,7 @@ LIFE_Rule::LIFE_Rule(std::string ruleString)
 {
 	// e.g. Rule("S3456/B278/6")
 	// No order is enforced, and no part of it is compulsory
-	std::fill_n(rule, 9, 0);
+	clearRule();
 	statesCount = 2;
 	std::istringstream ss(ruleString);
 	std::string rulePart;
