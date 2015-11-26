@@ -41,6 +41,7 @@ namespace format
 	std::string UnixtimeToDate(time_t unixtime, std::string dateFomat = "%d %b %Y");
 	std::string UnixtimeToDateMini(time_t unixtime);
 	std::string CleanString(std::string dirtyString, bool asciiOnly, bool stripColour, bool stripNewlines, bool numericOnly = false);
+	std::string toLower(std::string txt);
 }
 
 #endif

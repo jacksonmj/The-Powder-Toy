@@ -27,6 +27,7 @@
 #include "common/tptmath.h"
 #include "simulation/Simulation.h"
 #include "simulation/elements/FIGH.h"
+#include "simulation/elements/LIFE.hpp"
 #include "simulation/elements/STKM.h"
 #include "simulation/SimulationSharedData.h"
 #include "simulation/walls/WallTypes.hpp"
@@ -1697,7 +1698,7 @@ corrupt:
 int parse_save_PSv(void *save, int size, int replace, int x0, int y0, WallsDataP wallsData, Signs &signs, void* partsptr, unsigned pmap[YRES][XRES])
 {
 	unsigned char *d=NULL,*c=(unsigned char*)save;
-	int q,i,j,k,x,y,p=0,*m=NULL, ver, pty, ty, legacy_beta=0, tempGrav = 0;
+	int i,j,k,x,y,p=0,*m=NULL, ver, pty, ty, legacy_beta=0, tempGrav = 0;
 	int bx0=x0/CELL, by0=y0/CELL, bw, bh, w, h;
 	int nf=0, new_format = 0, ttv = 0;
 	particle *parts = (particle*)partsptr;
@@ -1869,7 +1870,6 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, WallsDataP
 				//TODO: Possibly some server side translation
 				j = PT_DUST;//goto corrupt;
 			}
-			gol[y][x]=0;
 			if (j)
 			{
 				if (pmap[y][x])
@@ -1966,9 +1966,13 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, WallsDataP
 					ttv |= (d[p++]);
 					parts[i-1].tmp = ttv;
 					if (ver<53 && !parts[i-1].tmp)
-						for (q = 1; q<=NGOLALT; q++) {
-							if (parts[i-1].type==goltype[q-1] && grule[q][9]==2)
-								parts[i-1].tmp = grule[q][9]-1;
+						for (unsigned q = 1; q<=oldgolTypes.size(); q++) {
+							if (parts[i-1].type==oldgolTypes[q-1])
+							{
+								LIFE_Rule &rule = globalSim->simSD->elemData<LIFE_ElemDataShared>(PT_LIFE)->rules[q];
+								if (rule.states()==2)
+									parts[i-1].tmp = rule.states()-1;
+							}
 						}
 					if (ver>=51 && ver<53 && parts[i-1].type==PT_PBCN)
 					{
@@ -2115,7 +2119,6 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, WallsDataP
 	} 
 	for (j=0; j<w*h; j++)
 	{
-		int gnum = 0;
 		i = m[j];
 		ty = d[pty+j];
 		if (i && (ty==PT_CLNE || (ty==PT_PCLN && ver>=43) || (ty==PT_BCLN && ver>=44) || (ty==PT_SPRK && ver>=21) || (ty==PT_LAVA && ver>=34) || (ty==PT_PIPE && ver>=43) || (ty==PT_LIFE && ver>=51) || (ty==PT_PBCN && ver>=52) || (ty==PT_WIRE && ver>=55) || (ty==PT_STOR && ver>=59) || (ty==PT_CONV && ver>=60)))
@@ -2159,16 +2162,16 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, WallsDataP
 			if(ver<51 && ((ty>=78 && ty<=89) || (ty>=134 && ty<=146 && ty!=141))){
 				//Replace old GOL
 				parts[i-1].type = PT_LIFE;
-				for (gnum = 0; gnum<NGOLALT; gnum++){
-					if (ty==goltype[gnum])
+				for (unsigned gnum = 0; gnum<oldgolTypes.size(); gnum++){
+					if (ty==oldgolTypes[gnum])
 						parts[i-1].ctype = gnum;
 				}
 				ty = PT_LIFE;
 			}
 			if(ver<52 && (ty==PT_CLNE || ty==PT_PCLN || ty==PT_BCLN)){
 				//Replace old GOL ctypes in clone
-				for (gnum = 0; gnum<NGOLALT; gnum++){
-					if (parts[i-1].ctype==goltype[gnum])
+				for (unsigned gnum = 0; gnum<oldgolTypes.size(); gnum++){
+					if (parts[i-1].ctype==oldgolTypes[gnum])
 					{
 						parts[i-1].ctype = PT_LIFE;
 						parts[i-1].tmp = gnum;

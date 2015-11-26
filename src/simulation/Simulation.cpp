@@ -1237,7 +1237,7 @@ void Simulation::interpolateMove(InterpolateMoveResult &result, bool interact, i
 //the main function for updating particles
 void Simulation::UpdateParticles()
 {
-	int i, j, x, y, t, nx, ny, r, surround_space, s, rt, nt, nnx, nny, q, golnum, z, neighbors;
+	int i, j, x, y, t, nx, ny, r, surround_space, s, rt, nt;
 	float mv, dx, dy, nrx, nry, dp, ctemph, ctempl, gravtot, gel_scale;
 	int fin_x, fin_y, clear_x, clear_y, stagnant;
 	float fin_xf, fin_yf, clear_xf, clear_yf;
@@ -1368,104 +1368,6 @@ void Simulation::UpdateParticles()
 		ppip_changed = 0;
 	}
 
-	//game of life!
-	if (elementCount[PT_LIFE] && ++CGOL>=GSPEED)//GSPEED is frames per generation
-	{
-		CGOL=0;
-		//TODO: maybe this should only loop through active particles
-		for (ny=CELL; ny<YRES-CELL; ny++)
-		{//go through every particle and set neighbor map
-			for (nx=CELL; nx<XRES-CELL; nx++)
-			{
-				if (!pmap[ny][nx].count(PMapCategory::NotEnergy))
-				{
-					gol[ny][nx] = 0;
-					continue;
-				}
-				r = pmap_find_one(nx, ny, PT_LIFE);
-				if (r>=0)
-				{
-					golnum = parts[r].ctype+1;
-					if (golnum<=0 || golnum>NGOL) {
-						part_kill(r);
-						continue;
-					}
-					gol[ny][nx] = golnum;
-					if (parts[r].tmp == grule[golnum][9]-1) {
-						for ( nnx=-1; nnx<2; nnx++)
-						{
-							for ( nny=-1; nny<2; nny++)//it will count itself as its own neighbor, which is needed, but will have 1 extra for delete check
-							{
-								int adx = ((nx+nnx+XRES-3*CELL)%(XRES-2*CELL))+CELL;
-								int ady = ((ny+nny+YRES-3*CELL)%(YRES-2*CELL))+CELL;
-								if (!pmap[ady][adx].count(PMapCategory::NotEnergy) || pmap_find_one(adx, ady, PT_LIFE)>=0)
-								{
-									//the total neighbor count is in 0
-									gol2[ady][adx][0] ++;
-									//insert golnum into neighbor table
-									for ( i=1; i<9; i++)
-									{
-										if (!gol2[ady][adx][i])
-										{
-											gol2[ady][adx][i] = (golnum<<4)+1;
-											break;
-										}
-										else if((gol2[ady][adx][i]>>4)==golnum)
-										{
-											gol2[ady][adx][i]++;
-											break;
-										}
-									}
-								}
-							}
-						}
-					} else {
-						parts[r].tmp --;
-					}
-				}
-			}
-		}
-		for (ny=CELL; ny<YRES-CELL; ny++)
-		{ //go through every particle again, but check neighbor map, then update particles
-			for (nx=CELL; nx<XRES-CELL; nx++)
-			{
-				r = pmap_find_one(nx, ny, PT_LIFE);
-				if (pmap[ny][nx].count(PMapCategory::NotEnergy) && r<0)
-					continue;
-				neighbors = gol2[ny][nx][0];
-				if (neighbors)
-				{
-					golnum = gol[ny][nx];
-					if (!pmap[ny][nx].count(PMapCategory::NotEnergy))
-					{
-						//Find which type we can try and create
-						int creategol = 0xFF;
-						for ( i=1; i<9; i++)
-						{
-							if (!gol2[ny][nx][i]) break;
-							golnum = (gol2[ny][nx][i]>>4);
-							if (grule[golnum][neighbors]>=2 && (gol2[ny][nx][i]&0xF)>=(neighbors%2)+neighbors/2)
-							{
-								if (golnum<creategol) creategol=golnum;
-							}
-						}
-						if (creategol<0xFF)
-							create_part(-1, nx, ny, PT_LIFE|((creategol-1)<<8));
-					}
-					else if (grule[golnum][neighbors-1]==0 || grule[golnum][neighbors-1]==2)//subtract 1 because it counted itself
-					{
-						if (parts[r].tmp==grule[golnum][9]-1)
-							parts[r].tmp --;
-					}
-					for ( z = 0; z<9; z++)
-						gol2[ny][nx][z] = 0;
-				}
-				//we still need to kill things with 0 neighbors (higher state life)
-				if (r>=0 && parts[r].tmp<=0)
-						part_kill(r);
-			}
-		}
-	}
 	hook_beforeUpdate.Trigger();
 	for (i=0; i<=parts_lastActiveIndex; i++)
 		if (parts[i].type)

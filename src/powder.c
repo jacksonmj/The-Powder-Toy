@@ -29,6 +29,7 @@
 #include "simulation/Simulation.h"
 #include "simulation/PositionStack.hpp"
 #include "simulation/ElemDataSim.h"
+#include "simulation/elements/LIFE.hpp"
 #include "simulation/elements/PHOT.h"
 
 #include "algorithm/for_each_i.hpp"
@@ -41,13 +42,6 @@ particle *cb_parts;
 const particle emptyparticle = {};
 
 int water_equal_test = 0;
-
-int GSPEED = 1;
-int GENERATION = 0;
-int CGOL = 0;
-
-unsigned char gol[YRES][XRES];
-unsigned short gol2[YRES][XRES][9];
 
 wall_type wtypes[] =
 {
@@ -324,7 +318,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 			{
 				parts[ri].ctype = t;
 				actionDone = true;
-				if (t==PT_LIFE && v<NGOLALT && drawOn!=PT_STOR)
+				if (t==PT_LIFE && Element_LIFE::isValidType(globalSim, v) && drawOn!=PT_STOR)
 					parts[ri].tmp = v;
 				else if (drawOn == PT_DRAY)
 					parts[ri].ctype |= v<<8;
@@ -333,13 +327,13 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 			{
 				parts[ri].ctype = t;
 				actionDone = true;
-				if (drawOn == PT_DTEC && t==PT_LIFE && v<NGOLALT)
+				if (drawOn == PT_DTEC && t==PT_LIFE && Element_LIFE::isValidType(globalSim, v))
 					parts[ri].tmp = v;
 			}
 			else if (drawOn == PT_CRAY && drawOn != t)
 			{
 				parts[ri].ctype = t;
-				if (t==PT_LIFE && v<NGOLALT)
+				if (t==PT_LIFE && Element_LIFE::isValidType(globalSim, v))
 					parts[ri].tmp2 = v;
 				parts[ri].temp = globalSim->elements[t].DefaultProperties.temp;
 			}
@@ -360,11 +354,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 	i = globalSim->part_create(p, pos, t);
 	if (t==PT_LIFE && i>=0)
 	{
-		if (v<NGOLALT)
-		{
-			parts[i].tmp = grule[v+1][9] - 1;
-			parts[i].ctype = v;
-		}
+		Element_LIFE::setType(globalSim, parts[i], v);
 	}
 	return i;
 }

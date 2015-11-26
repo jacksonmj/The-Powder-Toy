@@ -63,6 +63,7 @@
 
 #include "simulation/Simulation.h"
 #include "simulation/SimulationSharedData.h"
+#include "simulation/elements/LIFE.hpp"
 #include "simulation/elements/STKM.h"
 
 pixel *vid_buf;
@@ -325,7 +326,6 @@ void clear_sim(void)
 {
 	globalSim->clear();
 	MSIGN = -1;
-	memset(gol2, 0, sizeof(gol2));
 	emp_decor = 0;
 	memset(pers_bg, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
 	memset(fire_r, 0, sizeof(fire_r));
@@ -777,7 +777,6 @@ int main(int argc, char *argv[])
 	pers_bg = (pixel*)calloc((XRES+BARSIZE)*YRES, PIXELSIZE);
 
 	gravity_init();
-	GSPEED = 1;
 
 	/* Set 16-bit stereo audio at 22Khz */
 	fmt.freq = 22050;
@@ -1697,7 +1696,7 @@ int main(int argc, char *argv[])
 				}
 			}
 			if (sdl_key=='r'&&!(sdl_mod & (KMOD_CTRL|KMOD_SHIFT)))
-				GENERATION = 0;
+				globalSim->elemData<LIFE_ElemDataSim>(PT_LIFE)->generation = 0;
 			if (sdl_key=='x'&&(sdl_mod & (KMOD_LCTRL|KMOD_RCTRL)))
 			{
 				save_mode = 1;

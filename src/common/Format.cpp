@@ -18,6 +18,8 @@
 #include <stdexcept>
 #include <iostream>
 #include <iterator>
+#include <algorithm>
+#include <cctype>
 #include "Format.hpp"
 
 std::string format::URLEncode(std::string source)
@@ -124,3 +126,8 @@ std::string format::CleanString(std::string dirtyString, bool asciiOnly, bool st
 	return dirtyString;
 }
 
+std::string format::toLower(std::string txt)
+{
+	std::transform(txt.begin(), txt.end(), txt.begin(), ::tolower);
+	return txt;
+}

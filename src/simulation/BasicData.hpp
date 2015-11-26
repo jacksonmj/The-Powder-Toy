@@ -131,6 +131,20 @@ public:
 	{
 		return SimPosCell(tptmath::clamp_int(p.x, 1, XRES/CELL-2), tptmath::clamp_int(p.y, 1, YRES/CELL-2));
 	}
+	SimPosI pos_wrapMainArea_simple(SimPosI p) const
+	{
+		// Assume not far out of bounds, so wrapping can be done with single add/subtracts
+		const int mainWidth = XRES-CELL*2,  mainHeight = YRES-CELL*2;
+		if (p.x < CELL)
+			p.x += mainWidth;
+		else if (p.x >= XRES-CELL)
+			p.x -= mainWidth;
+		if (p.y < CELL)
+			p.y += mainHeight;
+		else if (p.y >= YRES-CELL)
+			p.y -= mainHeight;
+		return p;
+	}
 	SimPosI pos_wrapMainArea(SimPosI p) const
 	{
 		bool x_ok = (p.x>=CELL && p.x<XRES-CELL);

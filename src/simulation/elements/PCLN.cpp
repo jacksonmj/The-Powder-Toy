@@ -14,6 +14,7 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "LIFE.hpp"
 
 int PCLN_update(UPDATE_FUNC_ARGS)
 {
@@ -47,7 +48,7 @@ int PCLN_update(UPDATE_FUNC_ARGS)
 					}
 				}
 			}
-	if (parts[i].ctype<=0 || !sim->IsValidElement(parts[i].ctype) || (parts[i].ctype==PT_LIFE && (parts[i].tmp<0 || parts[i].tmp>=NGOLALT)))
+	if (parts[i].ctype<=0 || !sim->IsValidElement(parts[i].ctype) || (parts[i].ctype==PT_LIFE && !Element_LIFE::isValidType(sim, parts[i].tmp)))
 		for (rx=-1; rx<2; rx++)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES)

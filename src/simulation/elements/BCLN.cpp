@@ -14,6 +14,7 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "LIFE.hpp"
 
 int BCLN_update(UPDATE_FUNC_ARGS)
 {
@@ -25,7 +26,7 @@ int BCLN_update(UPDATE_FUNC_ARGS)
 		parts[i].vx += advection*sim->air.vx.get(SimPosI(x,y));
 		parts[i].vy += advection*sim->air.vy.get(SimPosI(x,y));
 	}
-	if (parts[i].ctype<=0 || !sim->IsValidElement(parts[i].ctype) || (parts[i].ctype==PT_LIFE && (parts[i].tmp<0 || parts[i].tmp>=NGOLALT)))
+	if (parts[i].ctype<=0 || !sim->IsValidElement(parts[i].ctype) || (parts[i].ctype==PT_LIFE && !Element_LIFE::isValidType(sim, parts[i].tmp)))
 	{
 		int rx, ry;
 		int rcount, ri, rnext;
