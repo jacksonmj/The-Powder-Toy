@@ -52,7 +52,8 @@ protected:
 	Observer_ClassMember<LIFE_ElemDataSim> obs_simCleared;
 	Observer_ClassMember<LIFE_ElemDataSim> obs_simBeforeUpdate;
 	unsigned char ruleMap[YRES][XRES];
-	unsigned short neighbourMap[YRES][XRES][9];
+	unsigned char neighbourTotalMap[YRES][XRES];
+	unsigned short neighbourMap[YRES][XRES][6];
 	unsigned int speedCounter;
 	void readLife();
 	void updateLife();

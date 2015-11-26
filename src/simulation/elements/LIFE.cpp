@@ -267,10 +267,16 @@ void LIFE_ElemDataSim::readLife()
 							SimPosI npos = sim->pos_wrapMainArea_simple(pos+SimPosDI(nnx,nny));
 							if (!sim->pmap(npos).count(lifeCat) || sim->pmap(npos).find_one(sim->parts, PT_LIFE, lifeCat)>=0)
 							{
-								//the total neighbor count is in 0
-								neighbourMap[npos.y][npos.x][0] ++;
+								neighbourTotalMap[npos.y][npos.x]++;
 								//insert golnum into neighbor table
-								for (int i=1; i<9; i++)
+								/* neighbour table size is 6 because any other neighbours would not be able to meet creation threshold in updateLife():
+								 *  If table already contains 6 neighbours all of different types:
+								 *   threshold = ceil(6/2) = 3
+								 *   Only 2 more neighbours left (each position has 8 neighbours).
+								 *   Even if the 2 neighbours were both the same new life type they would not meet the threshold
+								 *   So pointless to store them in the table
+								 */
+								for (int i=0; i<6; i++)
 								{
 									if (!neighbourMap[npos.y][npos.x][i])
 									{
@@ -310,17 +316,17 @@ void LIFE_ElemDataSim::updateLife()
 			int r = sim->pmap(pos).find_one(sim->parts, PT_LIFE, lifeCat);
 			if (sim->pmap(pos).count(lifeCat) && r<0)
 				continue;
-			int totalNeighbourCount = neighbourMap[ny][nx][0];
+			int totalNeighbourCount = neighbourTotalMap[ny][nx];
 			if (totalNeighbourCount)
 			{
 				int ruleNum = ruleMap[ny][nx];
 				if (!sim->pmap(pos).count(lifeCat))
 				{
 					// Find which type we can try and create
-					// A life type can only be created if at least half the LIFE neighbours are of that type, and the number of LIFE neighbours (any type) is correct.
+					// A life type can only be created if at least half the total LIFE neighbours are of that type, and the total number of LIFE neighbours is a "born" number for that life type.
 					int threshold = (totalNeighbourCount+1)/2;
 					int createRuleNum = 0xFF;
-					for (int i=1; i<9; i++)
+					for (int i=0; i<6; i++)
 					{
 						if (!neighbourMap[ny][nx][i])
 							break;
@@ -348,8 +354,9 @@ void LIFE_ElemDataSim::updateLife()
 					if (sim->parts[r].tmp==rules[ruleNum].states()-1)
 						sim->parts[r].tmp --;
 				}
-				for (int i=0; i<9; i++)
+				for (int i=0; i<6; i++)
 					neighbourMap[ny][nx][i] = 0;
+				neighbourTotalMap[ny][nx] = 0;
 			}
 			//we still need to kill things with 0 neighbors (higher state life)
 			if (r>=0 && sim->parts[r].tmp<=0)
@@ -360,7 +367,8 @@ void LIFE_ElemDataSim::updateLife()
 
 void LIFE_ElemDataSim::Simulation_Cleared()
 {
-	std::fill_n(&neighbourMap[0][0][0], YRES*XRES*9, 0);
+	std::fill_n(&neighbourMap[0][0][0], YRES*XRES*6, 0);
+	std::fill_n(&neighbourTotalMap[0][0], YRES*XRES, 0);
 	speedCounter = 0;
 	generation = 0;
 }
