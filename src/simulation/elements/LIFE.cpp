@@ -310,6 +310,7 @@ void LIFE_ElemDataSim::updateLife()
 	auto sim = this->sim;// put in stack/register, since used a lot
 	std::vector<LIFE_Rule> &rules = sim->elemDataShared<LIFE_ElemDataShared>(PT_LIFE)->rules;
 	const PMapCategory lifeCat = PMapCategory::NotEnergy;
+	bool didSomething = false;
 	for (int ny=CELL; ny<YRES-CELL; ny++)
 	{
 		for (int nx=CELL; nx<XRES-CELL; nx++)
@@ -343,6 +344,7 @@ void LIFE_ElemDataSim::updateLife()
 						if (p>=0)
 						{
 							Element_LIFE::setType(sim->simSD.get(), sim->parts[p], createRuleId);
+							didSomething = true;
 						}
 					}
 				}
@@ -365,11 +367,13 @@ void LIFE_ElemDataSim::updateLife()
 					if (!rules[ruleId].survive(totalNeighbourCount-1) || sim->parts[r].tmp!=rules[ruleId].liveStates())
 					{
 						sim->parts[r].tmp --;
+						didSomething = true;
 					}
 					//we still need to kill things with 0 neighbors (higher state life)
 					if (sim->parts[r].tmp<=0)
 					{
 						sim->part_kill(r, pos);
+						didSomething = true;
 						continue;
 					}
 					sim->part_add_temp(parts[r], -50.0f);
@@ -377,6 +381,8 @@ void LIFE_ElemDataSim::updateLife()
 			}
 		}
 	}
+	if (didSomething)
+		generation++;
 }
 
 void LIFE_ElemDataSim::Simulation_Cleared()
