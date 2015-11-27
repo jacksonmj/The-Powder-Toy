@@ -276,37 +276,30 @@ void LIFE_ElemDataSim::readLife()
 						for (int nny=-1; nny<2; nny++)//it will count itself as its own neighbor, which is needed, but will have 1 extra for delete check
 						{
 							SimPosI npos = sim->pos_wrapMainArea_simple(pos+SimPosDI(nnx,nny));
-							if (!sim->pmap(npos).count(lifeCat) || sim->pmap(npos).find_one(sim->parts, PT_LIFE, lifeCat)>=0)
+							neighbourTotalMap[npos.y][npos.x]++;
+							//insert golnum into neighbor table
+							/* neighbour table size is 6 because any other neighbours would not be able to meet creation threshold in updateLife():
+							 *  If table already contains 6 neighbours all of different types:
+							 *   threshold = ceil(6/2) = 3
+							 *   Only 2 more neighbours left (each position has 8 neighbours).
+							 *   Even if the 2 neighbours were both the same new life type they would not meet the threshold
+							 *   So pointless to store them in the table
+							 */
+							for (int i=0; i<6; i++)
 							{
-								neighbourTotalMap[npos.y][npos.x]++;
-								//insert golnum into neighbor table
-								/* neighbour table size is 6 because any other neighbours would not be able to meet creation threshold in updateLife():
-								 *  If table already contains 6 neighbours all of different types:
-								 *   threshold = ceil(6/2) = 3
-								 *   Only 2 more neighbours left (each position has 8 neighbours).
-								 *   Even if the 2 neighbours were both the same new life type they would not meet the threshold
-								 *   So pointless to store them in the table
-								 */
-								for (int i=0; i<6; i++)
+								if (!neighbourMap[npos.y][npos.x][i])
 								{
-									if (!neighbourMap[npos.y][npos.x][i])
-									{
-										neighbourMap[npos.y][npos.x][i] = (ruleNum<<4)+1;
-										break;
-									}
-									else if((neighbourMap[npos.y][npos.x][i]>>4)==ruleNum)
-									{
-										neighbourMap[npos.y][npos.x][i]++;
-										break;
-									}
+									neighbourMap[npos.y][npos.x][i] = (ruleNum<<4)+1;
+									break;
+								}
+								else if((neighbourMap[npos.y][npos.x][i]>>4)==ruleNum)
+								{
+									neighbourMap[npos.y][npos.x][i]++;
+									break;
 								}
 							}
 						}
 					}
-				}
-				else
-				{
-					parts[r].tmp --;
 				}
 			}
 		}
@@ -324,13 +317,9 @@ void LIFE_ElemDataSim::updateLife()
 		for (int nx=CELL; nx<XRES-CELL; nx++)
 		{
 			SimPosI pos(nx,ny);
-			int r = sim->pmap(pos).find_one(sim->parts, PT_LIFE, lifeCat);
-			if (sim->pmap(pos).count(lifeCat) && r<0)
-				continue;
 			int totalNeighbourCount = neighbourTotalMap[ny][nx];
 			if (totalNeighbourCount)
 			{
-				int ruleNum = ruleMap[ny][nx];
 				if (!sim->pmap(pos).count(lifeCat))
 				{
 					// Find which type we can try and create
@@ -359,19 +348,26 @@ void LIFE_ElemDataSim::updateLife()
 						}
 					}
 				}
-				else if (!rules[ruleNum].survive(totalNeighbourCount-1))
-					//subtract 1 because it counted itself
-				{
-					if (sim->parts[r].tmp==rules[ruleNum].liveStates())
-						sim->parts[r].tmp --;
-				}
 				for (int i=0; i<6; i++)
 					neighbourMap[ny][nx][i] = 0;
 				neighbourTotalMap[ny][nx] = 0;
 			}
-			//we still need to kill things with 0 neighbors (higher state life)
-			if (r>=0 && sim->parts[r].tmp<=0)
-					sim->part_kill(r, pos);
+			if (ruleMap[ny][nx])
+			{
+				int r = sim->pmap(pos).find_one(sim->parts, PT_LIFE, lifeCat);
+				if (r>=0)
+				{
+					int ruleNum = ruleMap[ny][nx];
+					//subtract 1 from totalNeighbourCount in survive check because it counted itself
+					if (!rules[ruleNum].survive(totalNeighbourCount-1) || sim->parts[r].tmp!=rules[ruleNum].liveStates())
+					{
+						sim->parts[r].tmp --;
+					}
+					//we still need to kill things with 0 neighbors (higher state life)
+					if (sim->parts[r].tmp<=0)
+							sim->part_kill(r, pos);
+				}
+			}
 		}
 	}
 }
