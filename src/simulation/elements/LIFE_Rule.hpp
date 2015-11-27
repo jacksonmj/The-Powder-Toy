@@ -24,15 +24,20 @@ class LIFE_Rule
 protected:
 	uint16_t ruleB, ruleS;
 	// States are kind of how long until it dies, normal ones use two states(living,dead) for others the intermediate states live but do nothing
-	int statesCount;
+	int liveStatesCount;
 	void addB(std::string b);
 	void addS(std::string s);
+	void setStates(int st);
 	void clearRule();
 	void parseRuleStrings(std::string b, std::string s);
 public:
 	int states()
 	{
-		return statesCount;
+		return liveStatesCount+1;
+	}
+	int liveStates()
+	{
+		return liveStatesCount;
 	}
 	bool born(int neighbours)
 	{

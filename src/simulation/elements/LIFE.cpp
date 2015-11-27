@@ -97,6 +97,11 @@ void LIFE_Rule::addS(std::string s)
 	}
 }
 
+void LIFE_Rule::setStates(int st)
+{
+	liveStatesCount = st-1;
+}
+
 void LIFE_Rule::clearRule()
 {
 	ruleB = ruleS = 0;
@@ -125,9 +130,10 @@ std::string LIFE_Rule::getRuleString()
 	return ruleString;
 }
 
-LIFE_Rule::LIFE_Rule(std::string b, std::string s, int states_) : statesCount(states_)
+LIFE_Rule::LIFE_Rule(std::string b, std::string s, int states_)
 {
 	// e.g. Rule("3", "23", 2) for GOL B3/S23
+	setStates(states_);
 	parseRuleStrings(b, s);
 }
 
@@ -136,7 +142,7 @@ LIFE_Rule::LIFE_Rule(std::string ruleString)
 	// e.g. Rule("S3456/B278/6")
 	// No order is enforced, and no part of it is compulsory
 	clearRule();
-	statesCount = 2;
+	setStates(2);
 	std::istringstream ss(ruleString);
 	std::string rulePart;
 	char partType;
@@ -154,7 +160,7 @@ LIFE_Rule::LIFE_Rule(std::string ruleString)
 		}
 		else if (std::isdigit(partType))
 		{
-			statesCount = format::StringToNumber<unsigned int>(rulePart);
+			setStates(format::StringToNumber<unsigned int>(rulePart));
 		}
 	}
 }
@@ -200,7 +206,7 @@ void Element_LIFE::setType(SimulationSharedData *simSD, particle &p, int type)
 	{
 		std::vector<LIFE_Rule> &rules = simSD->elemData<LIFE_ElemDataShared>(PT_LIFE)->rules;
 		p.ctype = type;
-		p.tmp = rules[type+1].states()-1;
+		p.tmp = rules[type+1].liveStates();
 	}
 }
 
@@ -210,7 +216,7 @@ void Element_LIFE::setType(Simulation *sim, particle &p, int type)
 	{
 		std::vector<LIFE_Rule> &rules = sim->elemDataShared<LIFE_ElemDataShared>(PT_LIFE)->rules;
 		p.ctype = type;
-		p.tmp = rules[type+1].states()-1;
+		p.tmp = rules[type+1].liveStates();
 	}
 }
 
@@ -263,7 +269,7 @@ void LIFE_ElemDataSim::readLife()
 					continue;
 				}
 				ruleMap[ny][nx] = ruleNum;
-				if (sim->parts[r].tmp == rules[ruleNum].states()-1)
+				if (sim->parts[r].tmp == rules[ruleNum].liveStates())
 				{
 					for (int nnx=-1; nnx<2; nnx++)
 					{
@@ -356,7 +362,7 @@ void LIFE_ElemDataSim::updateLife()
 				else if (!rules[ruleNum].survive(totalNeighbourCount-1))
 					//subtract 1 because it counted itself
 				{
-					if (sim->parts[r].tmp==rules[ruleNum].states()-1)
+					if (sim->parts[r].tmp==rules[ruleNum].liveStates())
 						sim->parts[r].tmp --;
 				}
 				for (int i=0; i<6; i++)
