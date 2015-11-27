@@ -263,8 +263,7 @@ void LIFE_ElemDataSim::readLife()
 				int ruleId = parts[r].ctype;
 				if (ruleId<0 || ruleId>=rulesSize)
 				{
-					sim->part_kill(r);
-					ruleMap[ny][nx] = 0;
+					ruleMap[ny][nx] = 0xFF;
 					continue;
 				}
 				ruleMap[ny][nx] = ruleId+1;
@@ -356,6 +355,11 @@ void LIFE_ElemDataSim::updateLife()
 				int r = sim->pmap(pos).find_one(sim->parts, PT_LIFE, lifeCat);
 				if (r>=0)
 				{
+					if (ruleMap[ny][nx]==0xFF)
+					{
+						sim->part_kill(r, pos);
+						continue;
+					}
 					int ruleId = ruleMap[ny][nx]-1;
 					//subtract 1 from totalNeighbourCount in survive check because it counted itself
 					if (!rules[ruleId].survive(totalNeighbourCount-1) || sim->parts[r].tmp!=rules[ruleId].liveStates())
@@ -364,7 +368,7 @@ void LIFE_ElemDataSim::updateLife()
 					}
 					//we still need to kill things with 0 neighbors (higher state life)
 					if (sim->parts[r].tmp<=0)
-							sim->part_kill(r, pos);
+						sim->part_kill(r, pos);
 				}
 			}
 		}
