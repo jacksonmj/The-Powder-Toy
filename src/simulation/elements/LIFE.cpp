@@ -368,7 +368,11 @@ void LIFE_ElemDataSim::updateLife()
 					}
 					//we still need to kill things with 0 neighbors (higher state life)
 					if (sim->parts[r].tmp<=0)
+					{
 						sim->part_kill(r, pos);
+						continue;
+					}
+					sim->part_add_temp(parts[r], -50.0f);
 				}
 			}
 		}

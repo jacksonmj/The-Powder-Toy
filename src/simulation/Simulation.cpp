@@ -1766,10 +1766,6 @@ void Simulation::UpdateParticles()
 				}
 			}
 
-			if (t==PT_LIFE)
-			{
-				part_add_temp(parts[i], -50.0f);
-			}
 			//spark updates from walls
 			if ((elements[t].Properties&PROP_CONDUCTS) || t==PT_SPRK)
 			{
