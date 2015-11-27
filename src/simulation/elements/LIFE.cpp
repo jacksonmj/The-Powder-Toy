@@ -168,7 +168,6 @@ LIFE_Rule::LIFE_Rule(std::string ruleString)
 
 LIFE_ElemDataShared::LIFE_ElemDataShared(SimulationSharedData *s, int t) : ElemDataShared(s,t)
 {
-	rules.push_back(LIFE_Rule(""));// rules[0] currently means "no life type", to simplify 0=="no life type" when doing LIFE update
 	initDefaultRules();
 }
 
@@ -206,7 +205,7 @@ void Element_LIFE::setType(SimulationSharedData *simSD, particle &p, int type)
 	{
 		std::vector<LIFE_Rule> &rules = simSD->elemData<LIFE_ElemDataShared>(PT_LIFE)->rules;
 		p.ctype = type;
-		p.tmp = rules[type+1].liveStates();
+		p.tmp = rules[type].liveStates();
 	}
 }
 
@@ -216,15 +215,14 @@ void Element_LIFE::setType(Simulation *sim, particle &p, int type)
 	{
 		std::vector<LIFE_Rule> &rules = sim->elemDataShared<LIFE_ElemDataShared>(PT_LIFE)->rules;
 		p.ctype = type;
-		p.tmp = rules[type+1].liveStates();
+		p.tmp = rules[type].liveStates();
 	}
 }
 
 bool Element_LIFE::isValidType(SimulationSharedData *simSD, int type)
 {
-	// "type" is ctype value, with 0 meaning GOL
-	// It is NOT rulenum, with 0 meaning none and 1 meaning GOL
-	if (type >= 0 && type < (int)simSD->elemData<LIFE_ElemDataShared>(PT_LIFE)->rules.size()-1)
+	// "type" is ctype value (i.e. 0 means GOL, not "no LIFE type")
+	if (type >= 0 && type < (int)simSD->elemData<LIFE_ElemDataShared>(PT_LIFE)->rules.size())
 	{
 		return true;
 	}
@@ -233,7 +231,7 @@ bool Element_LIFE::isValidType(SimulationSharedData *simSD, int type)
 
 bool Element_LIFE::isValidType(Simulation *sim, int type)
 {
-	if (type >= 0 && type < (int)sim->elemDataShared<LIFE_ElemDataShared>(PT_LIFE)->rules.size()-1)
+	if (type >= 0 && type < (int)sim->elemDataShared<LIFE_ElemDataShared>(PT_LIFE)->rules.size())
 	{
 		return true;
 	}
@@ -244,10 +242,11 @@ void LIFE_ElemDataSim::readLife()
 {
 	//TODO: maybe this should only loop through active particles
 	//go through every particle and set neighbor map
+	// ruleMap contains rule ID +1, 0 means no active LIFE particle there
 	auto sim = this->sim;// put in stack/register instead of indirect access via this, since used a lot
 	std::vector<LIFE_Rule> &rules = sim->elemDataShared<LIFE_ElemDataShared>(PT_LIFE)->rules;
 	const PMapCategory lifeCat = PMapCategory::NotEnergy; //or sim->pmap_category(PT_LIFE), but hardcoded value is faster
-	int maxRuleNum = rules.size();
+	int rulesSize = rules.size();
 	for (int ny=CELL; ny<YRES-CELL; ny++)
 	{
 		for (int nx=CELL; nx<XRES-CELL; nx++)
@@ -261,15 +260,15 @@ void LIFE_ElemDataSim::readLife()
 			int r = sim->pmap(pos).find_one(sim->parts, PT_LIFE, lifeCat);
 			if (r>=0)
 			{
-				int ruleNum = parts[r].ctype+1;
-				if (ruleNum<=0 || ruleNum>maxRuleNum)
+				int ruleId = parts[r].ctype;
+				if (ruleId<0 || ruleId>=rulesSize)
 				{
 					sim->part_kill(r);
 					ruleMap[ny][nx] = 0;
 					continue;
 				}
-				ruleMap[ny][nx] = ruleNum;
-				if (sim->parts[r].tmp == rules[ruleNum].liveStates())
+				ruleMap[ny][nx] = ruleId+1;
+				if (sim->parts[r].tmp == rules[ruleId].liveStates())
 				{
 					for (int nnx=-1; nnx<2; nnx++)
 					{
@@ -283,16 +282,16 @@ void LIFE_ElemDataSim::readLife()
 							 *   threshold = ceil(6/2) = 3
 							 *   Only 2 more neighbours left (each position has 8 neighbours).
 							 *   Even if the 2 neighbours were both the same new life type they would not meet the threshold
-							 *   So pointless to store them in the table
+							 *   So it's pointless to store them in the table
 							 */
 							for (int i=0; i<6; i++)
 							{
 								if (!neighbourMap[npos.y][npos.x][i])
 								{
-									neighbourMap[npos.y][npos.x][i] = (ruleNum<<4)+1;
+									neighbourMap[npos.y][npos.x][i] = (ruleId<<4)+1;
 									break;
 								}
-								else if((neighbourMap[npos.y][npos.x][i]>>4)==ruleNum)
+								else if((neighbourMap[npos.y][npos.x][i]>>4)==ruleId)
 								{
 									neighbourMap[npos.y][npos.x][i]++;
 									break;
@@ -325,26 +324,26 @@ void LIFE_ElemDataSim::updateLife()
 					// Find which type we can try and create
 					// A life type can only be created if at least half the total LIFE neighbours are of that type, and the total number of LIFE neighbours is a "born" number for that life type.
 					int threshold = (totalNeighbourCount+1)/2;
-					int createRuleNum = 0xFF;
+					int createRuleId = 0xFF;
 					for (int i=0; i<6; i++)
 					{
 						if (!neighbourMap[ny][nx][i])
 							break;
-						int checkRuleNum = (neighbourMap[ny][nx][i]>>4);
-						if (rules[checkRuleNum].born(totalNeighbourCount) && (neighbourMap[ny][nx][i]&0xF)>=threshold)
+						int checkRuleId = (neighbourMap[ny][nx][i]>>4);
+						if (rules[checkRuleId].born(totalNeighbourCount) && (neighbourMap[ny][nx][i]&0xF)>=threshold)
 						{
 							// Conflict resolution based on ruleNum, where there are two LIFE types, each comprising exactly half the neighbours.
 							// (Unfortunately, this makes custom LIFE types a bit more difficult, though not impossible, and can't be changed due to the requirement for compatibility.)
-							if (checkRuleNum<createRuleNum)
-								createRuleNum = checkRuleNum;
+							if (checkRuleId<createRuleId)
+								createRuleId = checkRuleId;
 						}
 					}
-					if (createRuleNum<0xFF)
+					if (createRuleId<0xFF)
 					{
 						int p = sim->part_create(-1, pos, PT_LIFE);
 						if (p>=0)
 						{
-							Element_LIFE::setType(sim->simSD.get(), sim->parts[p], createRuleNum-1);
+							Element_LIFE::setType(sim->simSD.get(), sim->parts[p], createRuleId);
 						}
 					}
 				}
@@ -357,9 +356,9 @@ void LIFE_ElemDataSim::updateLife()
 				int r = sim->pmap(pos).find_one(sim->parts, PT_LIFE, lifeCat);
 				if (r>=0)
 				{
-					int ruleNum = ruleMap[ny][nx];
+					int ruleId = ruleMap[ny][nx]-1;
 					//subtract 1 from totalNeighbourCount in survive check because it counted itself
-					if (!rules[ruleNum].survive(totalNeighbourCount-1) || sim->parts[r].tmp!=rules[ruleNum].liveStates())
+					if (!rules[ruleId].survive(totalNeighbourCount-1) || sim->parts[r].tmp!=rules[ruleId].liveStates())
 					{
 						sim->parts[r].tmp --;
 					}

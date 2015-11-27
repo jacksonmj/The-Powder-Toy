@@ -1966,8 +1966,8 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, WallsDataP
 					ttv |= (d[p++]);
 					parts[i-1].tmp = ttv;
 					if (ver<53 && !parts[i-1].tmp)
-						for (unsigned q = 1; q<=oldgolTypes.size(); q++) {
-							if (parts[i-1].type==oldgolTypes[q-1])
+						for (unsigned q = 0; q<oldgolTypes.size(); q++) {
+							if (parts[i-1].type==oldgolTypes[q])
 							{
 								LIFE_Rule &rule = globalSim->simSD->elemData<LIFE_ElemDataShared>(PT_LIFE)->rules[q];
 								if (rule.liveStates()==1)
