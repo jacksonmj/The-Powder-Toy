@@ -45,7 +45,7 @@
 			/* At least one byte was non-zero, so go through and check each one */\
 			for (unsigned int i=0; i<stepSize; i++)\
 			{\
-				if ((DATA)[y][startX+bigStep*stepSize+i])\
+				if ((DATA)[Y][startX+bigStep*stepSize+i])\
 				{\
 					int X = startX+bigStep*stepSize+i;\
 					LOOP_BODY\
