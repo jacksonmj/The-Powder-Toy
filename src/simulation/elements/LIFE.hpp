@@ -22,6 +22,7 @@
 #include "LIFE_Rule.hpp"
 
 #include "common/Observer.h"
+#include "common/tpt-stdint.h"
 
 #include <vector>
 
@@ -51,9 +52,9 @@ class LIFE_ElemDataSim : public ElemDataSim
 protected:
 	Observer_ClassMember<LIFE_ElemDataSim> obs_simCleared;
 	Observer_ClassMember<LIFE_ElemDataSim> obs_simBeforeUpdate;
-	unsigned char ruleMap[YRES][XRES];
-	unsigned char neighbourTotalMap[YRES][XRES];
-	unsigned short neighbourMap[YRES][XRES][6];
+	uint8_t ruleMap[YRES][XRES];
+	uint8_t neighbourTotalMap[YRES][XRES];
+	uint16_t neighbourMap[YRES][XRES][6];
 	unsigned int speedCounter;
 	void readLife();
 	void updateLife();

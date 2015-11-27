@@ -348,8 +348,10 @@ void LIFE_ElemDataSim::updateLife()
 						}
 					}
 				}
-				for (int i=0; i<6; i++)
-					neighbourMap[ny][nx][i] = 0;
+
+				// Clear neighbour maps
+				// (decent compilers turn this memset into a movq(int64) + movl(int32))
+				memset(&neighbourMap[ny][nx][0], 0, sizeof(uint16_t)*6);
 				neighbourTotalMap[ny][nx] = 0;
 			}
 			if (ruleMap[ny][nx])
