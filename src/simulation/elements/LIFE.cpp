@@ -18,10 +18,12 @@
 #include "simulation/ElemDataSim.h"
 #include "LIFE.hpp"
 #include "common/Format.hpp"
+#include "common/Intrinsics.hpp"
 
 #include <algorithm>
 #include <sstream>
 #include <cctype>
+#include <cstring>
 
 //New IDs for GOL types
 #define NGT_GOL 0
@@ -350,8 +352,17 @@ void LIFE_ElemDataSim::updateLife()
 				}
 
 				// Clear neighbour maps
-				// (decent compilers turn this memset into a movq(int64) + movl(int32))
-				memset(&neighbourMap[ny][nx][0], 0, sizeof(uint16_t)*6);
+#if defined(HAVE_LIBSIMDPP) && (defined(__ARM_NEON__) || (defined(__SSE__) && !defined(__x86_64__)))
+				// Unaligned store of 16 bytes in order to zero 12 bytes in the neighbourMap (all entries in neighbourMap[ny][nx])
+				// (Store the extra 4 bytes in front of the current position - this is OK because neighbourMap is being iterated in ascending order, and is padded)
+				simdpp::store_u(&neighbourMap[ny][nx][0]-(8-6), simdpp::uint16x8::zero());
+#elif defined(__x86_64__) || defined(__i386)
+				// In theory, decent compilers should turn this memset into a movq(int64) + movl(int32) on 64 bit, or 3*movl(int32) on 32 bit
+				std::memset(&neighbourMap[ny][nx][0], 0, sizeof(uint16_t)*6);
+#else
+				for (int i=0; i<6; i++)
+					neighbourMap[ny][nx][i] = 0;
+#endif
 				neighbourTotalMap[ny][nx] = 0;
 			}
 			if (ruleMap[ny][nx])
