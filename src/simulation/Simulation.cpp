@@ -649,9 +649,9 @@ bool Simulation::isWallBlocking(SimPosCell c, int type)
 	case WL_ALLOWENERGY:
 		return !(elements[type].Properties&TYPE_ENERGY);
 	case WL_ALLOWLIQUID:
-		return elements[type].Falldown!=2;
+		return !(elements[type].Properties&TYPE_LIQUID);
 	case WL_ALLOWSOLID:
-		return elements[type].Falldown!=1;
+		return !(elements[type].Properties&TYPE_PART);
 	case WL_ALLOWAIR:
 	case WL_WALL:
 	case WL_WALLELEC:
