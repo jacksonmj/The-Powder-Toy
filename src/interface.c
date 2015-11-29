@@ -6855,7 +6855,7 @@ void simulation_ui(pixel * vid_buf)
 	cb.x = x0+xsize-16;		//Heat simulation
 	cb.y = y0+23;
 	cb.focus = 0;
-	cb.checked = !legacy_enable;
+	cb.checked = (globalSim->option_heatMode()==HeatMode::Normal);
 
 	cb2.x = x0+xsize-16;	//Newt. Gravity
 	cb2.y = y0+79;
@@ -6996,7 +6996,7 @@ void simulation_ui(pixel * vid_buf)
 	}
 
 	water_equal_test = cb6.checked;
-	legacy_enable = !cb.checked;
+	globalSim->option_heatMode(cb.checked ? HeatMode::Normal : HeatMode::Legacy);
 	globalSim->ambientHeatEnabled = cb5.checked;
 	new_scale = (cb3.checked)?2:1;
 	new_kiosk = (cb4.checked)?1:0;

@@ -75,7 +75,7 @@ Simulation::Simulation(std::shared_ptr<SimulationSharedData> sd) :
 	rng(&rngBase),
 	air(this),
 	walls(this),
-	heat_mode(1),
+	heatMode(HeatMode::Normal),
 	edgeMode(0),
 	airMode(0),
 	ambientHeatEnabled(false),
@@ -100,6 +100,7 @@ Simulation::~Simulation()
 void Simulation::clear()
 {
 	option_edgeMode(0);
+	option_heatMode(HeatMode::Normal);
 	airMode = 0;
 	air.clear();
 	walls.clear();
@@ -521,7 +522,7 @@ void Simulation::spark_particle_nocheck_forceSPRK(int i, SimPosI pos)
 		parts[i].life = 5;
 	else
 		parts[i].life = 4;
-	if (parts[i].temp < 673.0f && !legacy_enable && (type==PT_METL || type == PT_BMTL || type == PT_BRMT || type == PT_PSCN || type == PT_NSCN || type == PT_ETRD || type == PT_NBLE || type == PT_IRON))
+	if (parts[i].temp < 673.0f && option_heatMode()!=HeatMode::Legacy && (type==PT_METL || type == PT_BMTL || type == PT_BRMT || type == PT_PSCN || type == PT_NSCN || type == PT_ETRD || type == PT_NBLE || type == PT_IRON))
 	{
 		parts[i].temp = parts[i].temp+10.0f;
 		if (parts[i].temp > 673.0f)
@@ -932,7 +933,7 @@ MoveResult::Code Simulation::part_move(int i, SimPosI srcPos, SimPosF destPosF)
 			FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, destPos, ri)
 			{
 				int rt = parts[ri].type;
-				if (!legacy_enable && t==PT_PHOT)//PHOT heat conduction
+				if (option_heatMode()!=HeatMode::Legacy && t==PT_PHOT)//PHOT heat conduction
 				{
 					if (rt == PT_COAL || rt == PT_BCOL)
 						parts[ri].temp = parts[i].temp;
@@ -1044,7 +1045,7 @@ MoveResult::Code Simulation::part_move(int i, SimPosI srcPos, SimPosF destPosF)
 			if (rt==PT_BHOL || rt==PT_NBHL)
 			{
 				// blackhole heats up when it eats particles
-				if (!legacy_enable)
+				if (option_heatMode()!=HeatMode::Legacy)
 				{
 					part_add_temp(parts[ri], parts[i].temp/2);
 				}
@@ -1056,7 +1057,7 @@ MoveResult::Code Simulation::part_move(int i, SimPosI srcPos, SimPosF destPosF)
 				if (t==PT_ANAR)
 				{
 					// whitehole cools down when it eats ANAR
-					if (!legacy_enable)
+					if (option_heatMode()!=HeatMode::Legacy)
 					{
 						part_add_temp(parts[ri], -(MAX_TEMP-parts[i].temp)/2);
 					}
@@ -1524,7 +1525,7 @@ void Simulation::UpdateParticles()
 			if (t==PT_GEL)
 				gel_scale = parts[i].tmp*2.55f;
 
-			if (!legacy_enable)
+			if (option_heatMode()!=HeatMode::Legacy)
 			{
 				if (y-2 >= 0 && y-2 < YRES && (elements[t].Properties&TYPE_LIQUID) && (t!=PT_GEL || rng.chance(parts[i].tmp,100))) {//some heat convection for liquids
 					int swapIndex = pmap_find_one(x,y-2,t);
@@ -1552,7 +1553,7 @@ void Simulation::UpdateParticles()
 					}
 				}
 
-			if (!legacy_enable)
+			if (option_heatMode()!=HeatMode::Legacy)
 			{
 				//heat transfer code
 				//this is probably a bit slower now, with the removal of the fixed size surround_hconduct array
@@ -1882,7 +1883,7 @@ void Simulation::UpdateParticles()
 				y = (int)(parts[i].y+0.5f);
 			}
 #endif
-			if (legacy_enable)//if heat sim is off
+			if (option_heatMode()==HeatMode::Legacy)//if heat sim is off
 				ElementsShared_noHeatSim::update(this, i,x,y,surround_space,nt,parts);
 
 killed:
@@ -2345,6 +2346,11 @@ void Simulation::option_edgeMode(short newMode)
 		option_edgeMode(0);
 		break;
 	}
+}
+
+void Simulation::option_heatMode(HeatMode newMode)
+{
+	heatMode = newMode;
 }
 
 

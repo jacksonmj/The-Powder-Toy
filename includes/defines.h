@@ -130,11 +130,8 @@ extern int saveURIOpen;
 extern char * saveDataOpen;
 extern int saveDataOpenSize;
 
-extern int amd;
-
 extern int FPSB;
 
-extern int legacy_enable;
 extern int sound_enable;
 extern int kiosk_enable;
 extern int decorations_enable;
@@ -170,6 +167,13 @@ struct stamp
 	int thumb_w, thumb_h, dodelete;
 };
 typedef struct stamp stamp;
+extern stamp stamps[STAMP_MAX];
+extern int stamp_count;
+void stamp_save(int x, int y, int w, int h);
+void *stamp_load(int i, int *size);
+void stamp_init();
+void del_stamp(int d);
+
 
 extern int frameidx;
 extern int MSIGN;
@@ -180,15 +184,12 @@ extern int REPLACE_MODE;
 extern int CURRENT_BRUSH;
 extern int GRID_MODE;
 extern int DEBUG_MODE;
-extern stamp stamps[STAMP_MAX];
-extern int stamp_count;
 extern int itc;
 extern char itc_msg[64];
 
 extern int do_open;
 extern int sys_pause;
 extern int sys_shortcuts;
-extern int legacy_enable; //Used to disable new features such as heat, will be set by commandline or save.
 extern int framerender;
 extern pixel *vid_buf;
 
@@ -201,7 +202,6 @@ void thumb_cache_inval(const char *id);
 void thumb_cache_add(const char *id, void *thumb, int size);
 int thumb_cache_find(const char *id, void **thumb, int *size);
 void clear_sim(void);
-void del_stamp(int d);
 void sdl_seticon(void);
 void play_sound(char *file);
 int set_scale(int scale, int kiosk);

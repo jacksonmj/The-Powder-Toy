@@ -81,7 +81,7 @@ public:
 				sim->air.pv.add(SimPosI(x,y), 0.25f * CFDS);
 		}
 
-		if (legacy_enable && t!=PT_SPRK)
+		if (sim->option_heatMode()==HeatMode::Legacy && t!=PT_SPRK)
 		{
 			return ElementsShared_noHeatSim::update_pyro_neighbour(UPDATE_FUNC_SUBCALL_ARGS, rx, ry, rt, ri);
 		}

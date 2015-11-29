@@ -16,12 +16,13 @@
 #include "simulation/ElementsCommon.h"
 #include "simulation/elements-shared/noHeatSim.h"
 
-// Additional interactions which only occur when legacy_enable is on
+// Additional interactions which only occur when heatMode is Legacy
 int ElementsShared_noHeatSim::update(UPDATE_FUNC_ARGS) {
 	int rx, ry, rt;
 	int rcount, ri, rnext;
 	int t = parts[i].type;
-	if (!legacy_enable) return 0;
+	if (sim->option_heatMode() != HeatMode::Legacy)
+		return 0;
 	if (t==PT_WTRV) {
 		for (rx=-2; rx<3; rx++)
 			for (ry=-2; ry<3; ry++)
@@ -142,7 +143,7 @@ int ElementsShared_noHeatSim::update(UPDATE_FUNC_ARGS) {
 	return 0;
 }
 
-// Additional interactions for 'hot' things (FIRE, LAVA, etc) which only occur when legacy_enable is on
+// Additional interactions for 'hot' things (FIRE, LAVA, etc) which only occur when heatMode is Legacy
 int ElementsShared_noHeatSim::update_pyro(UPDATE_FUNC_ARGS)
 {
 	int rx, ry, rt;

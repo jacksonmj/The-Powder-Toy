@@ -36,7 +36,7 @@ int SLTW_update(UPDATE_FUNC_ARGS) {
 						break;
 					case PT_RBDM:
 					case PT_LRBD:
-						if ((!sim->heat_mode || parts[i].temp>(273.15f+12.0f)) && sim->rng.chance<1,100>())
+						if ((sim->option_heatMode()==HeatMode::Legacy || parts[i].temp>(273.15f+12.0f)) && sim->rng.chance<1,100>())
 						{
 							sim->part_change_type(i,x,y,PT_FIRE);
 							parts[i].life = 4;

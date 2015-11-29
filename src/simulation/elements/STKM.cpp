@@ -657,7 +657,7 @@ void STKM_interact(Simulation *sim, Stickman_data* playerp, int i, int x, int y)
 
 		if ((rt==PT_BHOL || rt==PT_NBHL) && parts[i].type)
 		{
-			if (!legacy_enable)
+			if (sim->option_heatMode()!=HeatMode::Legacy)
 			{
 				sim->part_add_temp(parts[ri], parts[i].temp/2);
 			}

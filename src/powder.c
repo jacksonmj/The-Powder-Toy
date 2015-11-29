@@ -34,6 +34,26 @@
 
 #include "algorithm/for_each_i.hpp"
 
+void clear_sim(void)
+{
+	globalSim->clear();
+	MSIGN = -1;
+	emp_decor = 0;
+	memset(pers_bg, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
+	memset(fire_r, 0, sizeof(fire_r));
+	memset(fire_g, 0, sizeof(fire_g));
+	memset(fire_b, 0, sizeof(fire_b));
+	if(gravmask)
+		memset(gravmask, 0xFFFFFFFF, (XRES/CELL)*(YRES/CELL)*sizeof(unsigned));
+	if(gravy)
+		memset(gravy, 0, (XRES/CELL)*(YRES/CELL)*sizeof(float));
+	if(gravx)
+		memset(gravx, 0, (XRES/CELL)*(YRES/CELL)*sizeof(float));
+	if(gravp)
+		memset(gravp, 0, (XRES/CELL)*(YRES/CELL)*sizeof(float));
+	gravity_cleared = 1;
+}
+
 int lighting_recreate = 0;
 int force_stacking_check = 0;//whether to force a check for excessively stacked particles
 

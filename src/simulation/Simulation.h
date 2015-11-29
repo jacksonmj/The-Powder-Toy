@@ -164,6 +164,12 @@ public:
 	InterpolateMoveResult() : limitApplied(false) {}
 };
 
+enum class HeatMode : short
+{
+	Legacy=0,
+	Normal=1
+};
+
 class SimulationSharedData;
 
 class Simulation;
@@ -182,8 +188,10 @@ public:
 	MoveResult::Code can_move[PT_NUM][PT_NUM];
 	static constexpr float maxVelocity = 1e4f;
 
-	short heat_mode;//Will be a replacement for legacy_enable at some point. 0=heat sim off, 1=heat sim on, 2=realistic heat on (todo)
-	short edgeMode;
+protected:
+	HeatMode heatMode;
+	short edgeMode;// TODO: make into enum
+public:
 	short airMode;
 	int ambientHeatEnabled;// TODO: should really be bool, but quickmenu can only handle ints
 	float ambientTemp;
@@ -196,6 +204,8 @@ public:
 
 	short option_edgeMode() { return edgeMode; }
 	void option_edgeMode(short newMode);
+	HeatMode option_heatMode() { return heatMode; }
+	void option_heatMode(HeatMode newMode);
 
 	template<class ElemDataClass_T, typename... Args>
 	void elemData_create(int elementId, Args&&... args)

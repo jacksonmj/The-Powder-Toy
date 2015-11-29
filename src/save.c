@@ -767,7 +767,7 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 	bson_append_finish_object(&b);
 
 	bson_append_bool(&b, "waterEEnabled", water_equal_test);
-	bson_append_bool(&b, "legacyEnable", legacy_enable);
+	bson_append_bool(&b, "legacyEnable", globalSim->option_heatMode()==HeatMode::Legacy ? 1 : 0);
 	bson_append_bool(&b, "gravityEnable", ngrav_enable);
 	bson_append_bool(&b, "aheat_enable", globalSim->ambientHeatEnabled);
 	bson_append_bool(&b, "paused", sys_pause);
@@ -1068,7 +1068,7 @@ int parse_save_OPS(void *save, int size, int replace, int x0, int y0, WallsDataP
 		{
 			if(bson_iterator_type(&iter)==BSON_BOOL)
 			{
-				legacy_enable = ((int)bson_iterator_bool(&iter))?1:0;
+				globalSim->option_heatMode(bson_iterator_bool(&iter) ? HeatMode::Legacy : HeatMode::Normal);
 			}
 			else
 			{
@@ -1720,12 +1720,12 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, WallsDataP
 
 	if (ver<34)
 	{
-		legacy_enable = 1;
+		globalSim->option_heatMode(HeatMode::Legacy);
 	}
 	else
 	{
 		if (ver>=44) {
-			legacy_enable = c[3]&0x01;
+			globalSim->option_heatMode((c[3]&0x01) ? HeatMode::Legacy : HeatMode::Normal);
 			if (!sys_pause) {
 				sys_pause = (c[3]>>1)&0x01;
 			}
@@ -1738,7 +1738,7 @@ int parse_save_PSv(void *save, int size, int replace, int x0, int y0, WallsDataP
 			}
 		} else {
 			if (c[3]==1||c[3]==0) {
-				legacy_enable = c[3];
+				globalSim->option_heatMode(c[3] ? HeatMode::Legacy : HeatMode::Normal);
 			} else {
 				legacy_beta = 1;
 			}
@@ -2327,7 +2327,6 @@ corrupt:
 	if (fp) free(fp);
 	if (replace)
 	{
-		legacy_enable = 0;
 		clear_sim();
 	}
 	return 1;

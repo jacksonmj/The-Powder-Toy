@@ -85,7 +85,7 @@ int CBNW_update(UPDATE_FUNC_ARGS)
 					}
 					else if (rt==PT_RBDM||rt==PT_LRBD)
 					{
-						if ((legacy_enable||parts[i].temp>(285.15f)) && sim->rng.chance<1,100>())
+						if ((sim->option_heatMode()==HeatMode::Legacy||parts[i].temp>(285.15f)) && sim->rng.chance<1,100>())
 						{
 							sim->part_change_type(i,x,y,PT_FIRE);
 							parts[i].life = 4;

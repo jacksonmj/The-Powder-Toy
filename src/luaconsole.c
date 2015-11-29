@@ -1995,7 +1995,7 @@ int luatpt_heat(lua_State* l)
 {
 	int heatstate;	
 	heatstate = luaL_optint(l, 1, 0);	
-	legacy_enable = (heatstate==1?0:1);
+	globalSim->option_heatMode(heatstate==1 ? HeatMode::Normal : HeatMode::Legacy);
 	return 0;	
 }
 int luatpt_cmode_set(lua_State* l)

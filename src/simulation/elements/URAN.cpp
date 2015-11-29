@@ -17,7 +17,7 @@
 
 int URAN_update(UPDATE_FUNC_ARGS)
 {
-	if (!legacy_enable && sim->air.pv.get(SimPosI(x,y))>0.0f)
+	if (sim->option_heatMode()!=HeatMode::Legacy && sim->air.pv.get(SimPosI(x,y))>0.0f)
 	{
 		if (parts[i].temp-MIN_TEMP < 0.01f)
 		{

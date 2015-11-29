@@ -25,7 +25,7 @@ int YEST_update(UPDATE_FUNC_ARGS)
 			{
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
-					if (parts[ri].type==PT_DYST && sim->rng.chance<1,6>() && !legacy_enable)
+					if (parts[ri].type==PT_DYST && sim->rng.chance<1,6>() && sim->option_heatMode()!=HeatMode::Legacy)
 					{
 						sim->part_change_type(i,x,y,PT_DYST);
 					}
