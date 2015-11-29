@@ -79,7 +79,7 @@ void AMTR_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->ui->Description = "Anti-Matter, destroys a majority of particles.";
 
 	elem->State = ST_NONE;
-	elem->Properties = TYPE_PART;
+	elem->Properties = TYPE_GAS;
 
 	elem->LowPressureTransitionThreshold = IPL;
 	elem->LowPressureTransitionElement = NT;
