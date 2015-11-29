@@ -105,6 +105,7 @@ void Simulation::clear()
 	air.clear();
 	walls.clear();
 	signs.clear();
+	stackingCheckQueued = false;
 
 	hook_cleared.Trigger();
 	Sim_BasicData::clear();
@@ -290,6 +291,55 @@ bool Simulation::Check()
 		printf("Problems found in simulation data\n");
 	}
 	return isGood;
+}
+
+void Simulation::StackingCheck()
+{
+	stackingCheckQueued = false;
+	for (int y=0; y<YRES; y++)
+	{
+		for (int x=0; x<XRES; x++)
+		{
+			SimPosI pos(x,y);
+			int count = pmap(pos).count(PMapCategory::NotEnergy);
+			// Use a threshold for now, since some particle stacking can be normal (e.g. BIZR + FILT)
+			if (count>5)
+			{
+				bool excessive = false;
+				if (walls.type(pos)==WL_EHOLE)
+				{
+					// Allow more stacking in E-hole
+					if (count>1500)
+						excessive = true;
+				}
+				// Random chance to turn into BHOL that increases with the amount of stacking, up to a threshold where it is certain to turn into BHOL
+				else if (count>=1500 || rng.randInt<0,1600>()<=(count+100))
+				{
+					excessive = true;
+				}
+
+				if (excessive)
+				{
+					FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, pos, i)
+					{
+						part_kill(i);
+					}
+					// Create black hole, strength depends on number of stacked particles
+					int p = part_create(-3, pos, PT_NBHL);
+					if (p>=0)
+					{
+						parts[p].temp = MAX_TEMP;
+						parts[p].tmp = std::min(count, 512000);
+					}
+				}
+			}
+		}
+	}
+}
+
+void Simulation::queueStackingCheck()
+{
+	stackingCheckQueued = true;
 }
 
 // the function for creating a particle
@@ -1249,7 +1299,6 @@ void Simulation::UpdateParticles()
 	int lighting_ok=1;
 	unsigned int elem_properties;
 	float pGravX, pGravY, pGravD;
-	int excessive_stacking_found = 0;
 	bool transitionOccurred;
 
 	recalc_freeParticles();
@@ -1283,68 +1332,9 @@ void Simulation::UpdateParticles()
 	if (sys_pause&&!framerender)//do nothing if paused
 		return;
 		
-	// TODO: doesn't work with linked lists pmap yet
-	/*if (force_stacking_check || rng.chance<1,10>())
-	{
-		force_stacking_check = 0;
-		excessive_stacking_found = 0;
-		for (y=0; y<YRES; y++)
-		{
-			for (x=0; x<XRES; x++)
-			{
-				// Use a threshold, since some particle stacking can be normal (e.g. BIZR + FILT)
-				// Setting pmap_count[y][x] > NPART means BHOL will form in that spot
-				if (pmap_count[y][x]>5)
-				{
-					if (bmap[y/CELL][x/CELL]==WL_EHOLE)
-					{
-						// Allow more stacking in E-hole
-						if (pmap_count[y][x]>1500)
-						{
-							pmap_count[y][x] = pmap_count[y][x] + NPART;
-							excessive_stacking_found = 1;
-						}
-					}
-					// Random chance to turn into BHOL that increases with the amount of stacking, up to a threshold where it is certain to turn into BHOL
-					else if (pmap_count[y][x]>=1500 || rng.randInt<0,1600>()<=(pmap_count[y][x]+100))
-					{
-						pmap_count[y][x] = pmap_count[y][x] + NPART;
-						excessive_stacking_found = 1;
-					}
-				}
-			}
-		}
-		if (excessive_stacking_found)
-		{
-			for (i=0; i<=parts_lastActiveIndex; i++)
-			{
-				if (parts[i].type)
-				{
-					t = parts[i].type;
-					x = (int)(parts[i].x+0.5f);
-					y = (int)(parts[i].y+0.5f);
-					if (x>=0 && y>=0 && x<XRES && y<YRES && !(elements[t].Properties&TYPE_ENERGY))
-					{
-						if (pmap_count[y][x]>=NPART)
-						{
-							if (pmap_count[y][x]>NPART)
-							{
-								create_part(i, x, y, PT_NBHL);
-								parts[i].temp = MAX_TEMP;
-								parts[i].tmp = pmap_count[y][x]-NPART;//strength of grav field
-								if (parts[i].tmp>51200) parts[i].tmp = 51200;
-								pmap_count[y][x] = NPART;
-							}
-							else
-							{
-								part_kill(i);
-							}
-						}
-					}
-				}
-			}
-		}
-	}*/
+
+	if (stackingCheckQueued || rng.chance<1,10>())
+		StackingCheck();
 
 	//wire!
 	if (elementCount[PT_WIRE])

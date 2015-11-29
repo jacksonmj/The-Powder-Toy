@@ -93,7 +93,6 @@ extern wall_type wtypes[];
 
 extern const particle emptyparticle;
 
-extern int force_stacking_check;
 extern int ppip_changed;
 
 extern particle *parts;

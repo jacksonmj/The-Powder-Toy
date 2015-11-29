@@ -191,6 +191,7 @@ public:
 protected:
 	HeatMode heatMode;
 	short edgeMode;// TODO: make into enum
+	bool stackingCheckQueued;
 public:
 	short airMode;
 	int ambientHeatEnabled;// TODO: should really be bool, but quickmenu can only handle ints
@@ -218,6 +219,8 @@ public:
 	~Simulation();
 	void clear();
 	bool Check();
+	void StackingCheck();
+	void queueStackingCheck();
 	void UpdateParticles();
 
 	int part_create(int p, SimPosF newPosF, int t);

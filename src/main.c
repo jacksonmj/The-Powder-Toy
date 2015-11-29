@@ -1263,7 +1263,7 @@ int main(int argc, char *argv[])
 					globalSim->recalc_pmap();
 					globalSim->recalc_elementCount();
 					globalSim->recalc_freeParticles();
-					force_stacking_check = 1;//check for excessive stacking of particles next time update_particles is run
+					globalSim->queueStackingCheck();
 				}
 				else
 				{

@@ -55,7 +55,6 @@ void clear_sim(void)
 }
 
 int lighting_recreate = 0;
-int force_stacking_check = 0;//whether to force a check for excessively stacked particles
 
 particle *parts;
 particle *cb_parts;

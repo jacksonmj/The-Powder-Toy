@@ -68,7 +68,6 @@ int parse_save(void *save, int size, int replace, int x0, int y0, WallsDataP wal
 	{
 		return 1;
 	}
-	force_stacking_check = 1;//check for excessive stacking of particles next time update_particles is run
 	ppip_changed = 1;
 	if(saveData[0] == 'O' && saveData[1] == 'P' && saveData[2] == 'S')
 	{
@@ -81,6 +80,7 @@ int parse_save(void *save, int size, int replace, int x0, int y0, WallsDataP wal
 	globalSim->recalc_pmap();
 	globalSim->recalc_elementCount();
 	globalSim->recalc_freeParticles();
+	globalSim->queueStackingCheck();
 	return result;
 }
 
