@@ -301,7 +301,16 @@ void Simulation::StackingCheck()
 		for (int x=0; x<XRES; x++)
 		{
 			SimPosI pos(x,y);
-			int count = pmap(pos).count(PMapCategory::NotEnergy);
+			int count = 0;
+			FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, pos, i)
+			{
+				int t = parts[i].type;
+				if (t!=PT_THDR && t!=PT_EMBR && t!=PT_FIGH && t!=PT_PLSM)
+				{
+					count++;
+				}
+			}
+
 			// Use a threshold for now, since some particle stacking can be normal (e.g. BIZR + FILT)
 			if (count>5)
 			{
