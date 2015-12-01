@@ -412,7 +412,7 @@ int run_stickman(Stickman_data* playerp, UPDATE_FUNC_ARGS)
 				FOR_PMAP_POSITION(sim, x+rx, y+ry, rcount, ri, rnext)
 				{
 					rt = parts[ri].type;
-					if (sim->elements[rt].Falldown!=0 || sim->elements[rt].State == ST_GAS
+					if (sim->elements[rt].Falldown!=0
 							|| (sim->elements[rt].Properties&TYPE_GAS)
 							|| (sim->elements[rt].Properties&TYPE_LIQUID)
 							|| rt == PT_NEUT || rt == PT_PHOT)
@@ -455,7 +455,7 @@ int run_stickman(Stickman_data* playerp, UPDATE_FUNC_ARGS)
 		bool solidFound = false;
 		FOR_PMAP_POSITION_NOENERGY(sim, rx, ry, rcount, ri, rnext)
 		{
-			if (sim->elements[parts[ri].type].State == ST_SOLID)
+			if (sim->elements[parts[ri].type].Properties&TYPE_SOLID)
 			{
 				solidFound = true;
 				break;

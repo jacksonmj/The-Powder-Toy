@@ -101,7 +101,7 @@ int GEL_update(UPDATE_FUNC_ARGS)
 						nd = dx*dx + dy*dy - 0.5;
 
 						per = 5*(1 - parts[i].tmp/100)*(nd/(dx*dx + dy*dy + nd) - 0.5);
-						if (sim->elements[rt].State==ST_LIQUID)
+						if (sim->elements[rt].Properties&TYPE_LIQUID)
 							per *= 0.1;
 						
 						dx *= per; dy *= per;

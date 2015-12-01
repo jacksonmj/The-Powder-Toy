@@ -1612,18 +1612,18 @@ void Simulation::UpdateParticles()
 
 					ctemph = ctempl = pt;
 					// change boiling point with pressure
-					if ((elements[t].State==ST_LIQUID && elements[t].HighTemperatureTransitionElement>-1 && elements[t].HighTemperatureTransitionElement<PT_NUM
-							&& elements[elements[t].HighTemperatureTransitionElement].State==ST_GAS)
+					if (((elements[t].Properties&TYPE_LIQUID) && element_isValid(elements[t].HighTemperatureTransitionElement)
+							&& (elements[elements[t].HighTemperatureTransitionElement].Properties&TYPE_GAS))
 					        || t==PT_LNTG || t==PT_SLTW)
 						ctemph -= 2.0f*air.pv.get(cellPos);
-					else if ((elements[t].State==ST_GAS && elements[t].LowTemperatureTransitionElement>-1 && elements[t].LowTemperatureTransitionElement<PT_NUM
-							 && elements[elements[t].LowTemperatureTransitionElement].State==ST_LIQUID)
+					else if (((elements[t].Properties&TYPE_GAS) && element_isValid(elements[t].LowTemperatureTransitionElement)
+							 && (elements[elements[t].LowTemperatureTransitionElement].Properties&TYPE_LIQUID))
 					         || t==PT_WTRV)
 						ctempl -= 2.0f*air.pv.get(cellPos);
 					s = 1;
 
 					//A fix for ice with ctype = 0
-					if ((t==PT_ICEI || t==PT_SNOW) && (!parts[i].ctype || !IsValidElement(parts[i].ctype) || parts[i].ctype==PT_ICEI || parts[i].ctype==PT_SNOW))
+					if ((t==PT_ICEI || t==PT_SNOW) && (!element_isValidThing(parts[i].ctype) || parts[i].ctype==PT_ICEI || parts[i].ctype==PT_SNOW))
 						parts[i].ctype = PT_WATR;
 
 					if (ctemph>=elements[t].HighTemperatureTransitionThreshold && elements[t].HighTemperatureTransitionElement>-1) {
@@ -1718,7 +1718,7 @@ void Simulation::UpdateParticles()
 						else if (t==PT_ICEI||t==PT_LAVA||t==PT_SNOW)
 							parts[i].ctype = parts[i].type;
 						if (!(t==PT_ICEI&&parts[i].ctype==PT_FRZW)) parts[i].life = 0;
-						if (elements[t].State==ST_GAS&&elements[parts[i].type].State!=ST_GAS)
+						if ((elements[t].Properties&TYPE_GAS) && !(elements[parts[i].type].Properties&TYPE_GAS))
 							air.pv.add(cellPos, 0.50f);
 						if (t==PT_NONE)
 						{
