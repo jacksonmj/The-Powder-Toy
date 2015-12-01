@@ -161,7 +161,6 @@ void GEL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Gel. A liquid with variable viscosity and heat conductivity.";
 
-	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID|PROP_LIFE_DEC|PROP_NEUTPENETRATE;
 
 	elem->LowPressureTransitionThreshold = IPL;

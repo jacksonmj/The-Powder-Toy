@@ -87,7 +87,6 @@ void FSEP_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Fuse Powder. Burns slowly like FUSE.";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART;
 
 	elem->LowPressureTransitionThreshold = IPL;

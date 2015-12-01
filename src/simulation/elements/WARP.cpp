@@ -97,7 +97,6 @@ void WARP_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Displaces other elements.";
 
-	elem->State = ST_GAS;
 	elem->Properties = TYPE_GAS|PROP_LIFE_DEC|PROP_LIFE_KILL;
 
 	elem->LowPressureTransitionThreshold = IPL;

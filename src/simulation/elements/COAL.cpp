@@ -96,7 +96,6 @@ void COAL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Coal, Burns very slowly. Gets red when hot.";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;
 
 	elem->LowPressureTransitionThreshold = IPL;

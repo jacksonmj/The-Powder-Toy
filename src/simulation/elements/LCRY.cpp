@@ -145,7 +145,6 @@ void LCRY_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Liquid Crystal. Changes colour when charged. (PSCN Charges, NSCN Discharges)";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;
 
 	elem->LowPressureTransitionThreshold = IPL;

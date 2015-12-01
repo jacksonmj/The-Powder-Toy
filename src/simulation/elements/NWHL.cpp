@@ -54,7 +54,6 @@ void NWHL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "White hole, pushes away other particles with gravity. (Requires Newtonian gravity)";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;
 
 	elem->LowPressureTransitionThreshold = IPL;

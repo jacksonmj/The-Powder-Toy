@@ -170,7 +170,6 @@ void QRTZ_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Quartz, breakable mineral. Conducts but becomes brittle at lower temperatures.";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_HOT_GLOW|PROP_LIFE_DEC;
 
 	elem->LowPressureTransitionThreshold = IPL;

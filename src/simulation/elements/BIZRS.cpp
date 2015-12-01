@@ -52,7 +52,6 @@ void BIZRS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Bizarre solid.";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;
 
 	elem->LowPressureTransitionThreshold = IPL;

@@ -163,7 +163,6 @@ void VIRS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Virus. Turns everything it touches into virus.";
 
-	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID|PROP_DEADLY;
 
 	elem->LowPressureTransitionThreshold = IPL;

@@ -81,7 +81,6 @@ void ICEI_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 1095;
 	elem->ui->Description = "Crushes under pressure. Cools down air.";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID | PROP_LIFE_DEC | PROP_NEUTPASS;
 
 	elem->LowPressureTransitionThreshold = IPL;

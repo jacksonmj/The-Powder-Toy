@@ -55,7 +55,6 @@ void VRSS_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Solid Virus. Turns everything it touches into virus.";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_DEADLY;
 
 	elem->LowPressureTransitionThreshold = IPL;

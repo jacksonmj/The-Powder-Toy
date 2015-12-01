@@ -89,7 +89,6 @@ void GBMB_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Gravity bomb. Sticks to the first object it touches then produces a strong gravity push.";
 
-	elem->State = ST_NONE;
 	elem->Properties = TYPE_PART|PROP_LIFE_DEC|PROP_LIFE_KILL_DEC;
 
 	elem->LowPressureTransitionThreshold = IPL;

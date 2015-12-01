@@ -120,7 +120,6 @@ void MERC_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Mercury. Volume changes with temperature, Conductive.";
 
-	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID|PROP_CONDUCTS|PROP_NEUTABSORB|PROP_LIFE_DEC;
 
 	elem->LowPressureTransitionThreshold = IPL;

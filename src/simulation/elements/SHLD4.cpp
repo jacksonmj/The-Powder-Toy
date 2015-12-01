@@ -93,7 +93,6 @@ void SHLD4_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Shield lvl 4.";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_LIFE_DEC;
 
 	elem->LowPressureTransitionThreshold = IPL;

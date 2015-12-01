@@ -146,7 +146,6 @@ void SING_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Singularity. Creates huge amounts of negative pressure and destroys everything.";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART|PROP_LIFE_DEC;
 
 	elem->LowPressureTransitionThreshold = IPL;

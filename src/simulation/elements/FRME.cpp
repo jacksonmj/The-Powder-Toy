@@ -59,7 +59,6 @@ void FRME_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Frame, can be used with pistons to push many particles.";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_LIFE_DEC;
 
 	elem->LowPressureTransitionThreshold = IPL;

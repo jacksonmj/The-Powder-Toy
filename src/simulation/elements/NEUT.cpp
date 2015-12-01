@@ -223,7 +223,6 @@ void NEUT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Neutrons. Interact with matter in odd ways.";
 
-	elem->State = ST_GAS;
 	elem->Properties = TYPE_ENERGY|PROP_LIFE_DEC|PROP_LIFE_KILL_DEC;
 
 	elem->LowPressureTransitionThreshold = IPL;

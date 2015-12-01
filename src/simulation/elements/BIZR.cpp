@@ -109,7 +109,6 @@ void BIZR_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Bizarre... contradicts the normal state changes. Paints other elements with its deco color.";
 
-	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID;
 
 	elem->LowPressureTransitionThreshold = IPL;

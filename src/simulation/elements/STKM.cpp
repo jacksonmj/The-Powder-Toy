@@ -724,7 +724,6 @@ void STKM_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Stickman. Don't kill him! Control with the arrow keys.";
 
-	elem->State = ST_NONE;
 	elem->Properties = PROP_NOCTYPEDRAW;
 
 	elem->LowPressureTransitionThreshold = IPL;

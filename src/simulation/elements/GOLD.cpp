@@ -110,7 +110,6 @@ void GOLD_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Corrosion resistant metal, will reverse corrosion of iron.";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_CONDUCTS|PROP_HOT_GLOW|PROP_LIFE_DEC|PROP_NEUTPASS;
 
 	elem->LowPressureTransitionThreshold = IPL;

@@ -92,7 +92,6 @@ void IRON_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Rusts with salt, can be used for electrolysis of WATR.";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_CONDUCTS|PROP_LIFE_DEC|PROP_HOT_GLOW;
 
 	elem->LowPressureTransitionThreshold = IPL;

@@ -95,7 +95,6 @@ void NBLE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Noble Gas. Diffuses and conductive. Ionizes into plasma when introduced to electricity.";
 
-	elem->State = ST_GAS;
 	elem->Properties = TYPE_GAS|PROP_CONDUCTS|PROP_LIFE_DEC;
 
 	elem->LowPressureTransitionThreshold = IPL;

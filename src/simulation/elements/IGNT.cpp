@@ -92,7 +92,6 @@ void IGNT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Ignition cord. Burns slowly with fire and sparks.";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID | PROP_NEUTPENETRATE | PROP_SPARKSETTLE | PROP_LIFE_KILL;
 
 	elem->LowPressureTransitionThreshold = IPL;

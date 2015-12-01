@@ -87,7 +87,6 @@ void DCEL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Decelerator, slows down nearby elements.";
 
-	elem->State = ST_NONE;
 	elem->Properties = TYPE_SOLID;
 
 	elem->LowPressureTransitionThreshold = IPL;

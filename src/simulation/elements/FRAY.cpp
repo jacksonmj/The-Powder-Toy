@@ -80,7 +80,6 @@ void FRAY_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Force Emitter. Pushes or pulls objects based on its temperature. Use like ARAY.";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_LIFE_DEC;
 
 	elem->LowPressureTransitionThreshold = IPL;

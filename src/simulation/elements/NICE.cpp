@@ -48,7 +48,6 @@ void NICE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Nitrogen Ice. Very cold, will melt into LN2 when heated only slightly.";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;
 
 	elem->LowPressureTransitionThreshold = IPL;

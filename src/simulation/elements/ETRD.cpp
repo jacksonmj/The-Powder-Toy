@@ -48,7 +48,6 @@ void ETRD_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Electrode. Creates a surface that allows Plasma arcs. (Use sparingly)";
 
-	elem->State = ST_NONE;
 	elem->Properties = TYPE_SOLID|PROP_CONDUCTS|PROP_LIFE_DEC;
 
 	elem->LowPressureTransitionThreshold = IPL;

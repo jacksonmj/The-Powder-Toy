@@ -54,7 +54,6 @@ void MORT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Steam Train.";
 
-	elem->State = ST_NONE;
 	elem->Properties = TYPE_PART;
 
 	elem->LowPressureTransitionThreshold = IPL;

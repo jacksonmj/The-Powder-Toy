@@ -111,7 +111,6 @@ void O2_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Oxygen gas. Ignites easily.";
 
-	elem->State = ST_GAS;
 	elem->Properties = TYPE_GAS;
 
 	elem->LowPressureTransitionThreshold = IPL;

@@ -131,7 +131,6 @@ void DRAY_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Duplicator ray. Replicates a line of particles in front of it.";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_LIFE_DEC;
 
 	elem->LowPressureTransitionThreshold = IPL;

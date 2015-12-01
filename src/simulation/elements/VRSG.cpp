@@ -61,7 +61,6 @@ void VRSG_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Gas Virus. Turns everything it touches into virus.";
 
-	elem->State = ST_GAS;
 	elem->Properties = TYPE_GAS|PROP_DEADLY;
 
 	elem->LowPressureTransitionThreshold = IPL;

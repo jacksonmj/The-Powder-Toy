@@ -48,7 +48,6 @@ void DESL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Liquid diesel. Explodes under high pressure and temperatures.";
 
-	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID;
 
 	elem->LowPressureTransitionThreshold = IPL;

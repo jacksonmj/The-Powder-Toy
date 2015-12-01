@@ -41,7 +41,6 @@ Element::Element() :
 	PhotonReflectWavelengths(0x3FFFFFFF),
 	Weight(100),
 	Latent(0),
-	State(ST_NONE),
 	Properties(0),
 	LowPressureTransitionThreshold(IPL),
 	LowPressureTransitionElement(NT),

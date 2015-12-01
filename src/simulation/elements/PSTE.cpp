@@ -48,7 +48,6 @@ void PSTE_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Colloid, Hardens under pressure.";
 
-	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID;
 
 	elem->LowPressureTransitionThreshold = IPL;

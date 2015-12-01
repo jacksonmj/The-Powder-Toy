@@ -154,7 +154,6 @@ void PCLN_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Powered clone. When activated, duplicates any particles it touches.";
 
-	elem->State = ST_NONE;
 	elem->Properties = TYPE_SOLID | PROP_NOCTYPEDRAW;
 
 	elem->LowPressureTransitionThreshold = IPL;

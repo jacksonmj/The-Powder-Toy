@@ -24,10 +24,6 @@
 class Simulation;
 
 
-#define ST_NONE 0
-#define ST_SOLID 1
-#define ST_LIQUID 2
-#define ST_GAS 3
 /*
    TODO: We should start to implement these.
 */
@@ -103,7 +99,6 @@ public:
 	// Latent value is in TPT imaginary units - 750/226*enthalpy value of the material
 	unsigned int Latent;
 
-	char State;
 	// NB: if (Properties&TYPE_ENERGY) is changed, pmap needs rebuilding (sim->pmap_reset()) since it is divided according to this property
 	unsigned int Properties;
 

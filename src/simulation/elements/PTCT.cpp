@@ -50,7 +50,6 @@ void PTCT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Semi-conductor. Only conducts electricity when cold. (Less than 100C)";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_CONDUCTS|PROP_LIFE_DEC;
 
 	elem->LowPressureTransitionThreshold = IPL;

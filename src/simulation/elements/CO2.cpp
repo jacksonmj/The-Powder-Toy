@@ -107,7 +107,6 @@ void CO2_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Carbon Dioxide. Heavy gas, drifts downwards. Carbonates water and turns to dry ice when cold.";
 
-	elem->State = ST_GAS;
 	elem->Properties = TYPE_GAS;
 
 	elem->LowPressureTransitionThreshold = IPL;

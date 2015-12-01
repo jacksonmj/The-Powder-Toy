@@ -70,7 +70,6 @@ void RPEL_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Repels or attracts particles based on its temperature.";
 
-	elem->State = ST_NONE;
 	elem->Properties = TYPE_SOLID;
 
 	elem->LowPressureTransitionThreshold = IPL;

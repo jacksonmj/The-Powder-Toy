@@ -93,7 +93,6 @@ void SLTW_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 7500;
 	elem->ui->Description = "Saltwater, conducts electricity, difficult to freeze.";
 
-	elem->State = ST_LIQUID;
 	elem->Properties = TYPE_LIQUID|PROP_CONDUCTS|PROP_LIFE_DEC|PROP_NEUTPENETRATE;
 
 	elem->LowPressureTransitionThreshold = IPL;

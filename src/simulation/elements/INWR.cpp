@@ -48,7 +48,6 @@ void INWR_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Insulated Wire. Doesn't conduct to metal or semiconductors.";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID|PROP_CONDUCTS|PROP_LIFE_DEC;
 
 	elem->LowPressureTransitionThreshold = IPL;

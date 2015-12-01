@@ -250,7 +250,6 @@ void PRTI_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Portal IN. Particles go in here. Also has temperature dependent channels. (same as WIFI)";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_SOLID;
 
 	elem->LowPressureTransitionThreshold = IPL;

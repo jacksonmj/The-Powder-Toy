@@ -48,7 +48,6 @@ void CNCT_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Concrete, stronger than stone.";
 
-	elem->State = ST_SOLID;
 	elem->Properties = TYPE_PART|PROP_HOT_GLOW;
 
 	elem->LowPressureTransitionThreshold = IPL;

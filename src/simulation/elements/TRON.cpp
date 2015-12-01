@@ -289,7 +289,6 @@ void TRON_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->Latent = 0;
 	elem->ui->Description = "Smart particles, Travels in straight lines and avoids obstacles. Grows with time.";
 
-	elem->State = ST_NONE;
 	elem->Properties = TYPE_SOLID|PROP_LIFE_DEC|PROP_LIFE_KILL;
 
 	elem->LowPressureTransitionThreshold = IPL;
