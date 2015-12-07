@@ -216,7 +216,7 @@ public:
 		{
 			// Load cell data
 			T bmapCells, emapCells;
-			if (isAligned && 0)
+			if (isAligned)
 			{
 				bmapCells = simdpp::load(k.bmap+i);
 				emapCells = simdpp::load(k.emap+i);
