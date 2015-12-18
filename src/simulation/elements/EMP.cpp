@@ -18,7 +18,6 @@
 #include "common/tptmath.h"
 #include "common/tpt-stdint.h"
 #include "EMP.hpp"
-#include "simulation/CellsData_fastloop.hpp"
 
 EMP_ElemDataSim::EMP_ElemDataSim(Simulation *s, int t) :
 	ElemDataSim(s,t),
