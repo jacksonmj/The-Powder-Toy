@@ -327,10 +327,12 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 					}
 					else if (sender==PT_ETRD && parts[i].life==5) //ETRD is odd and conducts to others only at life 5, this could probably be somewhere else
 					{
-						sim->part_change_type(i,x,y,sender);
-						parts[i].ctype = PT_NONE;
-						parts[i].life = 20;
-						sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
+						if (sim->spark_particle_conductiveOnly(ri, x+rx, y+ry))
+						{
+							parts[i].life = 20;
+							sim->part_change_type(i,x,y,sender);
+							parts[i].ctype = PT_NONE;
+						}
 					}
 				}
 			}
