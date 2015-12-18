@@ -406,29 +406,6 @@ void delete_part(int x, int y, int flags)//calls part_kill with the particle loc
 	}
 }
 
-int nearest_part(int ci, int t, int max_d)
-{
-	int distance = (max_d!=-1)?max_d:MAX_DISTANCE;
-	int ndistance = 0;
-	int id = -1;
-	int i = 0;
-	int cx = (int)parts[ci].x;
-	int cy = (int)parts[ci].y;
-	for (i=0; i<=globalSim->parts_lastActiveIndex; i++)
-	{
-		if ((parts[i].type==t||(t==-1&&parts[i].type))&&!parts[i].life&&i!=ci)
-		{
-			ndistance = std::abs(cx-parts[i].x)+std::abs(cy-parts[i].y);// Faster but less accurate  Older: sqrt(pow(cx-parts[i].x, 2)+pow(cy-parts[i].y, 2));
-			if (ndistance<distance)
-			{
-				distance = ndistance;
-				id = i;
-			}
-		}
-	}
-	return id;
-}
-
 void create_arc(int sx, int sy, int dx, int dy, int midpoints, int variance, int type, int flags)
 {
 	int i;

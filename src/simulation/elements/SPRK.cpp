@@ -14,6 +14,7 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/elements/ETRD.hpp"
 #include "simulation/elements/EMP.hpp"
 #include "simulation/elements/INST.h"
 #include "simulation/elements-shared/pyro.h"
@@ -31,7 +32,6 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 			parts[i].temp = R_TEMP + 273.15f;
 		if (ct<=0 || !sim->IsValidElement(ct))
 			ct = PT_METL;
-		sim->part_change_type(i,x,y,ct);
 		parts[i].ctype = PT_NONE;
 		parts[i].life = 4;
 		if (ct == PT_WATR)
@@ -40,6 +40,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 			parts[i].life = 54;
 		else if (ct == PT_SWCH)
 			parts[i].life = 14;
+		sim->part_change_type(i,x,y,ct);
 		return 0;
 	}
 	switch (ct)
@@ -54,13 +55,13 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 	case PT_ETRD:
 		if (parts[i].life==1)
 		{
-			nearp = nearest_part(i, PT_ETRD, -1);
+			nearp = Element_ETRD::nearestSparkablePart(sim, i);
 			if (nearp!=-1&& !sim->is_spark_blocked(i, nearp))
 			{
 				create_line(x, y, (int)(parts[nearp].x+0.5f), (int)(parts[nearp].y+0.5f), 0, 0, PT_PLSM, 0);
+				parts[i].life = 20;
 				sim->part_change_type(i,x,y,ct);
 				ct = parts[i].ctype = PT_NONE;
-				parts[i].life = 20;
 				sim->spark_particle_conductiveOnly(nearp, (int)(parts[nearp].x+0.5f),(int)(parts[nearp].y+0.5f));
 				parts[nearp].life = 9;
 			}
