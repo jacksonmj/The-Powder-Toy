@@ -363,7 +363,7 @@ int Simulation::part_create(int p, SimPosF newPosF, int t)
 	newPosF = pos_handleEdges(SimPosF(SimPosFT(newPosF)));
 	SimPosI newPos = newPosF;
 
-	int i, oldType = PT_NONE;
+	int i;
 	if (!pos_isValid(newPos) || !element_isValidThing(t))
 	{
 		return -1;
@@ -406,10 +406,10 @@ int Simulation::part_create(int p, SimPosF newPosF, int t)
 	else if (p>=0) // Replace existing particle
 	{
 		SimPosI oldPos = SimPosF(parts[p].x, parts[p].y);
-		oldType = parts[p].type;
+		int oldType = parts[p].type;
 		if (elements[oldType].Func_ChangeType)
 		{
-			(*(elements[oldType].Func_ChangeType))(this, p, oldPos.x, oldPos.y, oldType, t);
+			(*(elements[oldType].Func_ChangeType))(this, p, oldPos.x, oldPos.y, oldType, PT_NONE);
 		}
 		if (oldType) elementCount[oldType]--;
 		pmap_remove(p, oldPos, oldType);
@@ -457,7 +457,7 @@ int Simulation::part_create(int p, SimPosF newPosF, int t)
 
 	if (elements[t].Func_ChangeType)
 	{
-		(*(elements[t].Func_ChangeType))(this, i, newPos.x, newPos.y, oldType, t);
+		(*(elements[t].Func_ChangeType))(this, i, newPos.x, newPos.y, PT_NONE, t);
 	}
 
 	elementCount[t]++;
