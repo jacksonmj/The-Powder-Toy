@@ -38,7 +38,6 @@ void clear_sim(void)
 {
 	globalSim->clear();
 	MSIGN = -1;
-	emp_decor = 0;
 	memset(pers_bg, 0, (XRES+BARSIZE)*YRES*PIXELSIZE);
 	memset(fire_r, 0, sizeof(fire_r));
 	memset(fire_g, 0, sizeof(fire_g));

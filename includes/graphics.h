@@ -69,8 +69,6 @@
 
 #define ARGBColour_TO_PIXEL(x) (PIXRGB(COLR(x),COLG(x),COLB(x)))
 
-extern int emp_decor;
-
 extern unsigned int *render_modes;
 extern unsigned int render_mode;
 extern unsigned int colour_mode;

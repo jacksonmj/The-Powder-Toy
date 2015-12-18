@@ -74,6 +74,7 @@
 #endif
 #endif
 
+#include "simulation/elements/EMP.hpp"
 #include "simulation/elements/PRTI.h"
 #include "simulation/elements/STKM.h"
 #include "simulation/elements/WIFI.h"
@@ -197,7 +198,6 @@ void main(void)\
 
 #endif
 
-int emp_decor = 0;
 int sandcolour = 0;
 int sandcolour_frame = 0;
 
@@ -1941,11 +1941,9 @@ void xor_rect(pixel *vid, int x, int y, int w, int h)
 void draw_other(pixel *vid) // EMP effect
 {
 	int i, j;
-	if (emp_decor>0 && !sys_pause) emp_decor-=emp_decor/25+2;
-	if (emp_decor>40) emp_decor=40;
-	if (emp_decor<0) emp_decor = 0;
 	if (!(render_mode & EFFECT)) // not in nothing mode
 		return;
+	int emp_decor = globalSim->elemData<EMP_ElemDataSim>(PT_EMP)->getFlashStrength();
 	if (emp_decor>0)
 	{
 #ifdef OGLR

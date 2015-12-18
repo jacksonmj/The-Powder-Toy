@@ -125,6 +125,10 @@ public:
 	{
 		return randUint32()*getScaleForFloat(minVal,maxVal) + minVal;
 	}
+	float randFloat() // 0.0f to 1.0f
+	{
+		return randUint32()/4294967296.0f;
+	}
 
 	// For tpt_rng, template versions are just wrappers with some static_asserts
 	template <int minVal, int maxVal>
@@ -310,7 +314,11 @@ public:
 
 	// Can't handle these using a limited number of bits, so call tpt_rng functions instead:
 	float randFloat(float minVal, float maxVal) { return rng->randFloat(minVal, maxVal); }
+	float randFloat() { return rng->randFloat(); }
+	bool chancef(float p) { return rng->chancef(p); }
+	bool chancef(double p) { return rng->chancef(p); }
 	uint_fast32_t randUint32() { return rng->randUint32(); }
+	uint_fast64_t randUint64() { return rng->randUint64(); }
 };
 
 #endif
