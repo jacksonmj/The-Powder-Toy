@@ -213,33 +213,6 @@ void EMP_ElemDataSim::Simulation_AfterUpdate()
 	triggerCount = 0;
 }
 
-
-
-int EMP_update(UPDATE_FUNC_ARGS)
-{
-	int rx,ry;
-	int rcount, ri, rnext;
-	if (parts[i].life)
-		return 0;
-	for (ry=-2; ry<3; ry++)
-		for (rx=-2; rx<3; rx++)
-			if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
-			{
-				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
-				{
-					if (parts[ri].type==PT_SPRK && parts[ri].life>0 && parts[ri].life<4)
-					{
-						goto trigger;
-					}
-				}
-			}
-	return 0;
-trigger:
-	sim->elemData<EMP_ElemDataSim>(PT_EMP)->triggerCount++;
-	parts[i].life=220;
-	return 0;
-}
-
 int EMP_graphics(GRAPHICS_FUNC_ARGS)
 {
 	if(cpart->life)
@@ -303,7 +276,6 @@ void EMP_init_element(ELEMENT_INIT_FUNC_ARGS)
 	elem->HighTemperatureTransitionThreshold = ITH;
 	elem->HighTemperatureTransitionElement = NT;
 
-	elem->Update = &EMP_update;
 	elem->Graphics = &EMP_graphics;
 	elem->Func_SimInit = &SimInit_createElemData<EMP_ElemDataSim>;
 }

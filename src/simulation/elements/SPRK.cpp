@@ -14,6 +14,7 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "simulation/elements/EMP.hpp"
 #include "simulation/elements/INST.h"
 #include "simulation/elements-shared/pyro.h"
 
@@ -218,6 +219,13 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 					case PT_INWR:
 						if (sender==PT_METL && !spark_blocked && parts[i].life<4)
 							parts[ri].temp = 473.0f;
+						break;
+					case PT_EMP:
+						if (parts[i].life>0 && parts[i].life<4 && !parts[ri].life)
+						{
+							sim->elemData<EMP_ElemDataSim>(PT_EMP)->triggerCount++;
+							parts[ri].life=220;
+						}
 						break;
 					default:
 						break;
