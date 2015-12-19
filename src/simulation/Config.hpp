@@ -25,9 +25,6 @@
 #define XCNTR   306
 #define YCNTR   192
 
-// TODO: should probably be using distance**2 instead wherever this is used, to avoid unnecessary sqrt
-#define MAX_DISTANCE sqrt(pow(XRES, 2)+pow(YRES, 2))
-
 #define CELL    4
 #define ISTP    (CELL/2)
 #define CFDS	(4.0f/CELL)

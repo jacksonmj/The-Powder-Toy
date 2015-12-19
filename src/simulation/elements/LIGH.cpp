@@ -22,7 +22,7 @@
 int LIGH_nearest_part(Simulation *sim, int ci, int max_d)
 {
 	particle *parts = sim->parts;
-	int distance = (max_d!=-1)?max_d:MAX_DISTANCE;
+	int distance = (max_d!=-1)?max_d:XRES+YRES;
 	int ndistance = 0;
 	int id = -1;
 	int i = 0;
