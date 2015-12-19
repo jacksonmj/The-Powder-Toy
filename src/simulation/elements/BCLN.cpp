@@ -53,6 +53,8 @@ int BCLN_update(UPDATE_FUNC_ARGS)
 		sim->randomRelPos_1_noCentre(&rx,&ry);
 		// TODO: change this create_part
 		if (parts[i].ctype==PT_LIFE) create_part(-1, x+rx, y+ry, parts[i].ctype|(parts[i].tmp<<8));
+		else if (parts[i].ctype==PT_SPRK)
+			sim->spark_position(x+rx, y+ry);
 		else if (parts[i].ctype!=PT_LIGH || sim->rng.chance<1,30>())
 		{
 			int np = sim->part_create(-1, x+rx, y+ry, parts[i].ctype);

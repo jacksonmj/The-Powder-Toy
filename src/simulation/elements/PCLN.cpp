@@ -102,11 +102,16 @@ int PCLN_update(UPDATE_FUNC_ARGS)
 		{
 			int rx,ry;
 			sim->randomRelPos_1_noCentre(&rx,&ry);
-			int np = sim->part_create(-1, x+rx, y+ry, parts[i].ctype);
-			if (np>=0)
+			if (parts[i].ctype==PT_SPRK)
+				sim->spark_position(x+rx, y+ry);
+			else
 			{
-				if (parts[i].ctype==PT_LAVA && parts[i].tmp>0 && parts[i].tmp<PT_NUM && sim->elements[parts[i].tmp].HighTemperatureTransitionElement==PT_LAVA)
-					parts[np].ctype = parts[i].tmp;
+				int np = sim->part_create(-1, x+rx, y+ry, parts[i].ctype);
+				if (np>=0)
+				{
+					if (parts[i].ctype==PT_LAVA && parts[i].tmp>0 && parts[i].tmp<PT_NUM && sim->elements[parts[i].tmp].HighTemperatureTransitionElement==PT_LAVA)
+						parts[np].ctype = parts[i].tmp;
+				}
 			}
 		}
 	}
