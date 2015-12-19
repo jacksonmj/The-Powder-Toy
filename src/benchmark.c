@@ -115,6 +115,24 @@ void benchmark_run()
 				}
 				BENCHMARK_END()
 
+				printf("Draw walls: ");
+				BENCHMARK_INIT(benchmark_repeat_count, 1500)
+				{
+					parse_save(file_data, size, 1, 0, 0, globalSim->walls.getDataPtr(), globalSim->signs, parts);
+					sys_pause = framerender = 0;
+					display_mode = 0;
+					render_mode = RENDER_BASC;
+					decorations_enable = 1;
+					// Simulate 1 second @ 60 fps to allow things to generate air, since air is not saved
+					for (int i=0; i<60; i++)
+						globalSim->UpdateParticles();
+					BENCHMARK_RUN()
+					{
+						draw_walls(vid_buf);
+					}
+				}
+				BENCHMARK_END()
+
 				printf("Render particles: ");
 				BENCHMARK_INIT(benchmark_repeat_count, 1500)
 				{

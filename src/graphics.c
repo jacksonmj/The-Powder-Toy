@@ -3272,9 +3272,8 @@ void render_after(pixel *part_vbuf, pixel *vid_buf)
 
 void draw_walls(pixel *vid)
 {
-	int x, y, i, j, cr, cg, cb, nx, ny, t;
+	int x, y, i, j, cr, cg, cb;
 	uint8_t wallId, electricity;
-	float lx, ly;
 	pixel pc;
 	for (y=0; y<YRES/CELL; y++)
 		for (x=0; x<XRES/CELL; x++)
@@ -3462,31 +3461,72 @@ void draw_walls(pixel *vid)
 					
 				}
 			}
+	draw_streamlines(vid);
+}
 
-	// draw streamlines
-	const_CellsFloatRP vx = globalSim->air.vx.getDataPtr();
-	const_CellsFloatRP vy = globalSim->air.vy.getDataPtr();
-	for (y=0; y<YRES/CELL; y++)
-		for (x=0; x<XRES/CELL; x++)
+void draw_streamlines(pixel *vid)
+{
+	const int maxStreamSteps = 1024;
+	for (int y=0; y<YRES/CELL; y++)
+		for (int x=0; x<XRES/CELL; x++)
 			if (globalSim->walls.type(SimPosCell(x,y))==WL_STREAM)
 			{
-				lx = x*CELL + CELL*0.5f;
-				ly = y*CELL + CELL*0.5f;
-				for (t=0; t<1024; t++)
-				{
-					nx = (int)(lx+0.5f);
-					ny = (int)(ly+0.5f);
-					if (nx<0 || nx>=XRES || ny<0 || ny>=YRES)
-						break;
-					addpixel(vid, nx, ny, 255, 255, 255, 64);
-					i = nx/CELL;
-					j = ny/CELL;
-					lx += vx[j][i]*0.125f;
-					ly += vy[j][i]*0.125f;
-					if (globalSim->walls.type(SimPosCell(i,j))==WL_STREAM && i!=x && j!=y)
-						break;
-				}
+				// Draw streamline start circle
 				drawtext(vid, x*CELL, y*CELL-2, "\x8D", 255, 255, 255, 128);
+
+				SimPosCell origCellPos(x,y);
+				SimPosDF vel = globalSim->air.vel(origCellPos)*0.125f;
+				if (vel.maxComponent()*maxStreamSteps < 1)
+				{
+					// there is barely any velocity here, draw a streamline with zero length and continue;
+					SimPosI centre = origCellPos.centre();
+					addpixel(vid, centre.x, centre.y, 255, 255, 255, 255);
+					continue;
+				}
+				SimPosI posI = origCellPos.centre();
+				SimPosF posF = posI;
+				SimPosI oldPosI = posI;
+				SimPosCell oldCellPos = origCellPos;
+				for (int t=maxStreamSteps; t>0; )
+				{
+					if (posI != oldPosI)
+					{
+						oldPosI = posI;
+						if (!globalSim->pos_isValid(posI))
+							break;
+
+						SimPosCell cellPos = SimPosCell(posI);
+						if (cellPos != oldCellPos)
+						{
+							oldCellPos = cellPos;
+							if (globalSim->walls.type(cellPos)==WL_STREAM)
+								break;
+							vel = globalSim->air.vel(cellPos)*0.125f;
+							if (vel.maxComponent()*t < 1 && t>=4)
+							{
+								// not enough velocity to move another pixel before end of streamline
+								addpixel(vid, posI.x, posI.y, 255, 255, 255, 255);
+								break;
+							}
+						}
+					}
+					if (vel.maxComponent()<0.25f)
+					{
+						// Velocity is small enough that at least 4 addpixels would occur in the same place, giving total alpha>255
+						// Therefore, use 1 addpixel with a=255 instead, and scale velocity to step by at least 1 pixel
+						addpixel(vid, posI.x, posI.y, 255, 255, 255, 255);
+						int stepMult = tptmath::clamp_int(int(1.0f/vel.maxComponent()), 1, t);
+						posF += vel*stepMult;
+						t -= stepMult;
+					}
+					else
+					{
+						addpixel(vid, posI.x, posI.y, 255, 255, 255, 64);
+						posF += vel;
+						t--;
+					}
+					posI = posF;
+				}
 			}
 }
 

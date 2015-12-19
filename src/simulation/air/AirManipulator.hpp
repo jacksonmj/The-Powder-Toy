@@ -158,6 +158,10 @@ class AirManipulators
 public:
 	AirManipT vx, vy, pv;
 	AirManipulator_immediate hv;
+	SimPosDF vel(SimPosCell c)
+	{
+		return SimPosDF(vx(c), vy(c));
+	}
 	void setManipData(AirDataP data)
 	{
 		vx.setData(data.vx);
