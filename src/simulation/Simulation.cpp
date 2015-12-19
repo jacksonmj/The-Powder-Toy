@@ -34,6 +34,7 @@
 #include "simulation/elements/INST.h"
 #include "simulation/elements/PHOT.h"
 #include "simulation/elements/PRTI.h"
+#include "elements/WIRE.hpp"
 
 
 ElemDataSim::~ElemDataSim()
@@ -563,7 +564,7 @@ int Simulation::part_killAll(SimPosI pos, int only_type, int except_id)
 void Simulation::spark_particle_nocheck(int i, SimPosI pos)
 {
 	if (parts[i].type==PT_WIRE)
-		parts[i].ctype = PT_DUST;
+		Element_WIRE::spark_noCheck(parts[i]);
 	else if (parts[i].type==PT_INST)
 		Element_INST::flood_spark(this, pos.x, pos.y);
 	else
@@ -590,7 +591,7 @@ void Simulation::spark_particle_nocheck_forceSPRK(int i, SimPosI pos)
 }
 bool Simulation::spark_particle(int i, SimPosI pos)
 {
-	if ((parts[i].type==PT_WIRE && parts[i].ctype<=0) || (parts[i].type==PT_INST && parts[i].life<=0) || (parts[i].type==PT_SWCH && parts[i].life==10) || (!parts[i].life && (elements[parts[i].type].Properties & PROP_CONDUCTS)))
+	if ((parts[i].type==PT_WIRE && Element_WIRE::canSpark(parts[i])) || (parts[i].type==PT_INST && parts[i].life<=0) || (parts[i].type==PT_SWCH && parts[i].life==10) || (!parts[i].life && (elements[parts[i].type].Properties & PROP_CONDUCTS)))
 	{
 		spark_particle_nocheck(i, pos);
 		return true;

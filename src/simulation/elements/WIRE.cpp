@@ -14,30 +14,30 @@
  */
 
 #include "simulation/ElementsCommon.h"
+#include "WIRE.hpp"
 
 int WIRE_update(UPDATE_FUNC_ARGS)
 {
-	int rx,ry,rt,count;
+	int rx,ry,rt;
 	int rcount, ri, rnext;
-	/*
-	0:  wire
-	1:  spark head
-	2:  spark tail
 
-	tmp is previous state, ctype is current state
-	*/
-	//parts[i].tmp=parts[i].ctype;
-	parts[i].ctype=0;
-	if(parts[i].tmp==1)
+	if (Element_WIRE::isHeadExternal(parts[i]) && !Element_WIRE::wasHeadExternal(parts[i]))
 	{
-		parts[i].ctype=2;
+		// Sparked on this frame by external source, so don't set state based on previous self and neighbouring WIRE states
 	}
-	else if(parts[i].tmp==2)
+	else
 	{
-		parts[i].ctype=0;
+		if (Element_WIRE::wasHead(parts[i]))
+		{
+			Element_WIRE::setState(parts[i], Element_WIRE::State::Tail);
+		}
+		else
+		{
+			Element_WIRE::setState(parts[i], Element_WIRE::State::Inactive);
+		}
 	}
 
-	count=0;
+	int count=0;
 	for(rx=-1; rx<2; rx++)
 		for(ry=-1; ry<2; ry++)
 		{
@@ -48,24 +48,24 @@ int WIRE_update(UPDATE_FUNC_ARGS)
 					rt = parts[ri].type;
 					if(rt==PT_SPRK && parts[ri].life==3 && parts[ri].ctype==PT_PSCN)
 					{
-							parts[i].ctype=1;
+							Element_WIRE::spark(parts[i]);
 							return 0;
 					}
-					else if(rt==PT_NSCN && parts[i].tmp==1)
+					else if (rt==PT_NSCN && Element_WIRE::wasHead(parts[i]))
 						sim->spark_particle_conductiveOnly(ri, x+rx, y+ry);
-					else if(rt==PT_WIRE && parts[ri].tmp==1 && !parts[i].tmp)
+					else if (rt==PT_WIRE && Element_WIRE::wasHead(parts[ri]))
 						count++;
 				}
 			}
 		}
-	if(count==1 || count==2)
-		parts[i].ctype=1;
+	if (Element_WIRE::canSpark(parts[i]) && (count==1 || count==2))
+		Element_WIRE::setState(parts[i], Element_WIRE::State::HeadNormal);
 	return 0;
 }
 
 int WIRE_graphics(GRAPHICS_FUNC_ARGS)
 {
-	if (cpart->ctype==1)
+	if (Element_WIRE::isHead(*cpart))
 	{
 		*colr = 50;
 		*colg = 100;
@@ -73,7 +73,7 @@ int WIRE_graphics(GRAPHICS_FUNC_ARGS)
 		//*pixel_mode |= PMODE_GLOW;
 		return 0;
 	}
-	if (cpart->ctype==2)
+	if (Element_WIRE::isTail(*cpart))
 	{
 		*colr = 255;
 		*colg = 100;

@@ -18,6 +18,7 @@
 #include "common/tptmath.h"
 #include "common/tpt-stdint.h"
 #include "EMP.hpp"
+#include "WIRE.hpp"
 
 EMP_ElemDataSim::EMP_ElemDataSim(Simulation *s, int t) :
 	ElemDataSim(s,t),
@@ -106,7 +107,7 @@ void EMP_ElemDataSim::Simulation_AfterUpdate()
 	for (int i=0; i<=sim->parts_lastActiveIndex; i++)
 	{
 		int t = parts[i].type;
-		if (t==PT_SPRK || (t==PT_SWCH && parts[i].life!=0 && parts[i].life!=10) || (t==PT_WIRE && parts[i].ctype>0))
+		if (t==PT_SPRK || (t==PT_SWCH && parts[i].life!=0 && parts[i].life!=10) || (t==PT_WIRE && !Element_WIRE::wasInactive(parts[i])))
 		{
 			SimPosI pos = SimPosF(parts[i].x, parts[i].y);
 			bool isElec = false;
