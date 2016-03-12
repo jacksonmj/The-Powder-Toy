@@ -164,10 +164,13 @@ public:
 		bool y_ok = (p.y>=CELL && p.y<YRES-CELL);
 		if (x_ok && y_ok)
 			return pf;
+		// Main area is [3.5,379.5) (numbers which round to [CELL,XRES-CELL))
+		// remainder_p wraps the number to the range 0 to [0,376)
+		// so to convert [3.5,379.5) to that range, subtract 3.5
 		if (!x_ok)
-			pf.x = tptmath::remainder_p(pf.x-CELL, float(XRES-CELL*2))+CELL;
+			pf.x = tptmath::remainder_p(pf.x-CELL+0.5f, float(XRES-CELL*2))+CELL-0.5f;
 		if (!y_ok)
-			pf.y = tptmath::remainder_p(pf.y-CELL, float(YRES-CELL*2))+CELL;
+			pf.y = tptmath::remainder_p(pf.y-CELL+0.5f, float(YRES-CELL*2))+CELL-0.5f;
 		return pf;
 	}
 
