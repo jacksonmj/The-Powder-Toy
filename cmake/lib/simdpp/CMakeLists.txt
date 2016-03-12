@@ -8,8 +8,8 @@ find_package(Git REQUIRED)
 ExternalProject_Add(
 	simdpp
 	PREFIX ${CMAKE_BINARY_DIR}/simdpp
-	GIT_REPOSITORY https://github.com/jacksonmj/libsimdpp.git
-	GIT_TAG storeu
+	GIT_REPOSITORY https://github.com/p12tic/libsimdpp.git
+	GIT_TAG master
 	TIMEOUT 30
 	UPDATE_COMMAND ${GIT_EXECUTABLE} pull
 	CONFIGURE_COMMAND ""

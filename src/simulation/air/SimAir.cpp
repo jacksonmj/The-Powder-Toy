@@ -232,7 +232,7 @@ public:
 				(bmapCells==vec_WL_WALL) |
 				(bmapCells==vec_WL_WALLELEC) |
 				(bmapCells==vec_WL_BLOCKAIR) |
-				((bmapCells==vec_WL_EWALL) & (emapCells!=T::zero()))
+				((bmapCells==vec_WL_EWALL) & (emapCells!=(T)simdpp::make_zero()))
 			);
 			// simd true is 0xff in each byte, turn it into 0x1 for blockair and 0x8 for blockairh
 			T blockAirVec = blockAll & vec_1;

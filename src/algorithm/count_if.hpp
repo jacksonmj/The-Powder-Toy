@@ -91,14 +91,15 @@ public:
 	{
 		const char *pdata = reinterpret_cast<const char*>(data);
 		const char *pdatamax = pdata + loopCount*KernelImpl::step_bytes;
-		opOutputT accum = opOutputT::zero();
+		opOutputT accum = simdpp::make_zero();
 		while (pdata<pdatamax)
 		{
 			opInputT x;
 			if (isAligned)
-				x = KernelImpl::load(pdata++);
+				x = KernelImpl::load(pdata);
 			else
-				x = KernelImpl::load_u(pdata++);
+				x = KernelImpl::load_u(pdata);
+			pdata += KernelImpl::step_bytes;
 			accum = accum+kernelImpl.op(kernel, x);
 		}
 		return accum;
@@ -111,8 +112,8 @@ public:
 
 		const char *pdata = reinterpret_cast<const char*>(data);
 		const char *pdatamax = pdata + loopCount*unrollCount*KernelImpl::step_bytes;
-		opOutputT accum_1 = opOutputT::zero();
-		opOutputT accum_2 = opOutputT::zero();
+		opOutputT accum_1 = simdpp::make_zero();
+		opOutputT accum_2 = simdpp::make_zero();
 		while (pdata<pdatamax)
 		{
 			opInputT x1, x2;
@@ -139,14 +140,7 @@ public:
 	template<class opOutputT>
 	static void add_accum(size_t &dest_count, opOutputT accum)
 	{
-		typename decltype(accum.eval())::element_type data[opOutputT::length];
-		simdpp::store_u(data, accum);
-		size_t count = 0;
-		for (size_t i=0; i<opOutputT::length; i++)
-		{
-			count += data[i];
-		}
-		dest_count += count;
+		dest_count += simdpp::reduce_add(accum);
 	}
 
 	template<class opOutputT>
@@ -156,42 +150,6 @@ public:
 		add_accum(dest_count, accum_2);		
 	}
 
-#if defined(__SSE2__)
-	template<unsigned N, class E>
-	static typename std::enable_if<N%2==0,void>::type add_accum(size_t &dest_count, simdpp::uint32<N,E> accum)
-	{
-		using T = simdpp::uint32<N>;
-		using BigT = simdpp::uint64<N/2>;
-		add_accum(dest_count, BigT(simdpp::zip4_lo(accum, T::zero())) + BigT(simdpp::zip4_hi(accum, T::zero())));
-	}
-	template<unsigned N, class E>
-	static typename std::enable_if<N%2==0,void>::type add_accum(size_t &dest_count, simdpp::uint16<N,E> accum)
-	{
-		using T = simdpp::uint16<N>;
-		using BigT = simdpp::uint32<N/2>;
-		add_accum(dest_count, BigT(simdpp::zip8_lo(accum, T::zero())) + BigT(simdpp::zip8_hi(accum, T::zero())));
-	}
-	template<unsigned N, class E>
-	static typename std::enable_if<N%2==0,void>::type add_accum(size_t &dest_count, simdpp::uint8<N,E> accum)
-	{
-		using T = simdpp::uint8<N>;
-		using BigT = simdpp::uint16<N/2>;
-		add_accum(dest_count, BigT(simdpp::zip16_lo(accum, T::zero())) + BigT(simdpp::zip16_hi(accum, T::zero())));
-	}
-
-	template<unsigned N>
-	static typename std::enable_if<N%2==0,void>::type add_accum_2(size_t &dest_count, simdpp::uint8<N> accum_1, simdpp::uint8<N> accum_2)
-	{
-		using T = simdpp::uint8<N>;
-		using BigT = simdpp::uint16<N/2>;
-		BigT big_accum_1 = BigT(simdpp::zip16_lo(accum_1, T::zero())) + BigT(simdpp::zip16_hi(accum_1, T::zero()));
-		BigT big_accum_2 = BigT(simdpp::zip16_lo(accum_2, T::zero())) + BigT(simdpp::zip16_hi(accum_2, T::zero()));
-
-		add_accum(dest_count, big_accum_1+big_accum_2);
-	}
-#endif
-	
-	
 	// simdpp::uint*<n> impl::op(DataType x) - should return the number of matches in x. simdpp::uint*<n> = CountT
 	template<class DataType, class Kernel, class opInputT>
 	static typename std::enable_if<simdpp::is_vector<opInputT>::value, size_t>::type simdpp(const Kernel &kernel, const DataType *data, size_t data_length)
