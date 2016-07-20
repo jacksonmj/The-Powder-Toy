@@ -22,6 +22,7 @@
 #include <stdexcept>
 
 const int MAXSIGNS = 16;
+const int Sign::maxLength = 45;
 std::regex sign_Num_Message(R"(\{(.):([[:digit:]]+)\|(.*)\})");
 std::regex sign_Text_Message(R"(\{(.):(.*)\|(.*)\})");
 std::regex sign_Message(R"(\{(.)\|(.*)\})");
@@ -112,7 +113,7 @@ Sign::Sign(SimPosI pos_, std::string rawText_, Sign::Justification justification
 
 std::string Sign::getDisplayedText(Simulation *sim) const
 {
-	std::string txt = message.substr(0, 45);
+	std::string txt = message;
 	if (type==Type::Plain)
 	{
 		// TODO: jacob1 suggestion - replace {p|t|aheat} in message with values (needs compatibility code when loading TPT++ saves to insert "Temp:"/"Pressure:" text)
@@ -197,8 +198,14 @@ std::string Sign::getRawText() const
 
 void Sign::setRawText(std::string newValue)
 {
+	newValue = newValue.substr(0, maxLength*3);
 	rawText = cleanString(newValue);
 	rawToParsed();
+	if (message.length()>maxLength)
+	{
+		message = message.substr(0, maxLength);
+		parsedToRaw();
+	}
 }
 
 Sign::Type Sign::getType() const
@@ -226,6 +233,7 @@ std::string Sign::getMessage() const
 
 void Sign::setMessage(std::string newValue)
 {
+	newValue = newValue.substr(0, maxLength);
 	message = cleanString(newValue);
 	parsedToRaw();
 }
@@ -237,6 +245,7 @@ std::string Sign::getTarget() const
 
 void Sign::setTarget(std::string newValue)
 {
+	newValue = newValue.substr(0, maxLength);
 	if (type==Type::Save || type==Type::ForumThread)
 	{
 		int id = format::StringToNumber<int>(newValue);

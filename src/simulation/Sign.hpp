@@ -30,6 +30,7 @@ class Sign
 public:
 	enum class Type { Plain=1, Save, Spark, ForumThread, SaveSearch, TYPE_MAX=SaveSearch };
 	enum class Justification { Left = 0, Middle = 1, Right = 2, NoJustify = 3 };
+	static const int maxLength;
 
 protected:
 	void rawToParsed();
