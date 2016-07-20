@@ -472,7 +472,7 @@ int PIPE_update(UPDATE_FUNC_ARGS)
 					if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 					{
 						uint8_t wallId = sim->walls.type(SimPosI(x+rx,y+ry));
-						if (!sim->pmap[y+ry][x+rx].count(PMapCategory::NotEnergy) && (!wallId || (wallId!=WL_ALLOWAIR && wallId!=WL_WALL && wallId!=WL_WALLELEC && (wallId!=WL_EWALL || sim->walls.electricity(SimPosI(x+rx,y+ry))))))
+						if (!sim->pmap[y+ry][x+rx].count(PMapCategory::Plain) && (!wallId || (wallId!=WL_ALLOWAIR && wallId!=WL_WALL && wallId!=WL_WALLELEC && (wallId!=WL_EWALL || sim->walls.electricity(SimPosI(x+rx,y+ry))))))
 							parts[i].life=50;
 					}
 		}

@@ -297,7 +297,7 @@ int create_part(int p, int x, int y, int tv)//the function for creating a partic
 	if (t==PT_SPRK)
 	{
 		int type, lastIndex=-1;
-		FOR_SIM_PMAP_POS(globalSim, PMapCategory::NotEnergy, pos, index)
+		FOR_SIM_PMAP_POS(globalSim, PMapCategory::Plain, pos, index)
 		{
 			type = parts[index].type;
 			if (p == -2 || type != PT_INST)
@@ -738,7 +738,7 @@ int flood_water(int x, int y, int i, int originaly, int check)
 				}
 				//check above, maybe around other sides too?
 				SimPosI pos(x,y-1);
-				if ( ((y-1) > originaly) && !globalSim->pmap(pos).count(PMapCategory::NotEnergy) && globalSim->part_canMove(parts[i].type, pos))
+				if ( ((y-1) > originaly) && !globalSim->pmap(pos).count(PMapCategory::Plain) && globalSim->part_canMove(parts[i].type, pos))
 				{
 					sim->part_set_pos(i, pos);
 					return 0;

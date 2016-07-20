@@ -22,7 +22,7 @@ int SHLD3_update(UPDATE_FUNC_ARGS) {
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				if (!sim->pmap[y+ry][x+rx].count(PMapCategory::NotEnergy))
+				if (!sim->pmap[y+ry][x+rx].count(PMapCategory::Plain))
 				{
 					if (sim->rng.chance<1,2500>())
 					{
@@ -52,7 +52,7 @@ int SHLD3_update(UPDATE_FUNC_ARGS) {
 								for ( nny=-1; nny<2; nny++)
 								{
 
-									if (!sim->pmap[y+ry+nny][x+rx+nnx].count(PMapCategory::NotEnergy))
+									if (!sim->pmap[y+ry+nny][x+rx+nnx].count(PMapCategory::Plain))
 									{
 										np = sim->part_create(-1,x+rx+nnx,y+ry+nny,PT_SHLD1);
 										if (np<0) continue;

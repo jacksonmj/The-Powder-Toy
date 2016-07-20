@@ -45,7 +45,7 @@ int PSTN_CanMoveStack(Simulation * sim, int stackX, int stackY, int directionX, 
 				*spacesRet = spaces;
 			return spaces;
 		}
-		if(!sim->pmap[posY][posX].count(PMapCategory::NotEnergy)) {
+		if(!sim->pmap[posY][posX].count(PMapCategory::Plain)) {
 			spaces++;
 			currentPos++;
 			if(spaces >= amount)
@@ -131,7 +131,7 @@ int PSTN_MoveStack(Simulation * sim, int stackX, int stackY, int directionX, int
 			if (!(posX < XRES && posY < YRES && posX >= 0 && posY >= 0)) {
 				break;
 			}
-			if(!sim->pmap[posY][posX].count(PMapCategory::NotEnergy) || (block && sim->pmap_find_one(posX, posY, block)>=0) || (!sticky && sim->pmap_find_one(posX, posY, PT_FRME)<0)) {
+			if(!sim->pmap[posY][posX].count(PMapCategory::Plain) || (block && sim->pmap_find_one(posX, posY, block)>=0) || (!sticky && sim->pmap_find_one(posX, posY, PT_FRME)<0)) {
 				break;
 			}
 			int rcount, ri, rnext;
@@ -156,7 +156,7 @@ int PSTN_MoveStack(Simulation * sim, int stackX, int stackY, int directionX, int
 			{
 				srcPosX = stackX + directionX*srcPos;
 				srcPosY = stackY + directionY*srcPos;
-				if (sim->pmap[srcPosY][srcPosX].count(PMapCategory::NotEnergy))
+				if (sim->pmap[srcPosY][srcPosX].count(PMapCategory::Plain))
 				{
 					destPosX = stackX + directionX*destPos;
 					destPosY = stackY + directionY*destPos;

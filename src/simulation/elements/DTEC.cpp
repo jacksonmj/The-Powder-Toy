@@ -61,7 +61,7 @@ int DTEC_update(UPDATE_FUNC_ARGS)
 			for (ry=-1; ry<2; ry++)
 				if (x+rx>=0 && y+ry>=0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 				{
-					if (!sim->pmap[y+ry][x+rx].count(PMapCategory::NotEnergy))
+					if (!sim->pmap[y+ry][x+rx].count(PMapCategory::Plain))
 						continue;
 					nx = x+rx;
 					ny = y+ry;

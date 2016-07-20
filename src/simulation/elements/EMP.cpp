@@ -134,7 +134,7 @@ void EMP_ElemDataSim::Simulation_AfterUpdate()
 					SimPosI rPos = pos+SimPosDI(rx,ry);
 					if (sim->pos_isValid(rPos) && (rx || ry))
 					{
-						FOR_SIM_PMAP_POS(sim, PMapCategory::NotEnergy, rPos, ri)
+						FOR_SIM_PMAP_POS(sim, PMapCategory::Plain, rPos, ri)
 						{
 							int rt = parts[ri].type;
 

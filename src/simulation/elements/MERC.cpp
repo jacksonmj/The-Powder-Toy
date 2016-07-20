@@ -50,7 +50,7 @@ int MERC_update(UPDATE_FUNC_ARGS)
 				{
 					if (parts[i].tmp<=maxtmp)
 						continue;
-					if (!sim->pmap[y+ry][x+rx].count(PMapCategory::NotEnergy) && parts[i].tmp>=1)//if nothing then create MERC
+					if (!sim->pmap[y+ry][x+rx].count(PMapCategory::Plain) && parts[i].tmp>=1)//if nothing then create MERC
 					{
 						np = sim->part_create(-1,x+rx,y+ry,PT_MERC);
 						if (np<0) continue;

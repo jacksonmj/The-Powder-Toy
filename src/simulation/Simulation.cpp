@@ -133,9 +133,9 @@ bool Simulation::Check()
 			if (!pmap[y][x].count())
 				continue;
 			int count = 0;
-			int count_notEnergy = 0;
+			int count_plain = 0;
 			bool inEnergyList = false;
-			int lastNotEnergyId = -1;
+			int lastPlainId = -1;
 			int alleged_energyCount = pmap[y][x].count(PMapCategory::Energy);
 			for (i=pmap[y][x].first(); i>=0; i=parts[i].pmap_next)
 			{
@@ -154,7 +154,7 @@ bool Simulation::Check()
 				bool isEnergyPart = !!(elements[parts[i].type].Properties&TYPE_ENERGY);
 				count++;
 				if (!isEnergyPart)
-					count_notEnergy++;
+					count_plain++;
 				if (x!=(int)(parts[i].x+0.5f) || y!=(int)(parts[i].y+0.5f))
 				{
 					printf("coordinates do not match: particle %d at %d,%d is in pmap list for %d,%d\n", i, (int)(parts[i].x+0.5f), (int)(parts[i].y+0.5f), x, y);
@@ -176,7 +176,7 @@ bool Simulation::Check()
 						isGood = false;
 					}
 				}
-				if (count > pmap[y][x].count(PMapCategory::NotEnergy))
+				if (count > pmap[y][x].count(PMapCategory::Plain))
 					inEnergyList = true;
 
 				if (isEnergyPart && !inEnergyList)
@@ -190,9 +190,9 @@ bool Simulation::Check()
 					isGood = false;
 				}
 				if (!isEnergyPart)
-					lastNotEnergyId = i;
+					lastPlainId = i;
 			}
-			if (alleged_energyCount==0 && count>0 && pmap[y][x].first_energy_!=lastNotEnergyId)
+			if (alleged_energyCount==0 && count>0 && pmap[y][x].first_energy_!=lastPlainId)
 			{
 				printf("pmap list for %d,%d has no energy particles but first_energy != ID of last non-energy particle (%d)\n", x, y, i);
 				isGood = false;
@@ -202,7 +202,7 @@ bool Simulation::Check()
 				printf("Stored total length of pmap list for %d,%d does not match the actual length\n", x, y);
 				isGood = false;
 			}
-			if (count_notEnergy!=pmap[y][x].count(PMapCategory::NotEnergy))
+			if (count_plain!=pmap[y][x].count(PMapCategory::Plain))
 			{
 				printf("Stored non-energy length of pmap list for %d,%d does not match the actual length\n", x, y);
 				isGood = false;
@@ -303,7 +303,7 @@ void Simulation::StackingCheck()
 		{
 			SimPosI pos(x,y);
 			int count = 0;
-			FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, pos, i)
+			FOR_SIM_PMAP_POS(this, PMapCategory::Plain, pos, i)
 			{
 				int t = parts[i].type;
 				if (t!=PT_THDR && t!=PT_EMBR && t!=PT_FIGH && t!=PT_PLSM)
@@ -330,7 +330,7 @@ void Simulation::StackingCheck()
 
 				if (excessive)
 				{
-					FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, pos, i)
+					FOR_SIM_PMAP_POS(this, PMapCategory::Plain, pos, i)
 					{
 						part_kill(i);
 					}
@@ -612,7 +612,7 @@ bool Simulation::spark_particle_conductiveOnly(int i, SimPosI pos)
 int Simulation::spark_position_conductiveOnly(SimPosI pos)
 {
 	int lastSparkedIndex = -1;
-	FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, pos, index)
+	FOR_SIM_PMAP_POS(this, PMapCategory::Plain, pos, index)
 	{
 		int type = parts[index].type;
 		if (!(elements[type].Properties & PROP_CONDUCTS))
@@ -629,7 +629,7 @@ int Simulation::spark_position_conductiveOnly(SimPosI pos)
 int Simulation::spark_position(SimPosI pos)
 {
 	int lastSparkedIndex = -1;
-	FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, pos, index)
+	FOR_SIM_PMAP_POS(this, PMapCategory::Plain, pos, index)
 	{
 		if (spark_particle(index, pos))
 			lastSparkedIndex = index;
@@ -908,9 +908,9 @@ MoveResult::Code Simulation::part_canMove(int pt, SimPosI newPos, bool coordHand
 		result = MoveResult::ALLOW_BUT_SLOW;
 	}
 
-	if (pmap(newPos).count(PMapCategory::NotEnergy))
+	if (pmap(newPos).count(PMapCategory::Plain))
 	{
-		FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, newPos, ri)
+		FOR_SIM_PMAP_POS(this, PMapCategory::Plain, newPos, ri)
 		{
 			MoveResult::Code tmpResult = can_move[pt][parts[ri].type];
 			if (tmpResult==MoveResult::DYNAMIC)
@@ -930,7 +930,7 @@ MoveResult::Code Simulation::part_canMove(int pt, SimPosI newPos, bool coordHand
 		if (wall==WL_EHOLE && !walls.electricity(cellPos) && !(elements[pt].Properties&TYPE_SOLID))
 		{
 			bool foundSolid = false;
-			FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, newPos, ri)
+			FOR_SIM_PMAP_POS(this, PMapCategory::Plain, newPos, ri)
 			{
 				if (elements[parts[ri].type].Properties&TYPE_SOLID)
 				{
@@ -990,7 +990,7 @@ MoveResult::Code Simulation::part_move(int i, SimPosI srcPos, SimPosF destPosF)
 	{
 		if (elements[t].Properties & TYPE_ENERGY)
 		{
-			FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, destPos, ri)
+			FOR_SIM_PMAP_POS(this, PMapCategory::Plain, destPos, ri)
 			{
 				int rt = parts[ri].type;
 				if (option_heatMode()!=HeatMode::Legacy && t==PT_PHOT)//PHOT heat conduction
@@ -1013,7 +1013,7 @@ MoveResult::Code Simulation::part_move(int i, SimPosI srcPos, SimPosF destPosF)
 	}
 	else if (moveCode == MoveResult::ALLOW_BUT_SLOW || moveCode == MoveResult::ALLOW) //if occupy same space
 	{
-		FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, destPos, ri)
+		FOR_SIM_PMAP_POS(this, PMapCategory::Plain, destPos, ri)
 		{
 			int rt = parts[ri].type;
 			if (t==PT_PHOT)
@@ -1099,7 +1099,7 @@ MoveResult::Code Simulation::part_move(int i, SimPosI srcPos, SimPosF destPosF)
 	else if (moveCode == MoveResult::DESTROY)
 	{
 		// moving particle gets destroyed
-		FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, destPos, ri)
+		FOR_SIM_PMAP_POS(this, PMapCategory::Plain, destPos, ri)
 		{
 			int rt = parts[ri].type;
 			if (rt==PT_BHOL || rt==PT_NBHL)
@@ -1152,7 +1152,7 @@ MoveResult::Code Simulation::part_move(int i, SimPosI srcPos, SimPosF destPosF)
 	else if (moveCode==MoveResult::STORE)
 	{
 		// moving particle will be stored in a particle at the destination
-		FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, destPos, ri)
+		FOR_SIM_PMAP_POS(this, PMapCategory::Plain, destPos, ri)
 		{
 			int rt = parts[ri].type;
 			if (rt==PT_PRTI)
@@ -1184,7 +1184,7 @@ MoveResult::Code Simulation::part_move(int i, SimPosI srcPos, SimPosF destPosF)
 		//trying to swap the particles
 		if (t!=PT_NEUT)
 		{
-			FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, destPos, ri)
+			FOR_SIM_PMAP_POS(this, PMapCategory::Plain, destPos, ri)
 			{
 				// Move all particles which are displaced by this particle from the destination position
 				// TODO: when breaking compatibility, add "if (part_canMove(rt, x, y)==MoveResult::DISPLACE)" here
@@ -1199,7 +1199,7 @@ MoveResult::Code Simulation::part_move(int i, SimPosI srcPos, SimPosF destPosF)
 
 			// e=MoveResult::DISPLACE for neutron means that target material is NEUTPENETRATE, meaning it gets moved around when neutron passes
 			// First, look for NEUTPENETRATE or empty space at x,y
-			FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, destPos, ri)
+			FOR_SIM_PMAP_POS(this, PMapCategory::Plain, destPos, ri)
 			{
 				if (elements[parts[ri].type].Properties&PROP_NEUTPENETRATE)
 				{
@@ -1215,7 +1215,7 @@ MoveResult::Code Simulation::part_move(int i, SimPosI srcPos, SimPosF destPosF)
 			// Move NEUTPENETRATE particles at nx,ny to x,y if there's currently a NEUTPENETRATE particle or empty space at x,y
 			if (srcNeutPenetrate>=0 || !srcPartFound)
 			{
-				FOR_SIM_PMAP_POS(this, PMapCategory::NotEnergy, destPos, ri)
+				FOR_SIM_PMAP_POS(this, PMapCategory::Plain, destPos, ri)
 				{
 					int rt = parts[ri].type;
 					// Move all particles which are displaced by this particle from the destination position
@@ -1546,7 +1546,7 @@ void Simulation::UpdateParticles()
 			for (nx=-1; nx<2; nx++)
 				for (ny=-1; ny<2; ny++) {
 					if (nx||ny) {
-						if (!pmap[y+ny][x+nx].count(PMapCategory::NotEnergy))
+						if (!pmap[y+ny][x+nx].count(PMapCategory::Plain))
 							surround_space++;//there is empty space
 						if (pmap_find_one(x+nx,y+ny,t)<0)
 							nt++;//there is nothing or a different particle
@@ -2267,7 +2267,7 @@ killed:
 										break;
 									}
 									// A particle of a different type, or a wall, was found. Stop trying to move any further horizontally unless the wall should be completely invisible to particles.
-									if (walls.isProperWall(SimPosI(nx,ny)) || pmap_differentElemExists(SimPosI(nx,ny), t, PMapCategory::NotEnergy))
+									if (walls.isProperWall(SimPosI(nx,ny)) || pmap_differentElemExists(SimPosI(nx,ny), t, PMapCategory::Plain))
 										break;
 								}
 							}
@@ -2302,7 +2302,7 @@ killed:
 									if (pmap_find_one(nx,ny,t)<0 || walls.type(SimPosI(nx,ny)))
 									{
 										moveResult = part_move(i, clear_x, clear_y, nxf, nyf);
-										if (MoveResult::Succeeded(moveResult) || walls.isProperWall(SimPosI(nx,ny)) || pmap_differentElemExists(SimPosI(nx,ny), t, PMapCategory::NotEnergy))
+										if (MoveResult::Succeeded(moveResult) || walls.isProperWall(SimPosI(nx,ny)) || pmap_differentElemExists(SimPosI(nx,ny), t, PMapCategory::Plain))
 											break;// found the edge of the liquid and movement into it succeeded, so stop moving down
 									}
 								}

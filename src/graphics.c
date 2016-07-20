@@ -2846,7 +2846,7 @@ void render_parts(pixel *vid)
 				}
 				else if ((pixel_mode & EFFECT_LINES) && DEBUG_MODE && !(display_mode&DISPLAY_PERS) && (t==PT_PRTI || t==PT_PRTO || t==PT_WIFI))
 				{
-					int topPart = sim->pmap(SimPosI(nx,ny)).first(PMapCategory::NotEnergy);
+					int topPart = sim->pmap(SimPosI(nx,ny)).first(PMapCategory::Plain);
 					if (mousex==nx && mousey==ny && i==topPart) //draw lines connecting wifi/portal channels
 					{
 						int type = parts[i].type;// which element we're drawing lines to

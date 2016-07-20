@@ -94,7 +94,7 @@ int Element_ETRD::nearestSparkablePart(Simulation *sim, int targetId)
 				}
 				if (sim->pos_isValid(checkPos) && checkDistance<=foundDistance)
 				{
-					FOR_SIM_PMAP_POS(sim, PMapCategory::NotEnergy, checkPos, i)
+					FOR_SIM_PMAP_POS(sim, PMapCategory::Plain, checkPos, i)
 					{
 						// "i<foundI || foundI<0" to match the results from an all-particles loop, which selects the particle with the lowest ID at that distance
 						if (parts[i].type==PT_ETRD && !parts[i].life && i!=targetId && (checkDistance<foundDistance || i<foundI || foundI<0))

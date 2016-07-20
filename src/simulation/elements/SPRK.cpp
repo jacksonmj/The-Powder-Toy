@@ -144,7 +144,7 @@ int SPRK_update(UPDATE_FUNC_ARGS)
 		for (ry=-2; ry<3; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				if (sim->pmap[y+ry][x+rx].count(PMapCategory::NotEnergy)<=0) continue;
+				if (sim->pmap[y+ry][x+rx].count(PMapCategory::Plain)<=0) continue;
 				bool spark_blocked = sim->is_spark_blocked(SimPosI(x,y),SimPosI(x+rx,y+ry)); // is spark blocked by insl
 				FOR_PMAP_POSITION_NOENERGY(sim, x+rx, y+ry, rcount, ri, rnext)
 				{

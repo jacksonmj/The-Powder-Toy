@@ -61,7 +61,7 @@ constexpr float O_TEMP_RANGE = O_MAX_TEMP-O_MIN_TEMP;
 
 // Macros to loop through all the particles in a certain position
 // sim is the Simulation object ("FOR_SIM_PMAP_POS(this, ...)" in Simulation methods).
-// category is a PMapCategory value (PMapCategory::All/Energy/NotEnergy) indicating which subset of particles to loop through.
+// category is a PMapCategory value (PMapCategory::All/Energy/Plain) indicating which subset of particles to loop through.
 // pos is the position to loop through.
 // r_i is the name to use for the particle ID variable (variable will be declared by the macro).
 // If any particle in the current position is killed or moved except particle r_i and particles that have already been iterated over, then you must break out of the pmap position loop. 
@@ -69,7 +69,7 @@ constexpr float O_TEMP_RANGE = O_MAX_TEMP-O_MIN_TEMP;
 
 // TODO: remove
 #define FOR_PMAP_POSITION(sim, x, y, r_count, r_i, r_next) for (r_count=(sim)->pmap(SimPosI((x),(y))).count(PMapCategory::All), r_next=(sim)->pmap(SimPosI((x),(y))).first(PMapCategory::All); r_count ? (r_i=r_next, r_next=(sim)->parts[r_i].pmap_next, true):false; r_count--)
-#define FOR_PMAP_POSITION_NOENERGY(sim, x, y, r_count, r_i, r_next) for (r_count=(sim)->pmap(SimPosI((x),(y))).count(PMapCategory::NotEnergy), r_next=(sim)->pmap(SimPosI((x),(y))).first(PMapCategory::NotEnergy); r_count ? (r_i=r_next, r_next=(sim)->parts[r_i].pmap_next, true):false; r_count--)
+#define FOR_PMAP_POSITION_NOENERGY(sim, x, y, r_count, r_i, r_next) for (r_count=(sim)->pmap(SimPosI((x),(y))).count(PMapCategory::Plain), r_next=(sim)->pmap(SimPosI((x),(y))).first(PMapCategory::Plain); r_count ? (r_i=r_next, r_next=(sim)->parts[r_i].pmap_next, true):false; r_count--)
 #define FOR_PMAP_POSITION_ONLYENERGY(sim, x, y, r_count, r_i, r_next) for (r_count=(sim)->pmap(SimPosI((x),(y))).count(PMapCategory::Energy), r_next=(sim)->pmap(SimPosI((x),(y))).first(PMapCategory::Energy); r_count ? (r_i=r_next, r_next=(sim)->parts[r_i].pmap_next, true):false; r_count--)
 
 
@@ -373,7 +373,7 @@ public:
 
 	int pmap_find_one_conductive(SimPosI pos, int t) const
 	{
-		const PMapCategory c = PMapCategory::NotEnergy;
+		const PMapCategory c = PMapCategory::Plain;
 		int count = pmap(pos).count(c);
 		int i = pmap(pos).first(c);
 		for (; count>0; i=parts[i].pmap_next, count--)

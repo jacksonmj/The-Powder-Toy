@@ -181,7 +181,7 @@ public:
 
 	PMapCategory_single pmap_category(int t) const
 	{
-		return (elements[t].Properties&TYPE_ENERGY) ? PMapCategory::Energy : PMapCategory::NotEnergy;
+		return (elements[t].Properties&TYPE_ENERGY) ? PMapCategory::Energy : PMapCategory::Plain;
 	}
 	void pmap_add(int i, SimPosI pos, int t)
 	{

@@ -73,7 +73,7 @@ int ELEC_update(UPDATE_FUNC_ARGS)
 						if (parts[ri].tmp2 & 0x1)
 							break;
 					case PT_PROT: // this is the correct reaction, not NEUT, but leaving NEUT in anyway
-						if (!sim->pmap[y+ry][x+rx].count(PMapCategory::NotEnergy))
+						if (!sim->pmap[y+ry][x+rx].count(PMapCategory::Plain))
 						{
 							sim->part_change_type(ri, x+rx, y+ry, PT_H2);
 							parts[ri].life = 0;

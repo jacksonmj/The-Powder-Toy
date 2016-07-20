@@ -59,7 +59,7 @@ int BOMB_update(UPDATE_FUNC_ARGS)
 								}
 						for (nxj=-(rad+1); nxj<=(rad+1); nxj++)
 							for (nxi=-(rad+1); nxi<=(rad+1); nxi++)
-								if ((pow(nxi,2))/(pow((rad+1),2))+(pow(nxj,2))/(pow((rad+1),2))<=1 && !sim->pmap[y+nxj][x+nxi].count(PMapCategory::NotEnergy)) {
+								if ((pow(nxi,2))/(pow((rad+1),2))+(pow(nxj,2))/(pow((rad+1),2))<=1 && !sim->pmap[y+nxj][x+nxi].count(PMapCategory::Plain)) {
 									nb = sim->part_create(-3, x+nxi, y+nxj, PT_EMBR);
 									if (nb!=-1) {
 										parts[nb].tmp = 0;

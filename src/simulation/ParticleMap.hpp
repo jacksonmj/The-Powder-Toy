@@ -24,8 +24,8 @@
 /* The particle map is basically a large number of linked lists, one per integer coordinate.
  * 
  * The items in each list are particles. particle.pmap_prev and particle.pmap_next are the particle IDs of the prev/next particle at that coordinate.
- * Each list is sorted into energy and not-energy particles (but with the two sections still connected together as a single list).
- * The length and first particle ID in each section can be obtained from the ParticleMapEntry for that coordinate. This allows iterating over energy, not-energy, or all particles (not-energy first, then energy) in a particular position.
+ * Each list is sorted into energy and plain particles (but with the two sections still connected together as a single list).
+ * The length and first particle ID in each section can be obtained from the ParticleMapEntry for that coordinate. This allows iterating over energy, plain, or all particles (plain first, then energy) in a particular position.
  * 
  * Particles within each section are not necessarily in any particular order.
  */
@@ -33,13 +33,13 @@
 
 /* DETAILS, mostly unimportant when using pmap, only when modifying pmap code itself.
  * 
- * Not-energy particles are first in the list.
+ * Plain particles are first in the list.
  * ParticleMapEntry.count is the total number of particles in the list.
- * ParticleMapEntry.count_notEnergy is the total number of not-energy particles in the list.
+ * ParticleMapEntry.count_plain is the total number of plain particles in the list.
  * Particles are added to the list by prepending to each section.
  * 
  * If energy particles are present:
- * ParticleMapEntry.first is the ID of the first particle in the list (may be energy or not-energy, depending on whether not-energy particles are present).
+ * ParticleMapEntry.first is the ID of the first particle in the list (may be energy or plain, depending on whether plain particles are present).
  * ParticleMapEntry.first_energy is the ID of the first energy particle in the list.
  * 
  * If no energy particles are present, ParticleMapEntry.first_energy indicates the tail of the list.
@@ -47,12 +47,12 @@
  *
  * /- count
  * |
- * | /- count_notEnergy
+ * | /- count_plain
  * | |
- * @ @ not-energy --- first
- * | | not-energy
- * | @ not-energy
- * |   energy ------- first_energy
+ * @ @ plain <--- first
+ * | | plain
+ * | @ plain
+ * |   energy <------- first_energy
  * |   energy
  * |   energy
  * @   energy
@@ -60,9 +60,9 @@
  *
  * /- count
  * |
- * | /- count_notEnergy = 0
+ * | /- count_plain = 0
  * |
- * @   energy ------- first = first_energy
+ * @   energy <------- first, first_energy
  * |   energy
  * |   energy
  * @   energy
@@ -70,11 +70,11 @@
  *
  * /- count
  * |
- * | /- count_notEnergy
+ * | /- count_plain
  * | |
- * @ @ not-energy --- first
- * | | not-energy
- * @ @ not-energy --- first_energy (NB: tail of list)
+ * @ @ plain <--- first
+ * | | plain
+ * @ @ plain <--- first_energy (NB: tail of list)
  *
  */
 
@@ -87,7 +87,7 @@
 enum class PMapCategory
 {
 	Energy=1,
-	NotEnergy,
+	Plain,
 	All
 };
 
@@ -110,7 +110,7 @@ public:
 	class iterator;
 protected:
 	uint_least32_t count_;// number of particles, including energy particles
-	uint_least32_t count_notEnergy_;// number of particles, not including energy particles
+	uint_least32_t count_plain_;// number of particles, not including energy particles
 public:
 	int first_;// ID of first particle
 	int first_energy_;// ID of first energy particle, or if there are no energy particles, ID of last non-energy particle
@@ -118,14 +118,14 @@ public:
 	void incCount(PMapCategory_single c)
 	{
 		count_++;
-		if (c==PMapCategory::NotEnergy)
-			count_notEnergy_++;
+		if (c==PMapCategory::Plain)
+			count_plain_++;
 	}
 	void decCount(PMapCategory_single c)
 	{
 		count_--;
-		if (c==PMapCategory::NotEnergy)
-			count_notEnergy_--;
+		if (c==PMapCategory::Plain)
+			count_plain_--;
 	}
 
 public:
@@ -137,9 +137,9 @@ public:
 		default:
 			return count_;
 		case PMapCategory::Energy:
-			return count_-count_notEnergy_;
-		case PMapCategory::NotEnergy:
-			return count_notEnergy_;
+			return count_-count_plain_;
+		case PMapCategory::Plain:
+			return count_plain_;
 		}
 	}
 	int first(PMapCategory c=PMapCategory::All) const
@@ -159,7 +159,7 @@ public:
 			{
 				// If there are some energy particles already, insert at head of energy particle list
 				int prevHead = first_energy_;
-				if (count(PMapCategory::NotEnergy))
+				if (count(PMapCategory::Plain))
 				{
 					// If there are some non-energy particles, link to end of that list
 					parts[i].pmap_prev = parts[prevHead].pmap_prev;
@@ -172,7 +172,7 @@ public:
 				parts[i].pmap_next = prevHead;
 				parts[prevHead].pmap_prev = i;
 			}
-			else if (count(PMapCategory::NotEnergy))
+			else if (count(PMapCategory::Plain))
 			{
 				// If there are no energy particles, then first_energy is the last non-energy particle. Insert this particle after it.
 				int i_prev = first_energy_;
@@ -187,7 +187,7 @@ public:
 				parts[i].pmap_prev = -1;
 			}
 			first_energy_ = i;
-			if (!count(PMapCategory::NotEnergy))
+			if (!count(PMapCategory::Plain))
 				first_ = i;
 		}
 		else
@@ -263,7 +263,7 @@ public:
 
 	void clear()
 	{
-		count_ = count_notEnergy_ = 0;
+		count_ = count_plain_ = 0;
 	}
 };
 

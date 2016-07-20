@@ -23,7 +23,7 @@ int CO2_update(UPDATE_FUNC_ARGS)
 		for (ry=-1; ry<2; ry++)
 			if (x+rx>=0 && y+ry>0 && x+rx<XRES && y+ry<YRES && (rx || ry))
 			{
-				if (parts[i].ctype==5 && !sim->pmap[y+ry][x+rx].count(PMapCategory::NotEnergy) && sim->rng.chance<1,400>())
+				if (parts[i].ctype==5 && !sim->pmap[y+ry][x+rx].count(PMapCategory::Plain) && sim->rng.chance<1,400>())
 				{
 					if (sim->part_create(-1, x+rx, y+ry, PT_WATR)>=0)
 						parts[i].ctype = 0;

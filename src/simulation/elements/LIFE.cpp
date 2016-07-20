@@ -247,7 +247,7 @@ void LIFE_ElemDataSim::readLife()
 	// ruleMap contains rule ID +1, 0 means no active LIFE particle there
 	auto sim = this->sim;// put in stack/register instead of indirect access via this, since used a lot
 	std::vector<LIFE_Rule> &rules = sim->elemDataShared<LIFE_ElemDataShared>(PT_LIFE)->rules;
-	const PMapCategory lifeCat = PMapCategory::NotEnergy; //or sim->pmap_category(PT_LIFE), but hardcoded value is faster
+	const PMapCategory lifeCat = PMapCategory::Plain; //or sim->pmap_category(PT_LIFE), but hardcoded value is faster
 	int rulesSize = rules.size();
 	for (int ny=CELL; ny<YRES-CELL; ny++)
 	{
@@ -311,7 +311,7 @@ void LIFE_ElemDataSim::updateLife()
 	//go through every particle again, but check neighbor map, then update particles
 	auto sim = this->sim;// put in stack/register, since used a lot
 	std::vector<LIFE_Rule> &rules = sim->elemDataShared<LIFE_ElemDataShared>(PT_LIFE)->rules;
-	const PMapCategory lifeCat = PMapCategory::NotEnergy;
+	const PMapCategory lifeCat = PMapCategory::Plain;
 	bool didSomething = false;
 	for (int ny=CELL; ny<YRES-CELL; ny++)
 	{
