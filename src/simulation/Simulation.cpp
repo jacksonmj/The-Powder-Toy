@@ -542,10 +542,50 @@ int Simulation::part_killAll(SimPosI pos, int only_type, int except_id)
 	int deletedCount = 0;
 	FOR_SIM_PMAP_POS(this, c, pos, ri)
 	{
-		if (ri!=except_id && (!only_type || parts[ri].type==only_type))
+		if ((!only_type || parts[ri].type==only_type) && ri!=except_id)
 		{
-			part_kill(ri);
+			part_kill(ri, pos);
 			deletedCount++;
+		}
+	}
+	return deletedCount;
+}
+
+int Simulation::part_killAll(SimAreaI area, int only_type, int except_id)
+{
+	SimPosI posBegin = area.posBegin(), posEnd = area.posEnd();
+	int deletedCount = 0;
+	for (int y=posBegin.y; y<posEnd.y; y++)
+	{
+		for (int x=posBegin.x; x<posEnd.x; x++)
+		{
+			deletedCount += part_killAll(SimPosI(x,y), only_type, except_id);
+		}
+	}
+	return deletedCount;
+}
+
+int Simulation::part_killAll(SimAreaF area, int only_type, int except_id)
+{
+	PMapCategory c = PMapCategory::All;
+	if (only_type>0)
+		c = pmap_category(only_type);
+
+	int deletedCount = 0;
+	SimPosF posBegin = area.posBegin(), posEnd = area.posEnd();
+	for (int y=posBegin.y; y<posEnd.y; y++)
+	{
+		for (int x=posBegin.x; x<posEnd.x; x++)
+		{
+			SimPosI pos(x,y);
+			FOR_SIM_PMAP_POS(this, c, pos, ri)
+			{
+				if ((!only_type || parts[ri].type==only_type) && ri!=except_id && area.contains(SimPosF(parts[ri].x,parts[ri].y)))
+				{
+					part_kill(ri, pos);
+					deletedCount++;
+				}
+			}
 		}
 	}
 	return deletedCount;

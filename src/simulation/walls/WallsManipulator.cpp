@@ -173,6 +173,18 @@ void WallsManipulator::fanVel_flood(SimPosCell c, float newVX, float newVY)
 	}
 }
 
+void WallsManipulator::type(SimAreaCell area, uint8_t newType)
+{
+	SimPosCell posBegin = area.posBegin(), posEnd = area.posEnd();
+	for (int y=posBegin.y; y<posEnd.y; y++)
+	{
+		for (int x=posBegin.x; x<posEnd.x; x++)
+		{
+			type(SimPosCell(x,y), newType);
+		}
+	}
+}
+
 void WallsManipulator::setBorder(uint8_t wallType)
 {
 	for(int i = 0; i<(XRES/CELL); i++)

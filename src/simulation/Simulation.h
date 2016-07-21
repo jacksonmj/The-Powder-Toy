@@ -227,6 +227,8 @@ public:
 	bool part_change_type(int i, SimPosI pos, int t);
 	void part_kill(int i, SimPosI pos);
 	int part_killAll(SimPosI pos, int only_type=0, int except_id=-1);
+	int part_killAll(SimAreaI area, int only_type=0, int except_id=-1);
+	int part_killAll(SimAreaF area, int only_type=0, int except_id=-1);
 
 	bool part_change_type(int i, int t)
 	{ return part_change_type(i, SimPosF(parts[i].x, parts[i].y), t); }

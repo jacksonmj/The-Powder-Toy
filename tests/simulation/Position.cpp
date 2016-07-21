@@ -419,3 +419,26 @@ TEST_CASE("simulation/Position float rounding", "[simulation][simpos][float-roun
 */
 }
 
+
+TEST_CASE("simulation/Area funcs", "[simulation][simpos]")
+{
+	SECTION("basic")
+	{
+		CHECK( !(SimAreaI(SimPosI(50,60), SimPosDI(3,4)) == SimAreaI(SimPosI(50,60), SimPosDI(3,5))) );
+		CHECK( !(SimAreaI(SimPosI(50,60), SimPosDI(3,4)) == SimAreaI(SimPosI(50,61), SimPosDI(3,4))) );
+		CHECK( SimAreaI(SimPosI(50,60), SimPosDI(3,4)) != SimAreaI(SimPosI(50,60), SimPosDI(3,5)) );
+		CHECK( SimAreaI(SimPosI(50,60), SimPosDI(3,4)) != SimAreaI(SimPosI(50,61), SimPosDI(3,4)) );
+
+		CHECK( SimAreaI(SimPosI(50,60), SimPosDI(3,4)) == SimAreaI(SimPosI(50,60), SimPosI(52,63)) );
+	}
+
+	SECTION("convert")
+	{
+		CHECK( SimAreaCell(SimAreaI(SimPosI(8*CELL,9*CELL), SimPosDI(1,1))) == SimAreaCell(SimPosCell(8,9), SimPosDCell(1,1)) );
+		CHECK( SimAreaCell(SimAreaI(SimPosI(8*CELL,9*CELL), SimPosDI(CELL-1,CELL-1))) == SimAreaCell(SimPosCell(8,9), SimPosDCell(1,1)) );
+		CHECK( SimAreaCell(SimAreaI(SimPosI(8*CELL,9*CELL), SimPosDI(CELL,CELL))) == SimAreaCell(SimPosCell(8,9), SimPosDCell(1,1)) );
+		CHECK( SimAreaCell(SimAreaI(SimPosI(8*CELL,9*CELL), SimPosDI(CELL+1,CELL))) == SimAreaCell(SimPosCell(8,9), SimPosDCell(2,1)) );
+		CHECK( SimAreaCell(SimAreaI(SimPosI(8*CELL,9*CELL), SimPosDI(CELL,CELL+1))) == SimAreaCell(SimPosCell(8,9), SimPosDCell(1,2)) );
+	}
+}
+

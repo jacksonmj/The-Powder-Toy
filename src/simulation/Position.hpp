@@ -49,6 +49,10 @@ class SimPosDCell;//cell (int)
  * unit_1() - returns a scaled version with length_1()=1 (max component = 1)
  */
 
+// Areas
+class SimAreaF;
+class SimAreaI;
+class SimAreaCell;
 
 // TODO: test effect of different datatypes on speed (may need to add extra SimPosXX_least classes using int_least16_t for storage in arrays, and use int_fast16_t in SimPosXX classes for calculations)
 // TODO: test effect of SADD16 on speed on ARM (if not already generated automatically)  (int16_t datatype)
@@ -265,6 +269,53 @@ public:
 };
 
 
+template <class Self, class PosType, class DiffType>
+class SimArea_common
+{
+public:
+	friend bool operator==(const Self lhs, const Self rhs)
+	{ return (lhs.topLeft==rhs.topLeft && lhs.size==rhs.size); }
+	friend bool operator!=(const Self lhs, const Self rhs)
+	{ return (lhs.topLeft!=rhs.topLeft || lhs.size!=rhs.size); }
+
+	void setCorners(const PosType topLeft_, const PosType bottomRight_)
+	{
+		Self& a(*static_cast<Self*>(this));
+		a.topLeft = topLeft_;
+		a.size = bottomRight_-topLeft_ + DiffType(1,1);
+	}
+	// Returns the bottom-right-most point that is inside the area
+	PosType bottomRight() const
+	{
+		Self const a(*static_cast<const Self*>(this));
+		return a.topLeft+a.size - DiffType(1,1);
+	}
+
+	// Position bounds for use in loops (x=begin.x; x<end.x; x++)
+	PosType posBegin() const
+	{
+		Self const a(*static_cast<const Self*>(this));
+		return a.topLeft;
+	}
+	PosType posEnd() const
+	{
+		Self const a(*static_cast<const Self*>(this));
+		return a.topLeft+a.size;
+	}
+
+	bool contains(PosType p) const
+	{
+		Self const a(*static_cast<const Self*>(this));
+		return (p.x>=a.topLeft.x && p.y>=a.topLeft.y && p.x<a.topLeft.x+a.size.x && p.y<a.topLeft.y+a.size.y);
+	}
+	bool contains(Self a) const
+	{
+		return contains(a.topLeft) && contains(a.bottomRight());
+	}
+};
+
+
+
 }
 
 
@@ -427,6 +478,67 @@ TPT_INLINE SimPosCell SimPosI::cell() const { return SimPosCell(*this); }
 TPT_INLINE SimPosCell SimPosI::cell_safe() const { return SimPosCell(std::floor(float(x)/CELL), std::floor(float(y)/CELL)); }
 TPT_INLINE SimPosCell SimPosF::cell() const { return SimPosCell(*this); }
 TPT_INLINE SimPosCell SimPosF::cell_safe() const { return SimPosCell(std::floor(x/CELL), std::floor(y/CELL)); }
+
+
+
+class SimAreaF :
+	public detail::SimArea_common<SimAreaF, SimPosF, SimPosDF>
+{
+public:
+	using T = SimPosF;
+	using DT = SimPosDF;
+	T topLeft;
+	DT size;
+
+	SimAreaF() : topLeft(), size() {}
+	SimAreaF(const T topLeft_, const DT size_) : topLeft(topLeft_), size(size_) {}
+	// Note that topLeft and bottomRight are coords that are *inside* the area. "topLeft+size" gives a coord just outside the area.
+	SimAreaF(const T topLeft_, const T bottomRight_) { setCorners(topLeft_, bottomRight_); }
+
+	SimAreaF(const SimAreaI a);
+	SimAreaF(const SimAreaCell a);
+};
+
+
+class SimAreaI :
+	public detail::SimArea_common<SimAreaI, SimPosI, SimPosDI>
+{
+public:
+	using T = SimPosI;
+	using DT = SimPosDI;
+	T topLeft;
+	DT size;
+
+	SimAreaI() : topLeft(), size() {}
+	SimAreaI(const T topLeft_, const DT size_) : topLeft(topLeft_), size(size_) {}
+	// Note that topLeft and bottomRight are coords that are *inside* the area. "topLeft+size" gives a coord just outside the area.
+	SimAreaI(const T topLeft_, const T bottomRight_) { setCorners(topLeft_, bottomRight_); }
+
+	SimAreaI(const SimAreaF a) : SimAreaI(a.topLeft, a.bottomRight()) {}
+	SimAreaI(const SimAreaCell a);
+};
+
+class SimAreaCell :
+	public detail::SimArea_common<SimAreaCell, SimPosCell, SimPosDCell>
+{
+public:
+	using T = SimPosCell;
+	using DT = SimPosDCell;
+	T topLeft;
+	DT size;
+
+	SimAreaCell() : topLeft(), size() {}
+	SimAreaCell(const T topLeft_, const DT size_) : topLeft(topLeft_), size(size_) {}
+	// Note that topLeft and bottomRight are coords that are *inside* the area. "topLeft+size" gives a coord just outside the area.
+	SimAreaCell(const T topLeft_, const T bottomRight_) { setCorners(topLeft_, bottomRight_); }
+
+	SimAreaCell(const SimAreaF a) : SimAreaCell(a.topLeft, a.bottomRight()) {}
+	SimAreaCell(const SimAreaI a) : SimAreaCell(a.topLeft, a.bottomRight()) {}
+};
+
+TPT_INLINE SimAreaF::SimAreaF(SimAreaI a) : SimAreaF(a.topLeft, a.size) {}
+TPT_INLINE SimAreaF::SimAreaF(SimAreaCell a) : SimAreaF(a.topLeft.topLeft(), a.bottomRight().bottomRight()) {}
+TPT_INLINE SimAreaI::SimAreaI(SimAreaCell a) : SimAreaI(a.topLeft.topLeft(), a.bottomRight().bottomRight()) {}
 
 
 namespace SimPos

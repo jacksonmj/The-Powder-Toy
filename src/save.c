@@ -426,7 +426,9 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 	blockH = (orig_h+orig_y0-fullY+CELL-1)/CELL;
 	fullW = blockW*CELL;
 	fullH = blockH*CELL;
-	
+
+	SimAreaI origArea(SimPosI(orig_x0, orig_y0), SimPosDI(orig_w, orig_h));
+
 	//Copy fan and wall data
 	wallData = (unsigned char*)malloc(blockW*blockH);
 	wallDataLen = blockW*blockH;
@@ -791,7 +793,7 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 	signsCount = 0;
 	for (const Sign &sign: globalSim->signs)
 	{
-		if (sign.pos.inArea(SimPosI(orig_x0, orig_y0), SimPosDI(orig_w, orig_h)))
+		if (origArea.contains(sign.pos))
 		{
 			signsCount++;
 		}
@@ -802,7 +804,7 @@ void *build_save_OPS(int *size, int orig_x0, int orig_y0, int orig_w, int orig_h
 		for (const Sign &sign: globalSim->signs)
 		{
 			std::string text = sign.getRawText();
-			if(text.length() && sign.pos.inArea(SimPosI(orig_x0, orig_y0), SimPosDI(orig_w, orig_h)))
+			if(text.length() && origArea.contains(sign.pos))
 			{
 				bson_append_start_object(&b, "sign");
 				bson_append_string(&b, "text", text.c_str());

@@ -442,19 +442,10 @@ void create_arc(int sx, int sy, int dx, int dy, int midpoints, int variance, int
 
 void clear_area(int area_x, int area_y, int area_w, int area_h)
 {
-	int cx = 0;
-	int cy = 0;
-	int i;
-	for (cy=0; cy<area_h; cy++)
-	{
-		for (cx=0; cx<area_w; cx++)
-		{
-			globalSim->walls.type(SimPosI(cx+area_x,cy+area_y), WL_NONE);
-			globalSim->part_killAll(SimPosI(cx+area_x,cy+area_y));
-		}
-	}
-
-	globalSim->signs.eraseArea(SimPosI(area_x, area_y), SimPosDI(area_w, area_h));
+	SimAreaI area(SimPosI(area_x, area_y), SimPosDI(area_w, area_h));
+	globalSim->part_killAll(area);
+	globalSim->walls.type(area, WL_NONE);
+	globalSim->signs.eraseArea(area);
 }
 
 void create_box(int x1, int y1, int x2, int y2, int c, int flags)

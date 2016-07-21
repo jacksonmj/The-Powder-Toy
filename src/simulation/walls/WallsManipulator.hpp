@@ -58,12 +58,13 @@ public:
 	void type(SimPosCell c, uint8_t newType) {
 		if (data.wallType[c.y][c.x]==WL_GRAV && newType!=WL_GRAV)
 			gravwl_timeout = 60;
+		if (newType==WL_FAN && data.wallType[c.y][c.x]!=WL_FAN)
+			fanVel(c, 0.0f, 0.0f);
 		data.wallType[c.y][c.x] = newType;
 		if (newType==WL_GRAV)
 			gravwl_timeout = 60;
-		else if (newType==WL_FAN)
-			fanVel(c, 0.0f, 0.0f);
 	}
+	void type(SimAreaCell area, uint8_t newType);
 	uint8_t electricity(SimPosCell c) const {
 		return data.electricity[c.y][c.x];
 	}
